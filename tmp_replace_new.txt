@@ -1,0 +1,11 @@
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={clsx(
+            "w-12 h-12 flex items-center justify-center",
+            "border-2 rounded-lg transition-all duration-300",
+            isOpen
+              ? "bg-[#88B04B] border-[#88B04B] text-white shadow-[0_10px_25px_rgba(136,176,75,0.4)] rotate-45"
+              : "bg-white border-[#E8F0E8] text-[#88B04B] shadow-[0_4px_15px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_20px_rgba(136,176,75,0.15)]",
+          )}
+          aria-label="Toggle Menu"
+        >
