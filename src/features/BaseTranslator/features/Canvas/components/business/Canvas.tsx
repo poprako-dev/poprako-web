@@ -1,0 +1,390 @@
+import { useState, useRef, useEffect } from "react";
+import type { Unit } from "@/types/unit";
+import type { TranslatorMode } from "@/types/translatorMode";
+import { unitIsTranslated, unitIsProved, unitFinalText } from "@/types/unit";
+import Marker from "@/features/BaseTranslator/features/Marker";
+
+const PAN_THRESHOLD = 8;
+const MARKER_DRAG_THRESHOLD = 3;
+const MAX_SCALE = 2;
+const ZOOM_STEP = 0.08;
+
+type Transform = {
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+};
+
+type DragState = {
+  type: "pan" | "marker";
+  startX: number;
+  startY: number;
+  startOffsetX: number;
+  startOffsetY: number;
+  unitId?: string;
+  startUnitX?: number;
+  startUnitY?: number;
+  exceeded: boolean;
+};
+
+type Props = {
+  imageSrc: string | null;
+  units: Unit[];
+  mode: TranslatorMode;
+  focusedUnitId?: string;
+  onFocusUnit?: (unitId: string) => void;
+  onMoveUnit?: (unitId: string, xCoord: number, yCoord: number) => void;
+  onAddUnit?: (xCoord: number, yCoord: number, isBubble: boolean) => void;
+  onDeleteUnit?: (unitId: string) => void;
+};
+
+export default function Canvas({
+  imageSrc,
+  units,
+  mode,
+  focusedUnitId,
+  onFocusUnit,
+  onMoveUnit,
+  onAddUnit,
+  onDeleteUnit,
+}: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const [transform, setTransform] = useState<Transform>({
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+  });
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+  const [dragMarker, setDragMarker] = useState<{
+    id: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+
+  const dragRef = useRef<DragState | null>(null);
+  const dragMarkerRef = useRef<{
+    id: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const windowHandlersRef = useRef<{
+    move: (e: MouseEvent) => void;
+    up: (e: MouseEvent) => void;
+  } | null>(null);
+
+  // Reset transform when image source changes
+  useEffect(() => {
+    setTransform({ scale: 1, offsetX: 0, offsetY: 0 });
+  }, [imageSrc]);
+
+  // Track container size via ResizeObserver
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      setContainerSize({ w: width, h: height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Cleanup window event listeners on unmount
+  useEffect(() => {
+    return () => {
+      if (windowHandlersRef.current) {
+        window.removeEventListener("mousemove", windowHandlersRef.current.move);
+        window.removeEventListener("mouseup", windowHandlersRef.current.up);
+      }
+    };
+  }, []);
+
+  function startDrag(
+    type: "pan" | "marker",
+    startX: number,
+    startY: number,
+    unitId?: string,
+    startUnitX?: number,
+    startUnitY?: number,
+  ) {
+    dragRef.current = {
+      type,
+      startX,
+      startY,
+      startOffsetX: transform.offsetX,
+      startOffsetY: transform.offsetY,
+      unitId,
+      startUnitX,
+      startUnitY,
+      exceeded: false,
+    };
+
+    const threshold = type === "pan" ? PAN_THRESHOLD : MARKER_DRAG_THRESHOLD;
+
+    const handleMove = (e: MouseEvent) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+
+      const dx = e.clientX - drag.startX;
+      const dy = e.clientY - drag.startY;
+
+      if (!drag.exceeded) {
+        if (Math.sqrt(dx * dx + dy * dy) > threshold) {
+          drag.exceeded = true;
+          if (drag.type === "pan") setIsPanning(true);
+        } else {
+          return;
+        }
+      }
+
+      if (drag.type === "pan") {
+        setTransform((prev) => ({
+          ...prev,
+          offsetX: drag.startOffsetX + dx,
+          offsetY: drag.startOffsetY + dy,
+        }));
+      } else {
+        const img = imgRef.current;
+        if (!img) return;
+        const rect = img.getBoundingClientRect();
+        const startUnitX = drag.startUnitX ?? 0;
+        const startUnitY = drag.startUnitY ?? 0;
+        const deltaX = dx / rect.width;
+        const deltaY = dy / rect.height;
+        const nextMarker = {
+          id: drag.unitId!,
+          x: Math.max(0, Math.min(1, startUnitX + deltaX)),
+          y: Math.max(0, Math.min(1, startUnitY + deltaY)),
+        };
+
+        dragMarkerRef.current = nextMarker;
+        setDragMarker(nextMarker);
+      }
+    };
+
+    const handleUp = (e: MouseEvent) => {
+      const drag = dragRef.current;
+      dragRef.current = null;
+      setIsPanning(false);
+
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+      windowHandlersRef.current = null;
+
+      if (!drag) return;
+
+      if (!drag.exceeded) {
+        if (drag.type === "pan") {
+          // Click on empty canvas → add bubble unit (left-click)
+          const img = imgRef.current;
+          if (!img) return;
+          const rect = img.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width;
+          const y = (e.clientY - rect.top) / rect.height;
+          if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
+            onAddUnit?.(x, y, true);
+          }
+        } else {
+          // Click on marker → focus
+          onFocusUnit?.(drag.unitId!);
+        }
+      } else if (drag.type === "marker") {
+        const preview = dragMarkerRef.current;
+        const nextX =
+          preview && preview.id === drag.unitId ? preview.x : drag.startUnitX;
+        const nextY =
+          preview && preview.id === drag.unitId ? preview.y : drag.startUnitY;
+
+        if (nextX !== undefined && nextY !== undefined) {
+          onMoveUnit?.(drag.unitId!, nextX, nextY);
+        }
+
+        dragMarkerRef.current = null;
+        setDragMarker(null);
+      }
+    };
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    windowHandlersRef.current = { move: handleMove, up: handleUp };
+  }
+
+  function handleCanvasMouseDown(e: React.MouseEvent) {
+    if ((e.target as HTMLElement).closest("[data-marker]")) return;
+    if (e.button !== 0) return;
+
+    // Only pan when mouse starts over the image
+    const img = imgRef.current;
+    if (!img) return;
+    const rect = img.getBoundingClientRect();
+    if (
+      e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom
+    )
+      return;
+
+    e.preventDefault();
+    startDrag("pan", e.clientX, e.clientY);
+  }
+
+  function handleMarkerMouseDown(
+    e: React.MouseEvent,
+    unitId: string,
+    xCoord: number,
+    yCoord: number,
+  ) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    startDrag("marker", e.clientX, e.clientY, unitId, xCoord, yCoord);
+  }
+
+  function handleContextMenu(e: React.MouseEvent) {
+    e.preventDefault();
+
+    // Right-click on marker → delete
+    const markerEl = (e.target as HTMLElement).closest("[data-marker]");
+    if (markerEl) {
+      const unitId = markerEl.getAttribute("data-marker")!;
+      onDeleteUnit?.(unitId);
+      return;
+    }
+
+    // Right-click on empty image → add non-bubble unit
+    const img = imgRef.current;
+    if (!img) return;
+    const rect = img.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
+      onAddUnit?.(x, y, false);
+    }
+  }
+
+  function handleWheel(e: React.WheelEvent) {
+    const img = imgRef.current;
+    const container = containerRef.current;
+    if (!img || !container) return;
+
+    // Only zoom when mouse is directly over the image
+    const imgRect = img.getBoundingClientRect();
+    if (
+      e.clientX < imgRect.left ||
+      e.clientX > imgRect.right ||
+      e.clientY < imgRect.top ||
+      e.clientY > imgRect.bottom
+    )
+      return;
+
+    e.preventDefault();
+
+    const direction = e.deltaY < 0 ? 1 : -1;
+    const factor = 1 + ZOOM_STEP * direction;
+
+    setTransform((prev) => {
+      const newScale = Math.max(0.1, Math.min(MAX_SCALE, prev.scale * factor));
+      if (newScale === prev.scale) return prev;
+
+      const actualFactor = newScale / prev.scale;
+      const containerRect = container.getBoundingClientRect();
+      const centerX = containerRect.left + containerRect.width / 2;
+      const centerY = containerRect.top + containerRect.height / 2;
+      const mouseRelX = e.clientX - centerX - prev.offsetX;
+      const mouseRelY = e.clientY - centerY - prev.offsetY;
+
+      return {
+        scale: newScale,
+        offsetX: prev.offsetX - mouseRelX * (actualFactor - 1),
+        offsetY: prev.offsetY - mouseRelY * (actualFactor - 1),
+      };
+    });
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative w-full h-full overflow-hidden bg-muted touch-none select-none ${
+        isPanning ? "cursor-grabbing" : "cursor-default"
+      }`}
+      onMouseDown={handleCanvasMouseDown}
+      onContextMenu={handleContextMenu}
+      onWheel={handleWheel}
+    >
+      {imageSrc ? (
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{
+            transform: `translate(${transform.offsetX}px, ${transform.offsetY}px)`,
+          }}
+        >
+          <div
+            className="relative inline-block pointer-events-auto"
+            style={{
+              transform: `scale(${transform.scale})`,
+              transformOrigin: "center center",
+            }}
+          >
+            <img
+              ref={imgRef}
+              src={imageSrc}
+              alt=""
+              draggable={false}
+              className="select-none shadow-md"
+              style={{
+                maxWidth: containerSize.w * 0.9,
+                maxHeight: containerSize.h * 0.87,
+                width: "auto",
+                height: "auto",
+              }}
+            />
+
+            {units.map((unit) => {
+              const isDraggingThis = dragMarker?.id === unit.id;
+              const x = isDraggingThis ? dragMarker.x : unit.xCoord;
+              const y = isDraggingThis ? dragMarker.y : unit.yCoord;
+
+              return (
+                <div
+                  key={unit.id}
+                  data-marker={unit.id}
+                  className="absolute pointer-events-auto"
+                  style={{
+                    left: `${x * 100}%`,
+                    top: `${y * 100}%`,
+                    transformOrigin: "0 0",
+                    transform: `scale(${1 / transform.scale})`,
+                  }}
+                  onMouseDown={(e) =>
+                    handleMarkerMouseDown(e, unit.id, unit.xCoord, unit.yCoord)
+                  }
+                >
+                  <Marker
+                    index={unit.index}
+                    isBubble={unit.isBubble}
+                    isCompleted={
+                      mode === "translate"
+                        ? unitIsTranslated(unit)
+                        : unitIsProved(unit)
+                    }
+                    isSelected={focusedUnitId === unit.id}
+                    isDragging={isDraggingThis}
+                    previewText={unitFinalText(unit)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center w-full h-full text-muted-foreground">
+          暂无图片
+        </div>
+      )}
+    </div>
+  );
+}

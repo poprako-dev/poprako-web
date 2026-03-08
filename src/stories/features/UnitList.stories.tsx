@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import UnitList from "@/features/UnitList";
+import UnitList from "@/features/BaseTranslator/features/UnitList";
 import type { Unit } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 

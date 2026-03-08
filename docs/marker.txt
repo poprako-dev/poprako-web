@@ -1,0 +1,233 @@
+import React, { useState, useMemo, useRef, useEffect } from "react";
+
+const PointerIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="m13 13 6 6"/></svg>
+);
+
+/**
+ * 极简 Marker 纯显示组件
+ */
+const Marker = ({
+  index,
+  isInbox = false,
+  isProoved = false,
+  isSelected = false,
+  hasContent = false,
+  mode = "proofread",
+  previewText = "",
+  style,
+  isDragging = false,
+  onClick,
+  onContextMenu,
+  onMouseDown,
+}) => {
+  const CIRCLE_SIZE = 32;
+  const DOT_SIZE = 8;
+
+  const themeColor = useMemo(() => {
+    if (mode === "translate" && hasContent) return "#10b981";
+    if (mode === "proofread" && isProoved) return "#10b981";
+    return "transparent";
+  }, [mode, hasContent, isProoved]);
+
+  const bgColorClass = isInbox ? "bg-pink-100" : "bg-amber-100";
+
+  return (
+    <div
+      className={`absolute flex flex-col items-center select-none group ${
+        isSelected ? "z-30" : "z-10"
+      } ${isDragging ? "cursor-grabbing opacity-80" : "cursor-pointer"}`}
+      style={{
+        ...style,
+        width: `${CIRCLE_SIZE}px`,
+        // 关键点：不再对整个容器使用 transition-all，防止 left/top 产生延迟
+        // transform 只处理锚点偏移和拖拽时的缩放反馈
+        transform: `translate(-50%, -${CIRCLE_SIZE + DOT_SIZE - 2}px) ${isDragging ? 'scale(1.1)' : 'scale(1)'}`,
+        transition: isDragging ? 'none' : 'transform 0.15s ease-out, opacity 0.15s ease-out',
+      }}
+      onClick={onClick}
+      onContextMenu={onContextMenu}
+      onMouseDown={onMouseDown}
+    >
+      <div
+        className={`relative rounded-full flex items-center justify-center border-2 shadow-lg ${bgColorClass} ${
+          isSelected
+            ? "border-blue-500 shadow-blue-400/30 ring-4 ring-blue-500/10"
+            : "border-transparent group-hover:scale-105"
+        }`}
+        style={{
+          width: `${CIRCLE_SIZE}px`,
+          height: `${CIRCLE_SIZE}px`,
+          borderColor: isSelected ? undefined : themeColor,
+          // 仅对装饰性属性保留过渡
+          transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
+        }}
+      >
+        {mode === "proofread" && isSelected && previewText && !isDragging && (
+          <div className="absolute left-full top-0 ml-3 z-50 pointer-events-none">
+            <div className="px-3 py-2 rounded-xl bg-slate-800/90 text-slate-50 text-xs backdrop-blur-md shadow-xl border border-white/10 whitespace-pre ring-1 ring-black/20 animate-in fade-in slide-in-from-left-2 duration-200">
+              {previewText}
+            </div>
+          </div>
+        )}
+        <div className="absolute inset-0 rounded-full shadow-[inset_0_0_0_1px_rgba(0,0,0,0.05)] pointer-events-none" />
+        {themeColor !== "transparent" && !isSelected && (
+          <div className="absolute inset-[-4px] rounded-full opacity-25 blur-sm pointer-events-none" style={{ backgroundColor: themeColor }} />
+        )}
+        <span className="text-sm font-bold text-slate-700 tabular-nums">{index}</span>
+      </div>
+      <div
+        className={`rounded-full -mt-[1px] shadow-sm border-2 border-black/10 transition-colors ${bgColorClass}`}
+        style={{ width: `${DOT_SIZE}px`, height: `${DOT_SIZE}px` }}
+      />
+    </div>
+  );
+};
+
+/**
+ * 演示容器
+ */
+export default function MarkerLayer() {
+  const DRAG_THRESHOLD = 4;
+  
+  const [units, setUnits] = useState([
+    { id: "1", x: 30, y: 40, index: 1, isProoved: true, content: "你好，世界" },
+    { id: "2", x: 70, y: 60, index: 2, isProoved: false, content: "拖拽无延迟测试" },
+  ]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [draggingId, setDraggingId] = useState(null);
+  const [isActuallyMoving, setIsActuallyMoving] = useState(false);
+  
+  const dragContext = useRef({
+    startMouseX: 0,
+    startMouseY: 0,
+    startUnitX: 0,
+    startUnitY: 0,
+    isMoving: false
+  });
+  
+  const stageRef = useRef(null);
+
+  useEffect(() => {
+    const handleWindowMouseMove = (e) => {
+      if (!draggingId || !stageRef.current) return;
+
+      const { startMouseX, startMouseY, startUnitX, startUnitY, isMoving } = dragContext.current;
+      const deltaX = e.clientX - startMouseX;
+      const deltaY = e.clientY - startMouseY;
+
+      if (!isMoving) {
+        if (Math.hypot(deltaX, deltaY) > DRAG_THRESHOLD) {
+          dragContext.current.isMoving = true;
+          setIsActuallyMoving(true);
+        } else {
+          return;
+        }
+      }
+
+      const rect = stageRef.current.getBoundingClientRect();
+      const pctDeltaX = (deltaX / rect.width) * 100;
+      const pctDeltaY = (deltaY / rect.height) * 100;
+
+      let nextX = startUnitX + pctDeltaX;
+      let nextY = startUnitY + pctDeltaY;
+
+      nextX = Math.max(0, Math.min(100, nextX));
+      nextY = Math.max(0, Math.min(100, nextY));
+
+      setUnits(prev => prev.map(u => u.id === draggingId ? { ...u, x: nextX, y: nextY } : u));
+    };
+
+    const handleWindowMouseUp = () => {
+      if (draggingId) {
+        setDraggingId(null);
+        setIsActuallyMoving(false);
+        dragContext.current.isMoving = false;
+      }
+    };
+
+    if (draggingId) {
+      window.addEventListener("mousemove", handleWindowMouseMove);
+      window.addEventListener("mouseup", handleWindowMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleWindowMouseMove);
+      window.removeEventListener("mouseup", handleWindowMouseUp);
+    };
+  }, [draggingId]);
+
+  const handleMarkerMouseDown = (e, unit) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    
+    setDraggingId(unit.id);
+    setSelectedId(unit.id);
+    
+    dragContext.current = {
+      startMouseX: e.clientX,
+      startMouseY: e.clientY,
+      startUnitX: unit.x,
+      startUnitY: unit.y,
+      isMoving: false
+    };
+  };
+
+  const handleStageClick = (e) => {
+    if (stageRef.current && e.target === stageRef.current) {
+      const rect = stageRef.current.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      const nextId = Math.random().toString(36).substr(2, 5);
+      setUnits([...units, { id: nextId, x, y, index: units.length + 1, isProoved: false, content: "" }]);
+      setSelectedId(nextId);
+    }
+  };
+
+  return (
+    <div className="w-full h-screen bg-slate-50 flex flex-col overflow-hidden font-sans">
+      <header className="p-4 border-b bg-white flex justify-between items-center shrink-0 shadow-sm z-50">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><PointerIcon /></div>
+          <h1 className="font-bold text-slate-800 tracking-tight">零延迟拖拽优化</h1>
+        </div>
+      </header>
+
+      <main className="flex-1 relative p-12 flex items-center justify-center overflow-auto">
+        <div
+          ref={stageRef}
+          onClick={handleStageClick}
+          className="relative w-full max-w-5xl aspect-[16/9] bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden cursor-crosshair"
+          style={{
+            backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+          }}
+        >
+          {units.map((unit) => (
+            <Marker
+              key={unit.id}
+              index={unit.index}
+              isSelected={selectedId === unit.id}
+              isDragging={draggingId === unit.id && isActuallyMoving}
+              isProoved={unit.isProoved}
+              hasContent={!!unit.content}
+              previewText={unit.content}
+              isInbox={unit.index % 2 === 0}
+              style={{
+                left: `${unit.x}%`,
+                top: `${unit.y}%`,
+              }}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => handleMarkerMouseDown(e, unit)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setUnits(units.filter(u => u.id !== unit.id));
+              }}
+            />
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}

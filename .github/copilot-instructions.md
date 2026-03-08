@@ -11,3 +11,7 @@
 组件必须使用 export default function，而不是 React.FC。
 
 可以使用 function 的时候，严禁使用闭包。
+
+使用 Tailwind、Lucide-react、clsx 等工具库时，必须按照我的规范进行使用，严禁随意使用。
+
+样式必须写在 return 块内，不得污染外部的逻辑部分。
