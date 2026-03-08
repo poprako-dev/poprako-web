@@ -1,0 +1,245 @@
+import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
+
+/**
+ * 业务逻辑助手
+ */
+const unitIsTranslated = (unit) => !!unit?.translatedText;
+const unitIsProved = (unit) => !!unit?.proved;
+
+/**
+ * 样式常量
+ */
+const COLORS = {
+  bubble: 'border-pink-300', 
+  box: 'border-amber-300',    
+  translated: 'bg-emerald-500', 
+  untranslated: 'bg-transparent',
+};
+
+/**
+ * 增强版自适应高度文本框
+ */
+const AutoResizeTextarea = React.forwardRef(({ value, onChange, placeholder, className, readOnly }, ref) => {
+  const localRef = useRef(null);
+  
+  const combinedRef = (node) => {
+    localRef.current = node;
+    if (typeof ref === 'function') ref(node);
+    else if (ref) ref.current = node;
+  };
+
+  useLayoutEffect(() => {
+    if (localRef.current) {
+      localRef.current.style.height = 'auto';
+      localRef.current.style.height = `${localRef.current.scrollHeight}px`;
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={combinedRef}
+      value={value || ''}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={1}
+      readOnly={readOnly}
+      className={`w-full resize-none overflow-hidden bg-transparent focus:outline-none transition-colors block ${className}`}
+      style={{ minHeight: '1.5em' }}
+    />
+  );
+});
+
+/**
+ * 基础外壳组件
+ */
+const BaseUnitItem = ({ unit, isFocused, onSelect, isCompleted, children }) => {
+  const containerRef = useRef(null);
+  const leftBorderColor = unit.isBubble ? COLORS.bubble : COLORS.box;
+  const rightIndicatorColor = isCompleted ? COLORS.translated : COLORS.untranslated;
+
+  useEffect(() => {
+    if (isFocused && containerRef.current) {
+      containerRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  }, [isFocused]);
+
+  return (
+    <div 
+      ref={containerRef}
+      onMouseDown={() => onSelect?.(unit.id)}
+      className={`
+        relative cursor-text transition-all duration-75 flex items-stretch
+        border-b border-gray-100 last:border-b-0
+        ${isFocused 
+          ? 'bg-gray-100/80 z-10' 
+          : 'bg-white hover:bg-gray-50'
+        }
+      `}
+    >
+      <div className={`
+        transition-all duration-150 shrink-0
+        ${leftBorderColor} border-l-[4px]
+        ${isFocused ? 'border-l-[6px]' : ''}
+      `} />
+
+      <div className={`
+        w-10 flex items-center justify-center shrink-0
+        text-sm font-bold font-mono tracking-tighter
+        ${isFocused ? 'text-gray-500' : 'text-gray-300'}
+      `}>
+        {(unit.index + 1).toString().padStart(2, '0')}
+      </div>
+
+      <div className="flex-1 flex flex-col justify-center px-3 py-4">
+        {children}
+      </div>
+
+      <div className={`w-[3px] shrink-0 ${rightIndicatorColor}`} />
+    </div>
+  );
+};
+
+/**
+ * 翻译模式 Item
+ */
+const TranslateModeUnitItem = ({ unit, isFocused, onSelect, onModify }) => {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isFocused && inputRef.current) {
+      const len = inputRef.current.value.length;
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(len, len);
+    }
+  }, [isFocused]);
+
+  return (
+    <BaseUnitItem 
+      unit={unit} 
+      isFocused={isFocused} 
+      onSelect={onSelect} 
+      isCompleted={unitIsTranslated(unit)}
+    >
+      <AutoResizeTextarea
+        ref={inputRef}
+        value={unit.translatedText}
+        onChange={(val) => onModify(unit.id, { translatedText: val })}
+        placeholder="点击输入翻译..."
+        className={`text-[15px] leading-relaxed ${isFocused ? 'text-gray-900 font-medium' : 'text-gray-700'}`}
+      />
+    </BaseUnitItem>
+  );
+};
+
+/**
+ * 校对模式 Item
+ */
+const ProofreadModeUnitItem = ({ unit, isFocused, onSelect, onModify }) => {
+  const proofRef = useRef(null);
+  const hasProved = !!unit.provedText;
+
+  useEffect(() => {
+    if (isFocused && proofRef.current) {
+      const len = proofRef.current.value.length;
+      proofRef.current.focus();
+      proofRef.current.setSelectionRange(len, len);
+    }
+  }, [isFocused]);
+  
+  return (
+    <BaseUnitItem 
+      unit={unit} 
+      isFocused={isFocused} 
+      onSelect={onSelect} 
+      isCompleted={unitIsProved(unit)}
+    >
+      <div className="flex flex-col gap-2">
+        {/* 初翻文本 */}
+        <AutoResizeTextarea
+          value={unit.translatedText}
+          readOnly={true}
+          onChange={() => {}} 
+          placeholder="无翻译内容"
+          className={`text-[15px] cursor-default leading-relaxed ${hasProved ? 'text-gray-400' : (isFocused ? 'text-gray-900 font-medium' : 'text-gray-700')}`}
+        />
+
+        {/* 优化逻辑：仅在选中时或已有校对内容时显示校对区域 */}
+        {(isFocused || hasProved) && (
+          <>
+            {unit.translatedText && hasProved && (
+              <div className="w-12 h-[1px] bg-gray-200" />
+            )}
+            <AutoResizeTextarea
+              ref={proofRef}
+              value={unit.provedText}
+              onChange={(val) => onModify(unit.id, { provedText: val, proved: val.trim().length > 0 })}
+              placeholder="输入校对建议..."
+              className={`text-[15px] leading-relaxed ${isFocused ? 'text-black font-bold' : 'text-gray-800 font-semibold'}`}
+            />
+          </>
+        )}
+      </div>
+    </BaseUnitItem>
+  );
+};
+
+/**
+ * Mock 父组件
+ */
+export default function App() {
+  const [mode, setMode] = useState('proofread');
+  const [focusedId, setFocusedId] = useState('2');
+  
+  const [units, setUnits] = useState([
+    { id: '1', index: 0, isBubble: true, translatedText: '早安，今天的天气看起来非常不错。', provedText: '', proved: false },
+    { 
+      id: '2', 
+      index: 1, 
+      isBubble: true, 
+      translatedText: '这是原本的初翻文本。', 
+      provedText: '这一行有校对文本，所以始终显示。',
+      proved: true 
+    },
+    { id: '3', index: 2, isBubble: false, translatedText: '（远处传来的螺旋桨轰鸣声）', provedText: '', proved: false },
+    { id: '4', index: 3, isBubble: true, translatedText: '这一行没有校对文本且未选中，校对框已隐藏。', provedText: '', proved: false },
+    { id: '5', index: 4, isBubble: true, translatedText: '点击我，你会看到校对框跳出来。', provedText: '', proved: false },
+  ]);
+
+  const handleModifyUnit = (id, updates) => {
+    setUnits(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
+  };
+
+  const ItemComponent = mode === 'proofread' ? ProofreadModeUnitItem : TranslateModeUnitItem;
+
+  return (
+    <div className="flex flex-col h-screen w-full bg-gray-50 font-sans antialiased">
+      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm shrink-0">
+        <div>
+          <h1 className="text-lg font-bold text-gray-800">校对模式视图优化</h1>
+          <p className="text-xs text-gray-500 mt-0.5">未选中且无内容时隐藏校对框</p>
+        </div>
+        <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
+          <button onClick={() => setMode('translate')} className={`px-4 py-1.5 text-sm font-medium transition-all rounded-md ${mode === 'translate' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>翻译模式</button>
+          <button onClick={() => setMode('proofread')} className={`px-4 py-1.5 text-sm font-medium transition-all rounded-md ${mode === 'proofread' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>校对模式</button>
+        </div>
+      </header>
+      
+      <main className="flex-1 overflow-y-auto max-w-3xl mx-auto w-full bg-white border-x border-gray-100 shadow-inner p-4">
+        <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+          {units.map((unit) => (
+            <ItemComponent 
+              key={unit.id} 
+              unit={unit} 
+              isFocused={focusedId === unit.id} 
+              onSelect={setFocusedId} 
+              onModify={handleModifyUnit}
+            />
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
