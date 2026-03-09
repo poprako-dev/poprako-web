@@ -1,4 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import type { Unit } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 import { unitIsTranslated, unitIsProved, unitFinalText } from "@/types/unit";
@@ -27,6 +33,10 @@ type DragState = {
   exceeded: boolean;
 };
 
+export type CanvasHandle = {
+  centerOn: (xCoord: number, yCoord: number) => void;
+};
+
 type Props = {
   imageSrc: string | null;
   units: Unit[];
@@ -38,16 +48,19 @@ type Props = {
   onDeleteUnit?: (unitId: string) => void;
 };
 
-export default function Canvas({
-  imageSrc,
-  units,
-  mode,
-  focusedUnitId,
-  onFocusUnit,
-  onMoveUnit,
-  onAddUnit,
-  onDeleteUnit,
-}: Props) {
+const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
+  {
+    imageSrc,
+    units,
+    mode,
+    focusedUnitId,
+    onFocusUnit,
+    onMoveUnit,
+    onAddUnit,
+    onDeleteUnit,
+  }: Props,
+  ref: React.Ref<CanvasHandle>,
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -101,6 +114,27 @@ export default function Canvas({
       }
     };
   }, []);
+
+  // Keep a live ref to transform to avoid stale closures in imperative handle
+  const transformRef = useRef(transform);
+  useEffect(() => {
+    transformRef.current = transform;
+  }, [transform]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      centerOn(xCoord: number, yCoord: number) {
+        const img = imgRef.current;
+        if (!img) return;
+        const scale = transformRef.current.scale;
+        const offsetX = -(xCoord - 0.5) * img.offsetWidth * scale;
+        const offsetY = -(yCoord - 0.5) * img.offsetHeight * scale;
+        setTransform((prev) => ({ ...prev, offsetX, offsetY }));
+      },
+    }),
+    [],
+  );
 
   function startDrag(
     type: "pan" | "marker",
@@ -344,9 +378,14 @@ export default function Canvas({
             />
 
             {units.map((unit) => {
+              if (!unit.id) {
+                return null;
+              }
+
               const isDraggingThis = dragMarker?.id === unit.id;
-              const x = isDraggingThis ? dragMarker.x : unit.xCoord;
-              const y = isDraggingThis ? dragMarker.y : unit.yCoord;
+              const draggingMarker = isDraggingThis ? dragMarker : null;
+              const x = draggingMarker ? draggingMarker.x : unit.xCoord;
+              const y = draggingMarker ? draggingMarker.y : unit.yCoord;
 
               return (
                 <div
@@ -374,6 +413,7 @@ export default function Canvas({
                     isSelected={focusedUnitId === unit.id}
                     isDragging={isDraggingThis}
                     previewText={unitFinalText(unit)}
+                    withPreview={mode === "proofread"}
                   />
                 </div>
               );
@@ -387,4 +427,6 @@ export default function Canvas({
       )}
     </div>
   );
-}
+});
+
+export default Canvas;

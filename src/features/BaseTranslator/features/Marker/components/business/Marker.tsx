@@ -9,6 +9,7 @@ type Props = {
   isSelected: boolean;
   isDragging: boolean;
   previewText: string | null;
+  withPreview: boolean;
 };
 
 export default function Marker({
@@ -18,6 +19,7 @@ export default function Marker({
   isSelected,
   isDragging,
   previewText,
+  withPreview,
 }: Props) {
   const bgClass = isBubble ? "bg-pink-100" : "bg-amber-100";
 
@@ -51,9 +53,9 @@ export default function Marker({
           transition: "border-color 0.2s, box-shadow 0.2s",
         }}
       >
-        {isSelected && previewText && !isDragging && (
+        {withPreview && isSelected && previewText && !isDragging && (
           <div className="absolute left-full top-0 ml-3 z-50 pointer-events-none">
-            <div className="px-3 py-2 rounded-xl bg-slate-800/90 text-slate-50 text-xs backdrop-blur-md shadow-xl border border-white/10 whitespace-pre">
+            <div className="px-2 py-1 rounded-sm bg-slate-800/90 text-slate-50 text-xs backdrop-blur-md shadow-xl border border-white/10 whitespace-pre">
               {previewText}
             </div>
           </div>

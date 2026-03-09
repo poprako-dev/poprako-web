@@ -6,7 +6,7 @@ This skill provides a small, reusable utility and documentation that checks a ta
 
 ## Behavior
 
-- Input: a file path and an optional numeric `max` length.
+- Input: a file **absolute** path and an optional numeric `max` length.
 - Output: JSON array printed to stdout listing 1-based line numbers that exceed the `max` length.
 
 If no lines exceed the threshold, the script outputs `[]`.

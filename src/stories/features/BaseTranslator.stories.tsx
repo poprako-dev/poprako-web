@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import BaseTranslator from "@/features/BaseTranslator/components/business/BaseTranslator";
 import type { Unit } from "@/types/unit";
+import type { Project } from "@/types/project";
 
 const DEMO_IMAGE =
   "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80";
 
-const initialUnits: Unit[] = [
+const mockUnits: Unit[] = [
   {
     id: "1",
     index: 0,
@@ -52,6 +53,39 @@ const initialUnits: Unit[] = [
   },
 ];
 
+const mockProject: Project = {
+  id: "project-1",
+  title: "测试漫画",
+  author: "Demo",
+  pageCount: 3,
+  totalUnitCount: 15,
+  translatedUnitCount: 8,
+  provedUnitCount: 3,
+  pages: [
+    {
+      id: "page-1",
+      index: 0,
+      totalUnitCount: 5,
+      translatedUnitCount: 3,
+      provedUnitCount: 1,
+    },
+    {
+      id: "page-2",
+      index: 1,
+      totalUnitCount: 5,
+      translatedUnitCount: 3,
+      provedUnitCount: 1,
+    },
+    {
+      id: "page-3",
+      index: 2,
+      totalUnitCount: 5,
+      translatedUnitCount: 2,
+      provedUnitCount: 1,
+    },
+  ],
+};
+
 const meta: Meta<typeof BaseTranslator> = {
   title: "Features/BaseTranslator",
   component: BaseTranslator,
@@ -71,23 +105,47 @@ const meta: Meta<typeof BaseTranslator> = {
 export default meta;
 type Story = StoryObj<typeof BaseTranslator>;
 
-export const WithImage: Story = {
+export const WithProofread: Story = {
   args: {
-    imageSrc: DEMO_IMAGE,
-    initialUnits,
+    project: mockProject,
+    isCurrUserProofreader: true,
+    onLoadUnits: async (_pageId: string) => mockUnits,
+    onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
+    onUpsertUnits: async (pageId: string, units: Unit[]) => {
+      console.log("[mock] onUpsertUnits", pageId, units);
+    },
+    onExit: () => {
+      console.log("[mock] onExit");
+    },
   },
 };
 
-export const NoImage: Story = {
+export const TranslatorOnly: Story = {
   args: {
-    imageSrc: null,
-    initialUnits: [],
+    project: mockProject,
+    isCurrUserProofreader: false,
+    onLoadUnits: async (_pageId: string) => mockUnits,
+    onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
+    onUpsertUnits: async (pageId: string, units: Unit[]) => {
+      console.log("[mock] onUpsertUnits", pageId, units);
+    },
+    onExit: () => {
+      console.log("[mock] onExit");
+    },
   },
 };
 
 export const EmptyUnits: Story = {
   args: {
-    imageSrc: DEMO_IMAGE,
-    initialUnits: [],
+    project: mockProject,
+    isCurrUserProofreader: true,
+    onLoadUnits: async (_pageId: string) => [],
+    onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
+    onUpsertUnits: async (pageId: string, units: Unit[]) => {
+      console.log("[mock] onUpsertUnits", pageId, units);
+    },
+    onExit: () => {
+      console.log("[mock] onExit");
+    },
   },
 };
