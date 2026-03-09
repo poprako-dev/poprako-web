@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { LogOut } from "lucide-react";
+import { SquareArrowRight, Command, ReplaceAll } from "lucide-react";
 import Paginator from "@/components/ui/Paginator";
+import ToolboxDropdown from "@/features/ToolboxDropdown";
 import { isUnitSame, type Unit } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 import type { Project } from "@/types/project";
@@ -9,7 +10,10 @@ import Canvas, {
 } from "@/features/BaseTranslator/features/Canvas";
 import UnitList from "@/features/BaseTranslator/features/UnitList";
 import BaseTranslatorLayout from "@/features/BaseTranslator/layout/BaseTranslatorLayout";
+import ShortcutPanel from "@/features/BaseTranslator/features/ShortcutPanel";
 import StatusOptionBar from "./StatusOptionBar";
+import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
+import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
 
 type Props = {
   project: Project;
@@ -45,12 +49,20 @@ export default function BaseTranslator({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(true);
+  const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
 
   const isDirty = useRef(false);
   const isNavigating = useRef(false);
   const unitBufRef = useRef<Unit[]>([]);
   const baselineUnitsRef = useRef<Unit[]>([]);
   const canvasRef = useRef<CanvasHandle>(null);
+
+  const {
+    fixedShortcuts,
+    configurableShortcuts,
+    defaultConfigurableShortcuts,
+    updateConfigurableShortcuts,
+  } = useShortcuts();
 
   function withCleanState(units: Unit[]): Unit[] {
     return units.map((unit) => ({ ...unit, isDirty: false }));
@@ -197,29 +209,57 @@ export default function BaseTranslator({
     canvasRef.current?.centerOn(unit.xCoord, unit.yCoord);
   }, [focusedUnitId, isRelocationEnabled, unitBuf]);
 
-  // Tab / Shift+Tab to cycle focused unit
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key !== "Tab") return;
-      if (unitBuf.length === 0) return;
+  useShortcutActions(
+    {
+      toggleMode: () => {
+        if (!isCurrUserProofreader) return;
+        setMode((m) => (m === "translate" ? "proofread" : "translate"));
+      },
+      toggleRelocation: () => {
+        setIsRelocationEnabled((v) => !v);
+      },
+      nextMarker: () => {
+        if (unitBuf.length === 0) return;
+        const cur = unitBuf.findIndex((u) => u.id === focusedUnitId);
+        const next = cur >= unitBuf.length - 1 ? 0 : cur + 1;
+        setFocusedUnitId(unitBuf[next].id);
+      },
+      prevMarker: () => {
+        if (unitBuf.length === 0) return;
+        const cur = unitBuf.findIndex((u) => u.id === focusedUnitId);
+        const prev = cur <= 0 ? unitBuf.length - 1 : cur - 1;
+        setFocusedUnitId(unitBuf[prev].id);
+      },
+      pageUp: () => {
+        if (pageIndex > 0) handleNavigate(pageIndex - 1);
+      },
+      pageDown: () => {
+        if (pageIndex < project.pages.length - 1) {
+          handleNavigate(pageIndex + 1);
+        }
+      },
+    },
+    configurableShortcuts,
+    isShortcutPanelOpen,
+  );
 
-      e.preventDefault();
-
-      const currentIndex = unitBuf.findIndex((u) => u.id === focusedUnitId);
-      let nextIndex: number;
-
-      if (e.shiftKey) {
-        nextIndex = currentIndex <= 0 ? unitBuf.length - 1 : currentIndex - 1;
-      } else {
-        nextIndex = currentIndex >= unitBuf.length - 1 ? 0 : currentIndex + 1;
-      }
-
-      setFocusedUnitId(unitBuf[nextIndex].id);
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [unitBuf, focusedUnitId]);
+  const toolboxOptions = [
+    {
+      icon: <Command size={20} />,
+      title: "快捷键说明",
+      onClick: () => setIsShortcutPanelOpen(true),
+    },
+    {
+      icon: <ReplaceAll size={20} />,
+      title: "批量替换",
+      onClick: () => {},
+    },
+    {
+      icon: <SquareArrowRight size={20} />,
+      title: "退出",
+      onClick: handleExit,
+    },
+  ];
 
   const canvas = (
     <div className="relative w-full h-full">
@@ -234,6 +274,9 @@ export default function BaseTranslator({
         onAddUnit={handleAddUnit}
         onDeleteUnit={handleDeleteUnit}
       />
+      <div className="absolute top-2 left-2">
+        <ToolboxDropdown options={toolboxOptions} />
+      </div>
       <div className="absolute top-2 right-1">
         <Paginator
           currPageIndex={pageIndex}
@@ -267,16 +310,6 @@ export default function BaseTranslator({
             onSaveClick={handleSave}
           />
         </div>
-        <button
-          onClick={handleExit}
-          title="退出"
-          className={
-            "p-1.5 shrink-0 border-l border-border " +
-            "text-muted-foreground hover:text-foreground transition-colors"
-          }
-        >
-          <LogOut size={14} />
-        </button>
       </div>
       <div className="flex-1 overflow-y-auto">
         <UnitList
@@ -290,5 +323,18 @@ export default function BaseTranslator({
     </>
   );
 
-  return <BaseTranslatorLayout canvas={canvas} sidebar={sidebar} />;
+  return (
+    <>
+      <BaseTranslatorLayout canvas={canvas} sidebar={sidebar} />
+      {isShortcutPanelOpen && (
+        <ShortcutPanel
+          fixedShortcuts={fixedShortcuts}
+          configurableShortcuts={configurableShortcuts}
+          defaultConfigurableShortcuts={defaultConfigurableShortcuts}
+          onUpdateConfigurableShortcuts={updateConfigurableShortcuts}
+          onClose={() => setIsShortcutPanelOpen(false)}
+        />
+      )}
+    </>
+  );
 }

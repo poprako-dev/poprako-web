@@ -131,25 +131,47 @@
   }
 }
 
-@layer components {
-  .toolbox-btn {
-    background-color: white;
-    border-style: solid;
-    border-width: 2px;
-    border-color: var(--color-border-green-200);
-    color: var(--color-green-500);
-    box-shadow: var(--shadow-sm);
-  }
+/* Global scrollbar styles (cross-browser) */
+/* WebKit browsers (Chrome / Edge / Safari) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
-  .toolbox-btn:hover {
-    box-shadow: var(--shadow-green-hover);
-  }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .toolbox-btn--open {
-    background-color: var(--color-green-500);
-    border-color: var(--color-green-500);
-    color: #ffffff;
-    box-shadow: var(--shadow-green-lg);
-    transform: rotate(45deg);
-  }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.06) transparent;
+}
+
+/* Utility: light/dark aware thumb color using CSS variables */
+:root {
+  --scroll-thumb: rgba(0, 0, 0, 0.06);
+  --scroll-thumb-hover: rgba(0, 0, 0, 0.12);
+}
+.dark {
+  --scroll-thumb: rgba(255, 255, 255, 0.06);
+  --scroll-thumb-hover: rgba(255, 255, 255, 0.12);
+}
+
+/* Apply variables for browsers that support them */
+::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover);
 }
