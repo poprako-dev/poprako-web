@@ -57,12 +57,8 @@ export default function BaseTranslator({
   const baselineUnitsRef = useRef<Unit[]>([]);
   const canvasRef = useRef<CanvasHandle>(null);
 
-  const {
-    fixedShortcuts,
-    configurableShortcuts,
-    defaultConfigurableShortcuts,
-    updateConfigurableShortcuts,
-  } = useShortcuts();
+  const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
+    useShortcuts();
 
   function withCleanState(units: Unit[]): Unit[] {
     return units.map((unit) => ({ ...unit, isDirty: false }));
@@ -330,7 +326,6 @@ export default function BaseTranslator({
         <ShortcutPanel
           fixedShortcuts={fixedShortcuts}
           configurableShortcuts={configurableShortcuts}
-          defaultConfigurableShortcuts={defaultConfigurableShortcuts}
           onUpdateConfigurableShortcuts={updateConfigurableShortcuts}
           onClose={() => setIsShortcutPanelOpen(false)}
         />

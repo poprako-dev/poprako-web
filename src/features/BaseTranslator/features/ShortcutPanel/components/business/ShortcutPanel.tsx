@@ -8,11 +8,11 @@ import {
   formatKeys,
   hasConflict,
 } from "../../types/types";
+import { useToastStore } from "@/components/ui/NotificationToast";
 
 type Props = {
   fixedShortcuts: FixedShortcut[];
   configurableShortcuts: ConfigurableShortcut[];
-  defaultConfigurableShortcuts: ConfigurableShortcut[];
   onUpdateConfigurableShortcuts: (next: ConfigurableShortcut[]) => void;
   onClose: () => void;
 };
@@ -20,12 +20,12 @@ type Props = {
 export default function ShortcutPanel({
   fixedShortcuts,
   configurableShortcuts,
-  defaultConfigurableShortcuts,
   onUpdateConfigurableShortcuts,
   onClose,
 }: Props) {
   const [recordingIndex, setRecordingIndex] = useState<number | null>(null);
   const recordedKeys = useRef(new Set<string>());
+  const showToast = useToastStore((s) => s.showToast);
 
   useEffect(() => {
     if (recordingIndex === null) return;
@@ -44,13 +44,14 @@ export default function ShortcutPanel({
           recordingIndex!,
           keysArray,
         );
-        const nextKeys = conflict
-          ? defaultConfigurableShortcuts[recordingIndex!].keys
-          : keysArray;
-        const updated = configurableShortcuts.map((s, i) =>
-          i === recordingIndex ? { ...s, keys: nextKeys } : s,
-        );
-        onUpdateConfigurableShortcuts(updated);
+        if (conflict) {
+          showToast("快捷键冲突，已保留原有设置", "error");
+        } else {
+          const updated = configurableShortcuts.map((s, i) =>
+            i === recordingIndex ? { ...s, keys: keysArray } : s,
+          );
+          onUpdateConfigurableShortcuts(updated);
+        }
         setRecordingIndex(null);
         recordedKeys.current.clear();
       }
@@ -66,7 +67,7 @@ export default function ShortcutPanel({
     recordingIndex,
     configurableShortcuts,
     onUpdateConfigurableShortcuts,
-    defaultConfigurableShortcuts,
+    showToast,
   ]);
 
   useEffect(() => {

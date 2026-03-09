@@ -1,0 +1,129 @@
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { 
+  X, 
+  Check, 
+  Info, 
+  AlertTriangle, 
+  AlertCircle 
+} from 'lucide-react';
+
+/**
+ * Toast 组件
+ * 背景改为纯白，颜色作用于边框 (Border) 和图标
+ */
+const Toast = ({ message, type = 'info', onClose }) => {
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  const handleClose = () => {
+    setIsLeaving(true);
+    setTimeout(onClose, 300);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleClose();
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 将颜色定义从背景色改为边框色和文本/图标颜色
+  const styles = {
+    info: 'border-blue-500 text-blue-600',
+    error: 'border-red-500 text-red-600',
+    success: 'border-green-500 text-green-600',
+    warning: 'border-amber-500 text-amber-600'
+  };
+
+  const icons = {
+    info: <Info size={16} />,
+    error: <AlertCircle size={16} />,
+    success: <Check size={16} />,
+    warning: <AlertTriangle size={16} />
+  };
+
+  return createPortal(
+    <div 
+      className={`
+        fixed top-8 left-1/2 -translate-x-1/2 z-[9999] transition-all
+        ${isLeaving 
+          ? 'opacity-0 -translate-y-8 duration-300 ease-in pointer-events-none' 
+          : 'opacity-100 translate-y-0 duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] animate-in fade-in zoom-in-95' 
+        }
+      `}
+    >
+      <div className={`bg-white border-2 ${styles[type]} px-3 py-2 rounded-lg shadow-xl flex items-center gap-1 w-fit max-w-[90vw] whitespace-nowrap`}>
+        <div className="flex-shrink-0 mr-2">{icons[type]}</div>
+        <span className="font-semibold text-sm tracking-tight text-slate-700">{message}</span>
+        <button 
+          onClick={handleClose}
+          className="ml-2 hover:bg-slate-100 p-1 rounded-md transition-colors flex-shrink-0 text-slate-400 hover:text-slate-600"
+        >
+          <X size={14} />
+        </button>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
+const App = () => {
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type) => {
+    setToast(null);
+    requestAnimationFrame(() => {
+      setToast({ message, type });
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
+
+      <div className="bg-white p-10 rounded-[1.5rem] shadow-xl border border-slate-100 max-w-md w-full text-center">
+        <h2 className="text-xl font-bold text-slate-800 mb-6">简约版 Toast 演示</h2>
+        
+        <div className="grid grid-cols-1 gap-3">
+          <button 
+            onClick={() => showToast("已连接到服务器", "info")}
+            className="px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all text-sm font-semibold"
+          >
+            信息提示 (Blue Border)
+          </button>
+
+          <button 
+            onClick={() => showToast("数据已成功同步", "success")}
+            className="px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all text-sm font-semibold"
+          >
+            成功提示 (Green Border)
+          </button>
+
+          <button 
+            onClick={() => showToast("操作失败，请重试", "error")}
+            className="px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all text-sm font-semibold"
+          >
+            错误提示 (Red Border)
+          </button>
+        </div>
+
+        <div className="mt-8 text-left bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <p className="text-[11px] text-slate-500 leading-relaxed font-mono">
+            UI UPDATES:<br/>
+            - 背景：纯白 (bg-white)<br/>
+            - 颜色：作用于边框 (border-2) 和图标<br/>
+            - 文本：深灰 (text-slate-700) 提高可读性
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
