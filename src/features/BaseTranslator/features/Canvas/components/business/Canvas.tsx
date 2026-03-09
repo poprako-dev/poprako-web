@@ -84,8 +84,10 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     y: number;
   } | null>(null);
   const windowHandlersRef = useRef<{
-    move: (e: MouseEvent) => void;
-    up: (e: MouseEvent) => void;
+    mouseMove: (e: MouseEvent) => void;
+    mouseUp: (e: MouseEvent) => void;
+    touchMove: (e: TouchEvent) => void;
+    touchEnd: (e: TouchEvent) => void;
   } | null>(null);
 
   // Reset transform when image source changes
@@ -109,8 +111,22 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
   useEffect(() => {
     return () => {
       if (windowHandlersRef.current) {
-        window.removeEventListener("mousemove", windowHandlersRef.current.move);
-        window.removeEventListener("mouseup", windowHandlersRef.current.up);
+        window.removeEventListener(
+          "mousemove",
+          windowHandlersRef.current.mouseMove,
+        );
+        window.removeEventListener(
+          "mouseup",
+          windowHandlersRef.current.mouseUp,
+        );
+        window.removeEventListener(
+          "touchmove",
+          windowHandlersRef.current.touchMove,
+        );
+        window.removeEventListener(
+          "touchend",
+          windowHandlersRef.current.touchEnd,
+        );
       }
     };
   }, []);
@@ -158,12 +174,12 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
 
     const threshold = type === "pan" ? PAN_THRESHOLD : MARKER_DRAG_THRESHOLD;
 
-    const handleMove = (e: MouseEvent) => {
+    const handleMoveAt = (clientX: number, clientY: number) => {
       const drag = dragRef.current;
       if (!drag) return;
 
-      const dx = e.clientX - drag.startX;
-      const dy = e.clientY - drag.startY;
+      const dx = clientX - drag.startX;
+      const dy = clientY - drag.startY;
 
       if (!drag.exceeded) {
         if (Math.sqrt(dx * dx + dy * dy) > threshold) {
@@ -199,30 +215,26 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
       }
     };
 
-    const handleUp = (e: MouseEvent) => {
+    const handleEndAt = (clientX: number, clientY: number) => {
       const drag = dragRef.current;
       dragRef.current = null;
       setIsPanning(false);
 
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", handleUp);
-      windowHandlersRef.current = null;
+      cleanup();
 
       if (!drag) return;
 
       if (!drag.exceeded) {
         if (drag.type === "pan") {
-          // Click on empty canvas → add bubble unit (left-click)
           const img = imgRef.current;
           if (!img) return;
           const rect = img.getBoundingClientRect();
-          const x = (e.clientX - rect.left) / rect.width;
-          const y = (e.clientY - rect.top) / rect.height;
+          const x = (clientX - rect.left) / rect.width;
+          const y = (clientY - rect.top) / rect.height;
           if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
             onAddUnit?.(x, y, true);
           }
         } else {
-          // Click on marker → focus
           onFocusUnit?.(drag.unitId!);
         }
       } else if (drag.type === "marker") {
@@ -241,9 +253,36 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
       }
     };
 
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", handleUp);
-    windowHandlersRef.current = { move: handleMove, up: handleUp };
+    const cleanup = () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      windowHandlersRef.current = null;
+    };
+
+    const handleMouseMove = (e: MouseEvent) =>
+      handleMoveAt(e.clientX, e.clientY);
+    const handleMouseUp = (e: MouseEvent) => handleEndAt(e.clientX, e.clientY);
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (touch) handleMoveAt(touch.clientX, touch.clientY);
+    };
+    const handleTouchEnd = (e: TouchEvent) => {
+      const touch = e.changedTouches[0];
+      if (touch) handleEndAt(touch.clientX, touch.clientY);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd);
+    windowHandlersRef.current = {
+      mouseMove: handleMouseMove,
+      mouseUp: handleMouseUp,
+      touchMove: handleTouchMove,
+      touchEnd: handleTouchEnd,
+    };
   }
 
   function handleCanvasMouseDown(e: React.MouseEvent) {
@@ -266,6 +305,26 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     startDrag("pan", e.clientX, e.clientY);
   }
 
+  function handleCanvasTouchStart(e: React.TouchEvent) {
+    if ((e.target as HTMLElement).closest("[data-marker]")) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    const img = imgRef.current;
+    if (!img) return;
+    const rect = img.getBoundingClientRect();
+    if (
+      touch.clientX < rect.left ||
+      touch.clientX > rect.right ||
+      touch.clientY < rect.top ||
+      touch.clientY > rect.bottom
+    )
+      return;
+
+    e.preventDefault();
+    startDrag("pan", touch.clientX, touch.clientY);
+  }
+
   function handleMarkerMouseDown(
     e: React.MouseEvent,
     unitId: string,
@@ -276,6 +335,19 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     e.preventDefault();
     e.stopPropagation();
     startDrag("marker", e.clientX, e.clientY, unitId, xCoord, yCoord);
+  }
+
+  function handleMarkerTouchStart(
+    e: React.TouchEvent,
+    unitId: string,
+    xCoord: number,
+    yCoord: number,
+  ) {
+    e.preventDefault();
+    e.stopPropagation();
+    const touch = e.touches[0];
+    if (!touch) return;
+    startDrag("marker", touch.clientX, touch.clientY, unitId, xCoord, yCoord);
   }
 
   function handleContextMenu(e: React.MouseEvent) {
@@ -346,6 +418,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
         isPanning ? "cursor-grabbing" : "cursor-default"
       }`}
       onMouseDown={handleCanvasMouseDown}
+      onTouchStart={handleCanvasTouchStart}
       onContextMenu={handleContextMenu}
       onWheel={handleWheel}
     >
@@ -400,6 +473,9 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                   }}
                   onMouseDown={(e) =>
                     handleMarkerMouseDown(e, unit.id, unit.xCoord, unit.yCoord)
+                  }
+                  onTouchStart={(e) =>
+                    handleMarkerTouchStart(e, unit.id, unit.xCoord, unit.yCoord)
                   }
                 >
                   <Marker
