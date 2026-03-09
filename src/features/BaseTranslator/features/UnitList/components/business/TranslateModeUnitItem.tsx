@@ -25,6 +25,12 @@ export default function TranslateModeUnitItem({
       const len = inputRef.current.value.length;
       inputRef.current.focus();
       inputRef.current.setSelectionRange(len, len);
+    } else if (
+      !isFocused &&
+      inputRef.current &&
+      document.activeElement === inputRef.current
+    ) {
+      inputRef.current.blur();
     }
   }, [isFocused]);
 

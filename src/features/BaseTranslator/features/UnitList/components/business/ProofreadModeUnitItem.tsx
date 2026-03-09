@@ -29,6 +29,12 @@ export default function ProofreadModeUnitItem({
       const len = proofRef.current.value.length;
       proofRef.current.focus();
       proofRef.current.setSelectionRange(len, len);
+    } else if (
+      !isFocused &&
+      proofRef.current &&
+      document.activeElement === proofRef.current
+    ) {
+      proofRef.current.blur();
     }
   }, [isFocused]);
 

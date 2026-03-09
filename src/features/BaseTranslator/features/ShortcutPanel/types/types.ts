@@ -25,7 +25,10 @@ const DISPLAY_KEY_MAP: Record<string, string> = {
 };
 
 export function formatKeys(keys: string[]): string {
-  return keys.map((k) => DISPLAY_KEY_MAP[k] ?? k).join(" + ");
+  return keys
+    .map((k) => DISPLAY_KEY_MAP[k] ?? k)
+    .map((s) => s.toUpperCase())
+    .join(" + ");
 }
 
 export function matchesShortcut(e: KeyboardEvent, keys: string[]): boolean {

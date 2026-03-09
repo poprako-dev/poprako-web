@@ -239,6 +239,17 @@ export default function BaseTranslator({
     isShortcutPanelOpen,
   );
 
+  useEffect(() => {
+    if (isShortcutPanelOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setFocusedUnitId(undefined);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isShortcutPanelOpen]);
+
   const toolboxOptions = [
     {
       icon: <Command size={20} />,
