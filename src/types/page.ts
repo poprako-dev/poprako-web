@@ -4,5 +4,5 @@ export type Page = {
   index: number;
   totalUnitCount: number;
   translatedUnitCount: number;
-  provedUnitCount: number;
+  proofreadUnitCount: number;
 };

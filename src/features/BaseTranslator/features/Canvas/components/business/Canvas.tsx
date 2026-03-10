@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { Unit } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
-import { unitIsTranslated, unitIsProved, unitFinalText } from "@/types/unit";
+import { unitIsTranslated, unitIsProofread, unitFinalText } from "@/types/unit";
 import Marker from "@/features/BaseTranslator/features/Marker";
 
 const PAN_THRESHOLD = 8;
@@ -484,7 +484,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     isCompleted={
                       mode === "translate"
                         ? unitIsTranslated(unit)
-                        : unitIsProved(unit)
+                        : unitIsProofread(unit)
                     }
                     isSelected={focusedUnitId === unit.id}
                     isDragging={isDraggingThis}

@@ -179,7 +179,7 @@ export default function BaseTranslator({
       isBubble,
       xCoord,
       yCoord,
-      proved: false,
+      isProofread: false,
     };
     commitUnits([...unitBufRef.current, { ...newUnit, isDirty: true }]);
     setFocusedUnitId(newUnit.id);

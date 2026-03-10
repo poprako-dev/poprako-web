@@ -23,7 +23,7 @@ const initialUnits: Unit[] = [
     isBubble: true,
     xCoord: 0,
     yCoord: 0,
-    proved: false,
+    isProofread: false,
     translatedText: "早安，今天的天气看起来非常不错。",
   },
   {
@@ -32,9 +32,9 @@ const initialUnits: Unit[] = [
     isBubble: true,
     xCoord: 0,
     yCoord: 0.1,
-    proved: true,
+    isProofread: true,
     translatedText: "这是原本的初翻文本。",
-    provedText: "这一行有校对文本，所以始终显示。",
+    proofreadText: "这一行有校对文本，所以始终显示。",
   },
   {
     id: "3",
@@ -42,7 +42,7 @@ const initialUnits: Unit[] = [
     isBubble: false,
     xCoord: 0,
     yCoord: 0.2,
-    proved: false,
+    isProofread: false,
     translatedText: "（远处传来的螺旋桨轰鸣声）",
   },
   {
@@ -51,7 +51,7 @@ const initialUnits: Unit[] = [
     isBubble: true,
     xCoord: 0,
     yCoord: 0.3,
-    proved: false,
+    isProofread: false,
     translatedText: "这一行没有校对文本且未选中，校对框已隐藏。",
   },
   {
@@ -60,7 +60,7 @@ const initialUnits: Unit[] = [
     isBubble: true,
     xCoord: 0,
     yCoord: 0.4,
-    proved: false,
+    isProofread: false,
     translatedText: "",
   },
 ];

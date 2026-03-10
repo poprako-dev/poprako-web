@@ -2,7 +2,11 @@ import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { Check, Copy, Eraser, X } from "lucide-react";
 import type { Unit } from "@/types/unit";
-import { unitIsProved, unitProvedText, unitTranslatedText } from "@/types/unit";
+import {
+  unitIsProofread,
+  unitProofreadText,
+  unitTranslatedText,
+} from "@/types/unit";
 import BaseUnitItem from "./BaseUnitItem";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
@@ -21,7 +25,7 @@ export default function ProofreadModeUnitItem({
   onModifyUnit,
 }: Props) {
   const proofRef = useRef<HTMLTextAreaElement>(null);
-  const hasProvedText = !!unitProvedText(unit);
+  const hasProofreadText = !!unitProofreadText(unit);
   const hasTranslatedText = !!unitTranslatedText(unit);
 
   useEffect(() => {
@@ -46,8 +50,8 @@ export default function ProofreadModeUnitItem({
     const next =
       textarea.value.substring(0, start) + char + textarea.value.substring(end);
     onModifyUnit?.(unit.id, {
-      provedText: next,
-      proved: next.trim().length > 0,
+      proofreadText: next,
+      isProofread: next.trim().length > 0,
     });
     setTimeout(() => {
       textarea.selectionStart = textarea.selectionEnd = start + char.length;
@@ -60,7 +64,7 @@ export default function ProofreadModeUnitItem({
       unit={unit}
       isFocused={isFocused}
       onSelect={onSelect}
-      isCompleted={unitIsProved(unit)}
+      isCompleted={unitIsProofread(unit)}
     >
       <div className="flex flex-col gap-1">
         {/* 初翻文本（只读展示） */}
@@ -72,7 +76,7 @@ export default function ProofreadModeUnitItem({
             placeholder="无翻译内容"
             className={clsx(
               "flex-1 text-[15px] cursor-default leading-relaxed",
-              hasProvedText
+              hasProofreadText
                 ? "text-gray-400"
                 : isFocused
                   ? "text-gray-900 font-medium"
@@ -80,37 +84,37 @@ export default function ProofreadModeUnitItem({
             )}
           />
           <button
-            title={unitIsProved(unit) ? "取消校对" : "确认校对"}
+            title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
             onClick={() =>
-              onModifyUnit?.(unit.id, { proved: !unitIsProved(unit) })
+              onModifyUnit?.(unit.id, { isProofread: !unitIsProofread(unit) })
             }
             className={clsx(
               "shrink-0 mt-0.5 p-0.5 rounded",
               "border border-gray-300",
-              unitIsProved(unit)
+              unitIsProofread(unit)
                 ? "text-gray-400 hover:text-gray-500 hover:border-gray-400"
                 : "text-gray-400 hover:text-green-500 hover:border-green-300",
               "transition-colors",
             )}
           >
-            {unitIsProved(unit) ? <X size={13} /> : <Check size={13} />}
+            {unitIsProofread(unit) ? <X size={13} /> : <Check size={13} />}
           </button>
         </div>
 
         {/* 校对框：仅在聚焦或已有校对内容时显示 */}
-        {(isFocused || hasProvedText) && (
+        {(isFocused || hasProofreadText) && (
           <>
-            {unit.translatedText && hasProvedText && (
+            {unit.translatedText && hasProofreadText && (
               <div className="w-12 h-px bg-gray-200" />
             )}
             <div className="flex items-start gap-1">
               <AutoResizeTextarea
                 ref={proofRef}
-                value={unit.provedText}
+                value={unit.proofreadText}
                 onChange={(val) =>
                   onModifyUnit?.(unit.id, {
-                    provedText: val,
-                    proved: val.trim().length > 0,
+                    proofreadText: val,
+                    isProofread: val.trim().length > 0,
                   })
                 }
                 placeholder="输入校对..."
@@ -119,15 +123,15 @@ export default function ProofreadModeUnitItem({
                   isFocused ? "text-gray-900 font-medium" : "text-gray-700",
                 )}
               />
-              {!hasProvedText && hasTranslatedText && (
+              {!hasProofreadText && hasTranslatedText && (
                 <button
                   title="从初翻复制"
                   onClick={() => {
                     const text = unitTranslatedText(unit);
                     if (text) {
                       onModifyUnit?.(unit.id, {
-                        provedText: text,
-                        proved: true,
+                        proofreadText: text,
+                        isProofread: true,
                       });
                     }
                   }}
@@ -141,13 +145,13 @@ export default function ProofreadModeUnitItem({
                   <Copy size={13} />
                 </button>
               )}
-              {hasProvedText && (
+              {hasProofreadText && (
                 <button
                   title="清空校对内容"
                   onClick={() =>
                     onModifyUnit?.(unit.id, {
-                      provedText: undefined,
-                      proved: false,
+                      proofreadText: undefined,
+                      isProofread: false,
                     })
                   }
                   className={clsx(

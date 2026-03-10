@@ -13,7 +13,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.22,
     yCoord: 0.18,
-    proved: false,
+    isProofread: false,
     translatedText: "——你在这里啊，终于找到你了。",
   },
   {
@@ -22,7 +22,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.65,
     yCoord: 0.28,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "3",
@@ -30,9 +30,9 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.38,
     yCoord: 0.52,
-    proved: true,
+    isProofread: true,
     translatedText: "不……这不可能。",
-    provedText: "不……这怎么可能。",
+    proofreadText: "不……这怎么可能。",
   },
   {
     id: "4",
@@ -40,7 +40,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.72,
     yCoord: 0.62,
-    proved: false,
+    isProofread: false,
     translatedText: "冷静下来，听我说。",
   },
   {
@@ -49,7 +49,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.48,
     yCoord: 0.8,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "6",
@@ -57,7 +57,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.12,
     yCoord: 0.12,
-    proved: false,
+    isProofread: false,
     translatedText: "这里发生了什么？",
   },
   {
@@ -66,7 +66,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.28,
     yCoord: 0.2,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "8",
@@ -74,7 +74,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.54,
     yCoord: 0.33,
-    proved: false,
+    isProofread: false,
     translatedText: "快点！",
   },
   {
@@ -83,9 +83,9 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.41,
     yCoord: 0.45,
-    proved: true,
+    isProofread: true,
     translatedText: "别乱动。",
-    provedText: "别动！",
+    proofreadText: "别动！",
   },
   {
     id: "10",
@@ -93,7 +93,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.62,
     yCoord: 0.5,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "11",
@@ -101,7 +101,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.33,
     yCoord: 0.6,
-    proved: false,
+    isProofread: false,
     translatedText: "你还好吗？",
   },
   {
@@ -110,7 +110,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.7,
     yCoord: 0.22,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "13",
@@ -118,9 +118,9 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.18,
     yCoord: 0.7,
-    proved: true,
+    isProofread: true,
     translatedText: "我没事。",
-    provedText: "我没事，谢谢。",
+    proofreadText: "我没事，谢谢。",
   },
   {
     id: "14",
@@ -128,7 +128,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.9,
     yCoord: 0.4,
-    proved: false,
+    isProofread: false,
     translatedText: "我们得走了。",
   },
   {
@@ -137,7 +137,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.44,
     yCoord: 0.88,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "16",
@@ -145,7 +145,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.2,
     yCoord: 0.3,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "17",
@@ -153,7 +153,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.6,
     yCoord: 0.12,
-    proved: false,
+    isProofread: false,
     translatedText: "看那边！",
   },
   {
@@ -162,7 +162,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.27,
     yCoord: 0.44,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "19",
@@ -170,9 +170,9 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.5,
     yCoord: 0.5,
-    proved: true,
+    isProofread: true,
     translatedText: "别信他。",
-    provedText: "别听他的话。",
+    proofreadText: "别听他的话。",
   },
   {
     id: "20",
@@ -180,7 +180,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.66,
     yCoord: 0.66,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "21",
@@ -188,7 +188,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.11,
     yCoord: 0.2,
-    proved: false,
+    isProofread: false,
     translatedText: "怎么可能？",
   },
   {
@@ -197,7 +197,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.35,
     yCoord: 0.27,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "23",
@@ -205,7 +205,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.46,
     yCoord: 0.32,
-    proved: false,
+    isProofread: false,
     translatedText: "小心！",
   },
   {
@@ -214,9 +214,9 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.58,
     yCoord: 0.42,
-    proved: true,
+    isProofread: true,
     translatedText: "我来帮你。",
-    provedText: "我会帮你。",
+    proofreadText: "我会帮你。",
   },
   {
     id: "25",
@@ -224,7 +224,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.78,
     yCoord: 0.55,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "26",
@@ -232,7 +232,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.49,
     yCoord: 0.74,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "27",
@@ -240,7 +240,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.36,
     yCoord: 0.82,
-    proved: false,
+    isProofread: false,
     translatedText: "别放弃。",
   },
   {
@@ -249,7 +249,7 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.82,
     yCoord: 0.2,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "29",
@@ -257,7 +257,7 @@ const mockUnits: Unit[] = [
     isBubble: true,
     xCoord: 0.14,
     yCoord: 0.58,
-    proved: false,
+    isProofread: false,
   },
   {
     id: "30",
@@ -265,9 +265,9 @@ const mockUnits: Unit[] = [
     isBubble: false,
     xCoord: 0.95,
     yCoord: 0.92,
-    proved: true,
+    isProofread: true,
     translatedText: "结束了。",
-    provedText: "终于结束了。",
+    proofreadText: "终于结束了。",
   },
 ];
 
@@ -278,28 +278,28 @@ const mockProject: Project = {
   pageCount: 3,
   totalUnitCount: 15,
   translatedUnitCount: 8,
-  provedUnitCount: 3,
+  proofreadUnitCount: 3,
   pages: [
     {
       id: "page-1",
       index: 0,
       totalUnitCount: 5,
       translatedUnitCount: 3,
-      provedUnitCount: 1,
+      proofreadUnitCount: 1,
     },
     {
       id: "page-2",
       index: 1,
       totalUnitCount: 5,
       translatedUnitCount: 3,
-      provedUnitCount: 1,
+      proofreadUnitCount: 1,
     },
     {
       id: "page-3",
       index: 2,
       totalUnitCount: 5,
       translatedUnitCount: 2,
-      provedUnitCount: 1,
+      proofreadUnitCount: 1,
     },
   ],
 };

@@ -24,8 +24,8 @@ export default function UnitList({
   const ItemComponent =
     mode === "translate" ? TranslateModeUnitItem : ProofreadModeUnitItem;
 
-  const proveAll = () => {
-    units.forEach((u) => onModifyUnit?.(u.id, { proved: true }));
+  const proofreadAll = () => {
+    units.forEach((u) => onModifyUnit?.(u.id, { isProofread: true }));
   };
 
   return (
@@ -45,7 +45,7 @@ export default function UnitList({
         <div className="flex justify-center px-0 py-1">
           <button
             title="全部确认校对"
-            onClick={proveAll}
+            onClick={proofreadAll}
             className={clsx(
               "p-1 rounded",
               "text-gray-400 hover:text-gray-600 transition-colors",

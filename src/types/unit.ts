@@ -15,8 +15,8 @@ export type Unit = {
   translatorId?: string;
   translatorCommnet?: string;
 
-  proved: boolean;
-  provedText?: string;
+  isProofread: boolean;
+  proofreadText?: string;
   proofreaderId?: string;
   proofreaderComment?: string;
 
@@ -29,13 +29,13 @@ export function unitIsTranslated(unit: Unit): boolean {
   return unit.translatedText !== undefined && unit.translatedText != "";
 }
 
-export function unitIsProved(unit: Unit): boolean {
-  return unit.proved;
+export function unitIsProofread(unit: Unit): boolean {
+  return unit.isProofread;
 }
 
 export function unitFinalText(unit: Unit): string | null {
-  if (unit.provedText && unit.provedText != "") {
-    return unit.provedText;
+  if (unit.proofreadText && unit.proofreadText != "") {
+    return unit.proofreadText;
   }
   if (unit.translatedText && unit.translatedText != "") {
     return unit.translatedText;
@@ -52,9 +52,9 @@ export function unitTranslatedText(unit: Unit): string | null {
   return null;
 }
 
-export function unitProvedText(unit: Unit): string | null {
-  if (unit.provedText && unit.provedText != "") {
-    return unit.provedText;
+export function unitProofreadText(unit: Unit): string | null {
+  if (unit.proofreadText && unit.proofreadText != "") {
+    return unit.proofreadText;
   }
 
   return null;
@@ -89,7 +89,7 @@ export function isUnitSame(rhs: Unit, lhs: Unit): boolean {
   if (rhs.isBubble !== lhs.isBubble) {
     return false;
   }
-  if (rhs.proved !== lhs.proved) {
+  if (rhs.isProofread !== lhs.isProofread) {
     return false;
   }
   if (rhs.translatorId !== lhs.translatorId) {
@@ -101,7 +101,7 @@ export function isUnitSame(rhs: Unit, lhs: Unit): boolean {
   if (unitTranslatedText(rhs) !== unitTranslatedText(lhs)) {
     return false;
   }
-  if (unitProvedText(rhs) !== unitProvedText(lhs)) {
+  if (unitProofreadText(rhs) !== unitProofreadText(lhs)) {
     return false;
   }
   if (unitTranslatorComment(rhs) !== unitTranslatorComment(lhs)) {

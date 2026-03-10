@@ -11,7 +11,7 @@ export type Project = {
 
   totalUnitCount: number;
   translatedUnitCount: number;
-  provedUnitCount: number;
+  proofreadUnitCount: number;
 
   pages: Page[];
 };
