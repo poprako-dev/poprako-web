@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import BaseTranslator from "@/features/BaseTranslator/components/business/BaseTranslator";
 import type { Unit } from "@/types/unit";
 import type { Project } from "@/types/project";
+import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 
 const DEMO_IMAGE =
   "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80";
@@ -329,8 +330,8 @@ export const WithProofread: Story = {
     isCurrUserProofreader: true,
     onLoadUnits: async (_pageId: string) => mockUnits,
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
-    onUpsertUnits: async (pageId: string, units: Unit[]) => {
-      console.log("[mock] onUpsertUnits", pageId, units);
+    onSaveUnits: async (pageId: string, diff: UnitDiff) => {
+      console.log("[mock] onSaveUnits", pageId, diff);
     },
     onExit: () => {
       console.log("[mock] onExit");
@@ -344,8 +345,8 @@ export const TranslatorOnly: Story = {
     isCurrUserProofreader: false,
     onLoadUnits: async (_pageId: string) => mockUnits,
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
-    onUpsertUnits: async (pageId: string, units: Unit[]) => {
-      console.log("[mock] onUpsertUnits", pageId, units);
+    onSaveUnits: async (pageId: string, diff: UnitDiff) => {
+      console.log("[mock] onSaveUnits", pageId, diff);
     },
     onExit: () => {
       console.log("[mock] onExit");
@@ -359,8 +360,8 @@ export const EmptyUnits: Story = {
     isCurrUserProofreader: true,
     onLoadUnits: async (_pageId: string) => [],
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
-    onUpsertUnits: async (pageId: string, units: Unit[]) => {
-      console.log("[mock] onUpsertUnits", pageId, units);
+    onSaveUnits: async (pageId: string, diff: UnitDiff) => {
+      console.log("[mock] onSaveUnits", pageId, diff);
     },
     onExit: () => {
       console.log("[mock] onExit");

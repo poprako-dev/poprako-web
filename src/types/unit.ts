@@ -19,10 +19,6 @@ export type Unit = {
   proofreadText?: string;
   proofreaderId?: string;
   proofreaderComment?: string;
-
-  // 是否有未保存的修改，用于辨别当前 unit
-  // 是否需要在必要时候被刷入 buffer 以及远程
-  isDirty?: boolean;
 };
 
 export function unitIsTranslated(unit: Unit): boolean {

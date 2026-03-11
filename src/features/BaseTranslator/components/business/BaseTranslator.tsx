@@ -14,6 +14,8 @@ import ShortcutPanel from "@/features/BaseTranslator/features/ShortcutPanel";
 import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
+import { useToastStore } from "@/components/ui/NotificationToast";
+import type { UnitDiff, UnitPatch } from "../../types/type";
 
 type Props = {
   project: Project;
@@ -23,7 +25,7 @@ type Props = {
   // BaseTranslator 为了减少 IO，采用内置 buffer 来缓存当前页的 units 的修改
   // onUpsertUnits 的默认调用时机是：翻页时、退出 BaseTranslator 时，
   // 以及一个手动的 "保存" 按钮被按下时
-  onUpsertUnits: (pageId: string, units: Unit[]) => Promise<void>;
+  onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
   // 懒加载的图片 URL 获取器，BaseTranslator 只负责在需要时调用它来获取图片 URL
   onLoadPageImage: (pageId: string) => Promise<string>;
   onExit: () => void;
@@ -35,7 +37,7 @@ type Props = {
 export default function BaseTranslator({
   project,
   onLoadUnits,
-  onUpsertUnits,
+  onSaveUnits,
   onLoadPageImage,
   onExit,
   isCurrUserProofreader,
@@ -48,53 +50,57 @@ export default function BaseTranslator({
   const [mode, setMode] = useState<TranslatorMode>("translate");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
-  const [isRelocationEnabled, setIsRelocationEnabled] = useState(true);
+  const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
 
-  const isDirty = useRef(false);
   const isNavigating = useRef(false);
+  const isSaving = useRef(false);
   const unitBufRef = useRef<Unit[]>([]);
   const baselineUnitsRef = useRef<Unit[]>([]);
   const canvasRef = useRef<CanvasHandle>(null);
 
+  const showToast = useToastStore((s) => s.showToast);
+
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
     useShortcuts();
 
-  function withCleanState(units: Unit[]): Unit[] {
-    return units.map((unit) => ({ ...unit, isDirty: false }));
-  }
-
-  function withDirtyFlags(units: Unit[], baseline: Unit[]): Unit[] {
-    const baselineById = new Map(baseline.map((unit) => [unit.id, unit]));
-
-    return units.map((unit) => {
-      const base = baselineById.get(unit.id);
-      const nextDirty = !base || !isUnitSame(unit, base);
-      return { ...unit, isDirty: nextDirty };
-    });
-  }
-
-  function hasUnitChanges(units: Unit[], baseline: Unit[]): boolean {
-    if (units.length !== baseline.length) {
-      return true;
-    }
-
-    const baselineById = new Map(baseline.map((unit) => [unit.id, unit]));
-    for (const unit of units) {
-      const base = baselineById.get(unit.id);
-      if (!base || !isUnitSame(unit, base)) {
-        return true;
+  function buildUnitPatch(current: Unit, baseline: Unit): UnitPatch {
+    const patch: UnitPatch = { id: current.id };
+    (Object.keys(current) as (keyof Unit)[]).forEach((key) => {
+      if (key !== "id" && current[key] !== baseline[key]) {
+        (patch as Record<string, unknown>)[key] = current[key];
       }
-    }
+    });
+    return patch;
+  }
 
-    return false;
+  function buildUnitDiff(current: Unit[], baseline: Unit[]): UnitDiff {
+    const baselineById = new Map(baseline.map((u) => [u.id, u]));
+    const currentById = new Map(current.map((u) => [u.id, u]));
+
+    const insert = current.filter((u) => !baselineById.has(u.id));
+    const modify = current
+      .filter((u) => {
+        const base = baselineById.get(u.id);
+        return base !== undefined && !isUnitSame(u, base);
+      })
+      .map((u) => buildUnitPatch(u, baselineById.get(u.id)!));
+    const del = baseline.filter((u) => !currentById.has(u.id)).map((u) => u.id);
+
+    return { insert, modify, delete: del };
+  }
+
+  function isDiffEmpty(diff: UnitDiff): boolean {
+    return (
+      diff.insert.length === 0 &&
+      diff.modify.length === 0 &&
+      diff.delete.length === 0
+    );
   }
 
   function commitUnits(nextUnits: Unit[]) {
-    const nextWithDirty = withDirtyFlags(nextUnits, baselineUnitsRef.current);
-    unitBufRef.current = nextWithDirty;
-    isDirty.current = hasUnitChanges(nextWithDirty, baselineUnitsRef.current);
-    setUnitBuf(nextWithDirty);
+    unitBufRef.current = nextUnits;
+    setUnitBuf(nextUnits);
   }
 
   async function loadPage(idx: number) {
@@ -107,13 +113,11 @@ export default function BaseTranslator({
         onLoadUnits(page.id),
         onLoadPageImage(page.id),
       ]);
-      const cleanUnits = withCleanState(units);
-      baselineUnitsRef.current = cleanUnits;
-      unitBufRef.current = cleanUnits;
-      setUnitBuf(cleanUnits);
+      baselineUnitsRef.current = units;
+      unitBufRef.current = units;
+      setUnitBuf(units);
       setImageUrl(img);
       setFocusedUnitId(undefined);
-      isDirty.current = false;
     } finally {
       setIsLoadingPage(false);
     }
@@ -127,13 +131,29 @@ export default function BaseTranslator({
   }, []);
 
   async function flushIfDirty() {
-    if (!isDirty.current) return;
-    await onUpsertUnits(project.pages[pageIndex].id, unitBufRef.current);
-    const cleanUnits = withCleanState(unitBufRef.current);
-    baselineUnitsRef.current = cleanUnits;
-    unitBufRef.current = cleanUnits;
-    setUnitBuf(cleanUnits);
-    isDirty.current = false;
+    if (isSaving.current) return;
+    const diff = buildUnitDiff(unitBufRef.current, baselineUnitsRef.current);
+    if (isDiffEmpty(diff)) return;
+    isSaving.current = true;
+    try {
+      await onSaveUnits(project.pages[pageIndex].id, diff);
+      baselineUnitsRef.current = unitBufRef.current;
+    } catch (err) {
+      const summary =
+        `insert:${diff.insert.length} ` +
+        `modify:${diff.modify.length} ` +
+        `delete:${diff.delete.length}`;
+      console.error(
+        `[BaseTranslator] 保存失败 pageId=${
+          project.pages[pageIndex].id
+        } diff=${summary}`,
+        err,
+      );
+      showToast("保存失败，请重试", "error");
+      throw err;
+    } finally {
+      isSaving.current = false;
+    }
   }
 
   async function handleNavigate(newIndex: number) {
@@ -142,6 +162,8 @@ export default function BaseTranslator({
     try {
       await flushIfDirty();
       await loadPage(newIndex);
+    } catch {
+      // 保存失败时阻止翻页，toast 已在 flushIfDirty 中显示
     } finally {
       isNavigating.current = false;
     }
@@ -152,8 +174,12 @@ export default function BaseTranslator({
   }
 
   async function handleExit() {
-    await flushIfDirty();
-    onExit();
+    try {
+      await flushIfDirty();
+      onExit();
+    } catch {
+      // 保存失败时阻止退出，toast 已在 flushIfDirty 中显示
+    }
   }
 
   function handleModifyUnit(unitId: string, updates: Partial<Unit>) {
@@ -181,7 +207,7 @@ export default function BaseTranslator({
       yCoord,
       isProofread: false,
     };
-    commitUnits([...unitBufRef.current, { ...newUnit, isDirty: true }]);
+    commitUnits([...unitBufRef.current, newUnit]);
     setFocusedUnitId(newUnit.id);
   }
 

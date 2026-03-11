@@ -46,14 +46,10 @@ export default function Paginator({
 
   return (
     <div
-      style={{
-        transform: "scale(0.8)",
-        transformOrigin: "center",
-        opacity: 0.85,
-      }}
+      style={{ opacity: 0.85 }}
       className={clsx(
         "inline-flex items-stretch",
-        "h-10 w-40",
+        "h-8 w-32",
         "bg-white/95 backdrop-blur-md",
         "rounded-md shadow-2xl border border-black/5",
         "overflow-hidden select-none",
@@ -72,12 +68,12 @@ export default function Paginator({
           "active:bg-gray-200/50",
         )}
       >
-        <ChevronLeft size={18} className="text-gray-700" />
+        <ChevronLeft size={14} className="text-gray-700" />
       </button>
 
       <div
         className={clsx(
-          "flex flex-none items-center justify-center w-20",
+          "flex flex-none items-center justify-center w-16",
           "border-x border-gray-100 bg-gray-50/20",
         )}
       >
@@ -87,7 +83,7 @@ export default function Paginator({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className={clsx(
-                "w-8 h-full text-center text-sm font-bold",
+                "w-6 h-full text-center text-sm font-bold",
                 "bg-transparent border-none focus:outline-none",
                 "text-gray-900 p-0",
               )}
@@ -103,19 +99,19 @@ export default function Paginator({
             <span className="text-xs text-gray-300 font-light select-none">
               /
             </span>
-            <span className="text-sm text-gray-500 font-semibold w-8 text-center">
+            <span className="text-sm text-gray-500 font-semibold w-6 text-center">
               {totalPageCount}
             </span>
           </>
         ) : (
           <>
-            <span className="text-sm text-gray-900 font-bold w-8 text-center">
+            <span className="text-sm text-gray-900 font-bold w-6 text-center">
               {displayPage}
             </span>
             <span className="text-xs text-gray-300 font-light select-none">
               /
             </span>
-            <span className="text-sm text-gray-500 font-semibold w-8 text-center">
+            <span className="text-sm text-gray-500 font-semibold w-6 text-center">
               {totalPageCount}
             </span>
           </>
@@ -135,7 +131,7 @@ export default function Paginator({
           "active:bg-gray-200/50",
         )}
       >
-        <ChevronRight size={18} className="text-gray-700" />
+        <ChevronRight size={14} className="text-gray-700" />
       </button>
     </div>
   );

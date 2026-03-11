@@ -93,7 +93,7 @@ export default function ShortcutPanel({
     >
       <div
         className={clsx(
-          "bg-background w-full max-w-4xl",
+          "bg-background w-full max-w-3xl",
           "rounded-lg shadow-lg overflow-hidden",
         )}
         onClick={(e) => e.stopPropagation()}
@@ -101,10 +101,10 @@ export default function ShortcutPanel({
         <div
           className={clsx(
             "flex justify-between items-center",
-            "px-6 py-3 border-b border-border",
+            "px-4 py-2 border-b border-border",
           )}
         >
-          <span className="font-bold text-foreground">快捷键设置</span>
+          <span className="font-bold text-foreground text-sm">快捷键设置</span>
           <button
             className={clsx(
               "text-muted-foreground",
@@ -112,53 +112,55 @@ export default function ShortcutPanel({
             )}
             onClick={onClose}
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
 
-        <div className="p-8">
+        <div className="p-6">
           <div
             className={clsx(
-              "grid grid-cols-2 gap-x-16 gap-y-5",
-              "mb-10 pb-4",
+              "grid grid-cols-2 gap-x-12 gap-y-3",
+              "mb-6 pb-3",
               "border-b border-dashed border-border",
             )}
           >
             {fixedShortcuts.map((item, index) => (
               <div
                 key={index}
-                className={clsx("grid grid-cols-2", "items-center text-sm")}
+                className={clsx("grid grid-cols-2", "items-center text-xs")}
               >
-                <span className="text-muted-foreground">{item.label}</span>
-                <span className={clsx("text-foreground font-medium")}>
+                <span className="text-muted-foreground text-xs">
+                  {item.label}
+                </span>
+                <span className={clsx("text-foreground font-medium text-xs")}>
                   {formatKeys(item.keys)}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className={clsx("grid grid-cols-2", "gap-x-16 gap-y-6")}>
+          <div className={clsx("grid grid-cols-2", "gap-x-12 gap-y-4")}>
             {configurableShortcuts.map((s, index) => (
               <div
                 key={index}
                 className={clsx("grid grid-cols-2 items-center")}
               >
-                <span className={clsx("text-muted-foreground text-sm")}>
+                <span className={clsx("text-muted-foreground text-xs")}>
                   {s.label}
                 </span>
                 <div
                   onClick={() => setRecordingIndex(index)}
                   className={clsx(
-                    "h-9 px-3",
+                    "h-7 px-2",
                     "flex items-center rounded border",
-                    "text-sm transition-all",
+                    "text-xs transition-all",
                     "select-none cursor-pointer",
                     recordingIndex === index
                       ? clsx(
                           "border-primary",
                           "bg-primary/10",
                           "text-primary",
-                          "ring-2 ring-primary/20",
+                          "ring-1 ring-primary/20",
                         )
                       : clsx(
                           "border-border",

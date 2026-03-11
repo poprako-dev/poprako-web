@@ -32,7 +32,11 @@ export default function ToolboxDropdown({ options }: Props) {
   return (
     <div>
       {/* 相对定位组件容器，包含按钮和下拉栏  */}
-      <div className={clsx("relative")} ref={dropdownRef}>
+      <div
+        style={{ opacity: 0.85 }}
+        className={clsx("relative")}
+        ref={dropdownRef}
+      >
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={clsx(
