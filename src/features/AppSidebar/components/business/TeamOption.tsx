@@ -1,4 +1,4 @@
-import { Globe2, ChevronDown, Check } from "lucide-react";
+import { Globe2, Check } from "lucide-react";
 import clsx from "clsx";
 import type { TeamConfig } from "../../types/types";
 

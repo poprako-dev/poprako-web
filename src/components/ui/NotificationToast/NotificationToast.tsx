@@ -26,6 +26,7 @@ const iconMap: Record<ToastType, React.ReactNode> = {
   success: <Check size={16} />,
 };
 
+// 全局使用的通知弹窗
 export default function NotificationToast() {
   const { toast, hideToast } = useToastStore();
   const [isLeaving, setIsLeaving] = useState(false);

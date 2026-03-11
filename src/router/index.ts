@@ -1,4 +1,5 @@
 import { createElement, lazy, Suspense } from "react";
+import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
 import { createBrowserRouter } from "react-router-dom";
 import AppLayout from "@/layouts/AppLayout";
 import WorkspacePage from "@/pages/WorkspacePage";
@@ -11,7 +12,7 @@ export const router = createBrowserRouter([
     element: createElement(AppLayout),
     errorElement: createElement(
       Suspense,
-      { fallback: null },
+      { fallback: createElement(LoadingEllipsis) },
       createElement(lazy(() => import("@/pages/ErrorPage"))),
     ),
     children: [
