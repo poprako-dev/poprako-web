@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { Check, Copy, Eraser, X } from "lucide-react";
-import type { Unit } from "@/types/unit";
 import {
+  unitId,
   unitIsProofread,
   unitProofreadText,
   unitTranslatedText,
+  type Unit,
+  type UnitUpdate,
 } from "@/types/unit";
 import BaseUnitItem from "./BaseUnitItem";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -15,7 +17,7 @@ type Props = {
   unit: Unit;
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
-  onModifyUnit?: (unitId: string, updates: Partial<Unit>) => void;
+  onModifyUnit?: (unitId: string, updates: UnitUpdate) => void;
 };
 
 export default function ProofreadModeUnitItem({
@@ -49,7 +51,7 @@ export default function ProofreadModeUnitItem({
     const end = textarea.selectionEnd;
     const next =
       textarea.value.substring(0, start) + char + textarea.value.substring(end);
-    onModifyUnit?.(unit.id, {
+    onModifyUnit?.(unitId(unit), {
       proofreadText: next,
       isProofread: next.trim().length > 0,
     });
@@ -70,7 +72,7 @@ export default function ProofreadModeUnitItem({
         {/* 初翻文本（只读展示） */}
         <div className="flex items-start gap-1">
           <AutoResizeTextarea
-            value={unit.translatedText}
+            value={unitTranslatedText(unit) ?? undefined}
             readOnly
             onChange={() => {}}
             placeholder="无翻译内容"
@@ -86,7 +88,9 @@ export default function ProofreadModeUnitItem({
           <button
             title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
             onClick={() =>
-              onModifyUnit?.(unit.id, { isProofread: !unitIsProofread(unit) })
+              onModifyUnit?.(unitId(unit), {
+                isProofread: !unitIsProofread(unit),
+              })
             }
             className={clsx(
               "shrink-0 mt-0.5 p-0.5 rounded",
@@ -104,15 +108,15 @@ export default function ProofreadModeUnitItem({
         {/* 校对框：仅在聚焦或已有校对内容时显示 */}
         {(isFocused || hasProofreadText) && (
           <>
-            {unit.translatedText && hasProofreadText && (
+            {unitTranslatedText(unit) && hasProofreadText && (
               <div className="w-12 h-px bg-gray-200" />
             )}
             <div className="flex items-start gap-1">
               <AutoResizeTextarea
                 ref={proofRef}
-                value={unit.proofreadText}
+                value={unitProofreadText(unit) ?? undefined}
                 onChange={(val) =>
-                  onModifyUnit?.(unit.id, {
+                  onModifyUnit?.(unitId(unit), {
                     proofreadText: val,
                     isProofread: val.trim().length > 0,
                   })
@@ -129,7 +133,7 @@ export default function ProofreadModeUnitItem({
                   onClick={() => {
                     const text = unitTranslatedText(unit);
                     if (text) {
-                      onModifyUnit?.(unit.id, {
+                      onModifyUnit?.(unitId(unit), {
                         proofreadText: text,
                         isProofread: true,
                       });
@@ -149,7 +153,7 @@ export default function ProofreadModeUnitItem({
                 <button
                   title="清空校对内容"
                   onClick={() =>
-                    onModifyUnit?.(unit.id, {
+                    onModifyUnit?.(unitId(unit), {
                       proofreadText: undefined,
                       isProofread: false,
                     })

@@ -1,5 +1,6 @@
+import clsx from "clsx";
 import { useEffect, useRef } from "react";
-import type { Unit } from "@/types/unit";
+import { unitId, unitIndex, unitIsBubble, type Unit } from "@/types/unit";
 
 type Props = {
   unit: Unit;
@@ -18,7 +19,7 @@ export default function BaseUnitItem({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const leftBorderColor = unit.isBubble
+  const leftBorderColor = unitIsBubble(unit)
     ? "border-pink-300"
     : "border-amber-300";
   const rightIndicatorColor = isCompleted
@@ -37,10 +38,12 @@ export default function BaseUnitItem({
   return (
     <div
       ref={containerRef}
-      onMouseDown={() => onSelect?.(unit.id)}
-      className={`relative cursor-text transition-all duration-75 flex items-stretch border-b border-gray-100 last:border-b-0 ${
-        isFocused ? "bg-gray-100/60 z-10" : "bg-white hover:bg-gray-50"
-      }`}
+      onMouseDown={() => onSelect?.(unitId(unit))}
+      className={clsx(
+        "relative flex cursor-text items-stretch border-b border-gray-100",
+        "last:border-b-0 transition-all duration-75",
+        isFocused ? "z-10 bg-gray-100/60" : "bg-white hover:bg-gray-50",
+      )}
     >
       <div
         className={`transition-all duration-150 shrink-0 ${leftBorderColor} border-l-[3px] ${
@@ -49,11 +52,10 @@ export default function BaseUnitItem({
       />
 
       <div
-        className={`w-8 flex items-center justify-center shrink-0 text-xs font-bold font-mono tracking-tighter ${
-          isFocused ? "text-gray-500" : "text-gray-300"
-        }`}
+        className={`w-8 flex items-center justify-center shrink-0 text-xs font-bold font-mono
+          tracking-tighter ${isFocused ? "text-gray-500" : "text-gray-300"}`}
       >
-        {(unit.index + 1).toString().padStart(2, "0")}
+        {(unitIndex(unit) + 1).toString().padStart(2, "0")}
       </div>
 
       <div className="flex-1 flex flex-col justify-center px-2 py-2">

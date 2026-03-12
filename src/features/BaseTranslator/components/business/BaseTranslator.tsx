@@ -2,7 +2,18 @@ import { useState, useEffect, useRef } from "react";
 import { SquareArrowRight, Command, ReplaceAll } from "lucide-react";
 import Paginator from "@/components/ui/Paginator";
 import ToolboxDropdown from "@/features/ToolboxDropdown";
-import { isUnitSame, type Unit } from "@/types/unit";
+import {
+  applyUnitUpdates,
+  createUnit,
+  createUnitPatch,
+  isUnitSame,
+  modifyUnitIndex,
+  modifyUnitPosition,
+  unitPosition,
+  unitId,
+  type Unit,
+  type UnitUpdate,
+} from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 import type { Project } from "@/types/project";
 import Canvas, {
@@ -15,7 +26,7 @@ import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
 import { useToastStore } from "@/components/ui/NotificationToast";
-import type { UnitDiff, UnitPatch } from "../../types/type";
+import type { UnitDiff } from "../../types/type";
 
 type Props = {
   project: Project;
@@ -64,28 +75,24 @@ export default function BaseTranslator({
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
     useShortcuts();
 
-  function buildUnitPatch(current: Unit, baseline: Unit): UnitPatch {
-    const patch: UnitPatch = { id: current.id };
-    (Object.keys(current) as (keyof Unit)[]).forEach((key) => {
-      if (key !== "id" && current[key] !== baseline[key]) {
-        (patch as Record<string, unknown>)[key] = current[key];
-      }
-    });
-    return patch;
-  }
-
   function buildUnitDiff(current: Unit[], baseline: Unit[]): UnitDiff {
-    const baselineById = new Map(baseline.map((u) => [u.id, u]));
-    const currentById = new Map(current.map((u) => [u.id, u]));
+    const baselineById = new Map(baseline.map((unit) => [unitId(unit), unit]));
+    const currentById = new Map(current.map((unit) => [unitId(unit), unit]));
 
-    const insert = current.filter((u) => !baselineById.has(u.id));
+    const insert = current.filter((unit) => !baselineById.has(unitId(unit)));
     const modify = current
-      .filter((u) => {
-        const base = baselineById.get(u.id);
-        return base !== undefined && !isUnitSame(u, base);
+      .filter((unit) => {
+        const baselineUnit = baselineById.get(unitId(unit));
+        return baselineUnit !== undefined && !isUnitSame(unit, baselineUnit);
       })
-      .map((u) => buildUnitPatch(u, baselineById.get(u.id)!));
-    const del = baseline.filter((u) => !currentById.has(u.id)).map((u) => u.id);
+      .map((unit) => {
+        const baselineUnit = baselineById.get(unitId(unit));
+
+        return createUnitPatch(unit, baselineUnit!);
+      });
+    const del = baseline
+      .filter((unit) => !currentById.has(unitId(unit)))
+      .map((unit) => unitId(unit));
 
     return { insert, modify, delete: del };
   }
@@ -182,43 +189,48 @@ export default function BaseTranslator({
     }
   }
 
-  function handleModifyUnit(unitId: string, updates: Partial<Unit>) {
+  function handleModifyUnit(targetUnitId: string, updates: UnitUpdate) {
     commitUnits(
       unitBufRef.current.map((unit) =>
-        unit.id === unitId ? { ...unit, ...updates } : unit,
+        unitId(unit) === targetUnitId ? applyUnitUpdates(unit, updates) : unit,
       ),
     );
   }
 
-  function handleMoveUnit(unitId: string, xCoord: number, yCoord: number) {
+  function handleMoveUnit(
+    targetUnitId: string,
+    xCoord: number,
+    yCoord: number,
+  ) {
     commitUnits(
       unitBufRef.current.map((unit) =>
-        unit.id === unitId ? { ...unit, xCoord, yCoord } : unit,
+        unitId(unit) === targetUnitId
+          ? modifyUnitPosition(unit, xCoord, yCoord)
+          : unit,
       ),
     );
   }
 
   function handleAddUnit(xCoord: number, yCoord: number, isBubble: boolean) {
-    const newUnit: Unit = {
-      id: crypto.randomUUID(),
-      index: unitBufRef.current.length,
-      isBubble,
+    const newUnit = createUnit(
       xCoord,
       yCoord,
-      isProofread: false,
-    };
+      unitBufRef.current.length,
+      isBubble,
+    );
+
     commitUnits([...unitBufRef.current, newUnit]);
-    setFocusedUnitId(newUnit.id);
+    setFocusedUnitId(unitId(newUnit));
   }
 
-  function handleDeleteUnit(unitId: string) {
+  function handleDeleteUnit(targetUnitId: string) {
     const filteredUnits = unitBufRef.current
-      .filter((unit) => unit.id !== unitId)
-      .map((unit, index) => ({ ...unit, index }));
+      .filter((unit) => unitId(unit) !== targetUnitId)
+      .map((unit, index) => modifyUnitIndex(unit, index));
 
     commitUnits(filteredUnits);
 
-    if (focusedUnitId === unitId) {
+    if (focusedUnitId === targetUnitId) {
       setFocusedUnitId(undefined);
     }
   }
@@ -226,9 +238,11 @@ export default function BaseTranslator({
   // Relocation: when focused unit changes and relocation is on, center canvas on it
   useEffect(() => {
     if (!isRelocationEnabled || !focusedUnitId) return;
-    const unit = unitBuf.find((u) => u.id === focusedUnitId);
+    const unit = unitBuf.find((item) => unitId(item) === focusedUnitId);
     if (!unit) return;
-    canvasRef.current?.centerOn(unit.xCoord, unit.yCoord);
+    const position = unitPosition(unit);
+
+    canvasRef.current?.centerOn(position.xCoord, position.yCoord);
   }, [focusedUnitId, isRelocationEnabled, unitBuf]);
 
   useShortcutActions(
@@ -242,15 +256,15 @@ export default function BaseTranslator({
       },
       nextMarker: () => {
         if (unitBuf.length === 0) return;
-        const cur = unitBuf.findIndex((u) => u.id === focusedUnitId);
+        const cur = unitBuf.findIndex((unit) => unitId(unit) === focusedUnitId);
         const next = cur >= unitBuf.length - 1 ? 0 : cur + 1;
-        setFocusedUnitId(unitBuf[next].id);
+        setFocusedUnitId(unitId(unitBuf[next]));
       },
       prevMarker: () => {
         if (unitBuf.length === 0) return;
-        const cur = unitBuf.findIndex((u) => u.id === focusedUnitId);
+        const cur = unitBuf.findIndex((unit) => unitId(unit) === focusedUnitId);
         const prev = cur <= 0 ? unitBuf.length - 1 : cur - 1;
-        setFocusedUnitId(unitBuf[prev].id);
+        setFocusedUnitId(unitId(unitBuf[prev]));
       },
       pageUp: () => {
         if (pageIndex > 0) handleNavigate(pageIndex - 1);

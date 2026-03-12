@@ -1,4 +1,5 @@
 import {
+  unitId,
   useState,
   useRef,
   useEffect,
@@ -7,7 +8,14 @@ import {
 } from "react";
 import type { Unit } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
-import { unitIsTranslated, unitIsProofread, unitFinalText } from "@/types/unit";
+import {
+  unitFinalText,
+  unitIndex,
+  unitIsBubble,
+  unitIsProofread,
+  unitIsTranslated,
+  unitPosition,
+} from "@/types/unit";
 import Marker from "@/features/BaseTranslator/features/Marker";
 
 const PAN_THRESHOLD = 8;
@@ -451,19 +459,22 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
             />
 
             {units.map((unit) => {
-              if (!unit.id) {
+              const id = unitId(unit);
+
+              if (!id) {
                 return null;
               }
 
-              const isDraggingThis = dragMarker?.id === unit.id;
+              const isDraggingThis = dragMarker?.id === id;
               const draggingMarker = isDraggingThis ? dragMarker : null;
-              const x = draggingMarker ? draggingMarker.x : unit.xCoord;
-              const y = draggingMarker ? draggingMarker.y : unit.yCoord;
+              const position = unitPosition(unit);
+              const x = draggingMarker ? draggingMarker.x : position.xCoord;
+              const y = draggingMarker ? draggingMarker.y : position.yCoord;
 
               return (
                 <div
-                  key={unit.id}
-                  data-marker={unit.id}
+                  key={id}
+                  data-marker={id}
                   className="absolute pointer-events-auto"
                   style={{
                     left: `${x * 100}%`,
@@ -472,21 +483,31 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     transform: `scale(${1 / transform.scale})`,
                   }}
                   onMouseDown={(e) =>
-                    handleMarkerMouseDown(e, unit.id, unit.xCoord, unit.yCoord)
+                    handleMarkerMouseDown(
+                      e,
+                      id,
+                      position.xCoord,
+                      position.yCoord,
+                    )
                   }
                   onTouchStart={(e) =>
-                    handleMarkerTouchStart(e, unit.id, unit.xCoord, unit.yCoord)
+                    handleMarkerTouchStart(
+                      e,
+                      id,
+                      position.xCoord,
+                      position.yCoord,
+                    )
                   }
                 >
                   <Marker
-                    index={unit.index}
-                    isBubble={unit.isBubble}
+                    index={unitIndex(unit)}
+                    isBubble={unitIsBubble(unit)}
                     isCompleted={
                       mode === "translate"
                         ? unitIsTranslated(unit)
                         : unitIsProofread(unit)
                     }
-                    isSelected={focusedUnitId === unit.id}
+                    isSelected={focusedUnitId === id}
                     isDragging={isDraggingThis}
                     previewText={unitFinalText(unit)}
                     withPreview={mode === "proofread"}

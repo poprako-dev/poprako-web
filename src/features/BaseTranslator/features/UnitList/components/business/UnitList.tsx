@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { ListCheck } from "lucide-react";
 import type { TranslatorMode } from "@/types/translatorMode";
-import type { Unit } from "@/types/unit";
+import { unitId, type Unit, type UnitUpdate } from "@/types/unit";
 import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
 
@@ -11,7 +11,7 @@ type Props = {
   mode: TranslatorMode;
   onFocusUnit?: (unitId: string) => void;
   // 在 units 长度为 0 时，不存在这个字段
-  onModifyUnit?: (unitId: string, unit: Partial<Unit>) => void;
+  onModifyUnit?: (unitId: string, unit: UnitUpdate) => void;
 };
 
 export default function UnitList({
@@ -25,7 +25,9 @@ export default function UnitList({
     mode === "translate" ? TranslateModeUnitItem : ProofreadModeUnitItem;
 
   const proofreadAll = () => {
-    units.forEach((u) => onModifyUnit?.(u.id, { isProofread: true }));
+    units.forEach((unit) =>
+      onModifyUnit?.(unitId(unit), { isProofread: true }),
+    );
   };
 
   return (
@@ -33,9 +35,9 @@ export default function UnitList({
       <div className="flex-1">
         {units.map((unit) => (
           <ItemComponent
-            key={unit.id}
+            key={unitId(unit)}
             unit={unit}
-            isFocused={focusedUnitId === unit.id}
+            isFocused={focusedUnitId === unitId(unit)}
             onSelect={onFocusUnit}
             onModifyUnit={onModifyUnit}
           />

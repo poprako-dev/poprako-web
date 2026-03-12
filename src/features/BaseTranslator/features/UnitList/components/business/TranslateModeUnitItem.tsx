@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
-import type { Unit } from "@/types/unit";
-import { unitIsTranslated } from "@/types/unit";
+import {
+  unitId,
+  unitIsTranslated,
+  unitTranslatedText,
+  type Unit,
+  type UnitUpdate,
+} from "@/types/unit";
 import BaseUnitItem from "./BaseUnitItem";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
@@ -9,7 +14,7 @@ type Props = {
   unit: Unit;
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
-  onModifyUnit?: (unitId: string, updates: Partial<Unit>) => void;
+  onModifyUnit?: (unitId: string, updates: UnitUpdate) => void;
 };
 
 export default function TranslateModeUnitItem({
@@ -41,7 +46,7 @@ export default function TranslateModeUnitItem({
     const end = textarea.selectionEnd;
     const next =
       textarea.value.substring(0, start) + char + textarea.value.substring(end);
-    onModifyUnit?.(unit.id, { translatedText: next });
+    onModifyUnit?.(unitId(unit), { translatedText: next });
     setTimeout(() => {
       textarea.selectionStart = textarea.selectionEnd = start + char.length;
       textarea.focus();
@@ -57,8 +62,10 @@ export default function TranslateModeUnitItem({
     >
       <AutoResizeTextarea
         ref={inputRef}
-        value={unit.translatedText}
-        onChange={(val) => onModifyUnit?.(unit.id, { translatedText: val })}
+        value={unitTranslatedText(unit) ?? undefined}
+        onChange={(val) =>
+          onModifyUnit?.(unitId(unit), { translatedText: val })
+        }
         placeholder="点击输入翻译..."
         className={`text-[15px] leading-relaxed ${
           isFocused ? "text-gray-900 font-medium" : "text-gray-700"
