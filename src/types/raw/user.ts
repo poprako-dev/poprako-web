@@ -24,7 +24,9 @@ export function unwrapRawUserInfo(raw: RawUserInfo): UserInfo {
   } as UserInfo;
 }
 
-export type RawReserveUserAvatarResult = { put_url: string };
+export type RawReserveUserAvatarResult = {
+  put_url: string
+};
 
 export function unwrapRawReserveUserAvatarResult(
   raw: RawReserveUserAvatarResult,

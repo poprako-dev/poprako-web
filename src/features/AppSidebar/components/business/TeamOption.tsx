@@ -144,7 +144,7 @@ export default function TeamOption({
         >
           <div
             className={clsx(
-              "px-3 py-2 rounded-xl h-11",
+              "px-2 py-2 rounded-xl h-11",
               "flex flex-col justify-center",
               "transition-colors duration-300",
               isListOpen ? "bg-green-50" : "hover:bg-gray-50",

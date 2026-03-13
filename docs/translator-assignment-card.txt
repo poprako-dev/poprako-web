@@ -1,0 +1,161 @@
+import React from 'react';
+import { FileText, Layers, Type, CheckCheck, Clock } from 'lucide-react';
+
+/**
+ * 职位解析函数
+ */
+function getRoleLabels(roles) {
+  const roleMap = [
+    { bit: 1, label: '图' },
+    { bit: 2, label: '翻' },
+    { bit: 4, label: '校' },
+    { bit: 8, label: '嵌' },
+    { bit: 16, label: '监' },
+    { bit: 32, label: '传' },
+  ];
+  const labels = roleMap.filter(r => (roles & r.bit)).map(r => r.label);
+  return labels.length > 0 ? labels : ['员'];
+}
+
+/**
+ * TranslatorAssignmentCard 组件
+ */
+function TranslatorAssignmentCard({ assignmentInfo }) {
+  const chapter = assignmentInfo?.chapter || {};
+  const comic = chapter?.comic || {};
+  const roles = assignmentInfo?.roles || 0;
+
+  const total = chapter.totalUnitCount || 0;
+  const translated = chapter.translatedUnitCount || 0;
+  const proofread = chapter.proofreadUnitCount || 0;
+  const pages = chapter.pageCount || 0;
+  
+  const translationProgress = total > 0 ? Math.floor((translated / total) * 100) : 0;
+
+  // 格式化日期
+  const formatDate = (ts) => {
+    if (!ts) return '';
+    const d = new Date(ts);
+    return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  };
+
+  return (
+    <div className="w-full h-[126px] bg-white border border-slate-100 rounded-lg flex flex-col transition-all hover:bg-slate-50 hover:border-slate-200 overflow-hidden shadow-sm">
+      {/* 上部：主体内容 */}
+      <div className="flex flex-1 p-3 gap-4 items-center min-h-0">
+        {/* 左侧封面 */}
+        <div className="w-18 h-full flex-shrink-0 bg-slate-50 rounded overflow-hidden border border-slate-100">
+          <img 
+            src={chapter.coverUrl || comic.coverUrl || 'https://via.placeholder.com/150x200?text=Cover'} 
+            alt={comic.title}
+            className="w-full h-full object-cover grayscale-[20%]"
+          />
+        </div>
+
+        {/* 右侧详情：严格 2 单位行间距 (gap-2) */}
+        <div className="flex-1 flex flex-col justify-center gap-2 min-w-0">
+          {/* 第一行：标题 + 话号 */}
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-bold text-slate-700 truncate flex-1 leading-none">
+              {comic.title || '未命名'}
+            </h3>
+            <span className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+              #{chapter.chapterNo || '-'}
+            </span>
+          </div>
+
+          {/* 第二行：Clock + 日期 + 职位 (纯文字) */}
+          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <Clock size={12} />
+              <span className="font-mono">{formatDate(chapter.updatedAt)}</span>
+            </div>
+            <div className="h-3 w-[1px] bg-slate-100"></div>
+            <div className="flex gap-1.5 font-medium text-slate-500">
+              {getRoleLabels(roles).map((role, idx) => (
+                <span key={idx}>{role}</span>
+              ))}
+            </div>
+          </div>
+          
+          {/* 第三行：四项数据 Tag */}
+          <div className="flex gap-2 overflow-x-hidden">
+            <DataTag icon={<FileText size={14} />} value={pages} />
+            <DataTag icon={<Layers size={14} />} value={total} />
+            <DataTag icon={<Type size={14} />} value={translated} />
+            <DataTag icon={<CheckCheck size={14} />} value={proofread} />
+          </div>
+        </div>
+      </div>
+
+      {/* 下部 Footer：进度条 (确保在容器最底部) */}
+      <div className="w-full px-3 pb-2 flex-shrink-0">
+        <div className="w-full h-[5px] bg-slate-100 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-slate-300 transition-all duration-500"
+            style={{ width: `${translationProgress}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DataTag({ icon, value }) {
+  return (
+    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 rounded border border-slate-100/50 text-slate-500 flex-shrink-0">
+      <span className="text-slate-400">{icon}</span>
+      <span className="text-[12px] font-semibold leading-none font-mono">{value}</span>
+    </div>
+  );
+}
+
+const mockAssignments = [
+  {
+    id: '1',
+    roles: 6,
+    chapter: {
+      chapterNo: '102',
+      coverUrl: 'https://picsum.photos/seed/manga1/150/200',
+      pageCount: 24,
+      totalUnitCount: 156,
+      translatedUnitCount: 89,
+      proofreadUnitCount: 20,
+      updatedAt: Date.now(),
+      comic: { title: '电锯人 第二部' }
+    }
+  },
+  {
+    id: '2',
+    roles: 46,
+    chapter: {
+      chapterNo: '45',
+      coverUrl: 'https://picsum.photos/seed/manga2/150/200',
+      pageCount: 18,
+      totalUnitCount: 210,
+      translatedUnitCount: 210,
+      proofreadUnitCount: 180,
+      updatedAt: Date.now() - 86400000,
+      comic: { title: '蓝色监狱 (Blue Lock)' }
+    }
+  }
+];
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-slate-50 p-10">
+      <div className="max-w-5xl mx-auto">
+        <header className="mb-8 border-l-4 border-slate-200 pl-4">
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">任务面板测试</h1>
+          <p className="text-sm text-slate-400 mt-1">间距 2 单位对齐 | 底部进度条修复</p>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {mockAssignments.map((item) => (
+            <TranslatorAssignmentCard key={item.id} assignmentInfo={item} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

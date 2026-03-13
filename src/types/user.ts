@@ -13,4 +13,6 @@ export type UserInfo = {
   updatedAt: number;
 };
 
-export type ReserveUserAvatarResult = { putUrl: string };
+export type ReserveUserAvatarResult = {
+  putUrl: string;
+};
