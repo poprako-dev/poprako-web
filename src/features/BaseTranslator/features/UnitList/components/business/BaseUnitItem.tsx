@@ -1,9 +1,9 @@
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
-import { unitId, unitIndex, unitIsBubble, type Unit } from "@/types/unit";
+import { unitId, unitIndex, unitIsBubble, type UnitInfo } from "@/types/unit";
 
 type Props = {
-  unit: Unit;
+  unit: UnitInfo;
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
   isCompleted: boolean;

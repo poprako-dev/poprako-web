@@ -1,15 +1,15 @@
 import {
-  unitId,
   useState,
   useRef,
   useEffect,
   forwardRef,
   useImperativeHandle,
 } from "react";
-import type { Unit } from "@/types/unit";
+import type { UnitInfo } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 import {
   unitFinalText,
+  unitId,
   unitIndex,
   unitIsBubble,
   unitIsProofread,
@@ -47,8 +47,9 @@ export type CanvasHandle = {
 
 type Props = {
   imageSrc: string | null;
-  units: Unit[];
+  units: UnitInfo[];
   mode: TranslatorMode;
+  isUnitCreationEnabled?: boolean;
   focusedUnitId?: string;
   onFocusUnit?: (unitId: string) => void;
   onMoveUnit?: (unitId: string, xCoord: number, yCoord: number) => void;
@@ -61,6 +62,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     imageSrc,
     units,
     mode,
+    isUnitCreationEnabled = true,
     focusedUnitId,
     onFocusUnit,
     onMoveUnit,
@@ -160,6 +162,21 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     [],
   );
 
+  function tryAddUnit(clientX: number, clientY: number, isBubble: boolean) {
+    if (!isUnitCreationEnabled) return;
+
+    const img = imgRef.current;
+    if (!img) return;
+
+    const rect = img.getBoundingClientRect();
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
+
+    if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
+      onAddUnit?.(x, y, isBubble);
+    }
+  }
+
   function startDrag(
     type: "pan" | "marker",
     startX: number,
@@ -234,14 +251,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
 
       if (!drag.exceeded) {
         if (drag.type === "pan") {
-          const img = imgRef.current;
-          if (!img) return;
-          const rect = img.getBoundingClientRect();
-          const x = (clientX - rect.left) / rect.width;
-          const y = (clientY - rect.top) / rect.height;
-          if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
-            onAddUnit?.(x, y, true);
-          }
+          tryAddUnit(clientX, clientY, true);
         } else {
           onFocusUnit?.(drag.unitId!);
         }
@@ -370,14 +380,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     }
 
     // Right-click on empty image → add non-bubble unit
-    const img = imgRef.current;
-    if (!img) return;
-    const rect = img.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
-      onAddUnit?.(x, y, false);
-    }
+    tryAddUnit(e.clientX, e.clientY, false);
   }
 
   function handleWheel(e: React.WheelEvent) {

@@ -1,6 +1,7 @@
-import { randomUUID } from "crypto";
+// 该包有关联及其复杂的逻辑，因此绝对不允许直接使用其类型的字段
+// 必须通过关联的函数提供封装性，防止错误逻辑散落到其他文件
 
-export type Unit = {
+export type UnitInfo = {
   id: string;
 
   // 均为 0~1 的浮点数
@@ -23,34 +24,37 @@ export type Unit = {
   proofreaderComment?: string;
 };
 
-export type UnitUpdate = Partial<Omit<Unit, "id">>;
+export type UnitEdit = {
+  xCoord?: number;
+  yCoord?: number;
+  index?: number;
+  isBubble?: boolean;
+  translatedText?: string;
+  translatorId?: string;
+  translatorCommnet?: string;
+  isProofread?: boolean;
+  proofreadText?: string;
+  proofreaderId?: string;
+  proofreaderComment?: string;
+};
 
-export type UnitPatch = { id: Unit["id"] } & UnitUpdate;
-
-function hasUnitField<K extends keyof UnitUpdate>(
-  updates: UnitUpdate,
-  key: K,
-): updates is UnitUpdate & Required<Pick<UnitUpdate, K>> {
-  return Object.prototype.hasOwnProperty.call(updates, key);
-}
-
-export function unitId(unit: Pick<Unit, "id">): string {
+export function unitId(unit: Pick<UnitInfo, "id">): string {
   return unit.id;
 }
 
-export function unitIndex(unit: Unit): number {
+export function unitIndex(unit: UnitInfo): number {
   return unit.index;
 }
 
-export function unitIsTranslated(unit: Unit): boolean {
+export function unitIsTranslated(unit: UnitInfo): boolean {
   return unit.translatedText !== undefined && unit.translatedText != "";
 }
 
-export function unitIsProofread(unit: Unit): boolean {
+export function unitIsProofread(unit: UnitInfo): boolean {
   return unit.isProofread;
 }
 
-export function unitFinalText(unit: Unit): string | null {
+export function unitFinalText(unit: UnitInfo): string | null {
   if (unit.proofreadText && unit.proofreadText != "") {
     return unit.proofreadText;
   }
@@ -61,7 +65,7 @@ export function unitFinalText(unit: Unit): string | null {
   return null;
 }
 
-export function unitTranslatedText(unit: Unit): string | null {
+export function unitTranslatedText(unit: UnitInfo): string | null {
   if (unit.translatedText && unit.translatedText != "") {
     return unit.translatedText;
   }
@@ -69,7 +73,7 @@ export function unitTranslatedText(unit: Unit): string | null {
   return null;
 }
 
-export function unitProofreadText(unit: Unit): string | null {
+export function unitProofreadText(unit: UnitInfo): string | null {
   if (unit.proofreadText && unit.proofreadText != "") {
     return unit.proofreadText;
   }
@@ -77,7 +81,7 @@ export function unitProofreadText(unit: Unit): string | null {
   return null;
 }
 
-export function unitTranslatorComment(unit: Unit): string | null {
+export function unitTranslatorComment(unit: UnitInfo): string | null {
   if (unit.translatorCommnet && unit.translatorCommnet != "") {
     return unit.translatorCommnet;
   }
@@ -85,7 +89,7 @@ export function unitTranslatorComment(unit: Unit): string | null {
   return null;
 }
 
-export function unitProofreaderComment(unit: Unit): string | null {
+export function unitProofreaderComment(unit: UnitInfo): string | null {
   if (unit.proofreaderComment && unit.proofreaderComment != "") {
     return unit.proofreaderComment;
   }
@@ -98,19 +102,23 @@ export function createUnit(
   yCoord: number,
   index: number,
   isBubble: boolean,
-): Unit {
+): UnitInfo {
   return {
     // 生成一个随机 ID，其在上传服务器时会被忽略
-    id: randomUUID(),
+    id: self.crypto.randomUUID(),
     xCoord: xCoord,
     yCoord: yCoord,
     index: index,
     isBubble: isBubble,
     isProofread: false,
-  } as Unit;
+  } as UnitInfo;
 }
 
-export function modifyUnitPosition(unit: Unit, xCoord: number, yCoord: number) {
+export function modifyUnitPosition(
+  unit: UnitInfo,
+  xCoord: number,
+  yCoord: number,
+) {
   return {
     ...unit,
     xCoord: xCoord,
@@ -118,34 +126,38 @@ export function modifyUnitPosition(unit: Unit, xCoord: number, yCoord: number) {
   };
 }
 
-export function modifyUnitPostion(unit: Unit, xCoord: number, yCoord: number) {
+export function modifyUnitPostion(
+  unit: UnitInfo,
+  xCoord: number,
+  yCoord: number,
+) {
   return modifyUnitPosition(unit, xCoord, yCoord);
 }
 
-export function unitPosition(unit: Unit) {
+export function unitPosition(unit: UnitInfo) {
   return { xCoord: unit.xCoord, yCoord: unit.yCoord };
 }
 
-export function modifyUnitIndex(unit: Unit, index: number) {
+export function modifyUnitIndex(unit: UnitInfo, index: number) {
   return {
     ...unit,
     index: index,
   };
 }
 
-export function modifyUnitIsBubble(unit: Unit, isBubble: boolean) {
+export function modifyUnitIsBubble(unit: UnitInfo, isBubble: boolean) {
   return {
     ...unit,
     isBubble: isBubble,
   };
 }
 
-export function unitIsBubble(unit: Unit) {
+export function unitIsBubble(unit: UnitInfo) {
   return unit.isBubble;
 }
 
 export function modifyUnitTranslatedText(
-  unit: Unit,
+  unit: UnitInfo,
   translatedText: string | null,
   translatorId: string | null,
 ) {
@@ -158,7 +170,7 @@ export function modifyUnitTranslatedText(
 }
 
 export function modifyUnitProofreadText(
-  unit: Unit,
+  unit: UnitInfo,
   proofreadText: string | null,
   proofreaderId: string | null,
 ) {
@@ -171,7 +183,7 @@ export function modifyUnitProofreadText(
   };
 }
 
-export function modifyUnitIsProofread(unit: Unit, isProofread: boolean) {
+export function modifyUnitIsProofread(unit: UnitInfo, isProofread: boolean) {
   return {
     ...unit,
     isProofread: isProofread,
@@ -179,7 +191,7 @@ export function modifyUnitIsProofread(unit: Unit, isProofread: boolean) {
 }
 
 export function modifyUnitTranslatorComment(
-  unit: Unit,
+  unit: UnitInfo,
   translatorComment: string | null,
 ) {
   return {
@@ -189,7 +201,7 @@ export function modifyUnitTranslatorComment(
 }
 
 export function modifyUnitProofreaderComment(
-  unit: Unit,
+  unit: UnitInfo,
   proofreaderComment: string | null,
 ) {
   return {
@@ -198,43 +210,47 @@ export function modifyUnitProofreaderComment(
   };
 }
 
-export function applyUnitUpdates(unit: Unit, updates: UnitUpdate): Unit {
+export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
   let nextUnit = unit;
 
-  if (hasUnitField(updates, "xCoord") || hasUnitField(updates, "yCoord")) {
+  if ("xCoord" in updates || "yCoord" in updates) {
     const position = unitPosition(nextUnit);
 
     nextUnit = modifyUnitPosition(
       nextUnit,
-      hasUnitField(updates, "xCoord") ? updates.xCoord : position.xCoord,
-      hasUnitField(updates, "yCoord") ? updates.yCoord : position.yCoord,
+      "xCoord" in updates
+        ? (updates.xCoord ?? position.xCoord)
+        : position.xCoord,
+      "yCoord" in updates
+        ? (updates.yCoord ?? position.yCoord)
+        : position.yCoord,
     );
   }
 
-  if (hasUnitField(updates, "index")) {
-    nextUnit = modifyUnitIndex(nextUnit, updates.index);
+  if ("index" in updates) {
+    nextUnit = modifyUnitIndex(nextUnit, updates.index ?? unitIndex(nextUnit));
   }
 
-  if (hasUnitField(updates, "isBubble")) {
-    nextUnit = modifyUnitIsBubble(nextUnit, updates.isBubble);
+  if ("isBubble" in updates) {
+    nextUnit = modifyUnitIsBubble(
+      nextUnit,
+      updates.isBubble ?? unitIsBubble(nextUnit),
+    );
   }
 
-  if (
-    hasUnitField(updates, "translatedText") ||
-    hasUnitField(updates, "translatorId")
-  ) {
+  if ("translatedText" in updates || "translatorId" in updates) {
     nextUnit = modifyUnitTranslatedText(
       nextUnit,
-      hasUnitField(updates, "translatedText")
+      "translatedText" in updates
         ? (updates.translatedText ?? null)
         : unitTranslatedText(nextUnit),
-      hasUnitField(updates, "translatorId")
+      "translatorId" in updates
         ? (updates.translatorId ?? null)
         : (nextUnit.translatorId ?? null),
     );
   }
 
-  if (hasUnitField(updates, "translatorCommnet")) {
+  if ("translatorCommnet" in updates) {
     nextUnit = modifyUnitTranslatorComment(
       nextUnit,
       updates.translatorCommnet ?? null,
@@ -242,26 +258,28 @@ export function applyUnitUpdates(unit: Unit, updates: UnitUpdate): Unit {
   }
 
   const hasProofreadContentUpdate =
-    hasUnitField(updates, "proofreadText") ||
-    hasUnitField(updates, "proofreaderId");
+    "proofreadText" in updates || "proofreaderId" in updates;
 
   if (hasProofreadContentUpdate) {
     nextUnit = modifyUnitProofreadText(
       nextUnit,
-      hasUnitField(updates, "proofreadText")
+      "proofreadText" in updates
         ? (updates.proofreadText ?? null)
         : unitProofreadText(nextUnit),
-      hasUnitField(updates, "proofreaderId")
+      "proofreaderId" in updates
         ? (updates.proofreaderId ?? null)
         : (nextUnit.proofreaderId ?? null),
     );
   }
 
-  if (hasUnitField(updates, "isProofread") && !hasProofreadContentUpdate) {
-    nextUnit = modifyUnitIsProofread(nextUnit, updates.isProofread);
+  if ("isProofread" in updates && !hasProofreadContentUpdate) {
+    nextUnit = modifyUnitIsProofread(
+      nextUnit,
+      updates.isProofread ?? unitIsProofread(nextUnit),
+    );
   }
 
-  if (hasUnitField(updates, "proofreaderComment")) {
+  if ("proofreaderComment" in updates) {
     nextUnit = modifyUnitProofreaderComment(
       nextUnit,
       updates.proofreaderComment ?? null,
@@ -271,7 +289,10 @@ export function applyUnitUpdates(unit: Unit, updates: UnitUpdate): Unit {
   return nextUnit;
 }
 
-export function createUnitPatch(current: Unit, baseline: Unit): UnitPatch {
+export function createUnitPatch(
+  current: UnitInfo,
+  baseline: UnitInfo,
+): UnitPatch {
   const patch: UnitPatch = { id: unitId(current) };
   const currentPosition = unitPosition(current);
   const baselinePosition = unitPosition(baseline);
@@ -289,31 +310,31 @@ export function createUnitPatch(current: Unit, baseline: Unit): UnitPatch {
     patch.isBubble = unitIsBubble(current);
   }
   if (unitTranslatedText(current) !== unitTranslatedText(baseline)) {
-    patch.translatedText = unitTranslatedText(current) ?? undefined;
+    patch.translatedText = unitTranslatedText(current);
   }
   if (current.translatorId !== baseline.translatorId) {
-    patch.translatorId = current.translatorId;
+    patch.translatorId = current.translatorId ?? null;
   }
   if (unitTranslatorComment(current) !== unitTranslatorComment(baseline)) {
-    patch.translatorCommnet = unitTranslatorComment(current) ?? undefined;
+    patch.translatorCommnet = unitTranslatorComment(current);
   }
   if (unitIsProofread(current) !== unitIsProofread(baseline)) {
     patch.isProofread = unitIsProofread(current);
   }
   if (unitProofreadText(current) !== unitProofreadText(baseline)) {
-    patch.proofreadText = unitProofreadText(current) ?? undefined;
+    patch.proofreadText = unitProofreadText(current);
   }
   if (current.proofreaderId !== baseline.proofreaderId) {
-    patch.proofreaderId = current.proofreaderId;
+    patch.proofreaderId = current.proofreaderId ?? null;
   }
   if (unitProofreaderComment(current) !== unitProofreaderComment(baseline)) {
-    patch.proofreaderComment = unitProofreaderComment(current) ?? undefined;
+    patch.proofreaderComment = unitProofreaderComment(current);
   }
 
   return patch;
 }
 
-export function isUnitSame(rhs: Unit, lhs: Unit): boolean {
+export function isUnitSame(rhs: UnitInfo, lhs: UnitInfo): boolean {
   if (rhs.id !== lhs.id) {
     return false;
   }
@@ -349,4 +370,86 @@ export function isUnitSame(rhs: Unit, lhs: Unit): boolean {
   }
 
   return true;
+}
+
+export type UnitPatch = {
+  id: string;
+
+  xCoord?: number;
+  yCoord?: number;
+
+  index?: number;
+
+  isBubble?: boolean;
+
+  translatedText?: string | null;
+  translatorId?: string | null;
+  translatorCommnet?: string | null;
+
+  isProofread?: boolean;
+  proofreadText?: string | null;
+  proofreaderId?: string | null;
+  proofreaderComment?: string | null;
+};
+
+export type UnitCreation = UnitInfo;
+
+export function createUnitCreation(unit: UnitInfo): UnitCreation {
+  return unit;
+}
+
+export function unitPatchId(patch: UnitPatch): string {
+  return patch.id;
+}
+
+export function unitPatchPosition(patch: UnitPatch) {
+  return { xCoord: patch.xCoord, yCoord: patch.yCoord };
+}
+
+export function unitPatchIndex(patch: UnitPatch): number | undefined {
+  return patch.index;
+}
+
+export function unitPatchIsBubble(patch: UnitPatch): boolean | undefined {
+  return patch.isBubble;
+}
+
+export function unitPatchTranslatedText(
+  patch: UnitPatch,
+): string | null | undefined {
+  return patch.translatedText;
+}
+
+export function unitPatchTranslatorId(
+  patch: UnitPatch,
+): string | null | undefined {
+  return patch.translatorId;
+}
+
+export function unitPatchTranslatorComment(
+  patch: UnitPatch,
+): string | null | undefined {
+  return patch.translatorCommnet;
+}
+
+export function unitPatchIsProofread(patch: UnitPatch): boolean | undefined {
+  return patch.isProofread;
+}
+
+export function unitPatchProofreadText(
+  patch: UnitPatch,
+): string | null | undefined {
+  return patch.proofreadText;
+}
+
+export function unitPatchProofreaderId(
+  patch: UnitPatch,
+): string | null | undefined {
+  return patch.proofreaderId;
+}
+
+export function unitPatchProofreaderComment(
+  patch: UnitPatch,
+): string | null | undefined {
+  return patch.proofreaderComment;
 }

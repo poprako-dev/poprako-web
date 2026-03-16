@@ -1,4 +1,4 @@
-import { FileType, CheckCheck, MapPin, Save } from "lucide-react";
+import { FileType, CheckCheck, CircleSlash, MapPin, Save } from "lucide-react";
 import clsx from "clsx";
 import type { TranslatorMode } from "@/types/translatorMode";
 
@@ -6,9 +6,11 @@ type Props = {
   currMode: TranslatorMode;
   enabledModes: TranslatorMode[];
   isRelocationEnabled: boolean;
+  isUnitCreationEnabled: boolean;
   onTranslateModeClick: () => void;
   onProofreadModeClick: () => void;
   onRelocationClick: () => void;
+  onUnitCreationClick: () => void;
   onSaveClick: () => Promise<void>;
 };
 
@@ -17,9 +19,11 @@ export default function StatusOptionBar({
   currMode,
   enabledModes,
   isRelocationEnabled,
+  isUnitCreationEnabled,
   onTranslateModeClick,
   onProofreadModeClick,
   onRelocationClick,
+  onUnitCreationClick,
   onSaveClick,
 }: Props) {
   const hasProofread = enabledModes.includes("proofread");
@@ -63,6 +67,18 @@ export default function StatusOptionBar({
         )}
       >
         <MapPin size={14} />
+      </button>
+      <button
+        title={isUnitCreationEnabled ? "禁用标记创建" : "启用标记创建"}
+        onClick={onUnitCreationClick}
+        className={clsx(
+          "flex-1 flex items-center justify-center py-1.5 transition-colors",
+          !isUnitCreationEnabled
+            ? "bg-green-50 text-green-500"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
+      >
+        <CircleSlash size={14} />
       </button>
       <button
         title="保存"

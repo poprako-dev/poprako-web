@@ -1,17 +1,17 @@
 import clsx from "clsx";
 import { ListCheck } from "lucide-react";
 import type { TranslatorMode } from "@/types/translatorMode";
-import { unitId, type Unit, type UnitUpdate } from "@/types/unit";
+import { unitId, type UnitInfo, type UnitEdit } from "@/types/unit";
 import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
 
 type Props = {
-  units: Unit[];
+  units: UnitInfo[];
   focusedUnitId?: string;
   mode: TranslatorMode;
   onFocusUnit?: (unitId: string) => void;
   // 在 units 长度为 0 时，不存在这个字段
-  onModifyUnit?: (unitId: string, unit: UnitUpdate) => void;
+  onModifyUnit?: (unitId: string, unit: UnitEdit) => void;
 };
 
 export default function UnitList({

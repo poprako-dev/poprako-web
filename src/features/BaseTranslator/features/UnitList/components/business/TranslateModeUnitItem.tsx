@@ -3,18 +3,18 @@ import {
   unitId,
   unitIsTranslated,
   unitTranslatedText,
-  type Unit,
-  type UnitUpdate,
+  type UnitInfo,
+  type UnitEdit,
 } from "@/types/unit";
 import BaseUnitItem from "./BaseUnitItem";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
 
 type Props = {
-  unit: Unit;
+  unit: UnitInfo;
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
-  onModifyUnit?: (unitId: string, updates: UnitUpdate) => void;
+  onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
 };
 
 export default function TranslateModeUnitItem({

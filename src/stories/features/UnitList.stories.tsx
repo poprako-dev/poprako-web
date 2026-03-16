@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import UnitList from "@/features/BaseTranslator/features/UnitList";
-import type { Unit } from "@/types/unit";
+import type { UnitInfo } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 
 const meta: Meta<typeof UnitList> = {
@@ -16,7 +16,7 @@ const meta: Meta<typeof UnitList> = {
 export default meta;
 type Story = StoryObj<typeof UnitList>;
 
-const initialUnits: Unit[] = [
+const initialUnits: UnitInfo[] = [
   {
     id: "1",
     index: 0,
@@ -68,9 +68,9 @@ const initialUnits: Unit[] = [
 function UnitListWrapper({ initialMode }: { initialMode: TranslatorMode }) {
   const [mode, setMode] = useState<TranslatorMode>(initialMode);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>("2");
-  const [units, setUnits] = useState<Unit[]>(initialUnits);
+  const [units, setUnits] = useState<UnitInfo[]>(initialUnits);
 
-  const handleModifyUnit = (unitId: string, updates: Partial<Unit>) => {
+  const handleModifyUnit = (unitId: string, updates: Partial<UnitInfo>) => {
     setUnits((prev) =>
       prev.map((u) => (u.id === unitId ? { ...u, ...updates } : u)),
     );

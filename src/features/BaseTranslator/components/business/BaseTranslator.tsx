@@ -5,14 +5,15 @@ import ToolboxDropdown from "@/features/ToolboxDropdown";
 import {
   applyUnitUpdates,
   createUnit,
+  createUnitCreation,
   createUnitPatch,
   isUnitSame,
   modifyUnitIndex,
   modifyUnitPosition,
   unitPosition,
   unitId,
-  type Unit,
-  type UnitUpdate,
+  type UnitInfo,
+  type UnitEdit,
 } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 import type { Project } from "@/types/project";
@@ -31,7 +32,7 @@ import type { UnitDiff } from "../../types/type";
 type Props = {
   project: Project;
   // 懒加载的 units 获取器，BaseTranslator 只负责在需要时调用它来获取 units 列表
-  onLoadUnits: (pageId: string) => Promise<Unit[]>;
+  onLoadUnits: (pageId: string) => Promise<UnitInfo[]>;
   // 具体是否是 upsert 由实现决定，BaseTranslator 只负责传递修改后的 units 列表
   // BaseTranslator 为了减少 IO，采用内置 buffer 来缓存当前页的 units 的修改
   // onUpsertUnits 的默认调用时机是：翻页时、退出 BaseTranslator 时，
@@ -54,7 +55,7 @@ export default function BaseTranslator({
   isCurrUserProofreader,
 }: Props) {
   const [pageIndex, setPageIndex] = useState(0);
-  const [unitBuf, setUnitBuf] = useState<Unit[]>([]);
+  const [unitBuf, setUnitBuf] = useState<UnitInfo[]>([]);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>(
     undefined,
   );
@@ -62,12 +63,13 @@ export default function BaseTranslator({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
+  const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
 
   const isNavigating = useRef(false);
   const isSaving = useRef(false);
-  const unitBufRef = useRef<Unit[]>([]);
-  const baselineUnitsRef = useRef<Unit[]>([]);
+  const unitBufRef = useRef<UnitInfo[]>([]);
+  const baselineUnitsRef = useRef<UnitInfo[]>([]);
   const canvasRef = useRef<CanvasHandle>(null);
 
   const showToast = useToastStore((s) => s.showToast);
@@ -75,11 +77,13 @@ export default function BaseTranslator({
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
     useShortcuts();
 
-  function buildUnitDiff(current: Unit[], baseline: Unit[]): UnitDiff {
+  function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDiff {
     const baselineById = new Map(baseline.map((unit) => [unitId(unit), unit]));
     const currentById = new Map(current.map((unit) => [unitId(unit), unit]));
 
-    const insert = current.filter((unit) => !baselineById.has(unitId(unit)));
+    const insert = current
+      .filter((unit) => !baselineById.has(unitId(unit)))
+      .map((unit) => createUnitCreation(unit));
     const modify = current
       .filter((unit) => {
         const baselineUnit = baselineById.get(unitId(unit));
@@ -105,7 +109,7 @@ export default function BaseTranslator({
     );
   }
 
-  function commitUnits(nextUnits: Unit[]) {
+  function commitUnits(nextUnits: UnitInfo[]) {
     unitBufRef.current = nextUnits;
     setUnitBuf(nextUnits);
   }
@@ -189,7 +193,7 @@ export default function BaseTranslator({
     }
   }
 
-  function handleModifyUnit(targetUnitId: string, updates: UnitUpdate) {
+  function handleModifyUnit(targetUnitId: string, updates: UnitEdit) {
     commitUnits(
       unitBufRef.current.map((unit) =>
         unitId(unit) === targetUnitId ? applyUnitUpdates(unit, updates) : unit,
@@ -220,6 +224,7 @@ export default function BaseTranslator({
     );
 
     commitUnits([...unitBufRef.current, newUnit]);
+
     setFocusedUnitId(unitId(newUnit));
   }
 
@@ -315,6 +320,7 @@ export default function BaseTranslator({
         imageSrc={imageUrl}
         units={unitBuf}
         mode={mode}
+        isUnitCreationEnabled={isUnitCreationEnabled}
         focusedUnitId={focusedUnitId}
         onFocusUnit={setFocusedUnitId}
         onMoveUnit={handleMoveUnit}
@@ -351,9 +357,11 @@ export default function BaseTranslator({
               isCurrUserProofreader ? ["translate", "proofread"] : ["translate"]
             }
             isRelocationEnabled={isRelocationEnabled}
+            isUnitCreationEnabled={isUnitCreationEnabled}
             onTranslateModeClick={() => setMode("translate")}
             onProofreadModeClick={() => setMode("proofread")}
             onRelocationClick={() => setIsRelocationEnabled((v) => !v)}
+            onUnitCreationClick={() => setIsUnitCreationEnabled((v) => !v)}
             onSaveClick={handleSave}
           />
         </div>
