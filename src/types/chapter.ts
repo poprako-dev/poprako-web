@@ -1,27 +1,21 @@
 import type { ComicInfo } from "./comic";
+import type { UserInfo } from "./user";
 import type { WorkflowStatus } from "./workflow";
 
-export type ChapterDetail = {
+export type ChapterInfo = {
   id: string;
 
-  chapterNo: string;
-  comicId: string;
-
-  creatorId: string;
-
-  coverUrl: string;
+  comidId: string;
+  comic?: ComicInfo;
 
   index: number;
-  pageCount: number;
+  subtitle: string;
 
+  pageCount: number;
   totalUnitCount: number;
   translatedUnitCount: number;
   proofreadUnitCount: number;
 
-  createdAt: number;
-  updatedAt: number;
-
-  // workflow timestamps
   uploadedAt?: number;
   transalatingAt?: number;
   translatedAt?: number;
@@ -31,6 +25,12 @@ export type ChapterDetail = {
   proofreadingAt?: number;
   reviewedAt?: number;
   publishedAt?: number;
+
+  creatorId: string;
+  creator?: UserInfo;
+
+  createdAt: number;
+  updatedAt: number;
 };
 
 export type CreateChapterArgs = {
@@ -51,24 +51,6 @@ export type UpdateChapterArgs = {
   proofreadStatus?: WorkflowStatus;
   publishStatus?: WorkflowStatus;
   uploadStatus?: WorkflowStatus;
-};
-
-export type ChapterWithComicInfo = {
-  id: string;
-
-  comic: ComicInfo;
-  index: number;
-  chapterNo: string;
-
-  coverUrl: string;
-
-  pageCount: number;
-  totalUnitCount: number;
-  translatedUnitCount: number;
-  proofreadUnitCount: number;
-
-  createdAt: number;
-  updatedAt: number;
 };
 
 export type WithWorkflow = {

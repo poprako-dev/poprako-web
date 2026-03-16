@@ -1,0 +1,178 @@
+import React, { useState, useEffect } from 'react';
+import { Clock, Pencil } from 'lucide-react';
+import clsx from 'clsx';
+
+// --- 类型与常量定义 ---
+type DisplayStatus = "pending" | "in_progress" | "completed";
+
+const ROLE_MAP = [
+  { bit: 1, label: "图" },
+  { bit: 2, label: "翻" },
+  { bit: 4, label: "校" },
+  { bit: 8, label: "嵌" },
+  { bit: 16, label: "监" },
+  { bit: 32, label: "传" },
+];
+
+const STATUS_CONFIG: Record<DisplayStatus, { text: string; bg: string; line: string }> = {
+  pending: {
+    text: "text-slate-300",
+    bg: "bg-slate-50/40",
+    line: "bg-slate-100",
+  },
+  in_progress: {
+    text: "text-orange-300",
+    bg: "bg-orange-50/40",
+    line: "bg-orange-200",
+  },
+  completed: {
+    text: "text-emerald-400",
+    bg: "bg-emerald-50/50",
+    line: "bg-emerald-300",
+  },
+};
+
+// --- 子组件 ---
+
+/**
+ * 底部工作流标签
+ * 采用扁平化设计，底部带有状态指示条
+ */
+function WorkflowTag({ label, status }: { label: string; status: DisplayStatus }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+
+  return (
+    <div
+      className={clsx(
+        "relative flex-1 h-7",
+        "flex items-center justify-center",
+        "rounded-sm transition-all duration-300",
+        cfg.bg,
+      )}
+    >
+      <span className={clsx("text-[12px] font-bold tracking-[0.2em] z-10", cfg.text)}>
+        {label}
+      </span>
+      <div
+        className={clsx(
+          "absolute bottom-0 left-0 right-0 h-[2.5px] rounded-b-sm",
+          cfg.line,
+        )}
+      />
+    </div>
+  );
+}
+
+// --- 模拟数据 ---
+const MOCK_CHAPTER = {
+  id: "ch-001",
+  title: "【作者】 漫画名称在这里显示",
+  chapterNo: "12",
+  updatedAt: Date.now(),
+  pageCount: 42,
+  coverUrl: "https://placehold.co/120x160/2d3748/white?text=Cover",
+};
+
+const MOCK_DETAILS = [
+  { roles: 1, userName: "阿松" },
+  { roles: 2, userName: "翻译AAAAAAAAAAAAAAAAAAAAAAAA, 翻译B" },
+  { roles: 4, userName: "校对员甲" },
+  { roles: 8, userName: "嵌字组长" },
+  { roles: 16, userName: "老监制" },
+  { roles: 32, userName: "发布君" },
+];
+
+// --- 主组件 ---
+
+export default function App() {
+  // 模拟状态：工作流各个阶段的进度
+  const workflowStatuses: DisplayStatus[] = [
+    "completed",   // 图
+    "completed",   // 翻
+    "in_progress", // 校
+    "pending",     // 嵌
+    "pending",     // 监
+    "pending"      // 传
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+      
+      {/* 适配父容器的外层卡片，通常在 Grid 或 List 中使用 */}
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 w-full max-w-[380px] overflow-hidden flex flex-col hover:shadow-md transition-shadow duration-300">
+        
+        {/* 1. 主体区域 (Header + Body) */}
+        <div className="group flex p-3 gap-3 items-start min-h-0">
+          
+          {/* 左侧：封面 (比例固定) */}
+          <div className="w-20 h-28 shrink-0 rounded bg-slate-100 overflow-hidden relative">
+            <img
+              src={MOCK_CHAPTER.coverUrl}
+              alt={MOCK_CHAPTER.title}
+              className="w-full h-full object-cover grayscale-[20%] transition-transform duration-700 group-hover:scale-110"
+            />
+            {/* 这里的悬浮编辑按钮可以根据需要添加 */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+          </div>
+
+          {/* 右侧：详细信息区 */}
+          <div className="flex-1 flex flex-col min-w-0 h-full">
+            
+            {/* 第一行：标题 + 话号 */}
+            <div className="flex items-start gap-2">
+              <h3 className="text-[15px] font-bold text-slate-700 truncate flex-1 leading-tight py-0.5">
+                {MOCK_CHAPTER.title}
+              </h3>
+              <span className="text-[10px] font-mono text-slate-400 shrink-0 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded leading-none">
+                #{MOCK_CHAPTER.chapterNo}
+              </span>
+            </div>
+
+            {/* 第二行：时间 | 页数 (克制的灰色系) */}
+            <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-1">
+              <div className="flex items-center gap-1 shrink-0">
+                <Clock size={10} className="opacity-60" />
+                <span className="font-mono tracking-tighter">
+                  {new Date(MOCK_CHAPTER.updatedAt).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="h-2.5 w-px bg-slate-200" />
+              <span className="font-mono font-medium">{MOCK_CHAPTER.pageCount}P</span>
+            </div>
+
+            {/* 第三行：人员分配网格 (2列3行) */}
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-3 text-[11px] text-slate-500">
+              {ROLE_MAP.map((roleDef) => {
+                const detail = MOCK_DETAILS.find(d => (d.roles & roleDef.bit) !== 0);
+                const names = detail?.userName || "-";
+
+                return (
+                  <div key={roleDef.bit} className="flex items-center gap-1.5 min-w-0" title={names}>
+                    <span className="text-slate-300 shrink-0 font-medium">
+                      {roleDef.label}
+                    </span>
+                    <span className="truncate leading-none text-slate-600">
+                      {names}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Footer 进度条区 (Workflow) */}
+        <div className="px-3 pb-3 pt-1 shrink-0 flex gap-1 w-full mt-auto">
+          {ROLE_MAP.map((role, idx) => (
+            <WorkflowTag 
+              key={role.bit} 
+              label={role.label} 
+              status={workflowStatuses[idx]} 
+            />
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+}

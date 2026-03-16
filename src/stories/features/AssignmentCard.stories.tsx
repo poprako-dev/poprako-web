@@ -1,113 +1,166 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import AssignmentCard from "@/features/AssignmentCard/components/business/AssignmentCard";
-import type {
-  AssignmentWithChapterInfo,
-  ReviewerAssignmentWithChapterInfo,
-} from "@/types/assignment";
+import type { AssignmentInfo } from "@/types/assignment";
+import type { ChapterInfo } from "@/types/chapter";
+
+type AssignmentRoleField =
+  | "assignedRawProviderAt"
+  | "assignedTranslatorAt"
+  | "assignedProofreaderAt"
+  | "assignedTypesetterAt"
+  | "assignedReviewerAt"
+  | "assignedPublisherAt";
 
 function makeAssignment(
   seed: string,
   title: string,
-  chapterNo: string,
-  roles: number,
+  index: number,
+  roles: AssignmentRoleField[],
   translated: number,
   proofread: number,
   total: number,
-): AssignmentWithChapterInfo {
+): AssignmentInfo {
+  const now = Date.now();
+  const roleFields = Object.fromEntries(roles.map((r) => [r, now]));
   return {
     id: seed,
+    chapterId: `chapter-${seed}`,
     userId: "user-1",
-    roles,
+    ...roleFields,
     chapter: {
       id: `chapter-${seed}`,
-      chapterNo,
-      index: 0,
-      coverUrl: `https://picsum.photos/seed/${seed}/150/200`,
+      comidId: `comic-${seed}`,
+      index,
+      subtitle: `第${index}话`,
       pageCount: 24,
       totalUnitCount: total,
       translatedUnitCount: translated,
       proofreadUnitCount: proofread,
-      createdAt: Date.now() - 86400000 * 30,
-      updatedAt: Date.now() - 86400000,
+      creatorId: "user-1",
+      createdAt: now - 86400000 * 30,
+      updatedAt: now - 86400000,
       comic: {
         id: `comic-${seed}`,
+        worksetId: `workset-${seed}`,
         title,
         author: "作者",
         description: "",
         creatorId: "user-1",
         index: 0,
         chapterCount: 100,
-        coverUrl: `https://picsum.photos/seed/${seed}/150/200`,
-        lastActiveAt: Date.now(),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        lastActiveAt: now,
+        createdAt: now,
+        updatedAt: now,
       },
     },
+    createdAt: now - 86400000 * 30,
+    updatedAt: now - 86400000,
   };
 }
 
 function makeReviewerAssignment(
   seed: string,
   title: string,
-  chapterNo: string,
-  roles: number,
-  workflow: Partial<ReviewerAssignmentWithChapterInfo["chapter"]>,
-): ReviewerAssignmentWithChapterInfo {
+  index: number,
+  roles: AssignmentRoleField[],
+  workflow: Partial<ChapterInfo>,
+): AssignmentInfo {
+  const now = Date.now();
+  const roleFields = Object.fromEntries(roles.map((r) => [r, now]));
   return {
     id: seed,
+    chapterId: `chapter-${seed}`,
     userId: "user-1",
-    roles,
+    ...roleFields,
     chapter: {
       id: `chapter-${seed}`,
-      chapterNo,
-      index: 0,
-      coverUrl: `https://picsum.photos/seed/${seed}/150/200`,
+      comidId: `comic-${seed}`,
+      index,
+      subtitle: `第${index}话`,
       pageCount: 24,
       totalUnitCount: 156,
       translatedUnitCount: 156,
       proofreadUnitCount: 156,
-      createdAt: Date.now() - 86400000 * 30,
-      updatedAt: Date.now() - 86400000,
+      creatorId: "user-1",
+      createdAt: now - 86400000 * 30,
+      updatedAt: now - 86400000,
       comic: {
         id: `comic-${seed}`,
+        worksetId: `workset-${seed}`,
         title,
         author: "作者",
         description: "",
         creatorId: "user-1",
         index: 0,
         chapterCount: 100,
-        coverUrl: `https://picsum.photos/seed/${seed}/150/200`,
-        lastActiveAt: Date.now(),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        lastActiveAt: now,
+        createdAt: now,
+        updatedAt: now,
       },
       ...workflow,
     },
+    createdAt: now - 86400000 * 30,
+    updatedAt: now - 86400000,
   };
 }
 
-const TRANSLATOR_SAMPLES: AssignmentWithChapterInfo[] = [
-  makeAssignment("manga1", "电锯人 第二部", "102", 6, 89, 20, 156),
-  makeAssignment("manga2", "蓝色监狱 (Blue Lock)", "45", 46, 210, 180, 210),
-  makeAssignment("manga3", "咒术回战", "213", 2, 0, 0, 88),
-  makeAssignment("manga4", "One Piece", "1100", 4, 300, 300, 300),
+const TRANSLATOR_SAMPLES: AssignmentInfo[] = [
+  makeAssignment(
+    "manga1",
+    "电锋人 第二部",
+    102,
+    ["assignedTranslatorAt", "assignedProofreaderAt"],
+    89,
+    20,
+    156,
+  ),
+  makeAssignment(
+    "manga2",
+    "蓝色监狱 (Blue Lock)",
+    45,
+    [
+      "assignedTranslatorAt",
+      "assignedProofreaderAt",
+      "assignedTypesetterAt",
+      "assignedPublisherAt",
+    ],
+    210,
+    180,
+    210,
+  ),
+  makeAssignment("manga3", "咏术回战", 213, ["assignedTranslatorAt"], 0, 0, 88),
+  makeAssignment(
+    "manga4",
+    "One Piece",
+    1100,
+    ["assignedProofreaderAt"],
+    300,
+    300,
+    300,
+  ),
 ];
 
 const now = Date.now();
 
-const REVIEWER_SAMPLES: ReviewerAssignmentWithChapterInfo[] = [
-  makeReviewerAssignment("rev1", "电锯人 第二部", "102", 16, {
+const REVIEWER_SAMPLES: AssignmentInfo[] = [
+  makeReviewerAssignment("rev1", "电锋人 第二部", 102, ["assignedReviewerAt"], {
     uploadedAt: now,
     translatedAt: now,
     proofreadAt: now,
     typesettingAt: now,
   }),
-  makeReviewerAssignment("rev2", "蓝色监狱 (Blue Lock)", "45", 4, {
-    uploadedAt: now,
-    translatedAt: now,
-    proofreadingAt: now,
-  }),
-  makeReviewerAssignment("rev3", "葬送的芙莉莲", "12", 32, {
+  makeReviewerAssignment(
+    "rev2",
+    "蓝色监狱 (Blue Lock)",
+    45,
+    ["assignedProofreaderAt"],
+    {
+      uploadedAt: now,
+      translatedAt: now,
+      proofreadingAt: now,
+    },
+  ),
+  makeReviewerAssignment("rev3", "葬送的芝莉迍", 12, ["assignedPublisherAt"], {
     uploadedAt: now,
     translatedAt: now,
     proofreadAt: now,
@@ -115,7 +168,7 @@ const REVIEWER_SAMPLES: ReviewerAssignmentWithChapterInfo[] = [
     reviewedAt: now,
     publishedAt: now,
   }),
-  makeReviewerAssignment("rev4", "咒术回战", "213", 16, {}),
+  makeReviewerAssignment("rev4", "咏术回战", 213, ["assignedReviewerAt"], {}),
 ];
 
 const meta: Meta<typeof AssignmentCard> = {
@@ -172,22 +225,55 @@ export const ReviewerSingle: Story = {
             id: "1",
             chapterId: "102",
             userId: "u1",
-            roles: 2,
-            userName: "张三",
+            assignedTranslatorAt: Date.now(),
+            user: {
+              id: "u1",
+              name: "张三",
+              qq: "",
+              avatarUrl: "",
+              isAvatarUploaded: false,
+              isSuperAdmin: false,
+              createdAt: 0,
+              updatedAt: 0,
+            },
+            createdAt: 0,
+            updatedAt: 0,
           },
           {
             id: "2",
             chapterId: "102",
             userId: "u2",
-            roles: 4,
-            userName: "李四",
+            assignedProofreaderAt: Date.now(),
+            user: {
+              id: "u2",
+              name: "李四",
+              qq: "",
+              avatarUrl: "",
+              isAvatarUploaded: false,
+              isSuperAdmin: false,
+              createdAt: 0,
+              updatedAt: 0,
+            },
+            createdAt: 0,
+            updatedAt: 0,
           },
           {
             id: "3",
             chapterId: "102",
             userId: "u3",
-            roles: 8,
-            userName: "极其超级无敌长的名字王五",
+            assignedTypesetterAt: Date.now(),
+            user: {
+              id: "u3",
+              name: "极其超级无敌长的名字王五",
+              qq: "",
+              avatarUrl: "",
+              isAvatarUploaded: false,
+              isSuperAdmin: false,
+              createdAt: 0,
+              updatedAt: 0,
+            },
+            createdAt: 0,
+            updatedAt: 0,
           },
         ]}
       />
@@ -207,24 +293,60 @@ export const ReviewerGrid: Story = {
           onLoadAssignments={async () => [
             {
               id: "1",
-              chapterId: item.chapter.id,
+              chapterId: item.chapter?.id ?? "",
               userId: "u1",
-              roles: 3,
-              userName: "测试人员A",
+              assignedRawProviderAt: Date.now(),
+              assignedTranslatorAt: Date.now(),
+              user: {
+                id: "u1",
+                name: "测试人员A",
+                qq: "",
+                avatarUrl: "",
+                isAvatarUploaded: false,
+                isSuperAdmin: false,
+                createdAt: 0,
+                updatedAt: 0,
+              },
+              createdAt: 0,
+              updatedAt: 0,
             },
             {
               id: "2",
-              chapterId: item.chapter.id,
+              chapterId: item.chapter?.id ?? "",
               userId: "u2",
-              roles: 12,
-              userName: "测试人员B",
+              assignedProofreaderAt: Date.now(),
+              assignedTypesetterAt: Date.now(),
+              user: {
+                id: "u2",
+                name: "测试人员B",
+                qq: "",
+                avatarUrl: "",
+                isAvatarUploaded: false,
+                isSuperAdmin: false,
+                createdAt: 0,
+                updatedAt: 0,
+              },
+              createdAt: 0,
+              updatedAt: 0,
             },
             {
               id: "3",
-              chapterId: item.chapter.id,
+              chapterId: item.chapter?.id ?? "",
               userId: "u3",
-              roles: 48,
-              userName: "名字超长的测试人员CDEF",
+              assignedReviewerAt: Date.now(),
+              assignedPublisherAt: Date.now(),
+              user: {
+                id: "u3",
+                name: "名字超长的测试人员CDEF",
+                qq: "",
+                avatarUrl: "",
+                isAvatarUploaded: false,
+                isSuperAdmin: false,
+                createdAt: 0,
+                updatedAt: 0,
+              },
+              createdAt: 0,
+              updatedAt: 0,
             },
           ]}
         />

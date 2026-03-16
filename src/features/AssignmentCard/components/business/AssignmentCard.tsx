@@ -1,30 +1,20 @@
 import clsx from "clsx";
-import type {
-  AssignmentWithChapterInfo,
-  ReviewerAssignmentWithChapterInfo,
-  AssignmentInfo,
-} from "@/types/assignment";
+import type { AssignmentInfo } from "@/types/assignment";
 import TranslatorAssignmentCard from "./TranslatorAssignmentCard";
 import ReviewerAssignmentCard from "./ReviewerAssignmentCard";
 
-// NOTE: Add flexible typing for user to include name info in fetched assignment
-export type LoadedAssignment = AssignmentInfo & {
-  user?: { name: string };
-  userName?: string;
-};
-
 type Props =
   | {
-      assignmentInfo: AssignmentWithChapterInfo;
+      assignmentInfo: AssignmentInfo;
       mode: "translator";
       onClick: () => void;
       onLoadAssignments?: never;
     }
   | {
-      assignmentInfo: ReviewerAssignmentWithChapterInfo;
+      assignmentInfo: AssignmentInfo;
       mode: "reviewer";
       onClick: () => void;
-      onLoadAssignments: (chapterId: string) => Promise<LoadedAssignment[]>;
+      onLoadAssignments: (chapterId: string) => Promise<AssignmentInfo[]>;
     };
 
 // 固定高度、宽度自适应的细长卡片容器
@@ -36,10 +26,12 @@ export default function AssignmentCard(props: Props) {
     <div
       onClick={onClick}
       className={clsx(
-        "w-full h-32 flex flex-col",
-        "bg-white rounded-lg overflow-hidden shadow-sm",
-        "transition-colors cursor-pointer",
+        "w-full flex flex-col",
+        "bg-white rounded-lg overflow-hidden shadow-md",
+        "border border-slate-200",
+        "transition-all cursor-pointer duration-300",
         "hover:bg-slate-50",
+        mode === "translator" ? "h-32" : "h-38",
       )}
     >
       {mode === "translator" && (

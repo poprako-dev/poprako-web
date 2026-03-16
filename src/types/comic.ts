@@ -1,18 +1,23 @@
+import type { UserInfo } from "./user";
+import type { WorksetInfo } from "./workset";
+
 export type ComicInfo = {
   id: string;
+
+  worksetId: string;
+  workset?: WorksetInfo;
 
   title: string;
   author: string;
   description: string;
 
-  creatorId: string;
-
   index: number;
   chapterCount: number;
-
-  coverUrl: string;
+  creatorId: string;
+  creator?: UserInfo;
 
   lastActiveAt: number;
+
   createdAt: number;
   updatedAt: number;
 };

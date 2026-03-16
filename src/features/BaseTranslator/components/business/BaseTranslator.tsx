@@ -98,13 +98,13 @@ export default function BaseTranslator({
       .filter((unit) => !currentById.has(unitId(unit)))
       .map((unit) => unitId(unit));
 
-    return { insert, modify, delete: del };
+    return { insert, patch: modify, delete: del };
   }
 
   function isDiffEmpty(diff: UnitDiff): boolean {
     return (
       diff.insert.length === 0 &&
-      diff.modify.length === 0 &&
+      diff.patch.length === 0 &&
       diff.delete.length === 0
     );
   }
@@ -152,7 +152,7 @@ export default function BaseTranslator({
     } catch (err) {
       const summary =
         `insert:${diff.insert.length} ` +
-        `modify:${diff.modify.length} ` +
+        `modify:${diff.patch.length} ` +
         `delete:${diff.delete.length}`;
       console.error(
         `[BaseTranslator] 保存失败 pageId=${
