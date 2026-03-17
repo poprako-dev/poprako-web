@@ -1,3 +1,4 @@
+import { appConfig } from "@/config/config";
 import { useAppStore } from "@/store/app";
 
 type FormatResponse<T> = {
@@ -9,13 +10,43 @@ type FormatResponse<T> = {
   data?: T;
 };
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = appConfig.apiBaseUrl;
 
+function buildQuery(
+  url: string,
+  params?: Record<
+    string,
+    string | number | boolean | (string | number | boolean)[]
+  >,
+): string {
+  if (!params || Object.keys(params).length === 0) return url;
+
+  const usp = new URLSearchParams();
+
+  for (const key of Object.keys(params)) {
+    const val = params[key as keyof typeof params] as any;
+    if (val === undefined || val === null) continue;
+    if (Array.isArray(val)) {
+      for (const v of val) {
+        if (v === undefined || v === null) continue;
+        usp.append(key, String(v));
+      }
+    } else {
+      usp.append(key, String(val));
+    }
+  }
+
+  const qs = usp.toString();
+
+  if (!qs) return url;
+
+  return url.includes("?") ? `${url}&${qs}` : `${url}?${qs}`;
+}
 async function request<T>(
   url: string,
   options: RequestInit = {},
   needAuth: boolean = true,
-): Promise<FormatResponse<T>> {
+): Promise<T | string> {
   const headers = new Headers(options.headers || {});
   headers.set("Content-Type", "application/json");
 
@@ -32,19 +63,47 @@ async function request<T>(
     headers,
   };
 
-  const response = await fetch(`${BASE_URL}${url}`, config);
+  try {
+    const response = await fetch(`${BASE_URL}${url}`, config);
 
-  // 这里处理 HTTP 状态码错误（如 401, 500 等）
-  if (!response.ok) {
-    throw new Error(`HTTP 错误，状态码: ${response.status}`);
+    let body: FormatResponse<T> | null = null;
+    try {
+      body = (await response.json()) as FormatResponse<T>;
+    } catch (e) {
+      body = {
+        code: response.ok ? 200 : response.status,
+        message: response.statusText || "未知错误",
+      } as FormatResponse<T>;
+    }
+
+    if (!response.ok) {
+      return body.message ?? response.statusText ?? "未知错误";
+    }
+
+    // 如果后端返回了 data 就把它当作 T 返回，否则返回 message
+    if (body.data !== undefined && body.data !== null) {
+      return body.data as T;
+    }
+
+    return body.message ?? "";
+  } catch (err) {
+    return err && (err as any).message ? (err as any).message : "未知错误";
   }
+}
 
-  return response.json();
+function buildQueryUrl(
+  url: string,
+  params?: Record<string, string | number | boolean>,
+) {
+  return buildQuery(url, params as any);
 }
 
 export const api = {
-  get: <T>(url: string, needAuth = true) =>
-    request<T>(url, { method: "GET" }, needAuth),
+  get: <T>(
+    url: string,
+    queryParams?: Record<string, string | number | boolean>,
+    needAuth = true,
+  ) => request<T>(buildQueryUrl(url, queryParams), { method: "GET" }, needAuth),
 
   post: <T, B>(url: string, body: B, needAuth = true) =>
     request<T>(url, { method: "POST", body: JSON.stringify(body) }, needAuth),

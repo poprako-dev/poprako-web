@@ -8,5 +8,8 @@ export async function loginUser(args: LoginUserArgs) {
     false,
   );
 
-  return result.data!;
+  if (typeof result === "string") {
+    throw new Error(result);
+  }
+  return result;
 }

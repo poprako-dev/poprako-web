@@ -5,7 +5,7 @@ import type { WorkflowStatus } from "./workflow";
 export type ChapterInfo = {
   id: string;
 
-  comidId: string;
+  comicId: string;
   comic?: ComicInfo;
 
   index: number;
@@ -17,7 +17,7 @@ export type ChapterInfo = {
   proofreadUnitCount: number;
 
   uploadedAt?: number;
-  transalatingAt?: number;
+  translatingAt?: number;
   translatedAt?: number;
   typesetAt?: number;
   typesettingAt?: number;
@@ -55,7 +55,7 @@ export type UpdateChapterArgs = {
 
 export type WithWorkflow = {
   uploadedAt?: number;
-  transalatingAt?: number;
+  translatingAt?: number;
   translatedAt?: number;
   typesetAt?: number;
   typesettingAt?: number;
@@ -76,7 +76,7 @@ export function translateWorkflowStatus(chapter: WithWorkflow) {
   if (chapter.translatedAt) {
     return "completed" as WorkflowStatus;
   }
-  if (chapter.transalatingAt) {
+  if (chapter.translatingAt) {
     return "in_progress" as WorkflowStatus;
   }
   return "pending" as WorkflowStatus;

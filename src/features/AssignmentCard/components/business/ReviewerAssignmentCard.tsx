@@ -120,34 +120,33 @@ export default function ReviewerAssignmentCard({
 
   return (
     <div className="flex flex-col w-full h-full">
-      {/* 主体区域 */}
-      <div className="group flex flex-1 px-3 pt-3 gap-3 items-center min-h-0">
-        {/* 封面占位 */}
+      {/* Header：标题 + 话号 */}
+      <div className="px-3 pt-3 pb-1 shrink-0">
+        <div className="flex items-center gap-3">
+          <h3
+            className={clsx(
+              "text-base font-bold text-slate-700",
+              "truncate flex-1 leading-none",
+            )}
+          >
+            {comic?.title || "未命名"}
+          </h3>
+          <span
+            className={clsx(
+              "text-xs font-mono text-slate-400 shrink-0",
+              "bg-slate-50 px-2 py-0.5 rounded flex items-center h-5 leading-none",
+            )}
+          >
+            #{chapter?.index}
+          </span>
+        </div>
+      </div>
+
+      {/* 主体区域：左封面 + 右侧三行 */}
+      <div className="group flex flex-1 px-3 pb-2 pt-1 gap-3 items-stretch min-h-0">
         <div className="w-16 h-full shrink-0 rounded overflow-hidden bg-slate-100" />
 
-        {/* 右侧详情 */}
-        <div className="flex-1 flex flex-col pt-1 gap-1.5 min-w-0 h-full">
-          {/* 第一行：标题 + 话号 */}
-          <div className="flex items-center gap-3">
-            <h3
-              className={clsx(
-                "text-base font-bold text-slate-700",
-                "truncate flex-1 leading-none",
-              )}
-            >
-              {comic?.title || "未命名"}
-            </h3>
-            <span
-              className={clsx(
-                "text-xs font-mono text-slate-400 shrink-0",
-                "bg-slate-50 px-2 py-0.5 rounded flex items-center h-5 leading-none",
-              )}
-            >
-              #{chapter?.index}
-            </span>
-          </div>
-
-          {/* 第二行：日期 + 页数 */}
+        <div className="flex-1 flex flex-col min-w-0 h-full justify-between">
           <div className="flex items-center gap-2 text-sm text-slate-400">
             <div className="flex items-center gap-1 shrink-0">
               <Clock size={12} />
@@ -164,10 +163,9 @@ export default function ReviewerAssignmentCard({
             </div>
           </div>
 
-          {/* 第三行：2列3行的分配人员名单 */}
           <div
             className={clsx(
-              "grid grid-cols-2 gap-x-2 gap-y-1.5 mt-1",
+              "grid grid-cols-2 gap-x-2 gap-y-1.5",
               "text-[12px] text-slate-500 overflow-hidden",
             )}
           >
@@ -195,21 +193,38 @@ export default function ReviewerAssignmentCard({
               );
             })}
           </div>
-        </div>
-      </div>
 
-      {/* Footer 进度条 */}
-      <div className="px-3 pb-2 pt-1 shrink-0 flex gap-1 w-full mt-auto">
-        {chapter && (
-          <>
-            <WorkflowTag label="图" status={uploadWorkflowStatus(chapter)} />
-            <WorkflowTag label="翻" status={translateWorkflowStatus(chapter)} />
-            <WorkflowTag label="校" status={proofreadWorkflowStatus(chapter)} />
-            <WorkflowTag label="嵌" status={typesetWorkflowStatus(chapter)} />
-            <WorkflowTag label="监" status={reviewWorkflowStatus(chapter)} />
-            <WorkflowTag label="传" status={publishWorkflowStatus(chapter)} />
-          </>
-        )}
+          <div className="shrink-0 flex gap-1 w-full pt-1">
+            {chapter && (
+              <>
+                <WorkflowTag
+                  label="图"
+                  status={uploadWorkflowStatus(chapter)}
+                />
+                <WorkflowTag
+                  label="翻"
+                  status={translateWorkflowStatus(chapter)}
+                />
+                <WorkflowTag
+                  label="校"
+                  status={proofreadWorkflowStatus(chapter)}
+                />
+                <WorkflowTag
+                  label="嵌"
+                  status={typesetWorkflowStatus(chapter)}
+                />
+                <WorkflowTag
+                  label="监"
+                  status={reviewWorkflowStatus(chapter)}
+                />
+                <WorkflowTag
+                  label="传"
+                  status={publishWorkflowStatus(chapter)}
+                />
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,23 +1,29 @@
 import type {
-  ChapterDetail,
+  ChapterInfo,
   CreateChapterArgs,
   CreateChapterResult,
   UpdateChapterArgs,
 } from "../chapter";
+import { unwrapRawComicInfo, type RawComicInfo } from "./comic";
+import { unwrapRawUserInfo, type RawUserInfo } from "./user";
 
-export type RawChapterDetail = {
+export type RawChapterInfo = {
   id: string;
-  chapter_no: string;
+
   comic_id: string;
+  comic?: RawComicInfo;
+
   creator_id: string;
-  cover_url: string;
+  creator?: RawUserInfo;
+
   index: number;
+  subtitle: string;
+
   page_count: number;
   total_unit_count: number;
   translated_unit_count: number;
   proofread_unit_count: number;
-  created_at: number;
-  updated_at: number;
+
   uploaded_at?: number;
   transalating_at?: number;
   translated_at?: number;
@@ -27,16 +33,20 @@ export type RawChapterDetail = {
   proofreading_at?: number;
   reviewed_at?: number;
   published_at?: number;
+
+  created_at: number;
+  updated_at: number;
 };
 
-export function unwrapRawChapterDetail(raw: RawChapterDetail): ChapterDetail {
+export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
   return {
     id: raw.id,
-    chapterNo: raw.chapter_no,
     comicId: raw.comic_id,
+    comic: raw.comic ? unwrapRawComicInfo(raw.comic) : undefined,
     creatorId: raw.creator_id,
-    coverUrl: raw.cover_url,
+    creator: raw.creator ? unwrapRawUserInfo(raw.creator) : undefined,
     index: raw.index,
+    subtitle: raw.subtitle,
     pageCount: raw.page_count,
     totalUnitCount: raw.total_unit_count,
     translatedUnitCount: raw.translated_unit_count,
@@ -44,7 +54,7 @@ export function unwrapRawChapterDetail(raw: RawChapterDetail): ChapterDetail {
     uploadedAt: raw.uploaded_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-    transalatingAt: raw.transalating_at,
+    translatingAt: raw.transalating_at,
     translatedAt: raw.translated_at,
     typesetAt: raw.typeset_at,
     typesettingAt: raw.typesetting_at,
@@ -52,7 +62,7 @@ export function unwrapRawChapterDetail(raw: RawChapterDetail): ChapterDetail {
     proofreadingAt: raw.proofreading_at,
     reviewedAt: raw.reviewed_at,
     publishedAt: raw.published_at,
-  } as ChapterDetail;
+  } as ChapterInfo;
 }
 
 export type RawCreateChapterArgs = { chapter_no: string; comic_id: string };

@@ -29,7 +29,7 @@ function makeAssignment(
     ...roleFields,
     chapter: {
       id: `chapter-${seed}`,
-      comidId: `comic-${seed}`,
+      comicId: `comic-${seed}`,
       index,
       subtitle: `第${index}话`,
       pageCount: 24,
@@ -74,7 +74,7 @@ function makeReviewerAssignment(
     ...roleFields,
     chapter: {
       id: `chapter-${seed}`,
-      comidId: `comic-${seed}`,
+      comicId: `comic-${seed}`,
       index,
       subtitle: `第${index}话`,
       pageCount: 24,

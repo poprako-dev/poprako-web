@@ -31,7 +31,7 @@ export default function AssignmentCard(props: Props) {
         "border border-slate-200",
         "transition-all cursor-pointer duration-300",
         "hover:bg-slate-50",
-        mode === "translator" ? "h-32" : "h-38",
+        mode === "translator" ? "h-30" : "h-34",
       )}
     >
       {mode === "translator" && (

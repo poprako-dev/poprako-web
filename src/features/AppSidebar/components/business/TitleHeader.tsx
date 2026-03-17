@@ -25,7 +25,7 @@ export default function TitleHeader() {
           "group-hover:delay-150",
         )}
       >
-        POPRAKO 白杨子
+        POPRAKO - W
       </span>
     </div>
   );
