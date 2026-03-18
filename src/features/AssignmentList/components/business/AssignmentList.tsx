@@ -13,6 +13,7 @@ type Props = {
     offset: number,
     limit: number,
   ) => Promise<AssignmentInfo[] | string>;
+  // 获取指定 chapter 下的分工信息，主要用于 reviewer 模式下的分工卡片展示
   onLoadAssignments: (chapterId: string) => Promise<AssignmentInfo[] | string>;
 };
 
@@ -102,9 +103,15 @@ export default function AssignmentList({
       className={clsx("w-full h-full min-h-0 flex flex-col overflow-hidden")}
     >
       <div className={clsx("flex items-center justify-between shrink-0 pb-4")}>
-        <h2 className={clsx("text-lg font-semibold text-slate-800")}>
-          当前参加任务
-        </h2>
+        <div className={clsx("flex-1 mr-4")} aria-hidden="true">
+          <div
+            className={clsx("w-full h-0.5 rounded-sm")}
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(148,163,184,1) 0%, rgba(148,163,184,0) 60%)",
+            }}
+          />
+        </div>
         <div className={clsx("flex bg-slate-100 p-1 rounded-md")}>
           <button
             type="button"
@@ -138,7 +145,7 @@ export default function AssignmentList({
       >
         <div
           className={clsx(
-            "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 w-full justify-start items-start",
+            "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full justify-start items-start",
           )}
         >
           {assignments.map((assignment) =>

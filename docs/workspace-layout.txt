@@ -1,0 +1,206 @@
+import React, { useState, useEffect } from "react";
+import { 
+  Clock, 
+  Flame, 
+  CheckCircle2, 
+  Bell, 
+  Settings, 
+  Search, 
+  Filter,
+  FileText,
+  LayoutDashboard,
+  Sigma,
+  Library,
+  ChevronRight,
+  LayoutGrid
+} from "lucide-react";
+
+/** * 常量配置 */
+const ROLE_MAP = [
+  { label: "图", field: "assignedRawProviderAt" },
+  { label: "翻", field: "assignedTranslatorAt" },
+  { label: "校", field: "assignedProofreaderAt" },
+  { label: "嵌", field: "assignedTypesetterAt" },
+  { label: "监", field: "assignedReviewerAt" },
+  { label: "传", field: "assignedPublisherAt" },
+];
+
+const STATUS_CONFIG = {
+  pending: { text: "text-slate-300", bg: "bg-slate-50/40", line: "bg-slate-100" },
+  in_progress: { text: "text-orange-300", bg: "bg-orange-50/40", line: "bg-orange-200" },
+  completed: { text: "text-emerald-400", bg: "bg-emerald-50/50", line: "bg-emerald-200" },
+};
+
+// --- 子组件: 工作流标签 ---
+function WorkflowTag({ label, status }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+  return (
+    <div className={`relative flex-1 h-6 flex items-center justify-center rounded-sm transition-all duration-300 ${cfg.bg}`}>
+      <span className={`text-[11px] font-extrabold tracking-widest z-10 ${cfg.text}`}>{label}</span>
+      <div className={`absolute bottom-0 left-0 right-0 h-[2.5px] rounded-b-sm ${cfg.line}`} />
+    </div>
+  );
+}
+
+// --- 子组件: 任务卡片 ---
+function ReviewerAssignmentCard({ data }) {
+  const { title, chapter, date, pages, statuses, roles } = data;
+  return (
+    <div className="bg-white rounded-lg border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col h-[160px]">
+      <div className="px-3 pt-3 pb-1 shrink-0">
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-bold text-slate-700 truncate flex-1 leading-none">{title}</h3>
+          <span className="text-[10px] font-mono text-slate-400 shrink-0 bg-slate-50 px-2 py-0.5 rounded flex items-center h-4">#{chapter}</span>
+        </div>
+      </div>
+      <div className="flex flex-1 px-3 pb-2 pt-1 gap-3 items-stretch min-h-0">
+        <div className="w-14 h-full shrink-0 rounded bg-slate-100 flex items-center justify-center text-slate-300 text-[10px]">封面</div>
+        <div className="flex-1 flex flex-col min-w-0 h-full justify-between">
+          <div className="flex items-center gap-2 text-[10px] text-slate-400">
+            <div className="flex items-center gap-1 shrink-0"><Clock size={10} /> {date}</div>
+            <div className="h-2 w-px bg-slate-200" />
+            <div className="flex items-center gap-1 shrink-0"><FileText size={10} /> {pages}P</div>
+          </div>
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-slate-500 overflow-hidden">
+             {ROLE_MAP.slice(0, 4).map(r => (
+               <div key={r.label} className="flex items-center gap-1 truncate">
+                 <span className="text-slate-300">{r.label}:</span>
+                 <span className="truncate font-medium">{roles[r.label] || "-"}</span>
+               </div>
+             ))}
+          </div>
+          <div className="shrink-0 flex gap-1 w-full pt-1">
+            {statuses.map((s, i) => (
+              <WorkflowTag key={i} label={ROLE_MAP[i].label} status={s} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- 主页面组件 ---
+export default function App() {
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeRole, setActiveRole] = useState("all");
+
+  const navItems = [
+    { id: "dashboard", icon: LayoutDashboard, label: "工作台" },
+    { id: "symbols", icon: Sigma, label: "符号表" },
+    { id: "library", icon: Library, label: "资源库" },
+  ];
+
+  const mockTasks = [
+    { title: "勇者大人不想转职", chapter: "24", date: "2024/5/12", pages: 18, roles: { "图": "小明", "翻": "Luna" }, statuses: ["completed", "in_progress", "pending", "pending", "pending", "pending"] },
+    { title: "在地下城寻找爱情", chapter: "102", date: "2024/5/11", pages: 32, roles: { "图": "阿强", "嵌": "Kiki" }, statuses: ["completed", "completed", "completed", "in_progress", "pending", "pending"] },
+    { title: "异世界药剂师", chapter: "12", date: "2024/5/10", pages: 24, roles: { "监": "老陈" }, statuses: ["completed", "completed", "completed", "completed", "in_progress", "pending"] },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#FBFBFC] text-slate-600 font-sans selection:bg-orange-100">
+      {/* 1. 全新极简导航栏 (替代原有的头像行) */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-8 h-full">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`relative flex items-center gap-2 h-full px-1 transition-all group ${
+                activeTab === item.id ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <item.icon size={18} strokeWidth={activeTab === item.id ? 2.5 : 2} />
+              <span className={`text-[12px] font-bold tracking-tight ${activeTab === item.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"} transition-opacity`}>
+                {item.label}
+              </span>
+              {activeTab === item.id && (
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-800 rounded-t-full" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-6 text-slate-400">
+          <Search size={18} className="cursor-pointer hover:text-slate-600 transition-colors" />
+          <div className="relative cursor-pointer hover:text-slate-600 transition-colors">
+             <Bell size={18} />
+             <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full border-2 border-white" />
+          </div>
+          <Settings size={18} className="cursor-pointer hover:text-slate-600 transition-colors" />
+        </div>
+      </nav>
+
+      <main className="px-6 py-8">
+        {/* 2. 数据看板区 */}
+        <section className="grid grid-cols-3 gap-4 mb-10">
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 flex flex-col justify-between h-28 shadow-sm">
+            <Clock size={16} className="text-slate-300" />
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-black text-slate-700">12</span>
+              <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">Tasks</span>
+            </div>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 flex flex-col justify-between h-28 shadow-sm">
+            <Flame size={16} className="text-orange-300" />
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-black text-orange-400">3</span>
+              <span className="text-[10px] text-orange-300 font-extrabold uppercase tracking-widest">Urgent</span>
+            </div>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 flex flex-col justify-between h-28 shadow-sm">
+            <CheckCircle2 size={16} className="text-emerald-300" />
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-black text-emerald-400">42</span>
+              <span className="text-[10px] text-emerald-300 font-extrabold uppercase tracking-widest">Done</span>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. 过滤器与工序选择 */}
+        <section className="flex items-center justify-between mb-6">
+          <div className="flex bg-slate-200/50 p-1 rounded-lg gap-1">
+            <button 
+              onClick={() => setActiveRole("all")}
+              className={`px-4 py-1.5 text-[11px] font-bold rounded-md transition-all ${activeRole === "all" ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-500"}`}
+            >
+              全部
+            </button>
+            {ROLE_MAP.map(r => (
+              <button 
+                key={r.label}
+                onClick={() => setActiveRole(r.label)}
+                className={`w-9 h-8 flex items-center justify-center text-[11px] font-bold rounded-md transition-all ${activeRole === r.label ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-500"}`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-4 text-slate-400">
+             <div className="flex items-center gap-2 text-[11px] font-bold bg-white px-3 py-2 rounded-lg border border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors">
+               <Filter size={12} />
+               <span>筛选</span>
+             </div>
+             <LayoutGrid size={18} className="cursor-pointer text-slate-300 hover:text-slate-500" />
+          </div>
+        </section>
+
+        {/* 4. 任务列表空间 */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mockTasks.map((task, idx) => (
+            <ReviewerAssignmentCard key={idx} data={task} />
+          ))}
+          
+          <div className="bg-slate-50/50 border-2 border-dashed border-slate-200/60 rounded-lg flex items-center justify-center h-[160px] group cursor-pointer hover:bg-white hover:border-slate-300 transition-all">
+            <div className="flex flex-col items-center gap-3 opacity-30 group-hover:opacity-60 transition-opacity">
+              <div className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center">
+                <ChevronRight size={20} />
+              </div>
+              <span className="text-[10px] font-black tracking-[0.2em]">查看更多</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
