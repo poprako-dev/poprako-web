@@ -16,8 +16,8 @@ function formatDate(ts: number | undefined): string {
 
 function DataTag({ icon, value }: { icon: React.ReactNode; value: number }) {
   return (
-    <div className="flex items-center text-slate-500 bg-gray-100/80 px-1 py-0.5 rounded-md min-w-0">
-      <span className="text-slate-400 ml-1 w-5 flex-shrink-0 flex items-center justify-center">
+    <div className="flex items-center text-slate-500 bg-gray-100/80 px-1.5 py-1 rounded-sm min-w-0">
+      <span className="text-slate-400 ml-1 w-5 shrink-0 flex items-center justify-center">
         {icon}
       </span>
       <span className="text-sm font-medium leading-none flex-1 text-center min-w-0">

@@ -41,46 +41,54 @@ function WorkspaceStatCard({
     },
   }[tone];
 
+  const iconBg = {
+    slate: "bg-slate-100",
+    orange: "bg-orange-50",
+    emerald: "bg-emerald-50",
+  }[tone];
+
   return (
     <div
       className={clsx(
-        "flex-1 min-w-0 h-fit rounded-lg border border-slate-200 bg-white",
+        "flex-1 min-w-0 rounded-lg border border-slate-200 bg-white shadow-sm",
+        "p-4 flex items-center gap-4",
       )}
     >
-      {/* Mobile: only centered number */}
-      <div
-        className={clsx("flex h-16 items-center justify-center md:hidden p-3")}
-      >
-        <span
+      <div className={clsx("flex items-center gap-3")}>
+        <div
           className={clsx(
-            "text-2xl font-black leading-none",
-            toneClass.value,
-            isLoading && "animate-pulse",
+            "w-12 h-12 rounded-lg flex items-center justify-center",
+            iconBg,
           )}
         >
-          {isLoading ? "-" : value}
-        </span>
-      </div>
+          <Icon size={20} className={clsx(toneClass.icon)} />
+        </div>
 
-      {/* Desktop: icon + label above, number below */}
-      <div className={clsx("hidden md:flex flex-col items-center gap-3 p-4")}>
-        <div className={clsx("flex items-center gap-2")}>
-          <Icon size={18} className={clsx(toneClass.icon)} />
+        <div className={clsx("flex flex-col")}>
           <span className={clsx("text-sm font-medium", toneClass.label)}>
             {label}
           </span>
-        </div>
-        <div>
           <span
             className={clsx(
-              "text-3xl font-black leading-none",
-              toneClass.value,
+              "text-lg font-medium mt-0.5 text-slate-400 md:hidden",
               isLoading && "animate-pulse",
             )}
           >
             {isLoading ? "-" : value}
           </span>
         </div>
+      </div>
+
+      <div className={clsx("ml-auto hidden md:block")}>
+        <span
+          className={clsx(
+            "text-4xl font-black leading-none",
+            toneClass.value,
+            isLoading && "animate-pulse",
+          )}
+        >
+          {isLoading ? "-" : value}
+        </span>
       </div>
     </div>
   );

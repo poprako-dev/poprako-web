@@ -24,17 +24,17 @@ export default function WorkspaceHeaderNav({ activeTab, onTabChange }: Props) {
         "backdrop-blur-md",
       )}
     >
-      <div className={clsx("flex h-full items-center gap-8")}>
+      <div className={clsx("flex h-full items-center gap-1")}>
         {navItems.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => onTabChange(item.id)}
             className={clsx(
-              "group relative flex h-full items-center gap-2 px-1",
+              "group relative flex h-full items-center gap-2 px-3",
               "transition-colors",
               activeTab === item.id
-                ? "text-slate-900"
+                ? "text-slate-600 bg-green-50/80"
                 : "text-slate-400 hover:text-slate-600",
             )}
           >
@@ -42,14 +42,14 @@ export default function WorkspaceHeaderNav({ activeTab, onTabChange }: Props) {
               size={18}
               strokeWidth={activeTab === item.id ? 2.4 : 2}
             />
-            <span className={clsx("text-[12px] font-bold tracking-tight")}>
+            <span className={clsx("text-[12px] font-semibold tracking-tight")}>
               {item.label}
             </span>
             {activeTab === item.id && (
               <span
                 className={clsx(
                   "absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full",
-                  "bg-green-500",
+                  "bg-green-500/80",
                 )}
               />
             )}

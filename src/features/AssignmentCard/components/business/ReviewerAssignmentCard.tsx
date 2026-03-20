@@ -18,12 +18,36 @@ type Props = {
 };
 
 const ROLE_MAP = [
-  { label: "图", field: "assignedRawProviderAt" as const },
-  { label: "翻", field: "assignedTranslatorAt" as const },
-  { label: "校", field: "assignedProofreaderAt" as const },
-  { label: "嵌", field: "assignedTypesetterAt" as const },
-  { label: "监", field: "assignedReviewerAt" as const },
-  { label: "传", field: "assignedPublisherAt" as const },
+  {
+    label: "图",
+    field: "assignedRawProviderAt" as const,
+    getStatus: uploadWorkflowStatus,
+  },
+  {
+    label: "翻",
+    field: "assignedTranslatorAt" as const,
+    getStatus: translateWorkflowStatus,
+  },
+  {
+    label: "校",
+    field: "assignedProofreaderAt" as const,
+    getStatus: proofreadWorkflowStatus,
+  },
+  {
+    label: "嵌",
+    field: "assignedTypesetterAt" as const,
+    getStatus: typesetWorkflowStatus,
+  },
+  {
+    label: "监",
+    field: "assignedReviewerAt" as const,
+    getStatus: reviewWorkflowStatus,
+  },
+  {
+    label: "传",
+    field: "assignedPublisherAt" as const,
+    getStatus: publishWorkflowStatus,
+  },
 ];
 
 function formatDate(ts: number | undefined): string {
@@ -55,11 +79,13 @@ const STATUS_CONFIG: Record<
   },
 };
 
-function WorkflowTag({
+function RoleTag({
   label,
+  names,
   status,
 }: {
   label: string;
+  names: string;
   status: WorkflowStatus;
 }) {
   const cfg = STATUS_CONFIG[status as DisplayStatus] ?? STATUS_CONFIG.pending;
@@ -67,19 +93,22 @@ function WorkflowTag({
   return (
     <div
       className={clsx(
-        "relative flex-1 h-6",
-        "flex items-center justify-center",
-        "rounded-sm transition-all duration-300",
+        "relative flex min-w-0 items-center gap-2  px-2 py-1.5",
+        "overflow-hidden transition-all duration-300",
         cfg.bg,
       )}
+      title={names !== "-" ? names : undefined}
     >
       <span
         className={clsx(
-          "text-[12px] font-extrabold tracking-widest z-10",
+          "shrink-0 text-[12px] font-extrabold leading-none tracking-widest",
           cfg.text,
         )}
       >
         {label}
+      </span>
+      <span className="truncate text-[12px] font-semibold leading-none text-slate-600">
+        {names}
       </span>
       <div
         className={clsx(
@@ -163,66 +192,28 @@ export default function ReviewerAssignmentCard({
             </div>
           </div>
 
-          <div
-            className={clsx(
-              "grid grid-cols-2 gap-x-2 gap-y-1.5",
-              "text-[12px] text-slate-500 overflow-hidden",
-            )}
-          >
+          <div className="grid grid-cols-2 gap-1.5 overflow-hidden text-[12px]">
             {ROLE_MAP.map((roleDef) => {
               const matchedUsers = details.filter(
-                (d) => d[roleDef.field] !== undefined,
+                (detail) => detail[roleDef.field] !== undefined,
               );
               const names =
-                matchedUsers.map((u) => u.user?.name || u.userId).join(", ") ||
-                "-";
+                matchedUsers
+                  .map((detail) => detail.user?.name || detail.userId)
+                  .join(", ") || "-";
+              const status = chapter
+                ? roleDef.getStatus(chapter)
+                : ("pending" as WorkflowStatus);
 
               return (
-                <div
+                <RoleTag
                   key={roleDef.label}
-                  className="flex items-center gap-1 min-w-0"
-                  title={names !== "-" ? names : undefined}
-                >
-                  <span className="text-slate-400 shrink-0 leading-none">
-                    {roleDef.label}:
-                  </span>
-                  <span className="truncate leading-none font-semibold">
-                    {names}
-                  </span>
-                </div>
+                  label={roleDef.label}
+                  names={names}
+                  status={status}
+                />
               );
             })}
-          </div>
-
-          <div className="shrink-0 flex gap-1 w-full pt-1">
-            {chapter && (
-              <>
-                <WorkflowTag
-                  label="图"
-                  status={uploadWorkflowStatus(chapter)}
-                />
-                <WorkflowTag
-                  label="翻"
-                  status={translateWorkflowStatus(chapter)}
-                />
-                <WorkflowTag
-                  label="校"
-                  status={proofreadWorkflowStatus(chapter)}
-                />
-                <WorkflowTag
-                  label="嵌"
-                  status={typesetWorkflowStatus(chapter)}
-                />
-                <WorkflowTag
-                  label="监"
-                  status={reviewWorkflowStatus(chapter)}
-                />
-                <WorkflowTag
-                  label="传"
-                  status={publishWorkflowStatus(chapter)}
-                />
-              </>
-            )}
           </div>
         </div>
       </div>
