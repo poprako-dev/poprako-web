@@ -1,21 +1,15 @@
 import clsx from "clsx";
 import type { AssignmentInfo } from "@/types/assignment";
+import type { ViewMode } from "../../types/types";
 import TranslatorAssignmentCard from "./TranslatorAssignmentCard";
 import ReviewerAssignmentCard from "./ReviewerAssignmentCard";
 
-type Props =
-  | {
-      assignmentInfo: AssignmentInfo;
-      mode: "translator";
-      onClick: () => void;
-      onLoadAssignments?: never;
-    }
-  | {
-      assignmentInfo: AssignmentInfo;
-      mode: "reviewer";
-      onClick: () => void;
-      onLoadAssignments: (chapterId: string) => Promise<AssignmentInfo[]>;
-    };
+type Props = {
+  assignmentInfo: AssignmentInfo;
+  mode: ViewMode;
+  onClick: () => void;
+  onLoadAssignments: (chapterId: string) => Promise<AssignmentInfo[]>;
+};
 
 // 固定高度、宽度自适应的细长卡片容器
 // mode 由父组件注入，自身不负责切换
