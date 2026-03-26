@@ -75,7 +75,7 @@ export default function Workspace({
         <AssignmentList
           mode="translator"
           onMyLoadAssignments={onMyLoadAssignments}
-          onLoadAssignments={onLoadAssignments}
+          onLoadChapterAssignments={onLoadAssignments}
         />
       </div>
     </div>

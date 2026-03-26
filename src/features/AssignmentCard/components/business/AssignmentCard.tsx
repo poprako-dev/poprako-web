@@ -8,13 +8,30 @@ type Props = {
   assignmentInfo: AssignmentInfo;
   mode: ViewMode;
   onClick: () => void;
-  onLoadAssignments: (chapterId: string) => Promise<AssignmentInfo[]>;
+  onLoadAssignments: (chapterId: string) => Promise<AssignmentInfo[] | string>;
 };
 
 // 固定高度、宽度自适应的细长卡片容器
 // mode 由父组件注入，自身不负责切换
-export default function AssignmentCard(props: Props) {
-  const { assignmentInfo, mode, onClick } = props;
+export default function AssignmentCard({
+  assignmentInfo,
+  mode,
+  onClick,
+  onLoadAssignments,
+}: Props) {
+  const handleLoadChapterAssignments = async (chapterId: string) => {
+    try {
+      const result = await onLoadAssignments(chapterId);
+      if (typeof result === "string") {
+        console.error("Failed to load chapter assignments: ", result);
+        return [];
+      }
+      return result;
+    } catch (err) {
+      console.error("Error loading chapter assignments: ", err);
+      return [];
+    }
+  };
 
   return (
     <div
@@ -34,7 +51,7 @@ export default function AssignmentCard(props: Props) {
       {mode === "reviewer" && (
         <ReviewerAssignmentCard
           assignmentInfo={assignmentInfo}
-          onLoadAssignments={props.onLoadAssignments}
+          onLoadAssignments={handleLoadChapterAssignments}
         />
       )}
     </div>

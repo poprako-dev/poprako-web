@@ -1,7 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { FileText, Layers, Type, CheckCheck, Clock } from "lucide-react";
+import { FileText, CircleCheck, CheckCheck, Clock, Tag } from "lucide-react";
 import type { ChapterInfo, ComicInfo } from "@/types";
 import MultiProgressBar from "@/components/ui/MultiProgressBar";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
@@ -118,12 +118,9 @@ export default function TranslatorComicCard({
           </div>
 
           <div className="grid grid-cols-3 gap-2">
+            <DataTag icon={<Tag size={18} strokeWidth={2.5} />} value={total} />
             <DataTag
-              icon={<Layers size={18} strokeWidth={2.5} />}
-              value={total}
-            />
-            <DataTag
-              icon={<Type size={18} strokeWidth={2.5} />}
+              icon={<CircleCheck size={18} strokeWidth={2.5} />}
               value={translated}
             />
             <DataTag

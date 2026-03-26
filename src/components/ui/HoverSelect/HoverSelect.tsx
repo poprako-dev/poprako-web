@@ -187,8 +187,8 @@ export default function HoverSelect({
                   "text-slate-600",
                   {
                     // 选中项：淡淡的灰色背景，不抢眼但有区分度
-                    "bg-slate-100/80 font-semibold text-slate-900": isSelected,
-                    "hover:bg-slate-50 hover:text-slate-800": !isSelected,
+                    "bg-gray-200 font-semibold text-slate-900": isSelected,
+                    "hover:bg-gray-100 hover:text-slate-800": !isSelected,
                   },
                 )}
               >

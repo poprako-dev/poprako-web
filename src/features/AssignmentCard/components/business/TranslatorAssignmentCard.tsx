@@ -1,6 +1,6 @@
 import type React from "react";
 import clsx from "clsx";
-import { FileText, Layers, Type, CheckCheck, Clock } from "lucide-react";
+import { FileText, CircleCheck, CheckCheck, Clock, Tag } from "lucide-react";
 import type { AssignmentInfo } from "@/types/assignment";
 import MultiProgressBar from "@/components/ui/MultiProgressBar";
 
@@ -86,12 +86,9 @@ export default function TranslatorAssignmentCard({ assignmentInfo }: Props) {
           </div>
 
           <div className="grid grid-cols-3 gap-2">
+            <DataTag icon={<Tag size={18} strokeWidth={2.5} />} value={total} />
             <DataTag
-              icon={<Layers size={18} strokeWidth={2.5} />}
-              value={total}
-            />
-            <DataTag
-              icon={<Type size={18} strokeWidth={2.5} />}
+              icon={<CircleCheck size={18} strokeWidth={2.5} />}
               value={translated}
             />
             <DataTag

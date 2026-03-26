@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import AssignmentList from "../../features/AssignmentList/components/business/AssignmentList";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { ChapterInfo } from "@/types/chapter";
@@ -74,7 +74,10 @@ const mockChapterAssignments: AssignmentInfo[] = [
     user: {
       id: "translator-1",
       name: "李翻译",
-      email: "",
+      qq: "",
+      avatarUrl: "",
+      isAvatarUploaded: false,
+      isSuperAdmin: false,
       createdAt: now,
       updatedAt: now,
     },
@@ -89,7 +92,10 @@ const mockChapterAssignments: AssignmentInfo[] = [
     user: {
       id: "proofreader-1",
       name: "王校对",
-      email: "",
+      qq: "",
+      avatarUrl: "",
+      isAvatarUploaded: false,
+      isSuperAdmin: false,
       createdAt: now,
       updatedAt: now,
     },
@@ -106,7 +112,7 @@ export const TranslatorMode: Story = {
       await new Promise((resolve) => setTimeout(resolve, 800));
       return mockAssignments.slice(offset, offset + limit);
     },
-    onLoadAssignments: async (_chapterId: string) => {
+    onLoadChapterAssignments: async (_chapterId: string) => {
       return mockChapterAssignments;
     },
   },
@@ -119,7 +125,7 @@ export const ReviewerMode: Story = {
       await new Promise((resolve) => setTimeout(resolve, 800));
       return mockAssignments.slice(offset, offset + limit);
     },
-    onLoadAssignments: async (_chapterId: string) => {
+    onLoadChapterAssignments: async (_chapterId: string) => {
       await new Promise((resolve) => setTimeout(resolve, 300));
       return mockChapterAssignments;
     },
@@ -133,6 +139,6 @@ export const ErrorState: Story = {
       await new Promise((resolve) => setTimeout(resolve, 500));
       return "加载失败，请检查网络连接";
     },
-    onLoadAssignments: async (_chapterId: string) => [],
+    onLoadChapterAssignments: async (_chapterId: string) => [],
   },
 };

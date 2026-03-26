@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CirclePlus, Search } from "lucide-react";
+import { CirclePlus, Layers, Search } from "lucide-react";
 import IconInputRow from "@/components/ui/IconInputRow";
 import clsx from "clsx";
 import HoverSelect from "@/components/ui/HoverSelect";
@@ -26,6 +26,8 @@ type Props = {
 
   // 通知父组件显示创建漫画的 modal
   onCreateComic: () => void;
+  // 切换侧边栏展开/收起
+  onToggleSidebar?: () => void;
 };
 
 function makeTripleOptions(prefix: string): Option[] {
@@ -63,6 +65,7 @@ export default function FilterHeader({
   onChangeReviewStatus,
   onChangePublishStatus,
   onCreateComic,
+  onToggleSidebar,
 }: Props) {
   const [inputValue, setInputValue] = useState(activeFuzzyTitle ?? "");
 
@@ -82,7 +85,7 @@ export default function FilterHeader({
         <div className="min-w-0 flex-1" onKeyDown={handleInputKeyDown}>
           <IconInputRow
             icon={<Search />}
-            placeholder="输入 标题 / 作者 / 序号... (按 Enter 搜索)"
+            placeholder="标题/作者/序号"
             value={inputValue}
             onChange={(v) => setInputValue(v)}
           />
@@ -95,16 +98,34 @@ export default function FilterHeader({
           className={clsx(
             "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
             "border border-slate-200 bg-white text-slate-500",
-            "hover:border-slate-300 hover:shadow-sm",
+            "hover:border-slate-300 hover:shadow-sm hover:bg-gray-100",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           )}
         >
           <CirclePlus className="h-5 w-5" strokeWidth={2} />
         </button>
+
+        {onToggleSidebar && (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            title="切换工作区侧边栏"
+            className={clsx(
+              "flex h-8 w-8 shrink-0 items-center",
+              "justify-center rounded-lg transition-all",
+              "border border-slate-200 bg-white",
+              "text-slate-500",
+              "hover:border-slate-300",
+              "hover:shadow-sm hover:bg-gray-100",
+            )}
+          >
+            <Layers className="h-4 w-4" strokeWidth={1.5} />
+          </button>
+        )}
       </div>
 
       {/* 第二行：六个 workflow 状态筛选 */}
-      <div className="flex h-9 w-full flex-row items-center gap-2">
+      <div className="hidden lg:flex h-9 w-full flex-row items-center gap-2">
         <HoverSelect
           hintText="传·未筛选"
           options={makeBinaryOptions("传")}

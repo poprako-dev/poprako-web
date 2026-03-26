@@ -1,33 +1,41 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
 import { PencilLine, Eye, LoaderCircle } from "lucide-react";
+import type { ChapterInfo, ComicInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
-import type { ViewMode } from "../../types/types";
-import AssignmentCard from "@/features/AssignmentCard/components/business/AssignmentCard";
+import type { ViewMode } from "@/features/ComicCard/types/types";
+import ComicCard from "@/features/ComicCard/components/business/ComicCard";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 
 type Props = {
   mode: ViewMode;
-  // 当出现错误时，错误信息会以字符串的形式返回，成功时返回 AssignmentInfo 数组
-  onMyLoadAssignments: (
+  // 分页加载漫画列表，错误时返回字符串
+  onLoadComics: (
     offset: number,
     limit: number,
+  ) => Promise<ComicInfo[] | string>;
+  // 加载指定漫画的最新章节，供 ComicCard 展示进度信息
+  onLoadLatestChapter: (
+    comicInfo: ComicInfo,
+  ) => Promise<ChapterInfo | null | string>;
+  // 加载指定漫画的分工列表，reviewer 模式下使用
+  onLoadAssignments?: (
+    comicInfo: ComicInfo,
   ) => Promise<AssignmentInfo[] | string>;
-  // 获取指定 chapter 下的分工信息，主要用于 reviewer 模式下的分工卡片展示
-  onLoadChapterAssignments: (
-    chapterId: string,
-  ) => Promise<AssignmentInfo[] | string>;
+  onComicClick?: (comicInfo: ComicInfo) => void;
 };
 
-// 分工列表，用于在个人工作区页部分展示用户的近期的分工信息
-// 本身是一个使用 page guard 实现无限下滑加载的组件，分工卡片的展示交由 AssignmentCard 组件负责
-export default function AssignmentList({
+// 内嵌式漫画列表，展示由父组件注入的 onLoadComics 所决定条件下的漫画卡片
+// 使用 IntersectionObserver 实现无限下滑加载，支持 translator / reviewer 两种模式切换
+export default function EmbeddedComicList({
   mode,
-  onMyLoadAssignments,
-  onLoadChapterAssignments,
+  onLoadComics,
+  onLoadLatestChapter,
+  onLoadAssignments,
+  onComicClick,
 }: Props) {
   const [currentMode, setCurrentMode] = useState<ViewMode>(mode);
-  const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
+  const [comics, setComics] = useState<ComicInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
@@ -36,29 +44,29 @@ export default function AssignmentList({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const { showToast } = useToastStore();
 
-  const loadAssignments = useCallback(async () => {
+  const loadComics = useCallback(async () => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
     try {
-      const result = await onMyLoadAssignments(offset, 10);
+      const result = await onLoadComics(offset, 12);
       if (typeof result === "string") {
-        console.error("Failed to load assignments: ", result);
+        console.error("[EmbeddedComicList] 加载漫画列表失败:", result);
         showToast(result, "error");
         setHasMore(false);
       } else {
-        if (result.length < 10) {
+        if (result.length < 12) {
           setHasMore(false);
         }
-        setAssignments((prev) => [...prev, ...result]);
+        setComics((prev) => [...prev, ...result]);
         setOffset((prev) => prev + result.length);
       }
     } catch (err) {
-      console.error(err);
+      console.error("[EmbeddedComicList] 加载漫画列表异常:", err);
       showToast("发生未知错误", "error");
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, hasMore, offset, onMyLoadAssignments, showToast]);
+  }, [isLoading, hasMore, offset, onLoadComics, showToast]);
 
   useEffect(() => {
     if (!loadMoreRef.current) return;
@@ -66,7 +74,7 @@ export default function AssignmentList({
       (entries) => {
         const firstEntry = entries[0];
         if (firstEntry && firstEntry.isIntersecting) {
-          loadAssignments();
+          loadComics();
         }
       },
       { root: scrollContainerRef.current },
@@ -77,27 +85,25 @@ export default function AssignmentList({
         observerRef.current.disconnect();
       }
     };
-  }, [loadAssignments]);
+  }, [loadComics]);
 
-  const handleModeChange = (mode: ViewMode) => {
-    setCurrentMode(mode);
-  };
-
-  const handleCardClick = (id: string) => {
-    console.log(`Clicked assignment card ${id}`);
+  const handleModeChange = (m: ViewMode) => {
+    setCurrentMode(m);
   };
 
   return (
     <div
       className={clsx("w-full h-full min-h-0 flex flex-col overflow-hidden")}
     >
+      {/* 顶部 mode 切换栏 */}
       <div className={clsx("flex items-center justify-between shrink-0 pb-4")}>
         <div className={clsx("flex-1 mr-4")} aria-hidden="true">
           <div
             className={clsx("w-full h-0.5 rounded-sm")}
             style={{
               background:
-                "linear-gradient(90deg, rgba(148,163,184,1) 0%, rgba(148,163,184,0) 60%)",
+                "linear-gradient(90deg, rgba(148,163,184,1) 0%," +
+                " rgba(148,163,184,0) 60%)",
             }}
           />
         </div>
@@ -128,25 +134,33 @@ export default function AssignmentList({
           </button>
         </div>
       </div>
+
+      {/* 漫画卡片列表 */}
       <div
         ref={scrollContainerRef}
         className={clsx("flex-1 min-h-0 overflow-y-auto overflow-x-hidden")}
       >
         <div
           className={clsx(
-            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full justify-start items-start",
+            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+            "xl:grid-cols-4 gap-4 w-full justify-start items-start",
           )}
         >
-          {assignments.map((assignment) => (
-            <AssignmentCard
-              key={assignment.id}
-              assignmentInfo={assignment}
+          {comics.map((comic) => (
+            <ComicCard
+              key={comic.id}
+              comicInfo={comic}
               mode={currentMode}
-              onClick={() => handleCardClick(assignment.id)}
-              onLoadAssignments={onLoadChapterAssignments}
+              onClick={() => onComicClick?.(comic)}
+              onLoadLatestChapter={onLoadLatestChapter}
+              onLoadAssignments={
+                onLoadAssignments ? onLoadAssignments : undefined
+              }
             />
           ))}
         </div>
+
+        {/* 无限滚动触发器 */}
         <div
           ref={loadMoreRef}
           className={clsx("w-full flex justify-center py-4 h-16 items-center")}
@@ -156,10 +170,13 @@ export default function AssignmentList({
               className={clsx("h-8 w-8 text-blue-300 animate-spin")}
             />
           )}
-          {!hasMore && assignments.length > 0 && (
+          {!hasMore && comics.length > 0 && (
             <span className={clsx("text-slate-400 text-sm")}>
               没有更多数据了 O^O
             </span>
+          )}
+          {!hasMore && comics.length === 0 && !isLoading && (
+            <span className={clsx("text-slate-400 text-sm")}>暂无漫画 o.O</span>
           )}
         </div>
       </div>
