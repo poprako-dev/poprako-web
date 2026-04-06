@@ -5,6 +5,7 @@ import {
 import { api } from "./util";
 
 export async function listMyMembers() {
-  let result = await api.get<RawMemberWithTeamInfo[]>("/members/mine");
-  return result.data!.map(unwrapRawMemberWithTeamInfo);
+  const result = await api.get<RawMemberWithTeamInfo[]>("/members/mine");
+  if (!result.success) throw new Error(result.error);
+  return result.data.map(unwrapRawMemberWithTeamInfo);
 }

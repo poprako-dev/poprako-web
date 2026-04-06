@@ -1,9 +1,23 @@
+import type { UserInfo } from "./user";
+
 export type Page = {
   id: string;
+
+  chapterId: string;
   index: number;
+
+  imageUrl: string;
+  isUploaded: boolean;
+
+  creatorId: string;
+  creator?: UserInfo;
+
   totalUnitCount: number;
   translatedUnitCount: number;
   proofreadUnitCount: number;
+
+  createdAt: number;
+  updatedAt: number;
 };
 
 export type PageInfo = Page & {

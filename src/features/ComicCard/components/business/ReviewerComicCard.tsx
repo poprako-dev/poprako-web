@@ -13,17 +13,18 @@ import {
   publishWorkflowStatus,
 } from "@/types/chapter";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import type { Result } from "@/types/utils/result";
 
 type Props = {
   comicInfo: ComicInfo;
-  // 返回当前漫画的最新章节信息，如果没有最新章节则返回 null，如果发生错误则返回错误信息字符串
-  onLoadLatestChapter: (
+  // 返回当前漫画的顶置章节信息，如果没有章节则返回 null，如果发生错误则返回错误信息字符串
+  onLoadPinnedChapter: (
     comicInfo: ComicInfo,
-  ) => Promise<ChapterInfo | null | string>;
+  ) => Promise<Result<ChapterInfo | null>>;
   // 返回当前漫画的分配信息列表，如果发生错误则返回错误信息字符串
   onLoadAssignments: (
     comicInfo: ComicInfo,
-  ) => Promise<AssignmentInfo[] | string>;
+  ) => Promise<Result<AssignmentInfo[]>>;
 };
 
 const ROLE_MAP = [
@@ -65,7 +66,7 @@ function formatDate(ts: number | undefined): string {
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-type DisplayStatus = "pending" | "in_progress" | "completed";
+type DisplayStatus = "pending" | "ongoing" | "completed";
 
 const STATUS_CONFIG: Record<
   DisplayStatus,
@@ -76,7 +77,7 @@ const STATUS_CONFIG: Record<
     bg: "bg-slate-50/40",
     line: "bg-slate-100",
   },
-  in_progress: {
+  ongoing: {
     text: "text-orange-300",
     bg: "bg-orange-50/40",
     line: "bg-orange-200",
@@ -135,7 +136,7 @@ function RoleTag({
 // 展示监制 / 审校视角：日期、职位、页数、工作流各阶段状态
 export default function ReviewerComicCard({
   comicInfo,
-  onLoadLatestChapter,
+  onLoadPinnedChapter,
   onLoadAssignments,
 }: Props) {
   const { showToast } = useToastStore();
@@ -144,15 +145,15 @@ export default function ReviewerComicCard({
 
   useEffect(() => {
     let active = true;
-    onLoadLatestChapter(comicInfo)
+    onLoadPinnedChapter(comicInfo)
       .then((res) => {
         if (!active) return;
-        if (typeof res === "string") {
+        if (!res.success) {
           console.error("[ReviewerComicCard] 加载最新章节失败:", res);
           showToast("加载章节失败", "error");
           return;
         }
-        setChapter(res);
+        setChapter(res.data);
       })
       .catch((err) => {
         if (!active) return;
@@ -169,12 +170,12 @@ export default function ReviewerComicCard({
     onLoadAssignments(comicInfo)
       .then((res) => {
         if (!active) return;
-        if (typeof res === "string") {
+        if (!res.success) {
           console.error("[ReviewerComicCard] 加载分工信息失败:", res);
           showToast("加载分工信息失败", "error");
           return;
         }
-        setDetails(res);
+        setDetails(res.data);
       })
       .catch((err) => {
         if (!active) return;
@@ -189,7 +190,7 @@ export default function ReviewerComicCard({
   return (
     <div className="flex flex-col w-full h-full">
       {/* Header：标题 + 话号 */}
-      <div className="px-3 pt-3 pb-1 shrink-0">
+      <div className="px-3 py-2 shrink-0 bg-slate-50">
         <div className="flex items-center gap-3">
           <h3
             className={clsx(
@@ -219,10 +220,10 @@ export default function ReviewerComicCard({
             <div className="flex items-center gap-1 shrink-0">
               <Clock size={12} />
               <span className="font-mono tracking-tight leading-none pt-0.5">
-                {formatDate(chapter?.updatedAt)}
+                {formatDate(comicInfo.lastActiveAt)}
               </span>
             </div>
-            <div className="h-3 w-px bg-slate-400" />
+            <span className="text-slate-300">·</span>
             <div className="flex items-center gap-1 shrink-0">
               <FileText size={12} />
               <span className="font-mono leading-none pt-0.5">

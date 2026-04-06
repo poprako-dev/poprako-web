@@ -4,16 +4,17 @@ import type { AssignmentInfo } from "@/types/assignment";
 import type { ViewMode } from "../../types/types";
 import TranslatorComicCard from "./TranslatorComicCard";
 import ReviewerComicCard from "./ReviewerComicCard";
+import type { Result } from "@/types/utils/result";
 
 type Props = {
   comicInfo: ComicInfo;
   mode: ViewMode;
-  onLoadLatestChapter: (
+  onLoadPinnedChapter: (
     comicInfo: ComicInfo,
-  ) => Promise<ChapterInfo | null | string>;
-  onLoadAssignments?: (
+  ) => Promise<Result<ChapterInfo | null>>;
+  onLoadAssignments: (
     comicInfo: ComicInfo,
-  ) => Promise<AssignmentInfo[] | string>;
+  ) => Promise<Result<AssignmentInfo[]>>;
   onClick: () => void;
 };
 
@@ -24,7 +25,7 @@ export default function ComicCard({
   comicInfo,
   mode,
   onClick,
-  onLoadLatestChapter,
+  onLoadPinnedChapter,
   onLoadAssignments,
 }: Props) {
   return (
@@ -32,23 +33,23 @@ export default function ComicCard({
       onClick={onClick}
       className={clsx(
         "w-full flex flex-col",
-        "bg-white rounded-lg overflow-hidden shadow-md",
+        "bg-white rounded-md overflow-hidden shadow-md",
         "border border-slate-200",
         "transition-all cursor-pointer duration-300",
-        "hover:bg-slate-50",
-        mode === "translator" ? "h-30" : "h-36",
+        "hover:-translate-y-0.5 hover:shadow-lg",
+        "h-36",
       )}
     >
       {mode === "translator" && (
         <TranslatorComicCard
           comicInfo={comicInfo}
-          onLoadLatestChapter={onLoadLatestChapter}
+          onLoadPinnedChapter={onLoadPinnedChapter}
         />
       )}
       {mode === "reviewer" && (
         <ReviewerComicCard
           comicInfo={comicInfo}
-          onLoadLatestChapter={onLoadLatestChapter}
+          onLoadPinnedChapter={onLoadPinnedChapter}
           onLoadAssignments={onLoadAssignments!}
         />
       )}

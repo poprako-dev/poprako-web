@@ -1,8 +1,8 @@
-export type WorkflowStatus = "pending" | "in_progress" | "completed" | "unset";
+export type WorkflowStatus = "pending" | "ongoing" | "completed" | "unset";
 
 export const WorkflowStatuses: WorkflowStatus[] = [
   "pending",
-  "in_progress",
+  "ongoing",
   "completed",
   "unset",
 ];

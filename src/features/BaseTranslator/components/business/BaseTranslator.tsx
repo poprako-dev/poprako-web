@@ -330,7 +330,7 @@ export default function BaseTranslator({
       <div className="absolute top-2 left-2">
         <ToolboxDropdown options={toolboxOptions} />
       </div>
-      <div className="absolute top-2 right-1">
+      <div className="absolute top-2 right-2">
         <Paginator
           currPageIndex={pageIndex}
           totalPageCount={project.pages.length}

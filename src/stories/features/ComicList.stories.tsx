@@ -5,6 +5,7 @@ import type { ComicInfo } from "@/types/comic";
 import type { ChapterInfo } from "@/types/chapter";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { WorksetInfo } from "@/types/workset";
+import type { Result } from "@/types/utils/result";
 import type {
   BinaryFilter,
   TripleFilter,
@@ -24,6 +25,8 @@ function makeMockComic(idx: number): ComicInfo {
     index: idx,
     chapterCount: 10 + idx,
     creatorId: "user-0",
+    coverUrl: "",
+    isCoverUploaded: false,
     lastActiveAt: now - 1000 * 60 * 60 * idx,
     createdAt: now,
     updatedAt: now,
@@ -36,6 +39,7 @@ function makeMockChapter(comicIdx: number): ChapterInfo {
     comicId: `comic-${comicIdx}`,
     index: comicIdx + 1,
     subtitle: `第${comicIdx + 1}话`,
+    isPinned: false,
     pageCount: 18 + comicIdx,
     totalUnitCount: 120 + comicIdx * 10,
     translatedUnitCount: 60 + comicIdx * 5,
@@ -192,6 +196,42 @@ function InteractiveComicList() {
       if (next) setActiveWsId(next.id);
     }
   };
+  // loader that respects filter state (for storybook interactive demo)
+  const pagedLoaderWithFilters = async (
+    offset: number,
+    limit: number,
+  ): Promise<ComicInfo[] | string> => {
+    await new Promise((r) => setTimeout(r, 400));
+
+    const matchTriple = (idx: number, status: TripleFilter) => {
+      if (status === "unset") return true;
+      const m = idx % 3;
+      if (status === "pending") return m === 0;
+      if (status === "ongoing") return m === 1;
+      return m === 2; // completed
+    };
+
+    const matchBinary = (idx: number, status: BinaryFilter) => {
+      if (status === "unset") return true;
+      const m = idx % 2;
+      if (status === "pending") return m === 0;
+      return m === 1; // completed
+    };
+
+    const filtered = FULL_COMICS.filter((c) => {
+      const idx = c.index;
+      return (
+        matchBinary(idx, upload) &&
+        matchTriple(idx, translate) &&
+        matchTriple(idx, proofread) &&
+        matchTriple(idx, typeset) &&
+        matchBinary(idx, review) &&
+        matchBinary(idx, publish)
+      );
+    });
+
+    return filtered.slice(offset, offset + limit);
+  };
 
   return (
     <div className="h-screen w-full">
@@ -202,11 +242,17 @@ function InteractiveComicList() {
         onChangeWorkset={(id) => setActiveWsId(id)}
         onCreateWorkset={handleCreateWorkset}
         onDeleteWorkset={handleDeleteWorkset}
-        onLoadComics={makePagedLoader(FULL_COMICS)}
-        onLoadLatestChapter={async (comic) => {
+        onLoadComics={pagedLoaderWithFilters}
+        onLoadLatestChapter={async (
+          comic,
+        ): Promise<Result<ChapterInfo | null>> => {
           await new Promise((r) => setTimeout(r, 300));
           const idx = Number(comic.id.replace("comic-", ""));
-          return makeMockChapter(idx);
+          return { success: true, data: makeMockChapter(idx) };
+        }}
+        onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => {
+          await new Promise((r) => setTimeout(r, 200));
+          return { success: true, data: mockAssignments };
         }}
         onComicClick={(c) => console.log("click comic:", c.title)}
         onCreateComic={() => console.log("create comic")}
@@ -256,14 +302,16 @@ function ReviewerComicList() {
         onCreateWorkset={() => console.log("create workset")}
         onDeleteWorkset={(id) => console.log("delete:", id)}
         onLoadComics={makePagedLoader(FULL_COMICS)}
-        onLoadLatestChapter={async (comic) => {
+        onLoadLatestChapter={async (
+          comic,
+        ): Promise<Result<ChapterInfo | null>> => {
           await new Promise((r) => setTimeout(r, 300));
           const idx = Number(comic.id.replace("comic-", ""));
-          return makeMockChapter(idx);
+          return { success: true, data: makeMockChapter(idx) };
         }}
-        onLoadAssignments={async () => {
+        onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => {
           await new Promise((r) => setTimeout(r, 200));
-          return mockAssignments;
+          return { success: true, data: mockAssignments };
         }}
         onComicClick={(c) => console.log("click:", c.title)}
         onCreateComic={() => console.log("create comic")}
@@ -314,7 +362,13 @@ export const EmptyState: Story = {
           onCreateWorkset={() => {}}
           onDeleteWorkset={() => {}}
           onLoadComics={async () => []}
-          onLoadLatestChapter={async () => null}
+          onLoadLatestChapter={async (): Promise<
+            Result<ChapterInfo | null>
+          > => ({ success: true, data: null })}
+          onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => ({
+            success: true as const,
+            data: [],
+          })}
           onCreateComic={() => {}}
           activeFuzzyTitle={title}
           onChangeFuzzyTitle={setTitle}
@@ -359,11 +413,17 @@ export const SingleWorkset: Story = {
           onCreateWorkset={() => console.log("create workset")}
           onDeleteWorkset={() => {}}
           onLoadComics={makePagedLoader(FULL_COMICS.slice(0, 5), 400)}
-          onLoadLatestChapter={async (comic) => {
+          onLoadLatestChapter={async (
+            comic,
+          ): Promise<Result<ChapterInfo | null>> => {
             await new Promise((r) => setTimeout(r, 200));
             const idx = Number(comic.id.replace("comic-", ""));
-            return makeMockChapter(idx);
+            return { success: true, data: makeMockChapter(idx) };
           }}
+          onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => ({
+            success: true as const,
+            data: [],
+          })}
           onCreateComic={() => console.log("create comic")}
           activeFuzzyTitle={title}
           onChangeFuzzyTitle={setTitle}

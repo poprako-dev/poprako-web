@@ -1,5 +1,6 @@
 import { appConfig } from "@/config/config";
 import { useAppStore } from "@/store/app";
+import type { Result } from "@/types/utils/result";
 
 type FormatResponse<T> = {
   // 2xx 表示成功
@@ -46,7 +47,7 @@ async function request<T>(
   url: string,
   options: RequestInit = {},
   needAuth: boolean = true,
-): Promise<T | string> {
+): Promise<Result<T>> {
   const headers = new Headers(options.headers || {});
   headers.set("Content-Type", "application/json");
 
@@ -77,31 +78,42 @@ async function request<T>(
     }
 
     if (!response.ok) {
-      return body.message ?? response.statusText ?? "未知错误";
+      return {
+        success: false,
+        error: body.message ?? response.statusText ?? "未知错误",
+      };
     }
 
-    // 如果后端返回了 data 就把它当作 T 返回，否则返回 message
     if (body.data !== undefined && body.data !== null) {
-      return body.data as T;
+      return { success: true, data: body.data as T };
     }
 
-    return body.message ?? "";
+    return { success: true, data: body.message as unknown as T };
   } catch (err) {
-    return err && (err as any).message ? (err as any).message : "未知错误";
+    return {
+      success: false,
+      error: err && (err as any).message ? (err as any).message : "未知错误",
+    };
   }
 }
 
 function buildQueryUrl(
   url: string,
-  params?: Record<string, string | number | boolean>,
+  params?: Record<
+    string,
+    string | number | boolean | (string | number | boolean)[]
+  >,
 ) {
-  return buildQuery(url, params as any);
+  return buildQuery(url, params);
 }
 
 export const api = {
   get: <T>(
     url: string,
-    queryParams?: Record<string, string | number | boolean>,
+    queryParams?: Record<
+      string,
+      string | number | boolean | (string | number | boolean)[]
+    >,
     needAuth = true,
   ) => request<T>(buildQueryUrl(url, queryParams), { method: "GET" }, needAuth),
 

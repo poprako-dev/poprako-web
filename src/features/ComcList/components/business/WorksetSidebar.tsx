@@ -79,13 +79,12 @@ export default function WorksetSidebar({
             onClick={onCreateWorkset}
             className={clsx(
               "w-full flex items-center justify-center gap-1.5",
-              "py-2 rounded-md border border-dashed border-slate-200",
+              "py-1 rounded-md border border-dashed border-slate-200",
               "text-slate-400 hover:text-slate-500 hover:bg-slate-50",
               "transition-colors text-[12px]",
             )}
           >
             <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
-            新建
           </button>
         </div>
       </div>

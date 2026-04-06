@@ -56,7 +56,7 @@ function formatDate(ts: number | undefined): string {
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-type DisplayStatus = "pending" | "in_progress" | "completed";
+type DisplayStatus = "pending" | "ongoing" | "completed";
 
 const STATUS_CONFIG: Record<
   DisplayStatus,
@@ -67,7 +67,7 @@ const STATUS_CONFIG: Record<
     bg: "bg-slate-50/40",
     line: "bg-slate-100",
   },
-  in_progress: {
+  ongoing: {
     text: "text-orange-300",
     bg: "bg-orange-50/40",
     line: "bg-orange-200",

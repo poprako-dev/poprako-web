@@ -31,9 +31,11 @@ function InteractiveWrapper({
         currMode={mode}
         enabledModes={enabledModes}
         isRelocationEnabled={relocation}
+        isUnitCreationEnabled={true}
         onTranslateModeClick={() => setMode("translate")}
         onProofreadModeClick={() => setMode("proofread")}
         onRelocationClick={() => setRelocation((v) => !v)}
+        onUnitCreationClick={() => console.log("unit creation toggled")}
         onSaveClick={async () => console.log("saved")}
       />
     </div>

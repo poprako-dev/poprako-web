@@ -5,19 +5,21 @@ import { FileText, CircleCheck, CheckCheck, Clock, Tag } from "lucide-react";
 import type { ChapterInfo, ComicInfo } from "@/types";
 import MultiProgressBar from "@/components/ui/MultiProgressBar";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import type { Result } from "@/types/utils/result";
 
 type Props = {
   comicInfo: ComicInfo;
-  // 返回当前漫画的最新章节信息，如果没有最新章节则返回 null，如果发生错误则返回错误信息字符串
-  onLoadLatestChapter: (
+  // 返回当前漫画的顶置章节信息，如果没有则返回 null
+  // 如果发生错误则返回错误信息字符串
+  onLoadPinnedChapter: (
     comicInfo: ComicInfo,
-  ) => Promise<ChapterInfo | null | string>;
+  ) => Promise<Result<ChapterInfo | null>>;
 };
 
 function formatDate(ts: number | undefined): string {
   if (!ts) return "";
   const d = new Date(ts);
-  return `${d.getMonth() + 1}/${d.getDate()}`;
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 function DataTag({ icon, value }: { icon: React.ReactNode; value: number }) {
@@ -39,7 +41,7 @@ function DataTag({ icon, value }: { icon: React.ReactNode; value: number }) {
 // 展示翻译进度、校对进度等统计数据
 export default function TranslatorComicCard({
   comicInfo,
-  onLoadLatestChapter,
+  onLoadPinnedChapter: onLoadLatestChapter,
 }: Props) {
   const { showToast } = useToastStore();
   const [chapter, setChapter] = useState<ChapterInfo | null>(null);
@@ -49,12 +51,12 @@ export default function TranslatorComicCard({
     onLoadLatestChapter(comicInfo)
       .then((res) => {
         if (!active) return;
-        if (typeof res === "string") {
+        if (!res.success) {
           console.error("[TranslatorComicCard] 加载最新章节失败:", res);
           showToast("加载章节失败", "error");
           return;
         }
-        setChapter(res);
+        setChapter(res.data);
       })
       .catch((err) => {
         if (!active) return;
@@ -77,7 +79,7 @@ export default function TranslatorComicCard({
   return (
     <div className="flex flex-col w-full h-full">
       {/* Header：标题 + 话号 */}
-      <div className="px-2 pt-2 pb-1 shrink-0">
+      <div className="px-3 py-2 shrink-0 bg-slate-50">
         <div className="flex items-center gap-3">
           <h3
             className={clsx(
@@ -99,7 +101,7 @@ export default function TranslatorComicCard({
       </div>
 
       {/* 主体区域：左封面 + 右侧三行统计 */}
-      <div className="flex flex-1 px-2 pb-2 pt-1 gap-2 items-stretch min-h-0">
+      <div className="flex flex-1 px-3 pb-2 pt-1 gap-2 items-stretch min-h-0">
         <div className="w-16 h-full shrink-0 rounded overflow-hidden bg-slate-100" />
 
         <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
@@ -107,7 +109,7 @@ export default function TranslatorComicCard({
             <div className="flex items-center gap-1 shrink-0">
               <Clock size={14} strokeWidth={2.5} />
               <span className="font-medium">
-                {formatDate(chapter?.updatedAt)}
+                {formatDate(comicInfo.lastActiveAt)}
               </span>
             </div>
             <span className="text-slate-300">·</span>

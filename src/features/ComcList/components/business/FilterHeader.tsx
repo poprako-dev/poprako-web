@@ -34,7 +34,7 @@ function makeTripleOptions(prefix: string): Option[] {
   return [
     { id: "unset", text: `${prefix}·未筛选` },
     { id: "pending", text: `${prefix}·未完成` },
-    { id: "in_progress", text: `${prefix}·进行中` },
+    { id: "ongoing", text: `${prefix}·进行中` },
     { id: "completed", text: `${prefix}·已完成` },
   ];
 }
@@ -85,7 +85,7 @@ export default function FilterHeader({
         <div className="min-w-0 flex-1" onKeyDown={handleInputKeyDown}>
           <IconInputRow
             icon={<Search />}
-            placeholder="标题/作者/序号"
+            placeholder="标题 / 作者 / 序号..."
             value={inputValue}
             onChange={(v) => setInputValue(v)}
           />
@@ -130,7 +130,12 @@ export default function FilterHeader({
           hintText="传·未筛选"
           options={makeBinaryOptions("传")}
           checkedOptionId={activeUploadStatus}
-          onSelect={(id) => onChangeUploadStatus(id as BinaryFilter)}
+          onSelect={(id) => {
+            // debug: log before delegating to parent
+            // eslint-disable-next-line no-console
+            console.log("FilterHeader: onChangeUploadStatus", id);
+            onChangeUploadStatus(id as BinaryFilter);
+          }}
           isActive={activeUploadStatus !== "unset"}
           className="flex-1"
         />
@@ -138,7 +143,12 @@ export default function FilterHeader({
           hintText="翻·未筛选"
           options={makeTripleOptions("翻")}
           checkedOptionId={activeTranslateStatus}
-          onSelect={(id) => onChangeTranslateStatus(id as TripleFilter)}
+          onSelect={(id) => {
+            // debug: log before delegating to parent
+            // eslint-disable-next-line no-console
+            console.log("FilterHeader: onChangeTranslateStatus", id);
+            onChangeTranslateStatus(id as TripleFilter);
+          }}
           isActive={activeTranslateStatus !== "unset"}
           className="flex-1"
         />
@@ -146,7 +156,12 @@ export default function FilterHeader({
           hintText="校·未筛选"
           options={makeTripleOptions("校")}
           checkedOptionId={activeProofreadStatus}
-          onSelect={(id) => onChangeProofreadStatus(id as TripleFilter)}
+          onSelect={(id) => {
+            // debug: log before delegating to parent
+            // eslint-disable-next-line no-console
+            console.log("FilterHeader: onChangeProofreadStatus", id);
+            onChangeProofreadStatus(id as TripleFilter);
+          }}
           isActive={activeProofreadStatus !== "unset"}
           className="flex-1"
         />
@@ -154,7 +169,12 @@ export default function FilterHeader({
           hintText="嵌·未筛选"
           options={makeTripleOptions("嵌")}
           checkedOptionId={activeTypesetStatus}
-          onSelect={(id) => onChangeTypesetStatus(id as TripleFilter)}
+          onSelect={(id) => {
+            // debug: log before delegating to parent
+            // eslint-disable-next-line no-console
+            console.log("FilterHeader: onChangeTypesetStatus", id);
+            onChangeTypesetStatus(id as TripleFilter);
+          }}
           isActive={activeTypesetStatus !== "unset"}
           className="flex-1"
         />
@@ -162,7 +182,12 @@ export default function FilterHeader({
           hintText="监·未筛选"
           options={makeBinaryOptions("监")}
           checkedOptionId={activeReviewStatus}
-          onSelect={(id) => onChangeReviewStatus(id as BinaryFilter)}
+          onSelect={(id) => {
+            // debug: log before delegating to parent
+            // eslint-disable-next-line no-console
+            console.log("FilterHeader: onChangeReviewStatus", id);
+            onChangeReviewStatus(id as BinaryFilter);
+          }}
           isActive={activeReviewStatus !== "unset"}
           className="flex-1"
         />
@@ -170,7 +195,12 @@ export default function FilterHeader({
           hintText="发·未筛选"
           options={makeBinaryOptions("发")}
           checkedOptionId={activePublishStatus}
-          onSelect={(id) => onChangePublishStatus(id as BinaryFilter)}
+          onSelect={(id) => {
+            // debug: log before delegating to parent
+            // eslint-disable-next-line no-console
+            console.log("FilterHeader: onChangePublishStatus", id);
+            onChangePublishStatus(id as BinaryFilter);
+          }}
           isActive={activePublishStatus !== "unset"}
           className="flex-1"
         />

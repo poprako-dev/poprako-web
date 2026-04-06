@@ -49,9 +49,9 @@ export default function Paginator({
       style={{ opacity: 0.85 }}
       className={clsx(
         "inline-flex items-stretch",
-        "h-8 w-32",
+        "h-8 w-24",
         "bg-white/95 backdrop-blur-md",
-        "rounded-md shadow-2xl border border-black/5",
+        "rounded-sm shadow-2xl border border-black/5",
         "overflow-hidden select-none",
       )}
     >
@@ -83,7 +83,7 @@ export default function Paginator({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className={clsx(
-                "w-6 h-full text-center text-sm font-bold",
+                "w-6 h-full text-center text-xs font-bold",
                 "bg-transparent border-none focus:outline-none",
                 "text-gray-900 p-0",
               )}
@@ -99,7 +99,7 @@ export default function Paginator({
             <span className="text-xs text-gray-300 font-light select-none">
               /
             </span>
-            <span className="text-sm text-gray-500 font-semibold w-6 text-center">
+            <span className="text-xs text-gray-500 font-semibold w-6 text-center">
               {totalPageCount}
             </span>
           </>

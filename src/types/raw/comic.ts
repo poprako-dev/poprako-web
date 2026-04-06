@@ -4,16 +4,27 @@ import type {
   CreateComicResult,
   UpdateComicArgs,
 } from "../comic";
+import type { RawUserInfo } from "./user";
+import type { RawWorksetInfo } from "./workset";
 
 export type RawComicInfo = {
   id: string;
+
+  workset_id: string;
+  workset?: RawWorksetInfo;
+
   title: string;
   author: string;
   description: string;
-  creator_id: string;
   index: number;
   chapter_count: number;
+
   cover_url: string;
+  is_cover_uploaded: boolean;
+
+  creator_id: string;
+  creator?: RawUserInfo;
+
   last_active_at: number;
   created_at: number;
   updated_at: number;

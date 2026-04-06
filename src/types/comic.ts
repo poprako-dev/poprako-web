@@ -1,5 +1,6 @@
+import type { RawComicInfo } from "./raw/comic";
 import type { UserInfo } from "./user";
-import type { WorksetInfo } from "./workset";
+import { toWorksetInfo, type WorksetInfo } from "./workset";
 
 export type ComicInfo = {
   id: string;
@@ -7,12 +8,16 @@ export type ComicInfo = {
   worksetId: string;
   workset?: WorksetInfo;
 
+  index: number;
+  chapterCount: number;
+
   title: string;
   author: string;
   description: string;
 
-  index: number;
-  chapterCount: number;
+  coverUrl: string;
+  isCoverUploaded: boolean;
+
   creatorId: string;
   creator?: UserInfo;
 
@@ -22,10 +27,39 @@ export type ComicInfo = {
   updatedAt: number;
 };
 
+export function toComicInfo(raw?: RawComicInfo) {
+  if (!raw) return undefined;
+
+  return {
+    id: raw.id,
+
+    worksetId: raw.workset_id,
+    workset: toWorksetInfo(raw.workset),
+
+    index: raw.index,
+    chapterCount: raw.chapter_count,
+
+    title: raw.title,
+    author: raw.author,
+    description: raw.description,
+
+    coverUrl: raw.cover_url,
+    isCoverUploaded: !!raw.cover_url,
+
+    creatorId: raw.creator_id,
+    creator: toUserInfo(raw.creator),
+
+    lastActiveAt: raw.last_active_at,
+
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  } as ComicInfo;
+}
+
 export type CreateComicArgs = {
   teamId: string;
   title: string;
-  author?: string;
+  author: string;
   description?: string;
 };
 
@@ -37,3 +71,6 @@ export type UpdateComicArgs = {
   author?: string;
   description?: string;
 };
+function toUserInfo(creator: any): UserInfo | undefined {
+  throw new Error("Function not implemented.");
+}

@@ -32,6 +32,7 @@ function makeAssignment(
       comicId: `comic-${seed}`,
       index,
       subtitle: `第${index}话`,
+      isPinned: false,
       pageCount: 24,
       totalUnitCount: total,
       translatedUnitCount: translated,
@@ -48,6 +49,8 @@ function makeAssignment(
         creatorId: "user-1",
         index: 0,
         chapterCount: 100,
+        coverUrl: "",
+        isCoverUploaded: false,
         lastActiveAt: now,
         createdAt: now,
         updatedAt: now,
@@ -77,6 +80,7 @@ function makeReviewerAssignment(
       comicId: `comic-${seed}`,
       index,
       subtitle: `第${index}话`,
+      isPinned: false,
       pageCount: 24,
       totalUnitCount: 156,
       translatedUnitCount: 156,
@@ -93,6 +97,8 @@ function makeReviewerAssignment(
         creatorId: "user-1",
         index: 0,
         chapterCount: 100,
+        coverUrl: "",
+        isCoverUploaded: false,
         lastActiveAt: now,
         createdAt: now,
         updatedAt: now,
@@ -188,6 +194,7 @@ export const TranslatorSingle: Story = {
     assignmentInfo: TRANSLATOR_SAMPLES[0],
     mode: "translator",
     onClick: () => console.log("card clicked"),
+    onLoadAssignments: async () => [],
   },
   decorators: [
     (StoryComponent) => (
@@ -207,6 +214,7 @@ export const TranslatorGrid: Story = {
           assignmentInfo={item}
           mode="translator"
           onClick={() => console.log(`clicked ${item.id}`)}
+          onLoadAssignments={async () => []}
         />
       ))}
     </div>

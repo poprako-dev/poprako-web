@@ -85,7 +85,7 @@ export const PresetCompleted: Story = {
         onChangeFuzzyTitle={(next) => console.log("fuzzy title:", next)}
         activeUploadStatus="completed"
         activeTranslateStatus="completed"
-        activeProofreadStatus="in_progress"
+        activeProofreadStatus="ongoing"
         activeTypesetStatus="pending"
         activeReviewStatus="completed"
         activePublishStatus="pending"

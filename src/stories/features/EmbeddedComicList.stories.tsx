@@ -27,6 +27,8 @@ function makeMockComic(idx: number): ComicInfo {
     index: idx,
     chapterCount: 10 + idx,
     creatorId: "user-0",
+    coverUrl: "",
+    isCoverUploaded: false,
     lastActiveAt: now - 1000 * 60 * 60 * idx,
     createdAt: now,
     updatedAt: now,
@@ -39,6 +41,7 @@ function makeMockChapter(comicIdx: number): ChapterInfo {
     comicId: `comic-${comicIdx}`,
     index: comicIdx + 1,
     subtitle: `第${comicIdx + 1}话`,
+    isPinned: false,
     pageCount: 18 + comicIdx,
     totalUnitCount: 120 + comicIdx * 10,
     translatedUnitCount: 60 + comicIdx * 5,
@@ -104,14 +107,20 @@ function makePagedLoader(allComics: ComicInfo[], delay = 800) {
 }
 
 // ── Stories ──────────────────────────────────────────────────────────────
-
 export const TranslatorMode: Story = {
   args: {
     mode: "translator",
     onLoadComics: makePagedLoader(FULL_COMICS),
     onLoadLatestChapter: async (comic: ComicInfo) => {
       await new Promise((r) => setTimeout(r, 300));
-      return makeMockChapter(Number(comic.id.replace("comic-", "")));
+      return {
+        success: true as const,
+        data: makeMockChapter(Number(comic.id.replace("comic-", ""))),
+      };
+    },
+    onLoadAssignments: async (_comic: ComicInfo) => {
+      await new Promise((r) => setTimeout(r, 200));
+      return { success: true as const, data: mockAssignments };
     },
   },
 };
@@ -122,11 +131,14 @@ export const ReviewerMode: Story = {
     onLoadComics: makePagedLoader(FULL_COMICS),
     onLoadLatestChapter: async (comic: ComicInfo) => {
       await new Promise((r) => setTimeout(r, 300));
-      return makeMockChapter(Number(comic.id.replace("comic-", "")));
+      return {
+        success: true as const,
+        data: makeMockChapter(Number(comic.id.replace("comic-", ""))),
+      };
     },
     onLoadAssignments: async (_comic: ComicInfo) => {
       await new Promise((r) => setTimeout(r, 200));
-      return mockAssignments;
+      return { success: true as const, data: mockAssignments };
     },
   },
 };
@@ -138,7 +150,11 @@ export const EmptyState: Story = {
       await new Promise((r) => setTimeout(r, 600));
       return [];
     },
-    onLoadLatestChapter: async () => null,
+    onLoadLatestChapter: async () => ({ success: true as const, data: null }),
+    onLoadAssignments: async (): Promise<{
+      success: true;
+      data: AssignmentInfo[];
+    }> => ({ success: true as const, data: [] }),
   },
 };
 
@@ -149,7 +165,7 @@ export const ErrorState: Story = {
       await new Promise((r) => setTimeout(r, 600));
       return "服务器错误，请稍后重试";
     },
-    onLoadLatestChapter: async () => null,
+    onLoadLatestChapter: async () => ({ success: true as const, data: null }),
   },
 };
 
@@ -160,7 +176,14 @@ export const SmallDataSet: Story = {
     onLoadComics: makePagedLoader(FULL_COMICS.slice(0, 3), 400),
     onLoadLatestChapter: async (comic: ComicInfo) => {
       await new Promise((r) => setTimeout(r, 200));
-      return makeMockChapter(Number(comic.id.replace("comic-", "")));
+      return {
+        success: true as const,
+        data: makeMockChapter(Number(comic.id.replace("comic-", ""))),
+      };
     },
+    onLoadAssignments: async (): Promise<{
+      success: true;
+      data: AssignmentInfo[];
+    }> => ({ success: true as const, data: [] }),
   },
 };

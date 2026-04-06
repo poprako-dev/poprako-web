@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ComicInfo, ChapterInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
+import type { Result } from "@/types/utils/result";
 import type { WorksetInfo } from "@/types/workset";
 import type { ViewMode } from "@/features/ComicCard/types/types";
 import type { BinaryFilter, TripleFilter } from "../../types/types";
@@ -22,10 +23,10 @@ type Props = {
   ) => Promise<ComicInfo[] | string>;
   onLoadLatestChapter: (
     comicInfo: ComicInfo,
-  ) => Promise<ChapterInfo | null | string>;
+  ) => Promise<Result<ChapterInfo | null>>;
   onLoadAssignments?: (
     comicInfo: ComicInfo,
-  ) => Promise<AssignmentInfo[] | string>;
+  ) => Promise<Result<AssignmentInfo[]>>;
   onComicClick?: (comicInfo: ComicInfo) => void;
   onCreateComic: () => void;
   onChangeFuzzyTitle: (title: string) => void;

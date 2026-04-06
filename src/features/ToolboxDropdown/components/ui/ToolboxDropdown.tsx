@@ -47,7 +47,7 @@ export default function ToolboxDropdown({ options }: Props) {
           )}
           aria-label="Toggle Menu"
         >
-          <Menu size={18} strokeWidth={3} />
+          <Menu size={16} strokeWidth={3} />
         </button>
 
         {/* 纵向图标长条面板 */}

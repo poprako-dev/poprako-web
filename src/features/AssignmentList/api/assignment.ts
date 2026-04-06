@@ -4,20 +4,20 @@ import {
   type RawAssignmentInfo,
 } from "@/types/raw/assignment";
 
-export async function listMyAssignments(offset: number, limit: number) {
-  const assignmets = await api.get<RawAssignmentInfo[]>(
+export async function listMyAssignments(
+  offset: number,
+  limit: number,
+): Promise<
+  import("@/types/utils/result").Result<
+    ReturnType<typeof unwrapRawAssignmentInfo>[]
+  >
+> {
+  const result = await api.get<RawAssignmentInfo[]>(
     `/assignments/mine`,
-    {
-      offset,
-      limit,
-    },
+    { offset, limit },
     true,
   );
 
-  if (typeof assignmets === "string") {
-    return assignmets;
-  }
-  if (Array.isArray(assignmets)) {
-    return assignmets.map(unwrapRawAssignmentInfo);
-  }
+  if (!result.success) return result;
+  return { success: true, data: result.data.map(unwrapRawAssignmentInfo) };
 }

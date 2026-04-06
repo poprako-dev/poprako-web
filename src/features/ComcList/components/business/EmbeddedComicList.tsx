@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { PencilLine, Eye, LoaderCircle } from "lucide-react";
 import type { ChapterInfo, ComicInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
+import type { Result } from "@/types/utils/result";
 import type { ViewMode } from "@/features/ComicCard/types/types";
 import ComicCard from "@/features/ComicCard/components/business/ComicCard";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
@@ -17,11 +18,11 @@ type Props = {
   // 加载指定漫画的最新章节，供 ComicCard 展示进度信息
   onLoadLatestChapter: (
     comicInfo: ComicInfo,
-  ) => Promise<ChapterInfo | null | string>;
+  ) => Promise<Result<ChapterInfo | null>>;
   // 加载指定漫画的分工列表，reviewer 模式下使用
   onLoadAssignments?: (
     comicInfo: ComicInfo,
-  ) => Promise<AssignmentInfo[] | string>;
+  ) => Promise<Result<AssignmentInfo[]>>;
   onComicClick?: (comicInfo: ComicInfo) => void;
 };
 
@@ -143,7 +144,8 @@ export default function EmbeddedComicList({
         <div
           className={clsx(
             "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-            "xl:grid-cols-4 gap-4 w-full justify-start items-start",
+            "py-1 px-2",
+            "gap-4 w-full justify-start items-start",
           )}
         >
           {comics.map((comic) => (
@@ -152,7 +154,7 @@ export default function EmbeddedComicList({
               comicInfo={comic}
               mode={currentMode}
               onClick={() => onComicClick?.(comic)}
-              onLoadLatestChapter={onLoadLatestChapter}
+              onLoadPinnedChapter={onLoadLatestChapter}
               onLoadAssignments={
                 onLoadAssignments ? onLoadAssignments : undefined
               }

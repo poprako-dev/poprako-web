@@ -1,6 +1,9 @@
 import type { ComicInfo } from "./comic";
 import type { UserInfo } from "./user";
 import type { WorkflowStatus } from "./workflow";
+import type { RawChapterInfo } from "./raw/chapter";
+import { unwrapRawComicInfo } from "./raw/comic";
+import { unwrapRawUserInfo } from "./raw/user";
 
 export type ChapterInfo = {
   id: string;
@@ -10,6 +13,7 @@ export type ChapterInfo = {
 
   index: number;
   subtitle: string;
+  isPinned: boolean;
 
   pageCount: number;
   totalUnitCount: number;
@@ -77,7 +81,7 @@ export function translateWorkflowStatus(chapter: WithWorkflow) {
     return "completed" as WorkflowStatus;
   }
   if (chapter.translatingAt) {
-    return "in_progress" as WorkflowStatus;
+    return "ongoing" as WorkflowStatus;
   }
   return "pending" as WorkflowStatus;
 }
@@ -87,7 +91,7 @@ export function typesetWorkflowStatus(chapter: WithWorkflow) {
     return "completed" as WorkflowStatus;
   }
   if (chapter.typesettingAt) {
-    return "in_progress" as WorkflowStatus;
+    return "ongoing" as WorkflowStatus;
   }
   return "pending" as WorkflowStatus;
 }
@@ -97,7 +101,7 @@ export function proofreadWorkflowStatus(chapter: WithWorkflow) {
     return "completed" as WorkflowStatus;
   }
   if (chapter.proofreadingAt) {
-    return "in_progress" as WorkflowStatus;
+    return "ongoing" as WorkflowStatus;
   }
   return "pending" as WorkflowStatus;
 }
@@ -114,4 +118,38 @@ export function publishWorkflowStatus(chapter: WithWorkflow) {
     return "completed" as WorkflowStatus;
   }
   return "pending" as WorkflowStatus;
+}
+
+export function toChapterInfo(raw?: RawChapterInfo): ChapterInfo | undefined {
+  if (!raw) return undefined;
+
+  return {
+    id: raw.id,
+    comicId: raw.comic_id,
+    comic: raw.comic
+      ? (unwrapRawComicInfo(raw.comic) as unknown as ComicInfo)
+      : undefined,
+    creatorId: raw.creator_id,
+    creator: raw.creator
+      ? (unwrapRawUserInfo(raw.creator) as unknown as UserInfo)
+      : undefined,
+    index: raw.index,
+    subtitle: raw.subtitle,
+    isPinned: (raw as any).is_pinned ?? false,
+    pageCount: raw.page_count,
+    totalUnitCount: raw.total_unit_count,
+    translatedUnitCount: raw.translated_unit_count,
+    proofreadUnitCount: raw.proofread_unit_count,
+    uploadedAt: raw.uploaded_at,
+    translatingAt: raw.transalating_at,
+    translatedAt: raw.translated_at,
+    typesetAt: raw.typeset_at,
+    typesettingAt: raw.typesetting_at,
+    proofreadAt: raw.proofread_at,
+    proofreadingAt: raw.proofreading_at,
+    reviewedAt: raw.reviewed_at,
+    publishedAt: raw.published_at,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  } as ChapterInfo;
 }
