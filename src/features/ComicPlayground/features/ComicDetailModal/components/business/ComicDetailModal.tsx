@@ -10,7 +10,6 @@ import {
   Image as ImageIcon,
   Download,
   Pencil,
-  Plus,
 } from "lucide-react";
 import type {
   ListChapterArgs,
@@ -25,8 +24,8 @@ import ChapterCreatorModal from "./ChapterCreatorModal";
 import StatItem from "./StatItem";
 import ActionButton from "./ActionButton";
 import ChapterOption from "./ChapterOption";
-import PageCard from "./PageCard";
 import AssignmentFooter from "./AssignmentFooter";
+import PageList from "@/features/PageList/components/business/PageList";
 
 type Props = {
   comicInfo: ComicInfo;
@@ -316,26 +315,13 @@ export default function ComicDetailModal({
               "scrollbar-thin scrollbar-thumb-slate-200",
             )}
           >
-            <div
-              className={clsx(
-                "grid gap-3",
-                "grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6",
-              )}
-            >
-              {pages.map((page) => (
-                <PageCard key={page.id} page={page} />
-              ))}
-              <button
-                className={clsx(
-                  "aspect-3/4 border border-dashed border-slate-200 rounded-sm",
-                  "flex items-center justify-center text-slate-300",
-                  "hover:text-slate-500 hover:border-slate-400 hover:bg-slate-50",
-                  "transition-all",
-                )}
-              >
-                <Plus size={20} />
-              </button>
-            </div>
+            <PageList
+              pages={pages}
+              onClickPage={(pageId) => {
+                // TODO: open translator or preview
+                console.log("Clicked page", pageId);
+              }}
+            />
           </div>
         </div>
 
