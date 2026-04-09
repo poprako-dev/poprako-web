@@ -1,30 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { ChevronDown, Trash2, Plus, Loader2 } from "lucide-react";
-import type { ChapterInfo } from "@/types";
+import type { ChapterInfo, ComicInfo } from "@/types";
+import type { Result } from "@/types/utils/result";
+import ChapterCreatorModal from "./ChapterCreatorModal";
 
 type Props = {
+  comicInfo: ComicInfo;
   chapters: ChapterInfo[];
   selectedChapter?: ChapterInfo;
   hasMore: boolean;
   isLoading?: boolean;
   onLoadMore: () => void;
   onSelect: (id: string) => void;
-  onCreate: () => void;
+  onCreateChapter?: (subtitle?: string) => Promise<Result<string>>;
   onDelete?: (id: string) => void;
 };
 
 export default function ChapterOption({
+  comicInfo,
   chapters,
   selectedChapter,
   hasMore,
   isLoading,
   onLoadMore,
   onSelect,
-  onCreate,
+  onCreateChapter,
   onDelete,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showCreator, setShowCreator] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<HTMLDivElement>(null);
 
@@ -100,26 +105,35 @@ export default function ChapterOption({
       {isOpen && (
         <div
           className={clsx(
-            "absolute top-full left-0 mt-1 w-48 z-10",
+            "absolute top-full left-0 mt-1 w-48 z-15",
             "bg-white rounded-md border border-slate-200 shadow-lg",
           )}
         >
-          <div className="flex flex-col p-1.5 gap-0.5 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 overscroll-contain">
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                onCreate();
-              }}
-              className={clsx(
-                "sticky top-0 z-10 w-full flex items-center justify-center gap-1.5 shrink-0",
-                "py-1.5 rounded-sm border border-dashed border-slate-200 bg-white/90 backdrop-blur-sm",
-                "text-slate-400 hover:text-slate-500 hover:bg-slate-50",
-                "transition-colors text-[11px] mb-1",
+          <div
+            className={clsx(
+              "flex flex-col p-1.5 gap-0.5 max-h-60 overflow-y-auto",
+              "scrollbar-thin scrollbar-thumb-slate-200 overscroll-contain",
+            )}
+          >
+            <div className="pb-1 shrink-0">
+              {onCreateChapter && (
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    setShowCreator(true);
+                  }}
+                  className={clsx(
+                    "w-full flex items-center justify-center gap-1.5",
+                    "py-1.5 rounded-sm border border-dashed border-slate-200",
+                    "text-slate-400 hover:text-slate-500 hover:bg-slate-50",
+                    "transition-colors text-[11px]",
+                  )}
+                >
+                  <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  新建章节
+                </button>
               )}
-            >
-              <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
-              新建章节
-            </button>
+            </div>
 
             {chapters.map((ch) => (
               <div
@@ -174,6 +188,13 @@ export default function ChapterOption({
             )}
           </div>
         </div>
+      )}
+      {showCreator && onCreateChapter && (
+        <ChapterCreatorModal
+          comicInfo={comicInfo}
+          onCreateChapter={onCreateChapter}
+          onClose={() => setShowCreator(false)}
+        />
       )}
     </div>
   );

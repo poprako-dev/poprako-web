@@ -1,0 +1,153 @@
+import React from 'react';
+import clsx from 'clsx';
+import { Calendar, User as UserIcon, ShieldCheck, Clock } from 'lucide-react';
+
+/**
+ * 职能配置
+ * 按照要求平分宽度，采用低圆角设计
+ */
+const ROLE_MAP = [
+  { label: "图", field: "assignedRawProviderAt", color: "bg-amber-50 text-amber-500 border-amber-100" },
+  { label: "翻", field: "assignedTranslatorAt", color: "bg-blue-50 text-blue-500 border-blue-100" },
+  { label: "校", field: "assignedProofreaderAt", color: "bg-emerald-50 text-emerald-500 border-emerald-100" },
+  { label: "嵌", field: "assignedTypesetterAt", color: "bg-purple-50 text-purple-500 border-purple-100" },
+  { label: "监", field: "assignedReviewerAt", color: "bg-indigo-50 text-indigo-500 border-indigo-100" },
+  { label: "传", field: "assignedPublisherAt", color: "bg-rose-50 text-rose-500 border-rose-100" },
+];
+
+function formatDate(ts) {
+  if (!ts) return "未知";
+  const d = new Date(ts);
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+/**
+ * 等宽职能标签
+ */
+function RoleTag({ label, isActive, colorClass }) {
+  return (
+    <div
+      className={clsx(
+        "flex flex-1 items-center justify-center py-1 rounded-sm border text-[11px] font-bold transition-all",
+        isActive 
+          ? colorClass 
+          : "bg-slate-50 text-slate-300 border-slate-100 opacity-60"
+      )}
+    >
+      {label}
+    </div>
+  );
+}
+
+const MemberCard = ({ member }) => {
+  const { user, createdAt, updatedAt } = member;
+
+  return (
+    <div className="group flex w-full bg-white border border-slate-200 hover:border-slate-300 transition-all p-3 gap-4">
+      {/* 左侧：头像区域 */}
+      <div className="relative shrink-0">
+        <div className="w-16 h-16 rounded bg-slate-100 overflow-hidden border border-slate-200">
+          {user?.avatarUrl ? (
+            <img 
+              src={user.avatarUrl} 
+              alt={user.name} 
+              className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-slate-300">
+              <UserIcon size={24} />
+            </div>
+          )}
+        </div>
+        {/* 管理员勋章位置：头像右下角 */}
+        {(user?.isSuperAdmin || member.assignedAdminAt) && (
+          <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm border border-slate-100">
+            <ShieldCheck size={14} className="text-amber-500 fill-amber-50" />
+          </div>
+        )}
+      </div>
+
+      {/* 右侧：详细信息区域 */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between">
+        {/* 第一行：昵称 */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-slate-700 truncate leading-none pt-0.5">
+            {user?.name || "未知成员"}
+          </h3>
+        </div>
+
+        {/* 第二行：Person + QQ | 日历 + Last Login */}
+        <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono py-2">
+          <div className="flex items-center gap-1 shrink-0">
+            <UserIcon size={12} className="text-slate-300" />
+            <span className="tracking-tight text-slate-500 text-semibold">{user?.qq || "-"}</span>
+          </div>
+          <span className="text-slate-200">|</span>
+          <div className="flex items-center gap-1 truncate">
+            <Clock size={12} className="text-slate-300 shrink-0" />
+            <span className="truncate tracking-tighter text-seminbold">
+              Login: {formatDate(updatedAt || createdAt)
+            </span>
+          </div>
+        </div>
+
+        {/* 第三行：平分宽度的 Role Tags */}
+        <div className="flex gap-1.5 mt-1">
+          {ROLE_MAP.map((role) => (
+            <RoleTag 
+              key={role.label} 
+              label={role.label} 
+              isActive={!!member[role.field]} 
+              colorClass={role.color}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- 示例展示 ---
+export default function MemberListExample() {
+  const mockMembers = [
+    {
+      id: "m1",
+      user: {
+        id: "user_8821",
+        name: "苍井翔太",
+        qq: "88219022",
+        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=shouta",
+        isSuperAdmin: true,
+      },
+      assignedAdminAt: 123,
+      assignedTranslatorAt: 456,
+      assignedReviewerAt: 789,
+      createdAt: 1682345678900,
+      updatedAt: 1700000000000,
+    },
+    {
+      id: "m2",
+      user: {
+        id: "user_9901",
+        name: "草莓大福",
+        qq: "10293384",
+        avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=daifuku",
+        isSuperAdmin: false,
+      },
+      assignedRawProviderAt: 1,
+      assignedTypesetterAt: 1,
+      createdAt: 1690000000000,
+      updatedAt: 1710000000000,
+    }
+  ];
+
+  return (
+    <div className="p-8 bg-slate-50 min-h-screen">
+      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+        {mockMembers.map(m => (
+          <MemberCard key={m.id} member={m} />
+        ))}
+      </div>
+    </div>
+  );
+}

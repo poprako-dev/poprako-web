@@ -30,7 +30,7 @@ const mockComic: ComicInfo = {
   author: "芥见下下",
   description: "全球风靡的奇幻热血漫画",
   index: 0,
-  chapterCount: 15,
+  chapterCount: 200,
   creatorId: "user-0",
   coverUrl: "",
   isCoverUploaded: false,
@@ -39,20 +39,32 @@ const mockComic: ComicInfo = {
   updatedAt: now,
 };
 
+const SUBTITLE_POOL = [
+  "宿命对决",
+  "深渊回响",
+  "逆命之刃",
+  "血色晨曦",
+  "虚空裂变",
+  "幽冥之门",
+  "末日序曲",
+  "命运交汇",
+];
+
 function makeChapter(
   idx: number,
   extraFlags?: Partial<ChapterInfo>,
 ): ChapterInfo {
+  const hasSubtitle = idx % 3 === 0;
   return {
     id: `chapter-${idx}`,
     comicId: "comic-1",
     index: idx,
-    subtitle: idx === 12 ? "宿命对决" : idx === 13 ? "深渊回响" : "",
-    isPinned: idx === 12,
-    pageCount: 22 + idx,
+    subtitle: hasSubtitle ? SUBTITLE_POOL[idx % SUBTITLE_POOL.length] : "",
+    isPinned: false,
+    pageCount: 18 + (idx % 8),
     totalUnitCount: 140 + idx * 8,
-    translatedUnitCount: 60 + idx * 4,
-    proofreadUnitCount: 30 + idx * 2,
+    translatedUnitCount: Math.floor((140 + idx * 8) * (0.3 + (idx % 5) * 0.1)),
+    proofreadUnitCount: Math.floor((140 + idx * 8) * (idx % 4) * 0.05),
     uploadedAt: now - 1000 * 60 * 60 * 24,
     translatingAt: now - 1000 * 60 * 60,
     creatorId: "user-0",
@@ -62,11 +74,15 @@ function makeChapter(
   };
 }
 
-const MOCK_CHAPTERS: ChapterInfo[] = [12, 13, 14, 15].map((i) =>
-  makeChapter(i),
+// 200 chapters for infinite-scroll testing
+const ALL_CHAPTERS: ChapterInfo[] = Array.from({ length: 200 }, (_, i) =>
+  makeChapter(i + 1),
 );
 
-const pinnedChapter = makeChapter(12, { isPinned: true });
+const pinnedChapter = makeChapter(42, {
+  isPinned: true,
+  subtitle: "深渊回响",
+});
 
 function makePages(chapterId: string, count: number): PageInfo[] {
   return Array.from({ length: count }, (_, i) => ({
@@ -170,6 +186,91 @@ function makeAssignments(chapterId: string): AssignmentInfo[] {
   ];
 }
 
+// ── 超大量、超长名测试数据 ──────────────────────────
+
+const LONG_NAMES = [
+  "芥見下下のファン一号",
+  "夏油傑崇拜者999",
+  "Александр Иванович Петров",
+  "Wolfgang Amadeus Translator",
+  "五条悟専属スタッフ二号三号四号",
+  "MidnightBlossom_TL",
+  "翻译组全能选手神里绫华的粉丝",
+  "Bartholomew Thaddeus McAllister IV",
+  "きみがいなければ翻译できない君",
+  "超级无敌大好人不知道怎么命名",
+];
+
+function makeManyAssignments(chapterId: string): AssignmentInfo[] {
+  const assignments: AssignmentInfo[] = [];
+  let idCounter = 1;
+
+  const push = (
+    name: string,
+    role: keyof Omit<
+      AssignmentInfo,
+      "id" | "chapterId" | "userId" | "user" | "createdAt" | "updatedAt"
+    >,
+  ) => {
+    const uid = `u-many-${idCounter}`;
+    assignments.push({
+      id: `am-${idCounter}`,
+      chapterId,
+      userId: uid,
+      user: makeUser(uid, name),
+      [role]: now,
+      createdAt: now,
+      updatedAt: now,
+    });
+    idCounter++;
+  };
+
+  // 4x 原始提供者
+  ["佐仓绫音大粉丝", "RawHunterZero", "Nakamura Yū Fan", LONG_NAMES[0]].forEach(
+    (n) => push(n, "assignedRawProviderAt"),
+  );
+
+  // 6x 翻译
+  [
+    "Aki Translator",
+    LONG_NAMES[2],
+    LONG_NAMES[6],
+    "Mitsuki",
+    LONG_NAMES[9],
+    "神崎蘭子之友",
+  ].forEach((n) => push(n, "assignedTranslatorAt"));
+
+  // 5x 校对
+  [
+    LONG_NAMES[1],
+    LONG_NAMES[7],
+    "校对博士学位",
+    "Proofreader_X",
+    "星野",
+  ].forEach((n) => push(n, "assignedProofreaderAt"));
+
+  // 5x 排版
+  [
+    LONG_NAMES[3],
+    LONG_NAMES[4],
+    "LayoutMaster2077",
+    "排版狂魔不知疲倦的人",
+    LONG_NAMES[8],
+  ].forEach((n) => push(n, "assignedTypesetterAt"));
+
+  // 3x 审核
+  [LONG_NAMES[5], "ReviewerElite", "最终boss级审核官"].forEach((n) =>
+    push(n, "assignedReviewerAt"),
+  );
+
+  // 3x 发布
+  ["Publisher_A", LONG_NAMES[9], "全能发布王者"].forEach((n) =>
+    push(n, "assignedPublisherAt"),
+  );
+
+  return assignments;
+}
+
 // Simulate async page delay
 function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
@@ -195,13 +296,13 @@ export default meta;
 type Story = StoryObj<typeof ComicDetailModal>;
 
 export const Default: Story = {
-  name: "默认（有置顶章节）",
+  name: "默认（有置顶章节 + 200章无限滚动）",
   args: {
     comicInfo: mockComic,
     pinnedChapter,
     onLoadChapters: async (args) => {
       await delay(200);
-      const sliced = MOCK_CHAPTERS.slice(args.offset, args.offset + args.limit);
+      const sliced = ALL_CHAPTERS.slice(args.offset, args.offset + args.limit);
       return { success: true, data: sliced };
     },
     onLoadAssignments: async (chapterId) => {
@@ -210,11 +311,22 @@ export const Default: Story = {
     },
     onLoadPages: async (chapterId) => {
       await delay(200);
-      return { success: true, data: makePages(chapterId, 10) };
+      // 每个章节 25 页，足够测试页面列表滚动
+      return { success: true, data: makePages(chapterId, 25) };
     },
     onTransiteWorkflow: async (_chapterId, transition) => {
       await delay(300);
       console.log("workflow transition:", transition);
+      return { success: true, data: undefined };
+    },
+    onCreateChapter: async (args) => {
+      await delay(200);
+      console.log("create chapter:", args);
+      return { success: true, data: `new-chapter-${now}` };
+    },
+    onDeleteChapter: async (chapterId) => {
+      await delay(200);
+      console.log("delete chapter:", chapterId);
       return { success: true, data: undefined };
     },
     onRemoveAssignment: async (_chapterId, userId) => {
@@ -234,6 +346,17 @@ export const NoPinnedChapter: Story = {
   },
 };
 
+export const ManyPeopleWithLongNames: Story = {
+  name: "每职位超多人 + 超长名字",
+  args: {
+    ...Default.args,
+    onLoadAssignments: async (chapterId) => {
+      await delay(150);
+      return { success: true, data: makeManyAssignments(chapterId) };
+    },
+  },
+};
+
 export const EmptyPages: Story = {
   name: "无页面数据",
   args: {
@@ -245,13 +368,29 @@ export const EmptyPages: Story = {
   },
 };
 
+export const SlowNetwork: Story = {
+  name: "慢速网络（章节分页延迟 1s）",
+  args: {
+    ...Default.args,
+    onLoadChapters: async (args) => {
+      await delay(1000);
+      const sliced = ALL_CHAPTERS.slice(args.offset, args.offset + args.limit);
+      return { success: true, data: sliced };
+    },
+    onLoadPages: async (chapterId) => {
+      await delay(800);
+      return { success: true, data: makePages(chapterId, 25) };
+    },
+  },
+};
+
 export const AllCompleted: Story = {
   name: "全部工作流完成",
   args: {
     ...Default.args,
     onLoadChapters: async (args) => {
       await delay(200);
-      const completedChapters = MOCK_CHAPTERS.map((ch) => ({
+      const completedChapters = ALL_CHAPTERS.map((ch) => ({
         ...ch,
         uploadedAt: now,
         translatedAt: now,
