@@ -24,7 +24,9 @@ export default function WorkspaceHeaderNav({ activeTab, onTabChange }: Props) {
         "backdrop-blur-md",
       )}
     >
-      <div className={clsx("flex h-full items-center gap-1")}>
+      <div
+        className={clsx("flex h-full w-full items-center justify-end gap-1")}
+      >
         {navItems.map((item) => (
           <button
             key={item.id}

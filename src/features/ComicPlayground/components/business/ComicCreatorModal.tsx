@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Type, User, AlignLeft, Loader2, Layers } from "lucide-react";
 import clsx from "clsx";
-import type { CreateComicArgs } from "@/types";
+import type { CreateComicArgs } from "../../types/comic";
 import type { Result } from "@/types/utils/result";
 import type { WorksetInfo } from "@/types/workset";
 
@@ -31,7 +31,7 @@ export default function ComicCreatorModal({
     if (!isValid) return;
     setIsSubmitting(true);
     const result = await onCreateComic({
-      teamId: currWorkset?.teamId || "default",
+      worksetId: currWorkset.id,
       title: formData.title.trim(),
       author: formData.author.trim(),
       description: formData.description.trim() || undefined,
@@ -63,7 +63,7 @@ export default function ComicCreatorModal({
             <div className="flex items-center gap-1 px-2 py-0.5 bg-gray-50 rounded-md">
               <Layers className="w-2.5 h-2.5 text-slate-400" />
               <span className="text-[12px] text-slate-500 truncate max-w-20">
-                {currWorkset?.name || "默认"}
+                {currWorkset.name}
               </span>
             </div>
           </div>
@@ -73,8 +73,9 @@ export default function ComicCreatorModal({
           <div className="space-y-3">
             <div
               className={clsx(
-                "flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl",
-                "focus-within:bg-white focus-within:ring-1 focus-within:ring-gray-200 transition-all",
+                "flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2",
+                "transition-all focus-within:bg-white",
+                "focus-within:ring-1 focus-within:ring-gray-200",
                 "border border-slate-100",
               )}
             >
@@ -96,8 +97,9 @@ export default function ComicCreatorModal({
 
             <div
               className={clsx(
-                "flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl",
-                "focus-within:bg-white focus-within:ring-1 focus-within:ring-gray-200 transition-all",
+                "flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2",
+                "transition-all focus-within:bg-white",
+                "focus-within:ring-1 focus-within:ring-gray-200",
                 "border border-slate-100",
               )}
             >
@@ -119,8 +121,9 @@ export default function ComicCreatorModal({
 
             <div
               className={clsx(
-                "flex items-start gap-2 px-3 py-2 bg-gray-50 rounded-xl",
-                "focus-within:bg-white focus-within:ring-1 focus-within:ring-gray-200 transition-all",
+                "flex items-start gap-2 rounded-xl bg-gray-50 px-3 py-2",
+                "transition-all focus-within:bg-white",
+                "focus-within:ring-1 focus-within:ring-gray-200",
                 "border border-slate-100",
               )}
             >

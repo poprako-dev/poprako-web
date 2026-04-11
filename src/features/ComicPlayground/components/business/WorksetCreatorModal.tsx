@@ -5,11 +5,13 @@ import type { Result } from "@/types/utils/result";
 import type { CreateWorksetArgs } from "../../types/workset";
 
 type Props = {
+  teamId: string;
   onCreateWorkset: (args: CreateWorksetArgs) => Promise<Result<string>>;
   onClose: () => void;
 };
 
 export default function WorksetCreatorModal({
+  teamId,
   onCreateWorkset,
   onClose,
 }: Props) {
@@ -23,7 +25,7 @@ export default function WorksetCreatorModal({
     if (!isValid) return;
     setIsSubmitting(true);
     const result = await onCreateWorkset({
-      teamId: "default",
+      teamId,
       name: formData.name.trim(),
       description: formData.description.trim() || undefined,
     });
