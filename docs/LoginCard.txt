@@ -1,0 +1,198 @@
+import IconInputRow from "@/components/common/IconInputRow";
+import NatureButton from "@/components/common/NatureButton";
+import cn from "classnames";
+import { Key, Lock, User, UserRoundPen } from "lucide-react";
+import { useState } from "react";
+import { fetchCurrUser, loginUser } from "../api/login";
+import type { LoginArgs } from "../types/login";
+import { saveAuthToken } from "@/utils/authStore";
+import { useToast } from "@/components/common/NotificationToast";
+import { useAppStore } from "@/store/app";
+import { useNavigate } from "react-router-dom";
+
+const verifyLoginArgs = (args: LoginArgs, isRegister = false): Error | null => {
+  if (!args.qq) {
+    return new Error("QQ 号不能为空");
+  }
+
+  if (!args.password) {
+    return new Error("密码不能为空");
+  }
+
+  if (isRegister) {
+    if (!args.nickname) {
+      return new Error("昵称不能为空");
+    }
+
+    if (!args.invitationCode) {
+      return new Error("邀请码不能为空");
+    }
+  }
+
+  return null;
+};
+
+export default function LoginCard() {
+  const [loginArgs, setLoginArgs] = useState<LoginArgs>({
+    qq: "",
+    password: "",
+    nickname: "",
+    invitationCode: "",
+  });
+
+  // 点击登录按钮时的加载状态
+  const [isLogining, setIsLogining] = useState(false);
+
+  // 是否处于注册模式
+  const [isRegister, setIsRegister] = useState(false);
+
+  // 弹窗提示
+  const { showToast } = useToast();
+
+  // 登录成功使用
+  const setToken = useAppStore((state) => state.setToken);
+  const setCurrUser = useAppStore((state) => state.setCurrUser);
+
+  // 跳转使用
+  const navigate = useNavigate();
+
+  // 切换注册模式：从注册 -> 登录 时清空昵称与邀请码，防止残留输入被误提交
+  const toggleRegister = () => {
+    setIsRegister((prev) => {
+      const next = !prev;
+      if (prev) {
+        setLoginArgs((a) => ({ ...a, nickname: "", invitationCode: "" }));
+      }
+      return next;
+    });
+  };
+
+  const handleLogin = async () => {
+    const verifyError = verifyLoginArgs(loginArgs, isRegister);
+    if (verifyError) {
+      showToast("error", verifyError.message, 3000);
+      return;
+    }
+
+    setIsLogining(true);
+
+    try {
+      // 先尝试登录获取 token
+      const token = await loginUser(loginArgs);
+
+      console.debug("获取到 token：", token);
+
+      // 保存 token 到本地存储和全局状态
+      saveAuthToken(token);
+      setToken(token);
+
+      // 再尝试获取当前用户的基本信息
+      const userInfo = await fetchCurrUser();
+
+      // 保存用户信息到全局状态
+      setCurrUser(userInfo);
+
+      showToast("success", isRegister ? "注册成功！" : "登录成功！", 2000);
+
+      // 跳转到 dashboard 页面
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      showToast("error", `登录失败：${err}`, 3000);
+
+      console.debug("[LoginCard] 登录失败，参数:", loginArgs, "错误:", err);
+    } finally {
+      setIsLogining(false);
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center",
+        "bg-white/80",
+        "border border-slate-300 shadow-lg",
+        "px-2 py-2",
+        "rounded-xl",
+      )}
+    >
+      <h4 className="p-1 text-center text-lg font-semibold">
+        登录『白杨子』Web
+      </h4>
+
+      {/** 简单的分割线 */}
+      <div className="my-2 h-px w-4/5 bg-gray-200" />
+
+      {/** 输入框  */}
+      <div className="grid max-w-60 grid-cols-1 gap-2 px-2 py-1">
+        <IconInputRow
+          icon={<User />}
+          placeholder="请输入 QQ 号"
+          onChange={(val) => setLoginArgs((a) => ({ ...a, qq: val }))}
+        />
+        <IconInputRow
+          icon={<Lock />}
+          placeholder="请输入密码"
+          password
+          onChange={(val) => setLoginArgs((a) => ({ ...a, password: val }))}
+        />
+        {/** 将两个注册字段作为 grid 的独立子项渲染，保持它们被 grid 管理 */}
+        <div
+          aria-hidden={!isRegister}
+          className={cn(
+            "overflow-hidden transition-all duration-500 ease-in-out",
+            isRegister
+              ? "mt-1 max-h-20 opacity-100"
+              : "pointer-events-none max-h-0 opacity-0",
+          )}
+        >
+          <IconInputRow
+            icon={<UserRoundPen />}
+            placeholder="首次登录，请输入昵称"
+            value={loginArgs.nickname}
+            onChange={(val) => setLoginArgs((a) => ({ ...a, nickname: val }))}
+          />
+        </div>
+
+        <div
+          aria-hidden={!isRegister}
+          className={cn(
+            "overflow-hidden transition-all duration-500 ease-in-out",
+            isRegister
+              ? "max-h-20 opacity-100"
+              : "pointer-events-none max-h-0 opacity-0",
+          )}
+        >
+          <IconInputRow
+            icon={<Key />}
+            placeholder="首次登录，请输入邀请码"
+            value={loginArgs.invitationCode}
+            onChange={(val) =>
+              setLoginArgs((a) => ({ ...a, invitationCode: val }))
+            }
+          />
+        </div>
+      </div>
+
+      {/** 登录按钮 */}
+      <div className="mx-4 my-2 flex flex-row items-center justify-center space-x-2">
+        <NatureButton
+          variant="cloud"
+          fontSize={0.75}
+          minWidth={6}
+          onClick={toggleRegister}
+        >
+          {isRegister ? "返回" : "注册"}
+        </NatureButton>
+
+        <NatureButton
+          onClick={handleLogin}
+          disabled={isLogining}
+          fontSize={0.75}
+          minWidth={6}
+        >
+          确认
+        </NatureButton>
+      </div>
+    </div>
+  );
+}

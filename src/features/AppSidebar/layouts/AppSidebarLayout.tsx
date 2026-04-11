@@ -26,7 +26,7 @@ export default function AppSidebarLayout({
       onMouseLeave={onMouseLeave}
       className={clsx(
         "fixed left-0 top-0 z-50",
-        "flex h-screen flex-col",
+        "hidden sm:flex h-screen flex-col",
         "bg-white border-r border-gray-100",
         "transition-[width] duration-400 ease-in-out",
         "group",

@@ -11,7 +11,7 @@ import {
 
 export async function fetchMyStats(): Promise<UserStatsInfo | string> {
   const result = await api.get<UserStatsInfo>(
-    "/users/me/stats",
+    "/users/mine/stats",
     undefined,
     true,
   );
