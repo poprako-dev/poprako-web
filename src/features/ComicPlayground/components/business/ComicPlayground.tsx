@@ -1,26 +1,43 @@
-import { useState, useEffect, useCallback } from "react";
-import { useAppStore } from "@/store/app";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToastStore } from "@/components/ui/NotificationToast";
+import { useActiveTeam } from "@/hooks/useActiveTeam";
+import { useAppStore } from "@/store/app";
 import ComicList from "@/features/ComcList/components/business/ComicList";
 import ComicCreatorModal from "./ComicCreatorModal";
 import WorksetCreatorModal from "./WorksetCreatorModal";
+import ComicDetailModal from "../../features/ComicDetailModal/components/business/ComicDetailModal";
 import { listWorksets, createWorkset, deleteWorkset } from "../../api/workset";
 import { listComics, createComic } from "../../api/comic";
-import { listChapters } from "../../api/chapter";
+import { listChapters, createChapter, deleteChapter, updateChapter } from "../../api/chapter";
+import { listPages } from "../../api/page";
 import type { WorksetInfo } from "@/types/workset";
+import { api } from "@/api/util";
 import type { ComicInfo, ChapterInfo } from "@/types";
+import { matchComicClientFilters, type ComicClientFilters } from "../../types/comic";
+import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
+import type { MemberInfo } from "@/types/member";
 import type {
   BinaryFilter,
   TripleFilter,
 } from "@/features/ComcList/types/types";
 import type { CreateWorksetArgs } from "../../types/workset";
 import type { CreateComicArgs } from "../../types/comic";
+import type { ListChapterArgs, WorkflowTransition } from "../../types/chapter";
+import { unwrapRawAssignmentInfo, type RawAssignmentInfo } from "@/types/raw/assignment";
+import type { Role } from "@/types/role";
+import { hasRole, roleMask } from "@/types/role";
+import { listMembers } from "@/api/member";
 
 export default function ComicPlayground() {
-  const loginState = useAppStore((s) => s.loginState);
-  const teamId = loginState?.memberInfos[0]?.teamId;
+  const { activeTeamId: teamId, activeMember } = useActiveTeam();
+  const currentUserId = useAppStore((s) => s.loginState?.userInfo.id ?? null);
   const { showToast } = useToastStore();
+  const navigate = useNavigate();
+
+  const canManageAssignments =
+    !!activeMember && (hasRole(activeMember, "admin") || !!activeMember.user?.isSuperAdmin);
 
   const [worksets, setWorksets] = useState<WorksetInfo[]>([]);
   const [activeWorksetId, setActiveWorksetId] = useState<string>("");
@@ -41,9 +58,16 @@ export default function ComicPlayground() {
 
   const [showComicCreatorModal, setShowComicCreatorModal] = useState(false);
   const [showWorksetCreatorModal, setShowWorksetCreatorModal] = useState(false);
+  const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
+  const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
+    useState<ChapterInfo | null>(null);
 
   const loadWorksets = useCallback(async () => {
-    if (!teamId) return;
+    if (!teamId) {
+      setWorksets([]);
+      setActiveWorksetId("");
+      return;
+    }
     const result = await listWorksets({ teamId, offset: 0, limit: 100 });
     if (!result.success) {
       console.error("[ComicPlayground] 加载作品集失败:", result.error);
@@ -51,39 +75,28 @@ export default function ComicPlayground() {
       return;
     }
     setWorksets(result.data);
-    setActiveWorksetId((prev) => prev || result.data[0]?.id || "");
+    setActiveWorksetId((prev) =>
+      result.data.some((workset) => workset.id === prev)
+        ? prev
+        : result.data[0]?.id || "",
+    );
   }, [teamId, showToast]);
 
   useEffect(() => {
     loadWorksets();
   }, [loadWorksets]);
 
-  const handleLoadComics = useCallback(
-    async (offset: number, limit: number): Promise<ComicInfo[] | string> => {
-      if (!activeWorksetId) return [];
-      const result = await listComics({
-        worksetId: activeWorksetId,
-        fuzzyTitle: activeFuzzyTitle || undefined,
-        uploadStatus:
-          activeUploadStatus !== "unset" ? activeUploadStatus : undefined,
-        translateStatus:
-          activeTranslateStatus !== "unset" ? activeTranslateStatus : undefined,
-        proofreadStatus:
-          activeProofreadStatus !== "unset" ? activeProofreadStatus : undefined,
-        typesetStatus:
-          activeTypesetStatus !== "unset" ? activeTypesetStatus : undefined,
-        reviewStatus:
-          activeReviewStatus !== "unset" ? activeReviewStatus : undefined,
-        publishStatus:
-          activePublishStatus !== "unset" ? activePublishStatus : undefined,
-        offset,
-        limit,
-      });
-      if (!result.success) return result.error;
-      return result.data;
-    },
+  const comicFilters = useMemo<ComicClientFilters>(
+    () => ({
+      fuzzyTitle: activeFuzzyTitle,
+      uploadStatus: activeUploadStatus,
+      translateStatus: activeTranslateStatus,
+      proofreadStatus: activeProofreadStatus,
+      typesetStatus: activeTypesetStatus,
+      reviewStatus: activeReviewStatus,
+      publishStatus: activePublishStatus,
+    }),
     [
-      activeWorksetId,
       activeFuzzyTitle,
       activeUploadStatus,
       activeTranslateStatus,
@@ -92,6 +105,46 @@ export default function ComicPlayground() {
       activeReviewStatus,
       activePublishStatus,
     ],
+  );
+
+  const handleLoadComics = useCallback(
+    async (offset: number, limit: number): Promise<ComicInfo[] | string> => {
+      if (!activeWorksetId) return [];
+      const result = await listComics({
+        worksetId: activeWorksetId,
+        offset: 0,
+        limit: 200,
+      });
+      if (!result.success) return result.error;
+
+      const comicsWithChapter = await Promise.all(
+        result.data.map(async (comic) => {
+          const chapterResult = await listChapters({
+            comicId: comic.id,
+            offset: 0,
+            limit: 1,
+          });
+
+          if (!chapterResult.success) {
+            throw new Error(chapterResult.error);
+          }
+
+          return {
+            comic,
+            chapter: chapterResult.data[0] ?? null,
+          };
+        }),
+      );
+
+      const filtered = comicsWithChapter
+        .filter(({ comic, chapter }) =>
+          matchComicClientFilters(comic, chapter, comicFilters),
+        )
+        .map(({ comic }) => comic);
+
+      return filtered.slice(offset, offset + limit);
+    },
+    [activeWorksetId, comicFilters],
   );
 
   const handleLoadLatestChapter = useCallback(
@@ -105,6 +158,139 @@ export default function ComicPlayground() {
       return { success: true, data: result.data[0] ?? null };
     },
     [],
+  );
+
+  const handleOpenComicDetail = useCallback((comicInfo: ComicInfo) => {
+    setSelectedComic(comicInfo);
+    setSelectedComicPinnedChapter(null);
+
+    handleLoadLatestChapter(comicInfo).then((pinnedResult) => {
+      if (!pinnedResult.success) {
+        showToast(pinnedResult.error, "error");
+        return;
+      }
+
+      setSelectedComicPinnedChapter(pinnedResult.data);
+    });
+  }, [handleLoadLatestChapter, showToast]);
+
+  const handleLoadDetailChapters = useCallback(
+    async (args: ListChapterArgs): Promise<Result<ChapterInfo[]>> => {
+      return listChapters(args);
+    },
+    [],
+  );
+
+  const handleLoadAssignments = useCallback(
+    async (chapterId: string): Promise<Result<AssignmentInfo[]>> => {
+      const result = await api.get<RawAssignmentInfo[]>("/assignments", {
+        chapter_id: chapterId,
+        includes: ["user"],
+        offset: 0,
+        limit: 100,
+      });
+
+      if (!result.success) return result;
+
+      return {
+        success: true,
+        data: (result.data ?? []).map(unwrapRawAssignmentInfo),
+      };
+    },
+    [],
+  );
+
+  const handleRemoveAssignment = useCallback(
+    async (chapterId: string, userId: string): Promise<Result<void>> => {
+      const assignmentResult = await handleLoadAssignments(chapterId);
+      if (!assignmentResult.success) {
+        return assignmentResult;
+      }
+
+      const target = assignmentResult.data.find(
+        (assignment) => assignment.userId === userId,
+      );
+      if (!target) {
+        return { success: false, error: "未找到对应分工记录" };
+      }
+
+      const result = await api.delete<void>(`/assignments/${target.id}`);
+      if (!result.success) return result;
+      return { success: true, data: undefined };
+    },
+    [handleLoadAssignments],
+  );
+
+  const handleLoadPages = useCallback(async (chapterId: string) => {
+    return listPages({ chapterId, offset: 0, limit: 200 });
+  }, []);
+
+  const handleLoadAssignableMembers = useCallback(
+    async (_chapterId: string): Promise<Result<MemberInfo[]>> => {
+      if (!teamId) {
+        return { success: true, data: [] };
+      }
+
+      return listMembers({
+        teamId,
+        offset: 0,
+        limit: 200,
+        includes: ["user"],
+      });
+    },
+    [teamId],
+  );
+
+  const handleAddAssignment = useCallback(
+    async (
+      chapterId: string,
+      userId: string,
+      role: Role,
+    ): Promise<Result<void>> => {
+      const result = await api.post<{ id: string }, { chapter_id: string; user_id: string; roles: number }>(
+        "/assignments",
+        {
+          chapter_id: chapterId,
+          user_id: userId,
+          roles: roleMask([role]),
+        },
+      );
+
+      if (!result.success) return result;
+      return { success: true, data: undefined };
+    },
+    [],
+  );
+
+  const handleTransiteWorkflow = useCallback(
+    async (
+      chapterId: string,
+      transition: WorkflowTransition,
+    ): Promise<Result<void>> => {
+      return updateChapter(chapterId, { workflowTransition: transition });
+    },
+    [],
+  );
+
+  const handleCreateChapter = useCallback(
+    async (args: { comicId: string; subtitle?: string }): Promise<Result<string>> => {
+      return createChapter(args);
+    },
+    [],
+  );
+
+  const handleDeleteChapter = useCallback(
+    async (chapterId: string): Promise<Result<void>> => {
+      return deleteChapter(chapterId);
+    },
+    [],
+  );
+
+  const handleNavigateToTranslator = useCallback(
+    (chapterId: string, pageId: string) => {
+      navigate(`/translator/${chapterId}/${pageId}`);
+    },
+    [navigate],
   );
 
   const handleDeleteWorkset = async (worksetId: string) => {
@@ -137,6 +323,8 @@ export default function ComicPlayground() {
     if (!result.success) {
       console.error("[ComicPlayground] 创建漫画失败:", result.error);
       showToast(result.error, "error");
+    } else {
+      await loadWorksets();
     }
     return result;
   };
@@ -154,6 +342,7 @@ export default function ComicPlayground() {
         onDeleteWorkset={handleDeleteWorkset}
         onLoadComics={handleLoadComics}
         onLoadLatestChapter={handleLoadLatestChapter}
+        onComicClick={handleOpenComicDetail}
         onCreateComic={() => setShowComicCreatorModal(true)}
         onChangeFuzzyTitle={setActiveFuzzyTitle}
         activeFuzzyTitle={activeFuzzyTitle}
@@ -170,6 +359,28 @@ export default function ComicPlayground() {
         onChangeReviewStatus={setActiveReviewStatus}
         onChangePublishStatus={setActivePublishStatus}
       />
+      {selectedComic && (
+        <ComicDetailModal
+          comicInfo={selectedComic}
+          pinnedChapter={selectedComicPinnedChapter}
+          onLoadChapters={handleLoadDetailChapters}
+          onLoadAssignments={handleLoadAssignments}
+          onLoadPages={handleLoadPages}
+          onTransiteWorkflow={handleTransiteWorkflow}
+          onRemoveAssignment={handleRemoveAssignment}
+          onLoadAssignableMembers={handleLoadAssignableMembers}
+          onAddAssignment={handleAddAssignment}
+          onCreateChapter={handleCreateChapter}
+          onDeleteChapter={handleDeleteChapter}
+          onNavigateToTranslator={handleNavigateToTranslator}
+          currentUserId={currentUserId}
+          canManageAssignments={canManageAssignments}
+          onClose={() => {
+            setSelectedComic(null);
+            setSelectedComicPinnedChapter(null);
+          }}
+        />
+      )}
       {showComicCreatorModal && activeWorkset && (
         <ComicCreatorModal
           currWorkset={activeWorkset}

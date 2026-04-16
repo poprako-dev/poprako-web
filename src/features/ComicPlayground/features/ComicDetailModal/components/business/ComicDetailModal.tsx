@@ -26,6 +26,9 @@ import ChapterOption from "./ChapterOption";
 import AssignmentFooter from "./AssignmentFooter";
 import PageList from "@/features/PageList/components/business/PageList";
 import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
+import MemberSelectorModal from "./MemberSelectorModal";
+import type { MemberInfo } from "@/types/member";
+import { hasRole, type Role } from "@/types/role";
 
 type Props = {
   comicInfo: ComicInfo;
@@ -41,11 +44,21 @@ type Props = {
     chapterId: string,
     userId: string,
   ) => Promise<Result<void>>;
+  onLoadAssignableMembers?: (chapterId: string) => Promise<Result<MemberInfo[]>>;
+  onAddAssignment?: (
+    chapterId: string,
+    userId: string,
+    role: Role,
+  ) => Promise<Result<void>>;
   onCreateChapter?: (args: {
     comicId: string;
     subtitle?: string;
   }) => Promise<Result<string>>;
   onDeleteChapter?: (chapterId: string) => Promise<Result<void>>;
+  onNavigateToTranslator?: (chapterId: string, pageId: string) => void;
+  currentUserId?: string | null;
+  canManageAssignments?: boolean;
+  onAddPages?: (chapterId: string, files: File[]) => Promise<void>;
   onClose: () => void;
 };
 
@@ -57,8 +70,14 @@ export default function ComicDetailModal({
   onLoadPages,
   onTransiteWorkflow,
   onRemoveAssignment,
+  onLoadAssignableMembers,
+  onAddAssignment,
   onCreateChapter,
   onDeleteChapter,
+  onNavigateToTranslator,
+  currentUserId,
+  canManageAssignments = false,
+  onAddPages,
   onClose,
 }: Props) {
   const { showToast } = useToastStore();
@@ -68,6 +87,10 @@ export default function ComicDetailModal({
   );
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
   const [pages, setPages] = useState<PageInfo[]>([]);
+  const [assignableMembers, setAssignableMembers] = useState<MemberInfo[]>([]);
+  const [isMemberSelectorLoading, setIsMemberSelectorLoading] = useState(false);
+  const [memberSelectorRole, setMemberSelectorRole] = useState<Role | null>(null);
+  const [isAddingAssignment, setIsAddingAssignment] = useState(false);
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
   const CHAPTERS_LIMIT = 20;
@@ -76,6 +99,14 @@ export default function ComicDetailModal({
     chapters.find((c) => c.id === selectedChapterId) ??
     pinnedChapter ??
     undefined;
+
+  const currentAssignment = assignments.find((item) => item.userId === currentUserId);
+  const canTranslateOrProofread =
+    !!currentAssignment &&
+    (hasRole(currentAssignment, "translator") ||
+      hasRole(currentAssignment, "proofreader"));
+  const canUploadRawPages =
+    !!currentAssignment && hasRole(currentAssignment, "rawProvider");
 
   // Load initial chapters
   useEffect(() => {
@@ -185,6 +216,43 @@ export default function ComicDetailModal({
         console.error("[ComicDetailModal] 移除成员异常:", err);
         showToast("移除成员失败", "error");
       });
+  };
+
+  const handleOpenMemberSelector = (role: Role) => {
+    if (!selectedChapterId || !onLoadAssignableMembers) return;
+    setMemberSelectorRole(role);
+    setIsMemberSelectorLoading(true);
+    onLoadAssignableMembers(selectedChapterId)
+      .then((result) => {
+        if (!result.success) {
+          showToast(result.error, "error");
+          return;
+        }
+        setAssignableMembers(result.data);
+      })
+      .catch((err) => {
+        console.error("[ComicDetailModal] 加载可分配成员异常:", err);
+        showToast("加载成员失败", "error");
+      })
+      .finally(() => setIsMemberSelectorLoading(false));
+  };
+
+  const handleAddAssignment = async (userId: string) => {
+    if (!selectedChapterId || !memberSelectorRole || !onAddAssignment) return;
+    setIsAddingAssignment(true);
+    const result = await onAddAssignment(selectedChapterId, userId, memberSelectorRole);
+    setIsAddingAssignment(false);
+
+    if (!result.success) {
+      showToast(result.error, "error");
+      return;
+    }
+
+    const refreshedAssignments = await onLoadAssignments(selectedChapterId);
+    if (refreshedAssignments.success) {
+      setAssignments(refreshedAssignments.data);
+    }
+    setMemberSelectorRole(null);
   };
 
   const header = (
@@ -301,8 +369,25 @@ export default function ComicDetailModal({
 
       {/* Actions */}
       <div className="flex flex-col gap-1 shrink-0">
-        <ActionButton icon={Pencil} title="开始翻校" />
-        <ActionButton icon={CloudUpload} title="上传数据" />
+        {canTranslateOrProofread && (
+          <ActionButton
+            icon={Pencil}
+            title="开始翻校"
+            onClick={
+              selectedChapterId && onNavigateToTranslator
+                ? () => {
+                    const firstPageId = pages[0]?.id;
+                    if (!firstPageId) {
+                      showToast("当前章节暂无页面", "error");
+                      return;
+                    }
+                    onNavigateToTranslator(selectedChapterId, firstPageId);
+                  }
+                : undefined
+            }
+          />
+        )}
+        {canUploadRawPages && <ActionButton icon={CloudUpload} title="上传数据" />}
         <ActionButton icon={Download} title="下载图源" />
       </div>
     </>
@@ -311,10 +396,20 @@ export default function ComicDetailModal({
   const pageGrid = (
     <PageList
       pages={pages}
-      onClickPage={(pageId) => {
-        // TODO: open translator or preview
-        console.log("Clicked page", pageId);
-      }}
+      enableClick={canTranslateOrProofread}
+      onClickPage={
+        canTranslateOrProofread
+          ? (pageId) => {
+              if (!selectedChapterId || !onNavigateToTranslator) return;
+              onNavigateToTranslator(selectedChapterId, pageId);
+            }
+          : undefined
+      }
+      onAddPages={
+        canUploadRawPages && selectedChapterId && onAddPages
+          ? (files) => onAddPages(selectedChapterId, files)
+          : undefined
+      }
     />
   );
 
@@ -324,6 +419,9 @@ export default function ComicDetailModal({
       assignments={assignments}
       onTransiteWorkflow={handleTransition}
       onRemoveAssignment={onRemoveAssignment ? handleRemoveUser : undefined}
+      onAddAssignment={onAddAssignment ? handleOpenMemberSelector : undefined}
+      canOperateWorkflow={canManageAssignments}
+      canManageAssignments={canManageAssignments}
     />
   );
 
@@ -335,6 +433,16 @@ export default function ComicDetailModal({
         pageGrid={pageGrid}
         footer={footer}
       />
+      {memberSelectorRole && (
+        <MemberSelectorModal
+          title={`添加${memberSelectorRole}成员`}
+          members={assignableMembers}
+          assignedUserIds={assignments.map((assignment) => assignment.userId)}
+          isSubmitting={isMemberSelectorLoading || isAddingAssignment}
+          onSelectUser={handleAddAssignment}
+          onClose={() => setMemberSelectorRole(null)}
+        />
+      )}
     </>
   );
 }

@@ -51,17 +51,25 @@ export default function Workspace() {
   const userName = loginState?.userInfo.name ?? "用户";
 
   const workspaceBody = (
-    <div className={clsx("flex h-full min-h-0 flex-col")}>
-      <div className={clsx("mb-3")}>
-        <p className={clsx("text-md text-slate-400")}>欢迎回来</p>
-        <h1 className={clsx("mt-0.5 ml-1 text-3xl font-bold text-slate-700")}>
-          {userName}
-        </h1>
+    <div
+      className={clsx("flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden")}
+    >
+      <div
+        className={clsx(
+          "mb-3 flex flex-col",
+          "sm:flex-row sm:items-end sm:justify-between sm:gap-4",
+        )}
+      >
+        <div>
+          <p className={clsx("text-md text-slate-400")}>欢迎回来</p>
+          <h1 className={clsx("mt-0.5 ml-1 text-3xl font-bold text-slate-700")}>
+            {userName}
+          </h1>
+        </div>
+        <WorkspaceStatsCards stats={stats} isLoading={isStatsLoading} />
       </div>
 
-      <WorkspaceStatsCards stats={stats} isLoading={isStatsLoading} />
-
-      <div className={clsx("flex-1 min-h-0")}>
+      <div className={clsx("flex-1 min-h-0 min-w-0 overflow-x-hidden")}>
         <EmbeddedComicList
           mode="translator"
           onLoadComics={fetchMyComics}

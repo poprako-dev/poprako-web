@@ -16,9 +16,20 @@ type Props = {
 // 主体是 AssignmentList
 export default function WorkspaceLayout({ header, body }: Props) {
   return (
-    <div className={clsx("flex h-full flex-col bg-[#FBFBFC]")}>
+    <div
+      className={clsx(
+        "flex h-full w-full min-w-0 flex-col overflow-x-hidden bg-[#FBFBFC]",
+      )}
+    >
       <div className={clsx("shrink-0")}>{header}</div>
-      <div className={clsx("flex-1 min-h-0 overflow-y-auto p-6")}>{body}</div>
+      <div
+        className={clsx(
+          "flex-1 min-h-0 overflow-y-auto overflow-x-hidden",
+          "px-4 py-4 sm:px-6 sm:py-6",
+        )}
+      >
+        {body}
+      </div>
     </div>
   );
 }

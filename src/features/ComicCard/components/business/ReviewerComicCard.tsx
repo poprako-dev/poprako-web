@@ -206,7 +206,7 @@ export default function ReviewerComicCard({
               "bg-slate-50 px-2 py-0.5 rounded flex items-center h-5 leading-none",
             )}
           >
-            #{chapter?.index ?? "-"}
+            #{comicInfo.index + 1}
           </span>
         </div>
       </div>

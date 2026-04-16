@@ -1,4 +1,5 @@
 import type { RawComicInfo } from "./raw/comic";
+import { unwrapRawUserInfo } from "./raw/user";
 import type { UserInfo } from "./user";
 import { toWorksetInfo, type WorksetInfo } from "./workset";
 
@@ -72,5 +73,5 @@ export type UpdateComicArgs = {
   description?: string;
 };
 function toUserInfo(creator: any): UserInfo | undefined {
-  throw new Error("Function not implemented.");
+  return creator ? unwrapRawUserInfo(creator) : undefined;
 }

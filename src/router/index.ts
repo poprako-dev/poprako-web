@@ -4,9 +4,10 @@ import { createBrowserRouter } from "react-router-dom";
 import AppLayout from "@/layouts/AppLayout";
 import WorkspacePage from "@/pages/WorkspacePage";
 import ComicPlaygroundPage from "@/pages/ComicPlaygroundPage";
-import MemberListPage from "@/pages/MemberListPage";
+import MemberGlancePage from "@/pages/MemberGlancePage";
 import LoginPage from "@/pages/LoginPage";
 import RootGuard from "@/pages/RootGuard";
+import TranslatorPage from "@/pages/TranslatorPage";
 
 const errorElement = createElement(
   Suspense,
@@ -18,6 +19,11 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: createElement(LoginPage),
+    errorElement,
+  },
+  {
+    path: "/translator/:chapterId/:pageId",
+    element: createElement(TranslatorPage),
     errorElement,
   },
   {
@@ -33,7 +39,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "member-list",
-        element: createElement(MemberListPage),
+        element: createElement(MemberGlancePage),
       },
     ],
   },

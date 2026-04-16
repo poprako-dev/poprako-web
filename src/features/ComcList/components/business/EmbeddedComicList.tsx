@@ -45,6 +45,16 @@ export default function EmbeddedComicList({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const { showToast } = useToastStore();
 
+  const loadAssignments = useCallback(
+    async (comicInfo: ComicInfo): Promise<Result<AssignmentInfo[]>> => {
+      if (!onLoadAssignments) {
+        return { success: true, data: [] };
+      }
+      return onLoadAssignments(comicInfo);
+    },
+    [onLoadAssignments],
+  );
+
   const loadComics = useCallback(async () => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
@@ -70,6 +80,48 @@ export default function EmbeddedComicList({
   }, [isLoading, hasMore, offset, onLoadComics, showToast]);
 
   useEffect(() => {
+    let isCancelled = false;
+
+    const reloadComics = async () => {
+      setComics([]);
+      setHasMore(true);
+      setOffset(0);
+      setIsLoading(true);
+
+      try {
+        const result = await onLoadComics(0, 12);
+        if (isCancelled) return;
+
+        if (typeof result === "string") {
+          console.error("[EmbeddedComicList] 加载漫画列表失败:", result);
+          showToast(result, "error");
+          setHasMore(false);
+          return;
+        }
+
+        setComics(result);
+        setOffset(result.length);
+        setHasMore(result.length >= 12);
+      } catch (err) {
+        if (isCancelled) return;
+        console.error("[EmbeddedComicList] 加载漫画列表异常:", err);
+        showToast("发生未知错误", "error");
+        setHasMore(false);
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    reloadComics();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [onLoadComics, showToast]);
+
+  useEffect(() => {
     if (!loadMoreRef.current) return;
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -91,6 +143,10 @@ export default function EmbeddedComicList({
   const handleModeChange = (m: ViewMode) => {
     setCurrentMode(m);
   };
+
+  useEffect(() => {
+    setCurrentMode(mode);
+  }, [mode]);
 
   return (
     <div
@@ -155,9 +211,7 @@ export default function EmbeddedComicList({
               mode={currentMode}
               onClick={() => onComicClick?.(comic)}
               onLoadPinnedChapter={onLoadLatestChapter}
-              onLoadAssignments={
-                onLoadAssignments ? onLoadAssignments : undefined
-              }
+              onLoadAssignments={loadAssignments}
             />
           ))}
         </div>
@@ -174,7 +228,7 @@ export default function EmbeddedComicList({
           )}
           {!hasMore && comics.length > 0 && (
             <span className={clsx("text-slate-400 text-sm")}>
-              没有更多数据了 O^O
+              没有更多漫画了 O^O
             </span>
           )}
           {!hasMore && comics.length === 0 && !isLoading && (

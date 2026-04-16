@@ -76,8 +76,9 @@ export default function MemberCard({ member }: Props) {
       className={clsx(
         "group flex w-full",
         "bg-white border border-slate-200",
-        "hover:border-slate-300 transition-all",
-        "p-3 gap-4",
+        " transition-all duration-200",
+        "p-3 gap-4 rounded-sm shadow-sm",
+        "hover:-translate-y-0.5 hover:shadow-md",
       )}
     >
       {/* 左侧：头像 */}

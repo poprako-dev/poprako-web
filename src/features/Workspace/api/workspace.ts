@@ -25,7 +25,7 @@ export async function fetchMyComics(
 ): Promise<ComicInfo[] | string> {
   const result = await api.get<RawAssignmentInfo[]>(
     "/assignments/mine",
-    { "includes[]": ["chapter.comic"], offset, limit },
+    { includes: ["chapter.comic"], offset, limit },
     true,
   );
   if (!result.success) return result.error;

@@ -6,9 +6,10 @@ import PageCard from "./PageCard";
 
 type Props = {
   pages: PageInfo[];
-  onClickPage: (pageId: string) => void;
+  onClickPage?: (pageId: string) => void;
   onDeletePage?: (pageId: string) => void;
   enableDelete?: boolean;
+  enableClick?: boolean;
   /** 当提供时，区域支持拖放批量上传，文件按 Windows 自然排序顺序排列 */
   onAddPages?: (files: File[]) => Promise<void>;
 };
@@ -29,6 +30,7 @@ export default function PageList({
   onClickPage,
   onDeletePage,
   enableDelete,
+  enableClick = true,
   onAddPages,
 }: Props) {
   const [isDragging, setIsDragging] = useState(false);
@@ -73,9 +75,10 @@ export default function PageList({
           <PageCard
             key={page.id}
             page={page}
-            onClick={() => onClickPage(page.id)}
+            onClick={onClickPage ? () => onClickPage(page.id) : undefined}
             onDelete={onDeletePage ? () => onDeletePage(page.id) : undefined}
             enableDelete={enableDelete}
+            enableClick={enableClick}
           />
         ))}
       </div>

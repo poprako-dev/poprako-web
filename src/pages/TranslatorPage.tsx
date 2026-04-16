@@ -1,0 +1,67 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import WebTranslator from "@/features/WebTranslator";
+import { useAppStore } from "@/store/app";
+import { getMyUser } from "@/api/user";
+import { listMyMembers } from "@/api/member";
+import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
+
+export default function TranslatorPage() {
+  const { chapterId, pageId } = useParams<{
+    chapterId: string;
+    pageId: string;
+  }>();
+  const navigate = useNavigate();
+  const loginState = useAppStore((s) => s.loginState);
+  const setLoginState = useAppStore((s) => s.setLoginState);
+  const [isAuthReady, setIsAuthReady] = useState(loginState !== null);
+
+  // Ensure user is authenticated before rendering translator
+  useEffect(() => {
+    if (loginState !== null) {
+      setIsAuthReady(true);
+      return;
+    }
+
+    Promise.all([getMyUser(), listMyMembers()])
+      .then(([userInfo, memberInfos]) => {
+        setLoginState({ userInfo, memberInfos });
+        setIsAuthReady(true);
+      })
+      .catch(() => navigate("/login", { replace: true }));
+  }, [loginState, navigate, setLoginState]);
+
+  if (!isAuthReady) {
+    return (
+      <div className="flex h-dvh w-full items-center justify-center">
+        <LoadingEllipsis />
+      </div>
+    );
+  }
+
+  if (!chapterId) {
+    return (
+      <div className="flex h-dvh w-full items-center justify-center">
+        <p className="text-sm text-destructive">缺少章节 ID</p>
+      </div>
+    );
+  }
+
+  if (!pageId) {
+    return (
+      <div className="flex h-dvh w-full items-center justify-center">
+        <p className="text-sm text-destructive">缺少页面 ID</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-dvh w-full">
+      <WebTranslator
+        chapterId={chapterId}
+        startPageId={pageId}
+        onExit={() => navigate(-1)}
+      />
+    </div>
+  );
+}

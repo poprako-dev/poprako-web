@@ -6,9 +6,10 @@ import LazyImage from "@/features/ComicPlayground/features/ComicDetailModal/comp
 
 type Props = {
   page: PageInfo;
-  onClick: () => void;
+  onClick?: () => void;
   onDelete?: () => void;
   enableDelete?: boolean;
+  enableClick?: boolean;
 };
 
 export default function PageCard({
@@ -16,6 +17,7 @@ export default function PageCard({
   onClick,
   onDelete,
   enableDelete,
+  enableClick = true,
 }: Props) {
   const total = page.totalUnitCount;
   const translated = page.translatedUnitCount;
@@ -25,11 +27,12 @@ export default function PageCard({
 
   return (
     <div
-      onClick={onClick}
+      onClick={enableClick ? onClick : undefined}
       className={clsx(
         "relative aspect-3/4 border rounded-sm flex flex-col",
         "hover:border-slate-300 hover:shadow-sm",
-        "transition-all cursor-pointer group",
+        "transition-all group",
+        enableClick ? "cursor-pointer" : "cursor-default",
         "bg-white border-slate-100 overflow-hidden",
       )}
     >

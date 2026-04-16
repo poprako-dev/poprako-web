@@ -124,22 +124,24 @@ export default function RoleTag({
       </div>
 
       {/* Add user button — appears on hover at the far right */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onAddUser?.();
-        }}
-        className={clsx(
-          "opacity-0 group-hover/role:opacity-100",
-          "transition-opacity duration-150 shrink-0",
-          "w-5 h-5 flex items-center justify-center rounded-sm",
-          "text-slate-300 hover:text-slate-600 hover:bg-slate-100/80",
-          "border border-transparent hover:border-slate-200",
-        )}
-        title="添加成员"
-      >
-        <Plus size={12} strokeWidth={2.5} />
-      </button>
+      {onAddUser && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddUser();
+          }}
+          className={clsx(
+            "opacity-0 group-hover/role:opacity-100",
+            "transition-opacity duration-150 shrink-0",
+            "w-5 h-5 flex items-center justify-center rounded-sm",
+            "text-slate-300 hover:text-slate-600 hover:bg-slate-100/80",
+            "border border-transparent hover:border-slate-200",
+          )}
+          title="添加成员"
+        >
+          <Plus size={12} strokeWidth={2.5} />
+        </button>
+      )}
 
       {/* Left progress bar indicator (vertical left border effect instead of bottom) */}
       <div

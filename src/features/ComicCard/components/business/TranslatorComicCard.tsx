@@ -95,7 +95,7 @@ export default function TranslatorComicCard({
               "bg-slate-100 px-1.5 py-0.5 rounded shrink-0",
             )}
           >
-            #{chapter?.index ?? "-"}
+            #{comicInfo.index + 1}
           </span>
         </div>
       </div>

@@ -18,6 +18,7 @@ export type MemberInfo = {
   assignedPublisherAt?: number;
   assignedAdminAt?: number;
 
+  roles: number;
   createdAt: number;
   updatedAt: number;
 };

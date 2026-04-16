@@ -15,12 +15,16 @@ import type { AssignmentInfo } from "@/types/assignment";
 import type { WorkflowStatus } from "@/types/workflow";
 import type { Result } from "@/types/utils/result";
 import RoleTag from "./RoleTag";
+import type { Role } from "@/types/role";
 
 type Props = {
   selectedChapter?: ChapterInfo;
   assignments: AssignmentInfo[];
   onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
   onRemoveAssignment?: (userId: string) => void;
+  onAddAssignment?: (role: Role) => void;
+  canOperateWorkflow?: boolean;
+  canManageAssignments?: boolean;
 };
 
 type RoleDef = {
@@ -94,6 +98,9 @@ export default function AssignmentFooter({
   assignments,
   onTransiteWorkflow,
   onRemoveAssignment,
+  onAddAssignment,
+  canOperateWorkflow = false,
+  canManageAssignments = false,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -138,12 +145,14 @@ export default function AssignmentFooter({
                 label={roleDef.label}
                 assignments={roleAssignments}
                 status={status}
-                transition={transition}
+                transition={canOperateWorkflow ? transition : null}
                 onTransiteWorkflow={onTransiteWorkflow}
-                onRemoveUser={onRemoveAssignment}
-                onAddUser={() => {
-                  // TODO: open MemberSelectorModal
-                }}
+                onRemoveUser={canManageAssignments ? onRemoveAssignment : undefined}
+                onAddUser={
+                  canManageAssignments
+                    ? () => onAddAssignment?.(roleNameToRole(roleDef.field))
+                    : undefined
+                }
               />
             );
           })}
@@ -151,4 +160,13 @@ export default function AssignmentFooter({
       </div>
     </div>
   );
+}
+
+function roleNameToRole(field: RoleDef["field"]): Role {
+  if (field === "assignedRawProviderAt") return "rawProvider";
+  if (field === "assignedTranslatorAt") return "translator";
+  if (field === "assignedProofreaderAt") return "proofreader";
+  if (field === "assignedTypesetterAt") return "typesetter";
+  if (field === "assignedReviewerAt") return "reviewer";
+  return "publisher";
 }

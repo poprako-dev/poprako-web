@@ -23,80 +23,69 @@ function WorkspaceStatCard({
   tone,
   label,
 }: StatCardProps) {
-  const toneClass = {
+  const toneColors = {
     slate: {
       icon: "text-slate-400",
       value: "text-slate-600",
-      label: "text-slate-500",
+      label: "text-slate-400",
     },
     orange: {
       icon: "text-orange-400",
       value: "text-orange-500",
-      label: "text-orange-500",
+      label: "text-orange-400",
     },
     emerald: {
       icon: "text-emerald-400",
       value: "text-emerald-500",
-      label: "text-emerald-500",
+      label: "text-emerald-400",
     },
-  }[tone];
-
-  const iconBg = {
-    slate: "bg-slate-100",
-    orange: "bg-orange-50",
-    emerald: "bg-emerald-50",
   }[tone];
 
   return (
     <div
       className={clsx(
-        "flex-1 min-w-0 rounded-lg border border-slate-200 bg-white shadow-sm",
-        "p-4 flex items-center gap-4",
+        "flex w-full items-center gap-1.5 py-1",
+        "sm:w-auto sm:flex-col sm:items-start sm:gap-1 sm:px-3 sm:py-1.5",
       )}
     >
-      <div className={clsx("flex items-center gap-3")}>
-        <div
-          className={clsx(
-            "w-12 h-12 rounded-lg flex items-center justify-center",
-            iconBg,
-          )}
-        >
-          <Icon size={20} className={clsx(toneClass.icon)} />
-        </div>
-
-        <div className={clsx("flex flex-col")}>
-          <span className={clsx("text-sm font-medium", toneClass.label)}>
-            {label}
-          </span>
-          <span
-            className={clsx(
-              "text-lg font-medium mt-0.5 text-slate-400 md:hidden",
-              isLoading && "animate-pulse",
-            )}
-          >
-            {isLoading ? "-" : value}
-          </span>
-        </div>
-      </div>
-
-      <div className={clsx("ml-auto hidden md:block")}>
-        <span
-          className={clsx(
-            "text-4xl font-black leading-none",
-            toneClass.value,
-            isLoading && "animate-pulse",
-          )}
-        >
-          {isLoading ? "-" : value}
+      {/* 左侧：icon + 标签 */}
+      <div className={clsx("flex shrink-0 items-center gap-1")}>
+        <Icon size={12} className={clsx(toneColors.icon)} />
+        <span className={clsx("text-xs font-medium", toneColors.label)}>
+          {label}
         </span>
       </div>
+
+      {/* 连接细线（仅小屏） */}
+      <div
+        className={clsx(
+          "flex-1 self-center border-b border-dashed border-slate-200",
+          "sm:hidden",
+        )}
+      />
+
+      {/* 右侧：数字 */}
+      <span
+        className={clsx(
+          "shrink-0 text-lg font-bold leading-none",
+          toneColors.value,
+          isLoading && "animate-pulse",
+        )}
+      >
+        {isLoading ? "-" : value}
+      </span>
     </div>
   );
 }
 
 export default function WorkspaceStatsCards({ stats, isLoading }: Props) {
   return (
-    <section className={clsx("mb-4 flex flex-row gap-2")}>
+    <section
+      className={clsx(
+        "flex flex-col gap-0.5",
+        "sm:flex-row sm:items-center sm:gap-1",
+      )}
+    >
       <WorkspaceStatCard
         icon={Clock}
         label="全部任务"

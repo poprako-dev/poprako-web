@@ -23,9 +23,10 @@ export type RawChapterInfo = {
   total_unit_count: number;
   translated_unit_count: number;
   proofread_unit_count: number;
+  is_pinned?: boolean;
 
   uploaded_at?: number;
-  transalating_at?: number;
+  translating_at?: number;
   translated_at?: number;
   typeset_at?: number;
   typesetting_at?: number;
@@ -47,6 +48,7 @@ export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
     creator: raw.creator ? unwrapRawUserInfo(raw.creator) : undefined,
     index: raw.index,
     subtitle: raw.subtitle,
+    isPinned: raw.is_pinned,
     pageCount: raw.page_count,
     totalUnitCount: raw.total_unit_count,
     translatedUnitCount: raw.translated_unit_count,
@@ -54,7 +56,7 @@ export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
     uploadedAt: raw.uploaded_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-    translatingAt: raw.transalating_at,
+    translatingAt: raw.translating_at,
     translatedAt: raw.translated_at,
     typesetAt: raw.typeset_at,
     typesettingAt: raw.typesetting_at,
@@ -65,13 +67,13 @@ export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
   } as ChapterInfo;
 }
 
-export type RawCreateChapterArgs = { chapter_no: string; comic_id: string };
+export type RawCreateChapterArgs = { subtitle?: string; comic_id: string };
 export function unwrapRawCreateChapterArgs(
   raw: RawCreateChapterArgs,
 ): CreateChapterArgs {
   return {
     comicId: raw.comic_id,
-    chapterNo: raw.chapter_no,
+    subtitle: raw.subtitle,
   } as CreateChapterArgs;
 }
 
@@ -84,26 +86,17 @@ export function unwrapRawCreateChapterResult(
 
 export type RawUpdateChapterArgs = {
   chapter_id: string;
-  chapter_no?: string;
-  proofread_status?: string;
-  publish_status?: string;
-  review_status?: string;
-  translate_status?: string;
-  typeset_status?: string;
-  upload_status?: string;
+  subtitle?: string;
+  is_pinned?: boolean;
+  workflow_transition?: string;
 };
 
 export function unwrapRawUpdateChapterArgs(
   raw: RawUpdateChapterArgs,
 ): UpdateChapterArgs {
   return {
-    chapterId: raw.chapter_id,
-    chapterNo: raw.chapter_no,
-    translateStatus: raw.translate_status as any,
-    typesetStatus: raw.typeset_status as any,
-    reviewStatus: raw.review_status as any,
-    proofreadStatus: raw.proofread_status as any,
-    publishStatus: raw.publish_status as any,
-    uploadStatus: raw.upload_status as any,
+    subtitle: raw.subtitle,
+    isPinned: raw.is_pinned,
+    workflowTransition: raw.workflow_transition as any,
   } as UpdateChapterArgs;
 }

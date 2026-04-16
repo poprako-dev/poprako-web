@@ -46,6 +46,48 @@ export default function EmbeddedMemberList({ onLoadMembers }: Props) {
   }, [isLoading, hasMore, offset, onLoadMembers, showToast]);
 
   useEffect(() => {
+    let isCancelled = false;
+
+    const reloadMembers = async () => {
+      setMembers([]);
+      setHasMore(true);
+      setOffset(0);
+      setIsLoading(true);
+
+      try {
+        const result = await onLoadMembers(0, 20);
+        if (isCancelled) return;
+
+        if (typeof result === "string") {
+          console.error("[EmbeddedMemberList] 加载成员列表失败:", result);
+          showToast(result, "error");
+          setHasMore(false);
+          return;
+        }
+
+        setMembers(result);
+        setOffset(result.length);
+        setHasMore(result.length >= 20);
+      } catch (err) {
+        if (isCancelled) return;
+        console.error("[EmbeddedMemberList] 加载成员列表异常:", err);
+        showToast("发生未知错误", "error");
+        setHasMore(false);
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    reloadMembers();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [onLoadMembers, showToast]);
+
+  useEffect(() => {
     if (!loadMoreRef.current) return;
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -63,9 +105,9 @@ export default function EmbeddedMemberList({ onLoadMembers }: Props) {
   return (
     <div
       ref={scrollContainerRef}
-      className="w-full h-full min-h-0 overflow-y-auto"
+      className="w-full h-full min-h-0 overflow-y-auto py-4 px-4"
     >
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((m) => (
           <MemberCard key={m.id} member={m} />
         ))}
@@ -77,7 +119,7 @@ export default function EmbeddedMemberList({ onLoadMembers }: Props) {
           <LoaderCircle size={18} className="animate-spin text-slate-300" />
         )}
         {!isLoading && !hasMore && members.length > 0 && (
-          <span className="text-xs text-slate-300">已加载全部成员</span>
+          <span className="text-sm text-slate-400">没有更多成员了 O^O</span>
         )}
         {!isLoading && !hasMore && members.length === 0 && (
           <span className="text-xs text-slate-400">暂无成员</span>

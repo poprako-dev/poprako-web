@@ -44,6 +44,10 @@ type Props = {
   // 如果当前用户是校对，则允许切换到校对模式
   // 否则只能使用翻译模式
   isCurrUserProofreader: boolean;
+  // 初始页码索引，默认为 0
+  startPageIndex?: number;
+  // 初始页 ID，优先级高于 startPageIndex
+  startPageId?: string;
 };
 
 export default function BaseTranslator({
@@ -53,6 +57,8 @@ export default function BaseTranslator({
   onLoadPageImage,
   onExit,
   isCurrUserProofreader,
+  startPageIndex,
+  startPageId,
 }: Props) {
   const [pageIndex, setPageIndex] = useState(0);
   const [unitBuf, setUnitBuf] = useState<UnitInfo[]>([]);
@@ -136,7 +142,22 @@ export default function BaseTranslator({
 
   useEffect(() => {
     if (project.pages.length > 0) {
-      loadPage(0);
+      let initial = 0;
+
+      if (startPageId) {
+        const idxById = project.pages.findIndex((page) => page.id === startPageId);
+        if (idxById >= 0) {
+          initial = idxById;
+        }
+      } else if (
+        startPageIndex !== undefined &&
+        startPageIndex >= 0 &&
+        startPageIndex < project.pages.length
+      ) {
+        initial = startPageIndex;
+      }
+
+      loadPage(initial);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

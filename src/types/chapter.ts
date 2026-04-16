@@ -5,6 +5,17 @@ import type { RawChapterInfo } from "./raw/chapter";
 import { unwrapRawComicInfo } from "./raw/comic";
 import { unwrapRawUserInfo } from "./raw/user";
 
+export type WorkflowTransition =
+  | "upload_complete"
+  | "translate_start"
+  | "translate_complete"
+  | "proofread_start"
+  | "proofread_complete"
+  | "typeset_start"
+  | "typeset_complete"
+  | "review_complete"
+  | "publish_complete";
+
 export type ChapterInfo = {
   id: string;
 
@@ -39,7 +50,7 @@ export type ChapterInfo = {
 
 export type CreateChapterArgs = {
   comicId: string;
-  chapterNo: string;
+  subtitle?: string;
 };
 
 export type CreateChapterResult = {
@@ -47,14 +58,9 @@ export type CreateChapterResult = {
 };
 
 export type UpdateChapterArgs = {
-  chapterId: string;
-  chapterNo?: string;
-  translateStatus?: WorkflowStatus;
-  typesetStatus?: WorkflowStatus;
-  reviewStatus?: WorkflowStatus;
-  proofreadStatus?: WorkflowStatus;
-  publishStatus?: WorkflowStatus;
-  uploadStatus?: WorkflowStatus;
+  subtitle?: string;
+  isPinned?: boolean;
+  workflowTransition?: WorkflowTransition;
 };
 
 export type WithWorkflow = {
@@ -141,7 +147,7 @@ export function toChapterInfo(raw?: RawChapterInfo): ChapterInfo | undefined {
     translatedUnitCount: raw.translated_unit_count,
     proofreadUnitCount: raw.proofread_unit_count,
     uploadedAt: raw.uploaded_at,
-    translatingAt: raw.transalating_at,
+    translatingAt: raw.translating_at,
     translatedAt: raw.translated_at,
     typesetAt: raw.typeset_at,
     typesettingAt: raw.typesetting_at,

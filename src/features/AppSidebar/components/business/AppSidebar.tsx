@@ -1,11 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { NavId, TeamConfig } from "../../types/types";
-import {
-  mainNavConfigs,
-  footerNavConfig,
-  teamConfigs,
-} from "../../config/config";
+import { mainNavConfigs, footerNavConfig } from "../../config/config";
+import { useAppStore } from "@/store/app";
 import AppSidebarLayout from "../../layouts/AppSidebarLayout";
 import TitleHeader from "./TitleHeader";
 import TeamOption from "./TeamOption";
@@ -24,13 +21,34 @@ const pathNavMap: Record<string, NavId> = Object.fromEntries(
 export default function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const loginState = useAppStore((s) => s.loginState);
+  const selectedTeamId = useAppStore((s) => s.selectedTeamId);
+  const setSelectedTeamId = useAppStore((s) => s.setSelectedTeamId);
 
   const [isHovered, setIsHovered] = useState(false);
   const [isSelectingTeam, setIsSelectingTeam] = useState(false);
 
   const isExpanded = isHovered || isSelectingTeam;
 
-  const [activeTeam, setActiveTeam] = useState(teamConfigs[0]);
+  const teamConfigs = useMemo<TeamConfig[]>(() => {
+    if (!loginState?.memberInfos) return [];
+    return loginState.memberInfos
+      .filter((m) => m.team)
+      .map((m) => {
+        const team = m.team!;
+        const short = team.name
+          .split(/\s+/)
+          .map((w) => w[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 3);
+        return { id: team.id, name: team.name, short, desc: team.description };
+      });
+  }, [loginState]);
+
+  const resolvedActiveTeam =
+    teamConfigs.find((team) => team.id === selectedTeamId) ??
+    teamConfigs[0] ?? { id: "", name: "", short: "", desc: "" };
 
   const activeNavId = pathNavMap[location.pathname] ?? "workspace";
 
@@ -39,7 +57,7 @@ export default function AppSidebar() {
   };
 
   const handleTeamSelect = (team: TeamConfig) => {
-    setActiveTeam(team);
+    setSelectedTeamId(team.id);
     setIsSelectingTeam(false);
   };
 
@@ -57,7 +75,7 @@ export default function AppSidebar() {
       teamOption={
         <TeamOption
           teams={teamConfigs}
-          activeTeam={activeTeam}
+          activeTeam={resolvedActiveTeam}
           isListOpen={isSelectingTeam}
           onToggleList={() => setIsSelectingTeam((v) => !v)}
           onSelectTeam={handleTeamSelect}

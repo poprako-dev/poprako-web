@@ -30,7 +30,15 @@ export default function ComicCard({
 }: Props) {
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick();
+        }
+      }}
       className={clsx(
         "w-full flex flex-col",
         "bg-white rounded-md overflow-hidden shadow-md",

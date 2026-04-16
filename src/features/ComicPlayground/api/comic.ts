@@ -17,13 +17,6 @@ export async function listComics(
 ): Promise<Result<ComicInfo[]>> {
   const rawArgs: RawListComicArgs = {
     workset_id: args.worksetId,
-    fuzzy_title: args.fuzzyTitle,
-    upload_status: args.uploadStatus,
-    translate_status: args.translateStatus,
-    proofread_status: args.proofreadStatus,
-    typeset_status: args.typesetStatus,
-    review_status: args.reviewStatus,
-    publish_status: args.publishStatus,
     includes: args.includes,
     offset: args.offset,
     limit: args.limit,

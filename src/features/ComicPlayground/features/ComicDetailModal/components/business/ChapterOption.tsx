@@ -71,7 +71,7 @@ export default function ChapterOption({
           )}
         >
           <span className="text-sm font-black italic text-slate-400">
-            #{selectedChapter.index}
+            #{selectedChapter.index + 1}
           </span>
           {selectedChapter.subtitle && (
             <>

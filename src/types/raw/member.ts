@@ -1,107 +1,78 @@
-import type {
-  MemberProfile,
-  MemberWithTeamInfo,
-  CreateMemberArgs,
-  CreateMemberResult,
-  UpdateMemberRoleArgs,
-  JoinTeamArgs,
-} from "../member";
+import type { MemberInfo } from "../member";
+import { unmaskRoles } from "../role";
 import type { RawTeamInfo } from "./team";
 
-export type RawMemberProfile = {
+export type RawMemberInfo = {
   id: string;
-  qq: string;
-  name: string;
-  avatar_url: string;
-  is_avatar_uploaded: boolean;
-  is_super_admin: boolean;
+  user_id: string;
+  team_id: string;
+  user?: {
+    id: string;
+    qq: string;
+    name: string;
+    avatar_url: string;
+    is_avatar_uploaded: boolean;
+    is_super_admin: boolean;
+    created_at: number;
+    updated_at: number;
+  };
+  team?: RawTeamInfo;
   roles: number;
   created_at: number;
   updated_at: number;
 };
 
-export function unwrapRawMemberProfile(raw: RawMemberProfile): MemberProfile {
+export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
+  const unmaskedRoles = unmaskRoles(raw.roles);
+
   return {
     id: raw.id,
-    qq: raw.qq,
-    name: raw.name,
-    avatarUrl: raw.avatar_url,
-    isAvatarUploaded: raw.is_avatar_uploaded,
-    isSuperAdmin: raw.is_super_admin,
+    userId: raw.user_id,
+    user: raw.user
+      ? {
+          id: raw.user.id,
+          qq: raw.user.qq,
+          name: raw.user.name,
+          avatarUrl: raw.user.avatar_url,
+          isAvatarUploaded: raw.user.is_avatar_uploaded,
+          isSuperAdmin: raw.user.is_super_admin,
+          createdAt: raw.user.created_at,
+          updatedAt: raw.user.updated_at,
+        }
+      : undefined,
+    teamId: raw.team_id,
+    team: raw.team
+      ? {
+          id: raw.team.id,
+          name: raw.team.name,
+          description: raw.team.description,
+          avatarUrl: raw.team.avatar_url,
+          isAvatarUploaded: raw.team.is_avatar_uploaded,
+          createdAt: raw.team.created_at,
+          updatedAt: raw.team.updated_at,
+        }
+      : undefined,
     roles: raw.roles,
+    assignedRawProviderAt: unmaskedRoles.includes("rawProvider")
+      ? raw.updated_at
+      : undefined,
+    assignedTranslatorAt: unmaskedRoles.includes("translator")
+      ? raw.updated_at
+      : undefined,
+    assignedProofreaderAt: unmaskedRoles.includes("proofreader")
+      ? raw.updated_at
+      : undefined,
+    assignedTypesetterAt: unmaskedRoles.includes("typesetter")
+      ? raw.updated_at
+      : undefined,
+    assignedReviewerAt: unmaskedRoles.includes("reviewer")
+      ? raw.updated_at
+      : undefined,
+    assignedPublisherAt: unmaskedRoles.includes("publisher")
+      ? raw.updated_at
+      : undefined,
+    assignedAdminAt: unmaskedRoles.includes("admin") ? raw.updated_at : undefined,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-  } as MemberProfile;
-}
-
-export type RawMemberWithTeamInfo = {
-  id: string;
-  user_id: string;
-  team: RawTeamInfo;
-  assigned_admin_at: number;
-  assigned_raw_provider_at?: number;
-  assigned_translator_at?: number;
-  assigned_proofreader_at?: number;
-  assigned_typesetter_at?: number;
-  assigned_reviewer_at?: number;
-  assigned_publisher_at?: number;
-};
-
-export function unwrapRawMemberWithTeamInfo(
-  raw: RawMemberWithTeamInfo,
-): MemberWithTeamInfo {
-  return {
-    id: raw.id,
-    userId: raw.user_id,
-    team: {
-      id: raw.team.id,
-      name: raw.team.name,
-      description: raw.team.description,
-      avatarUrl: raw.team.avatar_url,
-      isAvatarUploaded: raw.team.is_avatar_uploaded,
-      createdAt: raw.team.created_at,
-      updatedAt: raw.team.updated_at,
-    },
-    assignedAdminAt: raw.assigned_admin_at,
-    assignedRawProviderAt: raw.assigned_raw_provider_at,
-    assignedTranslatorAt: raw.assigned_translator_at,
-    assignedProofreaderAt: raw.assigned_proofreader_at,
-    assignedTypesetterAt: raw.assigned_typesetter_at,
-    assignedReviewerAt: raw.assigned_reviewer_at,
-    assignedPublisherAt: raw.assigned_publisher_at,
-  } as MemberWithTeamInfo;
-}
-
-export type RawCreateMemberArgs = {
-  roles: number;
-  team_id: string;
-  user_id: string;
-};
-export function unwrapRawCreateMemberArgs(
-  raw: RawCreateMemberArgs,
-): CreateMemberArgs {
-  return {
-    teamId: raw.team_id,
-    userId: raw.user_id,
-    roles: raw.roles,
-  } as CreateMemberArgs;
-}
-
-export type RawCreateMemberResult = { member_id: string };
-export function unwrapRawCreateMemberResult(
-  raw: RawCreateMemberResult,
-): CreateMemberResult {
-  return { memberId: raw.member_id };
-}
-
-export type RawUpdateMemberRoleArgs = { id: string; roles?: number };
-export function unwrapRawUpdateMemberRoleArgs(
-  raw: RawUpdateMemberRoleArgs,
-): UpdateMemberRoleArgs {
-  return { id: raw.id, roles: raw.roles || 0 };
-}
-
-export type RawJoinTeamArgs = { invitation_code: string };
-export function unwrapRawJoinTeamArgs(raw: RawJoinTeamArgs): JoinTeamArgs {
-  return { invitationCode: raw.invitation_code };
+  };
 }

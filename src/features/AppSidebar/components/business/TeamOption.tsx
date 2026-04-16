@@ -30,7 +30,7 @@ function TeamList({
       <div
         className={clsx(
           "w-64 bg-white py-3",
-          "border border-gray-100 rounded-2xl",
+          "border border-gray-100 rounded-sm",
           "shadow-[0_20px_50px_rgba(0,0,0,0.1)]",
         )}
       >
@@ -55,7 +55,7 @@ function TeamList({
                 onClick={() => onSelect(t)}
                 className={clsx(
                   "w-full flex items-center gap-4",
-                  "px-4 py-3 rounded-xl transition-all",
+                  "px-4 py-3 rounded-sm transition-all",
                   isSelected ? "bg-green-50" : "text-gray-500 hover:bg-gray-50",
                   isSelected ? "text-green-800" : "hover:text-gray-900",
                 )}

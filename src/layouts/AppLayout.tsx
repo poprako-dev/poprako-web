@@ -1,7 +1,12 @@
 import clsx from "clsx";
+import { useEffect, useState } from "react";
 import { LayoutDashboard, BookOpen, Users } from "lucide-react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AppSidebar } from "@/features/AppSidebar";
+import { getMyUser } from "@/api/user";
+import { listMyMembers } from "@/api/member";
+import { useAppStore } from "@/store/app";
+import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
 
 const mobileNavItems = [
   { path: "/workspace", icon: LayoutDashboard, label: "工作区" },
@@ -43,10 +48,37 @@ function MobileBottomNav() {
 }
 
 export default function AppLayout() {
+  const navigate = useNavigate();
+  const loginState = useAppStore((s) => s.loginState);
+  const setLoginState = useAppStore((s) => s.setLoginState);
+  const [isReady, setIsReady] = useState(loginState !== null);
+
+  useEffect(() => {
+    if (loginState !== null) {
+      setIsReady(true);
+      return;
+    }
+
+    Promise.all([getMyUser(), listMyMembers()])
+      .then(([userInfo, memberInfos]) => {
+        setLoginState({ userInfo, memberInfos });
+        setIsReady(true);
+      })
+      .catch(() => navigate("/login", { replace: true }));
+  }, [loginState, navigate, setLoginState]);
+
+  if (!isReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <LoadingEllipsis />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex bg-gray-50">
       <AppSidebar />
-      <main className={clsx("flex-1 sm:ml-14", "pb-14 sm:pb-0")}>
+      <main className={clsx("w-full sm:pl-14", "pb-14 sm:pb-0")}>
         <Outlet />
       </main>
       <MobileBottomNav />
