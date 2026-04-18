@@ -1,16 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import BaseTranslator from "@/features/BaseTranslator";
 import type { Project } from "@/types/project";
-import type { UnitInfo } from "@/types/unit";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
 import {
   listUnits,
-  createUnits,
-  patchUnits,
-  deleteUnits,
+  saveUnits,
   listPages,
 } from "../../api/translator";
 import { unwrapRawAssignmentInfo, type RawAssignmentInfo } from "@/types/raw/assignment";
@@ -115,7 +112,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
   }, [chapterId]);
 
   const handleLoadUnits = useCallback(
-    async (pageId: string): Promise<UnitInfo[]> => {
+    async (pageId: string) => {
       const result = await listUnits(pageId);
       if (!result.success) {
         showToast(result.error, "error");
@@ -128,15 +125,9 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
 
   const handleSaveUnits = useCallback(
     async (pageId: string, diff: UnitDiff): Promise<void> => {
-      const results = await Promise.all([
-        createUnits(pageId, diff.insert),
-        patchUnits(diff.patch),
-        deleteUnits(diff.delete),
-      ]);
-
-      const failed = results.find((r) => !r.success);
-      if (failed && !failed.success) {
-        throw new Error(failed.error);
+      const result = await saveUnits(pageId, diff);
+      if (!result.success) {
+        throw new Error(result.error);
       }
     },
     [],

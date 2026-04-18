@@ -33,11 +33,12 @@ import { listMembers } from "@/api/member";
 export default function ComicPlayground() {
   const { activeTeamId: teamId, activeMember } = useActiveTeam();
   const currentUserId = useAppStore((s) => s.loginState?.userInfo.id ?? null);
+  const isSuperAdmin = useAppStore((s) => !!s.loginState?.userInfo.isSuperAdmin);
   const { showToast } = useToastStore();
   const navigate = useNavigate();
 
   const canManageAssignments =
-    !!activeMember && (hasRole(activeMember, "admin") || !!activeMember.user?.isSuperAdmin);
+    !!activeMember && (hasRole(activeMember, "admin") || isSuperAdmin);
 
   const [worksets, setWorksets] = useState<WorksetInfo[]>([]);
   const [activeWorksetId, setActiveWorksetId] = useState<string>("");
