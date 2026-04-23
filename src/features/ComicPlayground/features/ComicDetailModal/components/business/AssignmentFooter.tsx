@@ -29,15 +29,10 @@ type Props = {
 
 type RoleDef = {
   label: string;
-  field: keyof Pick<
-    AssignmentInfo,
-    | "assignedRawProviderAt"
-    | "assignedTranslatorAt"
-    | "assignedProofreaderAt"
-    | "assignedTypesetterAt"
-    | "assignedReviewerAt"
-    | "assignedPublisherAt"
-  >;
+  /** Returns the role key used when adding a new assignment for this row. */
+  addRole: Role;
+  /** Predicate to check if an assignment belongs to this row. */
+  matches: (a: AssignmentInfo) => boolean;
   getStatus: (ch: ChapterInfo) => WorkflowStatus;
   nextTransition: (status: WorkflowStatus) => WorkflowTransition | null;
 };
@@ -45,13 +40,15 @@ type RoleDef = {
 const ROLE_DEFS: RoleDef[] = [
   {
     label: "图",
-    field: "assignedRawProviderAt",
+    addRole: "rawProvider",
+    matches: (a) => a.assignedRawProviderAt !== undefined,
     getStatus: uploadWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "upload_complete"),
   },
   {
     label: "翻",
-    field: "assignedTranslatorAt",
+    addRole: "translator",
+    matches: (a) => a.assignedTranslatorAt !== undefined,
     getStatus: translateWorkflowStatus,
     nextTransition: (s) => {
       if (s === "pending") return "translate_start";
@@ -61,7 +58,8 @@ const ROLE_DEFS: RoleDef[] = [
   },
   {
     label: "校",
-    field: "assignedProofreaderAt",
+    addRole: "proofreader",
+    matches: (a) => a.assignedProofreaderAt !== undefined,
     getStatus: proofreadWorkflowStatus,
     nextTransition: (s) => {
       if (s === "pending") return "proofread_start";
@@ -70,8 +68,12 @@ const ROLE_DEFS: RoleDef[] = [
     },
   },
   {
-    label: "嵌",
-    field: "assignedTypesetterAt",
+    // 嵌字 and 美工 share the same typeset workflow stage.
+    label: "嵌/美",
+    addRole: "typesetter",
+    matches: (a) =>
+      a.assignedTypesetterAt !== undefined ||
+      a.assignedRedrawerAt !== undefined,
     getStatus: typesetWorkflowStatus,
     nextTransition: (s) => {
       if (s === "pending") return "typeset_start";
@@ -81,13 +83,15 @@ const ROLE_DEFS: RoleDef[] = [
   },
   {
     label: "监",
-    field: "assignedReviewerAt",
+    addRole: "reviewer",
+    matches: (a) => a.assignedReviewerAt !== undefined,
     getStatus: reviewWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "review_complete"),
   },
   {
     label: "传",
-    field: "assignedPublisherAt",
+    addRole: "publisher",
+    matches: (a) => a.assignedPublisherAt !== undefined,
     getStatus: publishWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "publish_complete"),
   },
@@ -131,9 +135,7 @@ export default function AssignmentFooter({
       >
         <div className="px-4 pt-1 pb-3 flex flex-col gap-1 relative">
           {ROLE_DEFS.map((roleDef) => {
-            const roleAssignments = assignments.filter(
-              (a) => a[roleDef.field] !== undefined,
-            );
+            const roleAssignments = assignments.filter(roleDef.matches);
             const status = selectedChapter
               ? roleDef.getStatus(selectedChapter)
               : ("pending" as WorkflowStatus);
@@ -150,7 +152,7 @@ export default function AssignmentFooter({
                 onRemoveUser={canManageAssignments ? onRemoveAssignment : undefined}
                 onAddUser={
                   canManageAssignments
-                    ? () => onAddAssignment?.(roleNameToRole(roleDef.field))
+                    ? () => onAddAssignment?.(roleDef.addRole)
                     : undefined
                 }
               />
@@ -162,11 +164,4 @@ export default function AssignmentFooter({
   );
 }
 
-function roleNameToRole(field: RoleDef["field"]): Role {
-  if (field === "assignedRawProviderAt") return "rawProvider";
-  if (field === "assignedTranslatorAt") return "translator";
-  if (field === "assignedProofreaderAt") return "proofreader";
-  if (field === "assignedTypesetterAt") return "typesetter";
-  if (field === "assignedReviewerAt") return "reviewer";
-  return "publisher";
-}
+

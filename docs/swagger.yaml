@@ -2,31 +2,31 @@ basePath: /api/v1
 definitions:
   model.WorkflowTransition:
     enum:
-      - upload_complete
-      - translate_start
-      - translate_complete
-      - proofread_start
-      - proofread_complete
-      - typeset_start
-      - typeset_complete
-      - review_complete
-      - publish_complete
+    - upload_complete
+    - translate_start
+    - translate_complete
+    - proofread_start
+    - proofread_complete
+    - typeset_start
+    - typeset_complete
+    - review_complete
+    - publish_complete
     type: string
     x-enum-varnames:
-      - WorkflowUploadComplete
-      - WorkflowTranslateStart
-      - WorkflowTranslateComplete
-      - WorkflowProofreadStart
-      - WorkflowProofreadComplete
-      - WorkflowTypesetStart
-      - WorkflowTypesetComplete
-      - WorkflowReviewComplete
-      - WorkflowPublishComplete
+    - WorkflowUploadComplete
+    - WorkflowTranslateStart
+    - WorkflowTranslateComplete
+    - WorkflowProofreadStart
+    - WorkflowProofreadComplete
+    - WorkflowTypesetStart
+    - WorkflowTypesetComplete
+    - WorkflowReviewComplete
+    - WorkflowPublishComplete
   val.AssignmentInfo:
     properties:
       chapter:
         allOf:
-          - $ref: "#/definitions/val.ChapterInfo"
+        - $ref: '#/definitions/val.ChapterInfo'
         description: Chapter 是可选的章节信息（仅在 includes 时填充）
       chapter_id:
         description: ChapterID 是所属章节 ID
@@ -44,15 +44,16 @@ definitions:
             bit 1 (2)  = Translator（翻译）
             bit 2 (4)  = Proofreader（校对）
             bit 3 (8)  = Typesetter（嵌字）
-            bit 4 (16) = Reviewer（监修）
-            bit 5 (32) = Publisher（发布）
+            bit 4 (16) = Redrawer（美工）
+            bit 5 (32) = Reviewer（监修）
+            bit 6 (64) = Publisher（发布）
         type: integer
       updated_at:
         description: UpdatedAt 是记录最近一次更新时间的 Unix 毫秒时间戳
         type: integer
       user:
         allOf:
-          - $ref: "#/definitions/val.UserInfo"
+        - $ref: '#/definitions/val.UserInfo'
         description: User 是可选的用户信息（仅在 includes 时填充）
       user_id:
         description: UserID 是被分配用户的 ID
@@ -78,14 +79,14 @@ definitions:
       pages:
         description: Pages 表示章节中的页面列表
         items:
-          $ref: "#/definitions/val.PageExport"
+          $ref: '#/definitions/val.PageExport'
         type: array
     type: object
   val.ChapterInfo:
     properties:
       comic:
         allOf:
-          - $ref: "#/definitions/val.ComicInfo"
+        - $ref: '#/definitions/val.ComicInfo'
         description: TODO
       comic_id:
         description: ComicID 是所属漫画 ID
@@ -95,7 +96,7 @@ definitions:
         type: integer
       creator:
         allOf:
-          - $ref: "#/definitions/val.UserInfo"
+        - $ref: '#/definitions/val.UserInfo'
         description: Creator 是可选的创建者信息（仅在 includes 时填充）
       creator_id:
         description: CreatorID 是章节创建者 ID
@@ -163,7 +164,7 @@ definitions:
         type: integer
       creator:
         allOf:
-          - $ref: "#/definitions/val.UserInfo"
+        - $ref: '#/definitions/val.UserInfo'
         description: Creator 是可选的创建者信息（仅在 includes 时填充）
       creator_id:
         description: CreatorID 是漫画创建者 ID
@@ -191,7 +192,7 @@ definitions:
         type: integer
       workset:
         allOf:
-          - $ref: "#/definitions/val.WorksetInfo"
+        - $ref: '#/definitions/val.WorksetInfo'
         description: Workset 是可选的作品集信息（仅在 includes 时填充）
       workset_id:
         description: WorksetID 是所属作品集 ID
@@ -209,16 +210,17 @@ definitions:
             bit 1 (2)  = Translator（翻译）
             bit 2 (4)  = Proofreader（校对）
             bit 3 (8)  = Typesetter（嵌字）
-            bit 4 (16) = Reviewer（监修）
-            bit 5 (32) = Publisher（发布）
+            bit 4 (16) = Redrawer（美工）
+            bit 5 (32) = Reviewer（监修）
+            bit 6 (64) = Publisher（发布）
         type: integer
       user_id:
         description: UserID 是被分配的用户 ID
         type: string
     required:
-      - chapter_id
-      - roles
-      - user_id
+    - chapter_id
+    - roles
+    - user_id
     type: object
   val.CreateAssignmentRes:
     properties:
@@ -235,7 +237,7 @@ definitions:
         description: Subtitle 是章节副标题（可选）
         type: string
     required:
-      - comic_id
+    - comic_id
     type: object
   val.CreateChapterRes:
     properties:
@@ -258,9 +260,9 @@ definitions:
         description: WorksetID 是目标作品集 ID
         type: string
     required:
-      - author
-      - title
-      - workset_id
+    - author
+    - title
+    - workset_id
     type: object
   val.CreateComicRes:
     properties:
@@ -280,17 +282,18 @@ definitions:
             bit 1 (2)  = Translator（翻译）
             bit 2 (4)  = Proofreader（校对）
             bit 3 (8)  = Typesetter（嵌字）
-            bit 4 (16) = Reviewer（监修）
-            bit 5 (32) = Publisher（发布）
-            bit 6 (64) = Admin（管理员）
+            bit 4 (16) = Redrawer（美工）
+            bit 5 (32) = Reviewer（监修）
+            bit 6 (64) = Publisher（发布）
+            bit 7 (128)= Admin（管理）
         type: integer
       team_id:
         description: TeamID 是目标汉化组 ID
         type: string
     required:
-      - invitee_qq
-      - roles
-      - team_id
+    - invitee_qq
+    - roles
+    - team_id
     type: object
   val.CreateMemberArgs:
     properties:
@@ -301,9 +304,10 @@ definitions:
             bit 1 (2)  = Translator（翻译）
             bit 2 (4)  = Proofreader（校对）
             bit 3 (8)  = Typesetter（嵌字）
-            bit 4 (16) = Reviewer（监修）
-            bit 5 (32) = Publisher（发布）
-            bit 6 (64) = Admin（管理员）
+            bit 4 (16) = Redrawer（美工）
+            bit 5 (32) = Reviewer（监修）
+            bit 6 (64) = Publisher（发布）
+            bit 7 (128)= Admin（管理）
         type: integer
       team_id:
         description: TeamID 是目标汉化组 ID
@@ -312,9 +316,9 @@ definitions:
         description: UserID 是要创建成员的用户 ID
         type: string
     required:
-      - roles
-      - team_id
-      - user_id
+    - roles
+    - team_id
+    - user_id
     type: object
   val.CreateMemberRes:
     properties:
@@ -331,7 +335,7 @@ definitions:
         description: Name 是汉化组名称
         type: string
     required:
-      - name
+    - name
     type: object
   val.CreateTeamRes:
     properties:
@@ -351,8 +355,8 @@ definitions:
         description: TeamID 是目标汉化组 ID
         type: string
     required:
-      - name
-      - team_id
+    - name
+    - team_id
     type: object
   val.CreateWorksetRes:
     properties:
@@ -372,9 +376,9 @@ definitions:
         description: Format 表示导入格式
         type: string
     required:
-      - chapter_id
-      - content
-      - format
+    - chapter_id
+    - content
+    - format
     type: object
   val.ImportChapterRes:
     properties:
@@ -412,9 +416,10 @@ definitions:
             bit 1 (2)  = Translator（翻译）
             bit 2 (4)  = Proofreader（校对）
             bit 3 (8)  = Typesetter（嵌字）
-            bit 4 (16) = Reviewer（监修）
-            bit 5 (32) = Publisher（发布）
-            bit 6 (64) = Admin（管理员）
+            bit 4 (16) = Redrawer（美工）
+            bit 5 (32) = Reviewer（监修）
+            bit 6 (64) = Publisher（发布）
+            bit 7 (128)= Admin（管理）
         type: integer
       team_id:
         description: TeamID 是目标汉化组 ID
@@ -434,9 +439,9 @@ definitions:
         description: Roles 是被邀请者的角色
         type: integer
     required:
-      - chapter_id
-      - invitee_qq
-      - role
+    - chapter_id
+    - invitee_qq
+    - role
     type: object
   val.InviteChapterAssigneeRes:
     properties:
@@ -450,7 +455,7 @@ definitions:
         description: InvitationCode 是章节邀请代码
         type: string
     required:
-      - invitation_code
+    - invitation_code
     type: object
   val.JoinTeamArgs:
     properties:
@@ -458,7 +463,7 @@ definitions:
         description: InvitationCode 是邀请码
         type: string
     required:
-      - invitation_code
+    - invitation_code
     type: object
   val.LoginUserArgs:
     properties:
@@ -469,8 +474,8 @@ definitions:
         description: QQ 是登录使用的 QQ 号
         type: string
     required:
-      - password
-      - qq
+    - password
+    - qq
     type: object
   val.LoginUserRes:
     properties:
@@ -496,13 +501,14 @@ definitions:
             bit 1 (2)  = Translator（翻译）
             bit 2 (4)  = Proofreader（校对）
             bit 3 (8)  = Typesetter（嵌字）
-            bit 4 (16) = Reviewer（监修）
-            bit 5 (32) = Publisher（发布）
-            bit 6 (64) = Admin（管理员）
+            bit 4 (16) = Redrawer（美工）
+            bit 5 (32) = Reviewer（监修）
+            bit 6 (64) = Publisher（发布）
+            bit 7 (128)= Admin（管理）
         type: integer
       team:
         allOf:
-          - $ref: "#/definitions/val.TeamInfo"
+        - $ref: '#/definitions/val.TeamInfo'
         description: Team 是可选的汉化组信息（仅在 includes 时填充）
       team_id:
         description: TeamID 是该成员所属的汉化组 ID
@@ -512,7 +518,7 @@ definitions:
         type: integer
       user:
         allOf:
-          - $ref: "#/definitions/val.UserInfo"
+        - $ref: '#/definitions/val.UserInfo'
         description: User 是可选的用户信息（仅在 includes 时填充）
       user_id:
         description: UserID 是该成员对应的用户 ID
@@ -544,7 +550,7 @@ definitions:
       units:
         description: Units 表示页面中的翻译单元列表
         items:
-          $ref: "#/definitions/val.UnitExport"
+          $ref: '#/definitions/val.UnitExport'
         type: array
     type: object
   val.PageInfo:
@@ -557,7 +563,7 @@ definitions:
         type: integer
       creator:
         allOf:
-          - $ref: "#/definitions/val.UserInfo"
+        - $ref: '#/definitions/val.UserInfo'
         description: Creator 是可选的创建者信息（仅在 includes 时填充）
       creator_id:
         description: CreatorID 是页面创建者 ID
@@ -602,10 +608,10 @@ definitions:
         description: QQ 是注册使用的 QQ 号
         type: string
     required:
-      - invitation_code
-      - name
-      - password
-      - qq
+    - invitation_code
+    - name
+    - password
+    - qq
     type: object
   val.RegUserRes:
     properties:
@@ -628,16 +634,16 @@ definitions:
         description: PageCount 是要预留的页面数量
         type: integer
     required:
-      - chapter_id
-      - extension
-      - page_count
+    - chapter_id
+    - extension
+    - page_count
     type: object
   val.ReserveChapterPagesRes:
     properties:
       creations:
         description: Creations 是每个页面的创建结果
         items:
-          $ref: "#/definitions/val.PageCreationResult"
+          $ref: '#/definitions/val.PageCreationResult'
         type: array
     type: object
   val.ReserveComicCoverArgs:
@@ -651,8 +657,8 @@ definitions:
           需要携带文件扩展名以便 OSS 正确识别文件类型，例如 "cover.jpg"
         type: string
     required:
-      - comic_id
-      - file_name
+    - comic_id
+    - file_name
     type: object
   val.ReserveComicCoverRes:
     properties:
@@ -671,8 +677,8 @@ definitions:
         description: TeamID 是要上传头像的汉化组标识
         type: string
     required:
-      - file_name
-      - team_id
+    - file_name
+    - team_id
     type: object
   val.ReserveTeamAvatarRes:
     properties:
@@ -688,7 +694,7 @@ definitions:
           需要携带文件扩展名以便 OSS 正确识别文件类型，例如 "avatar.png"
         type: string
     required:
-      - file_name
+    - file_name
     type: object
   val.ReserveUserAvatarRes:
     properties:
@@ -703,11 +709,11 @@ definitions:
         type: string
       unit_diff:
         allOf:
-          - $ref: "#/definitions/val.UnitDiff"
+        - $ref: '#/definitions/val.UnitDiff'
         description: UnitDiff 是翻译单元的变更信息
     required:
-      - page_id
-      - unit_diff
+    - page_id
+    - unit_diff
     type: object
   val.TeamInfo:
     properties:
@@ -772,7 +778,7 @@ definitions:
         description: YCoord 是翻译单元的 Y 坐标
         type: integer
     required:
-      - id
+    - id
     type: object
   val.UnitDiff:
     properties:
@@ -784,12 +790,12 @@ definitions:
       insert:
         description: Insert 是要新增的翻译单元列表
         items:
-          $ref: "#/definitions/val.UnitCreation"
+          $ref: '#/definitions/val.UnitCreation'
         type: array
       patch:
         description: Patch 是要修改的翻译单元列表
         items:
-          $ref: "#/definitions/val.UnitPatch"
+          $ref: '#/definitions/val.UnitPatch'
         type: array
     type: object
   val.UnitExport:
@@ -918,7 +924,7 @@ definitions:
         description: YCoord 是翻译单元的 Y 坐标
         type: integer
     required:
-      - id
+    - id
     type: object
   val.UpdateAssignmentArgs:
     properties:
@@ -932,12 +938,13 @@ definitions:
             bit 1 (2)  = Translator（翻译）
             bit 2 (4)  = Proofreader（校对）
             bit 3 (8)  = Typesetter（嵌字）
-            bit 4 (16) = Reviewer（监修）
-            bit 5 (32) = Publisher（发布）
+            bit 4 (16) = Redrawer（美工）
+            bit 5 (32) = Reviewer（监修）
+            bit 6 (64) = Publisher（发布）
         type: integer
     required:
-      - id
-      - roles
+    - id
+    - roles
     type: object
   val.UpdateChapterArgs:
     properties:
@@ -952,10 +959,10 @@ definitions:
         type: string
       workflow_transition:
         allOf:
-          - $ref: "#/definitions/model.WorkflowTransition"
+        - $ref: '#/definitions/model.WorkflowTransition'
         description: 工作流转换事件（可选）
     required:
-      - chapter_id
+    - chapter_id
     type: object
   val.UpdateComicArgs:
     properties:
@@ -972,9 +979,9 @@ definitions:
         description: Title 是更新后的标题
         type: string
     required:
-      - author
-      - id
-      - title
+    - author
+    - id
+    - title
     type: object
   val.UpdateInvitationArgs:
     properties:
@@ -988,17 +995,18 @@ definitions:
             bit 1 (2)  = Translator（翻译）
             bit 2 (4)  = Proofreader（校对）
             bit 3 (8)  = Typesetter（嵌字）
-            bit 4 (16) = Reviewer（监修）
-            bit 5 (32) = Publisher（发布）
-            bit 6 (64) = Admin（管理员）
+            bit 4 (16) = Redrawer（美工）
+            bit 5 (32) = Reviewer（监修）
+            bit 6 (64) = Publisher（发布）
+            bit 7 (128)= Admin（管理）
         type: integer
       team_id:
         description: TeamID 是目标汉化组 ID，用于鉴权
         type: string
     required:
-      - id
-      - roles
-      - team_id
+    - id
+    - roles
+    - team_id
     type: object
   val.UpdateMemberRoleArgs:
     properties:
@@ -1012,13 +1020,14 @@ definitions:
             bit 1 (2)  = Translator（翻译）
             bit 2 (4)  = Proofreader（校对）
             bit 3 (8)  = Typesetter（嵌字）
-            bit 4 (16) = Reviewer（监修）
-            bit 5 (32) = Publisher（发布）
-            bit 6 (64) = Admin（管理员）
+            bit 4 (16) = Redrawer（美工）
+            bit 5 (32) = Reviewer（监修）
+            bit 6 (64) = Publisher（发布）
+            bit 7 (128)= Admin（管理）
         type: integer
     required:
-      - id
-      - roles
+    - id
+    - roles
     type: object
   val.UpdatePageArgs:
     properties:
@@ -1029,7 +1038,7 @@ definitions:
         description: IsUploaded 表示是否标记为已上传
         type: boolean
     required:
-      - id
+    - id
     type: object
   val.UpdateTeamArgs:
     properties:
@@ -1043,8 +1052,8 @@ definitions:
         description: Name 是更新后的汉化组名称
         type: string
     required:
-      - id
-      - name
+    - id
+    - name
     type: object
   val.UpdateUserArgs:
     properties:
@@ -1058,7 +1067,7 @@ definitions:
         description: QQ 表示更新后的 QQ 号，PUT 语义下为必填
         type: string
     required:
-      - id
+    - id
     type: object
   val.UpdateWorksetArgs:
     properties:
@@ -1072,8 +1081,8 @@ definitions:
         description: Name 是更新后的名称
         type: string
     required:
-      - id
-      - name
+    - id
+    - name
     type: object
   val.UserInfo:
     properties:
@@ -1138,7 +1147,7 @@ definitions:
         type: string
       team:
         allOf:
-          - $ref: "#/definitions/val.TeamInfo"
+        - $ref: '#/definitions/val.TeamInfo'
         description: Team 是可选的汉化组信息（仅在 includes 时填充）
       team_id:
         description: TeamID 是所属汉化组 ID
@@ -1157,1425 +1166,1423 @@ paths:
     get:
       description: 获取指定章节的所有分配记录，仅汉化组成员可访问
       parameters:
-        - description: 章节 ID
-          in: query
-          name: chapter_id
-          required: true
+      - description: 章节 ID
+        in: query
+        name: chapter_id
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: include 关联信息，可选值：user, chapter, chapter.comic, chapter.creator
+        in: query
+        items:
           type: string
-        - collectionFormat: csv
-          description: include 关联信息，可选值：user, chapter, chapter.comic, chapter.creator
-          in: query
-          items:
-            type: string
-          name: '"includes"'
-          type: array
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
+        name: '"includes"'
+        type: array
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.AssignmentInfo"
+              $ref: '#/definitions/val.AssignmentInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取章节分配列表
       tags:
-        - assignment
+      - assignment
     post:
       consumes:
-        - application/json
+      - application/json
       description: 为指定章节创建一条分配记录，需要当前用户在该章节中拥有 reviewer 角色
       parameters:
-        - description: 创建分配参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.CreateAssignmentArgs"
+      - description: 创建分配参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.CreateAssignmentArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/val.CreateAssignmentRes"
+            $ref: '#/definitions/val.CreateAssignmentRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 创建章节分配
       tags:
-        - assignment
+      - assignment
   /assignments/{assignment_id}:
     delete:
       description: 删除指定分配记录，需要当前用户在该章节中拥有 reviewer 角色
       parameters:
-        - description: 分配 ID
-          in: path
-          name: assignment_id
-          required: true
-          type: string
+      - description: 分配 ID
+        in: path
+        name: assignment_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 删除分配
       tags:
-        - assignment
+      - assignment
     put:
       consumes:
-        - application/json
+      - application/json
       description: 全量替换指定分配的角色（PUT 语义），需要当前用户在该章节中拥有 reviewer 角色
       parameters:
-        - description: 分配 ID
-          in: path
-          name: assignment_id
-          required: true
-          type: string
-        - description: 更新分配参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.UpdateAssignmentArgs"
+      - description: 分配 ID
+        in: path
+        name: assignment_id
+        required: true
+        type: string
+      - description: 更新分配参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.UpdateAssignmentArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 更新分配角色
       tags:
-        - assignment
+      - assignment
   /assignments/join:
     post:
       consumes:
-        - application/json
+      - application/json
       description: 使用章节邀请码加入对应章节协作并授予邀请中的分工
       parameters:
-        - description: 加入章节协作参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.JoinInvitorChapterArgs"
+      - description: 加入章节协作参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.JoinInvitorChapterArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 通过章节邀请加入协作
       tags:
-        - assignment
+      - assignment
   /assignments/mine:
     get:
       description: 获取当前登录用户的所有分配记录，支持分页
       parameters:
-        - collectionFormat: csv
-          description: include 关联信息，可选值：chapter, chapter.comic, chapter.creator
-          in: query
-          items:
-            type: string
-          name: '"includes"'
-          type: array
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
+      - collectionFormat: csv
+        description: include 关联信息，可选值：chapter, chapter.comic, chapter.creator
+        in: query
+        items:
+          type: string
+        name: '"includes"'
+        type: array
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.AssignmentInfo"
+              $ref: '#/definitions/val.AssignmentInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取我的分配列表
       tags:
-        - assignment
+      - assignment
   /auth/login:
     post:
       consumes:
-        - application/json
+      - application/json
       description: 使用 QQ 和密码进行登录，成功返回访问令牌
       parameters:
-        - description: 登录参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.LoginUserArgs"
+      - description: 登录参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.LoginUserArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.LoginUserRes"
+            $ref: '#/definitions/val.LoginUserRes'
       summary: 用户登录
       tags:
-        - auth
+      - auth
   /auth/register:
     post:
       consumes:
-        - application/json
+      - application/json
       description: 使用 QQ、密码、名字和邀请码进行注册，成功返回访问令牌
       parameters:
-        - description: 注册参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.RegUserArgs"
+      - description: 注册参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.RegUserArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.RegUserRes"
+            $ref: '#/definitions/val.RegUserRes'
       summary: 用户注册
       tags:
-        - auth
+      - auth
   /chapters:
     get:
       description: 获取指定漫画的章节列表，支持分页和 includes 嵌套信息查询
       parameters:
-        - description: 漫画 ID
-          in: query
-          name: comic_id
-          required: true
+      - description: 漫画 ID
+        in: query
+        name: comic_id
+        required: true
+        type: string
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - collectionFormat: csv
+        description: include 关联信息，可选值：creator
+        in: query
+        items:
           type: string
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
-        - collectionFormat: csv
-          description: include 关联信息，可选值：creator
-          in: query
-          items:
-            type: string
-          name: '"includes"'
-          type: array
+        name: '"includes"'
+        type: array
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.ChapterInfo"
+              $ref: '#/definitions/val.ChapterInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取漫画章节列表
       tags:
-        - chapter
+      - chapter
     post:
       consumes:
-        - application/json
+      - application/json
       description: 在指定漫画中创建章节，并写入章节副标题
       parameters:
-        - description: 创建章节参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.CreateChapterArgs"
+      - description: 创建章节参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.CreateChapterArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/val.CreateChapterRes"
+            $ref: '#/definitions/val.CreateChapterRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 创建漫画章节
       tags:
-        - chapter
+      - chapter
   /chapters/{chapter_id}:
     delete:
       description: 删除指定章节
       parameters:
-        - description: 章节 ID
-          in: path
-          name: chapter_id
-          required: true
-          type: string
+      - description: 章节 ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 删除章节
       tags:
-        - chapter
+      - chapter
     patch:
       consumes:
-        - application/json
-      description:
-        局部更新指定章节的信息，包括 subtitle 与工作流状态；未传的字段不会被修改；除了 reviewer 以外，其他任何角色都只能修改自己对应的
+      - application/json
+      description: 局部更新指定章节的信息，包括 subtitle 与工作流状态；未传的字段不会被修改；除了 reviewer 以外，其他任何角色都只能修改自己对应的
         workflow 的状态
       parameters:
-        - description: 章节 ID
-          in: path
-          name: chapter_id
-          required: true
-          type: string
-        - description: 更新章节参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.UpdateChapterArgs"
+      - description: 章节 ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
+      - description: 更新章节参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.UpdateChapterArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 更新章节
       tags:
-        - chapter
+      - chapter
   /chapters/{chapter_id}/export:
     get:
       description: 导出指定章节的完整数据，包含页面与翻译单元信息
       parameters:
-        - description: 章节 ID
-          in: path
-          name: chapter_id
-          required: true
-          type: string
+      - description: 章节 ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.ChapterExport"
+            $ref: '#/definitions/val.ChapterExport'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 导出章节数据（JSON 格式）
       tags:
-        - chapter
+      - chapter
   /chapters/{chapter_id}/export/lp:
     get:
       description: 导出指定章节的 LabelPlus 格式文本文件，可直接用于 LabelPlus 工具导入
       parameters:
-        - description: 章节 ID
-          in: path
-          name: chapter_id
-          required: true
-          type: string
+      - description: 章节 ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
       produces:
-        - text/plain
+      - text/plain
       responses:
         "200":
           description: OK
           schema:
             type: string
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 导出章节数据（LabelPlus 格式）
       tags:
-        - chapter
+      - chapter
   /chapters/{chapter_id}/import:
     post:
       consumes:
-        - application/json
+      - application/json
       description: 以 Poprako JSON 或 LabelPlus 文本格式导入章节内容
       parameters:
-        - description: 章节 ID
-          in: path
-          name: chapter_id
-          required: true
-          type: string
-        - description: 导入参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.ImportChapterArgs"
+      - description: 章节 ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
+      - description: 导入参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.ImportChapterArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.ImportChapterRes"
+            $ref: '#/definitions/val.ImportChapterRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 导入章节数据
       tags:
-        - chapter
+      - chapter
   /chapters/{chapter_id}/invitations:
     post:
       consumes:
-        - application/json
+      - application/json
       description: 在指定章节下创建协作邀请并返回邀请码
       parameters:
-        - description: 章节 ID
-          in: path
-          name: chapter_id
-          required: true
-          type: string
-        - description: 邀请参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.InviteChapterAssigneeArgs"
+      - description: 章节 ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
+      - description: 邀请参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.InviteChapterAssigneeArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.InviteChapterAssigneeRes"
+            $ref: '#/definitions/val.InviteChapterAssigneeRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 创建章节协作邀请
       tags:
-        - chapter
+      - chapter
   /comics:
     get:
       description: 获取指定工作集的漫画列表，支持分页，注意当列表为空，会返回 null 而不是空数组
       parameters:
-        - description: 工作集 ID
-          in: query
-          name: workset_id
-          required: true
-          type: string
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
+      - description: 工作集 ID
+        in: query
+        name: workset_id
+        required: true
+        type: string
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.ComicInfo"
+              $ref: '#/definitions/val.ComicInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取指定工作集的漫画列表
       tags:
-        - comic
+      - comic
     post:
       consumes:
-        - application/json
+      - application/json
       description: 在指定工作集中创建漫画
       parameters:
-        - description: 创建漫画参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.CreateComicArgs"
+      - description: 创建漫画参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.CreateComicArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/val.CreateComicRes"
+            $ref: '#/definitions/val.CreateComicRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 创建漫画
       tags:
-        - comic
+      - comic
   /comics/{comic_id}:
     delete:
       description: 删除指定漫画
       parameters:
-        - description: 漫画 ID
-          in: path
-          name: comic_id
-          required: true
-          type: string
+      - description: 漫画 ID
+        in: path
+        name: comic_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 删除漫画
       tags:
-        - comic
+      - comic
     put:
       consumes:
-        - application/json
+      - application/json
       description: 更新指定漫画的信息
       parameters:
-        - description: 漫画 ID
-          in: path
-          name: comic_id
-          required: true
-          type: string
-        - description: 更新漫画参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.UpdateComicArgs"
+      - description: 漫画 ID
+        in: path
+        name: comic_id
+        required: true
+        type: string
+      - description: 更新漫画参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.UpdateComicArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 更新漫画
       tags:
-        - comic
+      - comic
   /comics/{comic_id}/cover:
     post:
       consumes:
-        - application/json
+      - application/json
       description: 为指定漫画封面生成预签名 PUT URL，并预留 cover_oss_key
       parameters:
-        - description: 漫画 ID
-          in: path
-          name: comic_id
-          required: true
-          type: string
-        - description: 预留漫画封面参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.ReserveComicCoverArgs"
+      - description: 漫画 ID
+        in: path
+        name: comic_id
+        required: true
+        type: string
+      - description: 预留漫画封面参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.ReserveComicCoverArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.ReserveComicCoverRes"
+            $ref: '#/definitions/val.ReserveComicCoverRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 预留漫画封面上传
       tags:
-        - comic
+      - comic
   /comics/{comic_id}/cover/confirm:
     post:
       description: 在客户端上传封面后，确认漫画封面上传状态
       parameters:
-        - description: 漫画 ID
-          in: path
-          name: comic_id
-          required: true
-          type: string
+      - description: 漫画 ID
+        in: path
+        name: comic_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 确认漫画封面已上传
       tags:
-        - comic
+      - comic
   /comics/{comic_id}/pinned-chapter:
     get:
       description: 获取指定漫画的置顶章节信息；若尚无置顶章节则返回 null
       parameters:
-        - description: 漫画 ID
-          in: path
-          name: comic_id
-          required: true
-          type: string
+      - description: 漫画 ID
+        in: path
+        name: comic_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.ChapterInfo"
+            $ref: '#/definitions/val.ChapterInfo'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取漫画置顶章节
       tags:
-        - chapter
+      - chapter
   /invitations:
     get:
       description: 获取指定汉化组的邀请列表，注意当列表为空，会返回 null 而不是空数组
       parameters:
-        - description: 汉化组 ID
-          in: query
-          name: team_id
-          required: true
+      - description: 汉化组 ID
+        in: query
+        name: team_id
+        required: true
+        type: string
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - collectionFormat: csv
+        description: include 关联信息，可选值：invitor
+        in: query
+        items:
           type: string
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
-        - collectionFormat: csv
-          description: include 关联信息，可选值：invitor
-          in: query
-          items:
-            type: string
-          name: '"includes"'
-          type: array
+        name: '"includes"'
+        type: array
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.InvitationInfo"
+              $ref: '#/definitions/val.InvitationInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取邀请列表
       tags:
-        - invitation
+      - invitation
     post:
       consumes:
-        - application/json
+      - application/json
       description: 在指定汉化组中创建一个新的邀请
       parameters:
-        - description: 创建邀请参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.CreateInvitationArgs"
+      - description: 创建邀请参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.CreateInvitationArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/val.InvitationInfo"
+            $ref: '#/definitions/val.InvitationInfo'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 创建邀请
       tags:
-        - invitation
+      - invitation
   /invitations/{invitation_id}:
     delete:
       description: 删除指定的邀请
       parameters:
-        - description: 邀请 ID
-          in: path
-          name: invitation_id
-          required: true
-          type: string
+      - description: 邀请 ID
+        in: path
+        name: invitation_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 删除邀请
       tags:
-        - invitation
+      - invitation
     put:
       consumes:
-        - application/json
+      - application/json
       description: 更新指定待处理邀请的信息，无法更新已被使用或已失效的邀请
       parameters:
-        - description: 邀请 ID
-          in: path
-          name: invitation_id
-          required: true
-          type: string
-        - description: 更新邀请参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.UpdateInvitationArgs"
+      - description: 邀请 ID
+        in: path
+        name: invitation_id
+        required: true
+        type: string
+      - description: 更新邀请参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.UpdateInvitationArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 更新未被使用的邀请
       tags:
-        - invitation
+      - invitation
   /members:
     get:
       description: 获取指定汉化组的成员列表，注意当列表为空，会返回 null 而不是空数组
       parameters:
-        - description: 汉化组 ID
-          in: query
-          name: team_id
-          required: true
+      - description: 汉化组 ID
+        in: query
+        name: team_id
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: include 关联信息，可选值：user
+        in: query
+        items:
           type: string
-        - collectionFormat: csv
-          description: include 关联信息，可选值：user
-          in: query
-          items:
-            type: string
-          name: '"includes"'
-          type: array
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
+        name: '"includes"'
+        type: array
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.MemberInfo"
+              $ref: '#/definitions/val.MemberInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取指定汉化组的成员列表
       tags:
-        - member
+      - member
     post:
       consumes:
-        - application/json
+      - application/json
       description: 由超级管理员直接创建成员记录
       parameters:
-        - description: 创建成员参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.CreateMemberArgs"
+      - description: 创建成员参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.CreateMemberArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/val.CreateMemberRes"
+            $ref: '#/definitions/val.CreateMemberRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 创建成员
       tags:
-        - member
+      - member
   /members/{member_id}:
     delete:
       description: 从汉化组中移除指定成员
       parameters:
-        - description: 成员 ID
-          in: path
-          name: member_id
-          required: true
-          type: string
+      - description: 成员 ID
+        in: path
+        name: member_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 移除成员
       tags:
-        - member
+      - member
     put:
       consumes:
-        - application/json
+      - application/json
       description: 更新指定成员的分工角色
       parameters:
-        - description: 成员 ID
-          in: path
-          name: member_id
-          required: true
-          type: string
-        - description: 更新成员角色参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.UpdateMemberRoleArgs"
+      - description: 成员 ID
+        in: path
+        name: member_id
+        required: true
+        type: string
+      - description: 更新成员角色参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.UpdateMemberRoleArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 更新成员角色
       tags:
-        - member
+      - member
   /members/join:
     post:
       consumes:
-        - application/json
+      - application/json
       description: 已登录用户使用邀请码加入对应汉化组
       parameters:
-        - description: 加入汉化组参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.JoinTeamArgs"
+      - description: 加入汉化组参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.JoinTeamArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 通过邀请码加入汉化组
       tags:
-        - member
+      - member
   /members/mine:
     get:
       description: 获取当前用户在各汉化组中的成员信息，注意当列表为空，会返回 null 而不是空数组
       parameters:
-        - collectionFormat: csv
-          description: include 关联信息，可选值：team
-          in: query
-          items:
-            type: string
-          name: '"includes"'
-          type: array
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
+      - collectionFormat: csv
+        description: include 关联信息，可选值：team
+        in: query
+        items:
+          type: string
+        name: '"includes"'
+        type: array
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.MemberInfo"
+              $ref: '#/definitions/val.MemberInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取当前用户的成员身份列表
       tags:
-        - member
+      - member
   /pages:
     get:
       description: 获取指定章节的所有页面，注意当列表为空，会返回 null 而不是空数组
       parameters:
-        - description: 章节 ID
-          in: query
-          name: chapter_id
-          required: true
+      - description: 章节 ID
+        in: query
+        name: chapter_id
+        required: true
+        type: string
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - collectionFormat: csv
+        description: include 关联信息，可选值：creator
+        in: query
+        items:
           type: string
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
-        - collectionFormat: csv
-          description: include 关联信息，可选值：creator
-          in: query
-          items:
-            type: string
-          name: '"includes"'
-          type: array
+        name: '"includes"'
+        type: array
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.PageInfo"
+              $ref: '#/definitions/val.PageInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取章节页面列表
       tags:
-        - page
+      - page
     post:
       consumes:
-        - application/json
+      - application/json
       description: 为指定章节批量创建页面，返回每个页面的预签名上传地址
       parameters:
-        - description: 预留页面参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.ReserveChapterPagesArgs"
+      - description: 预留页面参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.ReserveChapterPagesArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/val.ReserveChapterPagesRes"
+            $ref: '#/definitions/val.ReserveChapterPagesRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 预留页面记录，并生成每个页面的预签名上传地址
       tags:
-        - page
+      - page
   /pages/{page_id}:
     delete:
       description: 删除指定页面
       parameters:
-        - description: 页面 ID
-          in: path
-          name: page_id
-          required: true
-          type: string
+      - description: 页面 ID
+        in: path
+        name: page_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 删除页面
       tags:
-        - page
+      - page
     put:
       consumes:
-        - application/json
+      - application/json
       description: 更新指定页面的信息，例如标记页面已上传完成
       parameters:
-        - description: 页面 ID
-          in: path
-          name: page_id
-          required: true
-          type: string
-        - description: 更新页面参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.UpdatePageArgs"
+      - description: 页面 ID
+        in: path
+        name: page_id
+        required: true
+        type: string
+      - description: 更新页面参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.UpdatePageArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 更新页面
       tags:
-        - page
+      - page
   /teams:
     get:
       description: 获取所有汉化组列表，仅超级管理员有权限，注意当列表为空，会返回 null 而不是空数组
       parameters:
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.TeamInfo"
+              $ref: '#/definitions/val.TeamInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取所有汉化组列表
       tags:
-        - team
+      - team
     post:
       consumes:
-        - application/json
+      - application/json
       description: 创建一个新的汉化组，仅超级管理员有权限
       parameters:
-        - description: 创建汉化组参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.CreateTeamArgs"
+      - description: 创建汉化组参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.CreateTeamArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/val.CreateTeamRes"
+            $ref: '#/definitions/val.CreateTeamRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 创建汉化组
       tags:
-        - team
+      - team
   /teams/{team_id}:
     delete:
       description: 删除指定汉化组，超级管理员或汉化组管理员有权限
       parameters:
-        - description: 汉化组 ID
-          in: path
-          name: team_id
-          required: true
-          type: string
+      - description: 汉化组 ID
+        in: path
+        name: team_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 删除汉化组
       tags:
-        - team
+      - team
     put:
       consumes:
-        - application/json
+      - application/json
       description: 更新指定汉化组的信息，超级管理员或汉化组管理员有权限
       parameters:
-        - description: 汉化组 ID
-          in: path
-          name: team_id
-          required: true
-          type: string
-        - description: 更新汉化组参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.UpdateTeamArgs"
+      - description: 汉化组 ID
+        in: path
+        name: team_id
+        required: true
+        type: string
+      - description: 更新汉化组参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.UpdateTeamArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 更新汉化组信息
       tags:
-        - team
+      - team
   /teams/{team_id}/avatar:
     post:
       consumes:
-        - application/json
+      - application/json
       description: 为指定汉化组头像生成预签名 PUT URL，并预留 avatar_oss_key
       parameters:
-        - description: 汉化组 ID
-          in: path
-          name: team_id
-          required: true
-          type: string
-        - description: 预留汉化组头像参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.ReserveTeamAvatarArgs"
+      - description: 汉化组 ID
+        in: path
+        name: team_id
+        required: true
+        type: string
+      - description: 预留汉化组头像参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.ReserveTeamAvatarArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.ReserveTeamAvatarRes"
+            $ref: '#/definitions/val.ReserveTeamAvatarRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 预留汉化组头像上传
       tags:
-        - team
+      - team
   /teams/{team_id}/avatar/confirm:
     post:
       description: 在客户端上传头像后，确认汉化组头像上传状态
       parameters:
-        - description: 汉化组 ID
-          in: path
-          name: team_id
-          required: true
-          type: string
+      - description: 汉化组 ID
+        in: path
+        name: team_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 确认汉化组头像已上传
       tags:
-        - team
+      - team
   /teams/mine:
     get:
       description: 获取当前用户所在的汉化组列表，注意当列表为空，会返回 null 而不是空数组
       parameters:
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.TeamInfo"
+              $ref: '#/definitions/val.TeamInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取当前用户所在的汉化组列表
       tags:
-        - team
+      - team
   /units:
     get:
       description: 获取指定页面的所有翻校单元，按 index 升序排列，注意当列表为空时返回 null 而非空数组
       parameters:
-        - description: 页面 ID
-          in: query
-          name: page_id
-          required: true
-          type: string
+      - description: 页面 ID
+        in: query
+        name: page_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.UnitInfo"
+              $ref: '#/definitions/val.UnitInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取页面 unit 列表
       tags:
-        - unit
+      - unit
     put:
       consumes:
-        - application/json
-      description:
-        以 diff 语义（insert / patch / delete）保存页面的翻校单元，并同步更新页面和章节的统计字段，注意只有当前用户在当前章节有
+      - application/json
+      description: 以 diff 语义（insert / patch / delete）保存页面的翻校单元，并同步更新页面和章节的统计字段，注意只有当前用户在当前章节有
         translator 或者 proofreader 分配时才允许执行此操作
       parameters:
-        - description: unit diff 参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.SavePageUnitArgs"
+      - description: unit diff 参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.SavePageUnitArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 保存页面 unit diff
       tags:
-        - unit
+      - unit
   /users/{user_id}:
     delete:
       description: 根据用户 ID 删除用户
       parameters:
-        - description: 用户 ID
-          in: path
-          name: user_id
-          required: true
-          type: string
+      - description: 用户 ID
+        in: path
+        name: user_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 删除用户
       tags:
-        - user
+      - user
     get:
       description: 根据用户 ID 获取用户详细信息
       parameters:
-        - description: 用户 ID
-          in: path
-          name: user_id
-          required: true
-          type: string
+      - description: 用户 ID
+        in: path
+        name: user_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.UserInfo"
+            $ref: '#/definitions/val.UserInfo'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 根据 ID 获取用户信息
       tags:
-        - user
+      - user
   /users/mine:
     get:
       description: 获取当前登录用户的详细信息，用于保持登录状态
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.UserInfo"
+            $ref: '#/definitions/val.UserInfo'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取当前登录用户信息
       tags:
-        - user
+      - user
     put:
       consumes:
-        - application/json
+      - application/json
       description: 更新当前登录用户的基本资料
       parameters:
-        - description: 更新用户参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.UpdateUserArgs"
+      - description: 更新用户参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.UpdateUserArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 更新当前用户信息
       tags:
-        - user
+      - user
   /users/mine/avatar:
     post:
       consumes:
-        - application/json
+      - application/json
       description: 为当前用户头像生成预签名 PUT URL，并预留 avatar_oss_key
       parameters:
-        - description: 预留用户头像参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.ReserveUserAvatarArgs"
+      - description: 预留用户头像参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.ReserveUserAvatarArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.ReserveUserAvatarRes"
+            $ref: '#/definitions/val.ReserveUserAvatarRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 预留当前用户头像上传
       tags:
-        - user
+      - user
   /users/mine/avatar/confirm:
     post:
       description: 在客户端上传头像后，确认当前用户头像上传状态
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 确认当前用户头像已上传
       tags:
-        - user
+      - user
   /users/mine/stats:
     get:
       description: 获取当前登录用户的任务统计信息
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/val.UserStatsInfo"
+            $ref: '#/definitions/val.UserStatsInfo'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取当前登录用户统计信息
       tags:
-        - user
+      - user
   /worksets:
     get:
       description: 获取指定汉化组的工作集列表，支持分页，注意当列表为空，会返回 null 而不是空数组
       parameters:
-        - description: 汉化组 ID
-          in: query
-          name: team_id
-          required: true
+      - description: 汉化组 ID
+        in: query
+        name: team_id
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: include 关联信息，可选值：team
+        in: query
+        items:
           type: string
-        - collectionFormat: csv
-          description: include 关联信息，可选值：team
-          in: query
-          items:
-            type: string
-          name: '"includes"'
-          type: array
-        - description: 偏移量
-          in: query
-          name: offset
-          required: true
-          type: integer
-        - description: 每页数量
-          in: query
-          name: limit
-          required: true
-          type: integer
+        name: '"includes"'
+        type: array
+      - description: 偏移量
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/val.WorksetInfo"
+              $ref: '#/definitions/val.WorksetInfo'
             type: array
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 获取指定汉化组的工作集列表
       tags:
-        - workset
+      - workset
     post:
       consumes:
-        - application/json
+      - application/json
       description: 在指定汉化组中创建工作集
       parameters:
-        - description: 创建工作集参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.CreateWorksetArgs"
+      - description: 创建工作集参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.CreateWorksetArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/val.CreateWorksetRes"
+            $ref: '#/definitions/val.CreateWorksetRes'
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 创建工作集
       tags:
-        - workset
+      - workset
   /worksets/{workset_id}:
     delete:
       description: 删除指定工作集
       parameters:
-        - description: 工作集 ID
-          in: path
-          name: workset_id
-          required: true
-          type: string
+      - description: 工作集 ID
+        in: path
+        name: workset_id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 删除工作集
       tags:
-        - workset
+      - workset
     put:
       consumes:
-        - application/json
+      - application/json
       description: 更新指定工作集的信息
       parameters:
-        - description: 工作集 ID
-          in: path
-          name: workset_id
-          required: true
-          type: string
-        - description: 更新工作集参数
-          in: body
-          name: body
-          required: true
-          schema:
-            $ref: "#/definitions/val.UpdateWorksetArgs"
+      - description: 工作集 ID
+        in: path
+        name: workset_id
+        required: true
+        type: string
+      - description: 更新工作集参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/val.UpdateWorksetArgs'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
       security:
-        - ApiKeyAuth: []
+      - ApiKeyAuth: []
       summary: 更新工作集
       tags:
-        - workset
+      - workset
 securityDefinitions:
   ApiKeyAuth:
     in: header

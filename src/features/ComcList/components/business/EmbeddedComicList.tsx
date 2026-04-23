@@ -199,7 +199,7 @@ export default function EmbeddedComicList({
       >
         <div
           className={clsx(
-            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+            "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
             "py-1 px-2",
             "gap-4 w-full justify-start items-start",
           )}

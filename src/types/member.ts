@@ -14,6 +14,7 @@ export type MemberInfo = {
   assignedTranslatorAt?: number;
   assignedProofreaderAt?: number;
   assignedTypesetterAt?: number;
+  assignedRedrawerAt?: number;
   assignedReviewerAt?: number;
   assignedPublisherAt?: number;
   assignedAdminAt?: number;

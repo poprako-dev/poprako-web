@@ -3,6 +3,7 @@ export type Role =
   | "translator"
   | "proofreader"
   | "typesetter"
+  | "redrawer"
   | "reviewer"
   | "publisher"
   | "admin";
@@ -13,6 +14,7 @@ export type WithRole = {
   assignedTranslatorAt?: number;
   assignedProofreaderAt?: number;
   assignedTypesetterAt?: number;
+  assignedRedrawerAt?: number;
   assignedReviewerAt?: number;
   assignedPublisherAt?: number;
   assignedAdminAt?: number;
@@ -31,6 +33,9 @@ export function hasRole(withRole: WithRole, role: Role) {
   if (role === "typesetter") {
     return !!withRole.assignedTypesetterAt;
   }
+  if (role === "redrawer") {
+    return !!withRole.assignedRedrawerAt;
+  }
   if (role === "reviewer") {
     return !!withRole.assignedReviewerAt;
   }
@@ -47,13 +52,14 @@ export function hasRole(withRole: WithRole, role: Role) {
 export type RoleMask = number;
 
 const roleToBit: Record<Role, number> = {
-  rawProvider: 1 << 0,
-  translator: 1 << 1,
-  proofreader: 1 << 2,
-  typesetter: 1 << 3,
-  reviewer: 1 << 4,
-  publisher: 1 << 5,
-  admin: 1 << 6,
+  rawProvider: 1 << 0,  // 1
+  translator:  1 << 1,  // 2
+  proofreader: 1 << 2,  // 4
+  typesetter:  1 << 3,  // 8
+  redrawer:    1 << 4,  // 16
+  reviewer:    1 << 5,  // 32
+  publisher:   1 << 6,  // 64
+  admin:       1 << 7,  // 128
 };
 
 export function roleMask(roles: Role[]): RoleMask {

@@ -23,6 +23,7 @@ export type RawAssignmentInfo = {
   assigned_redrawer_at?: number;
   assigned_reviewer_at?: number;
   assigned_publisher_at?: number;
+  // Note: assignments do not carry an admin bit (bit 7 is MemberInfo-only)
 
   created_at: number;
   updated_at: number;
@@ -39,6 +40,7 @@ export function unwrapRawAssignmentInfo(
   let assignedTranslatorAt = raw.assigned_translator_at;
   let assignedProofreaderAt = raw.assigned_proofreader_at;
   let assignedTypesetterAt = raw.assigned_typesetter_at;
+  let assignedRedrawerAt = raw.assigned_redrawer_at;
   let assignedReviewerAt = raw.assigned_reviewer_at;
   let assignedPublisherAt = raw.assigned_publisher_at;
 
@@ -49,6 +51,7 @@ export function unwrapRawAssignmentInfo(
     if (roles.includes("translator")) assignedTranslatorAt = ts;
     if (roles.includes("proofreader")) assignedProofreaderAt = ts;
     if (roles.includes("typesetter")) assignedTypesetterAt = ts;
+    if (roles.includes("redrawer")) assignedRedrawerAt = ts;
     if (roles.includes("reviewer")) assignedReviewerAt = ts;
     if (roles.includes("publisher")) assignedPublisherAt = ts;
   }
@@ -63,6 +66,7 @@ export function unwrapRawAssignmentInfo(
     assignedTranslatorAt,
     assignedProofreaderAt,
     assignedTypesetterAt,
+    assignedRedrawerAt,
     assignedReviewerAt,
     assignedPublisherAt,
     createdAt: raw.created_at,

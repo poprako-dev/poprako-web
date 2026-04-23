@@ -57,6 +57,7 @@ export default function ComicPlayground() {
   const [activePublishStatus, setActivePublishStatus] =
     useState<BinaryFilter>("unset");
 
+  const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
   const [showComicCreatorModal, setShowComicCreatorModal] = useState(false);
   const [showWorksetCreatorModal, setShowWorksetCreatorModal] = useState(false);
   const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
@@ -145,7 +146,8 @@ export default function ComicPlayground() {
 
       return filtered.slice(offset, offset + limit);
     },
-    [activeWorksetId, comicFilters],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeWorksetId, comicFilters, comicListRefreshKey],
   );
 
   const handleLoadLatestChapter = useCallback(
@@ -326,6 +328,7 @@ export default function ComicPlayground() {
       showToast(result.error, "error");
     } else {
       await loadWorksets();
+      setComicListRefreshKey((k) => k + 1);
     }
     return result;
   };

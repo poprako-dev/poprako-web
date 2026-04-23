@@ -3,5 +3,6 @@ export type RoleFilter =
   | "translator"
   | "proofreader"
   | "typesetter"
+  | "redrawer"
   | "reviewer"
   | "publisher";

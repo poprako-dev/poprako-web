@@ -1,0 +1,250 @@
+import React, { useState } from 'react';
+import { MessageCircle, CheckCircle2, Circle, Copy, X, Plus, User, KeyRound } from 'lucide-react';
+
+// 根据 Swagger 文档定义的角色位掩码
+const ROLE_OPTIONS = [
+  { label: '图源', value: 1 },
+  { label: '翻译', value: 2 },
+  { label: '校对', value: 4 },
+  { label: '嵌字', value: 8 },
+  { label: '美工', value: 128 },
+  { label: '监修', value: 16 },
+  { label: '发布', value: 32 },
+  { label: '管理员', value: 64 },
+];
+
+// 模拟的未接受请求数据 (对应 Swagger 中的 InvitationInfo)
+const MOCK_PENDING_INVITATIONS = [
+  { id: '1', invitee_qq: '2458262309', roles: 130, invitation_code: 'POP-A1B2C3' }, // 翻译+美工
+  { id: '2', invitee_qq: '3591716014', roles: 2, invitation_code: 'POP-X9Y8Z7' }, // 翻译
+  { id: '3', invitee_qq: '123456789', roles: 255, invitation_code: 'POP-FULL' }, // 所有职位全开的情况
+];
+
+// 解析位掩码获取标签数组
+const getRoleLabels = (roleMask) => {
+  return ROLE_OPTIONS.filter((role) => (roleMask & role.value) !== 0).map((role) => role.label);
+};
+
+export default function App() {
+  const [isModalOpen, setIsModalOpen] = useState(true);
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans">
+      {!isModalOpen && (
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition-colors"
+        >
+          打开邀请弹窗
+        </button>
+      )}
+
+      {isModalOpen && (
+        <InviteMemberModal
+          onClose={() => setIsModalOpen(false)}
+          pendingInvitations={MOCK_PENDING_INVITATIONS}
+        />
+      )}
+    </div>
+  );
+}
+
+function InviteMemberModal({ onClose, pendingInvitations = [] }) {
+  const [qq, setQq] = useState('');
+  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const toggleRole = (roleValue) => {
+    setSelectedRoles((prev) =>
+      prev.includes(roleValue)
+        ? prev.filter((v) => v !== roleValue)
+        : [...prev, roleValue]
+    );
+  };
+
+  const handleInvite = () => {
+    if (!qq || selectedRoles.length === 0) return;
+    setIsSubmitting(true);
+    setTimeout(() => {
+      const newCode = `POP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      setGeneratedCode(newCode);
+      setIsSubmitting(false);
+    }, 600);
+  };
+
+  const handleCopy = (text) => {
+    if (!text) return;
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+    document.body.removeChild(textArea);
+  };
+
+  const isFormValid = qq.trim().length > 4 && selectedRoles.length > 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 text-gray-800">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row relative animate-in fade-in zoom-in duration-200">
+        
+        {/* 关闭按钮 */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-10"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* 左侧：表单区 */}
+        <div className="flex-1 p-8 md:pr-10 border-b md:border-b-0 md:border-r border-gray-100">
+          <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
+            <Plus className="w-6 h-6 text-blue-500" />
+            邀请新成员
+          </h2>
+
+          <div className="space-y-6">
+            <div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MessageCircle className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={qq}
+                  onChange={(e) => setQq(e.target.value.replace(/\D/g, ''))}
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-gray-50/50 focus:bg-white"
+                  placeholder="输入 QQ 号"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="grid grid-cols-4 gap-2">
+                {ROLE_OPTIONS.map((role) => {
+                  const isSelected = selectedRoles.includes(role.value);
+                  return (
+                    <button
+                      key={role.value}
+                      onClick={() => toggleRole(role.value)}
+                      className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg border text-sm transition-all ${
+                        isSelected
+                          ? 'bg-blue-50 border-blue-200 text-blue-600 font-semibold'
+                          : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      {isSelected ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <Circle className="w-4 h-4 shrink-0 opacity-50" />}
+                      <span className="truncate">{role.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 生成后的显示 */}
+            <div className={`transition-all duration-300 ${generatedCode ? 'opacity-100 translate-y-0' : 'opacity-60'}`}>
+              <div className="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <KeyRound className="w-5 h-5 text-gray-400" />
+                  <p className="text-xl font-mono font-bold text-gray-800 tracking-widest">
+                    {generatedCode || '••••••••'}
+                  </p>
+                </div>
+                {generatedCode && (
+                  <button
+                    onClick={() => handleCopy(generatedCode)}
+                    className="flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors shadow-sm"
+                    title="复制"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={onClose}
+                className="flex-1 py-3 px-4 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 font-medium"
+              >
+                返回
+              </button>
+              <button
+                disabled={!isFormValid || isSubmitting}
+                onClick={handleInvite}
+                className={`flex-[2] py-3 px-4 rounded-xl font-bold transition-all shadow-lg ${
+                  isFormValid && !isSubmitting
+                    ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-blue-500/20'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                }`}
+              >
+                {isSubmitting ? '...' : '邀请'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 右侧：列表区 */}
+        <div className="flex-1 p-8 bg-slate-50/50">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-gray-400/40">PENDING</h3>
+          </div>
+          
+          <div className="space-y-3 overflow-y-auto max-h-[500px] pr-1 custom-scrollbar">
+            {pendingInvitations.map((inv) => (
+              <div
+                key={inv.id}
+                className="group bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:border-blue-200 transition-all"
+              >
+                {/* 第一行：QQ号 和 邀请码+复制 */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-1.5 text-gray-700">
+                    <User className="w-4 h-4 text-gray-400" />
+                    <span className="font-mono font-bold leading-none">{inv.invitee_qq}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100 group-hover:bg-blue-50/50 group-hover:border-blue-100 transition-colors">
+                    <code className="text-sm font-mono font-bold text-gray-500 tracking-tighter">
+                      {inv.invitation_code}
+                    </code>
+                    <button 
+                      onClick={() => handleCopy(inv.invitation_code)}
+                      className="p-1 text-gray-400 hover:text-blue-500 hover:bg-white rounded transition-all"
+                      title="复制邀请码"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* 第二行：分工标签（支持多行） */}
+                <div className="flex flex-wrap gap-1.5 border-t border-gray-50 pt-3">
+                  {getRoleLabels(inv.roles).map((label, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-0.5 bg-blue-50/50 text-blue-600 text-[11px] font-bold rounded border border-blue-100/50"
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+            
+            {pendingInvitations.length === 0 && (
+              <div className="text-center py-10 text-gray-400 italic text-sm">
+                暂无待处理的邀请
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}

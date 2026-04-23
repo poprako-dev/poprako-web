@@ -40,6 +40,11 @@ const ROLE_BUTTONS: RoleButton[] = [
     activeClass: "bg-violet-50 text-violet-400 border-violet-200",
   },
   {
+    key: "redrawer",
+    label: "美",
+    activeClass: "bg-pink-50 text-pink-500 border-pink-200",
+  },
+  {
     key: "reviewer",
     label: "监",
     activeClass: "bg-indigo-50 text-indigo-400 border-indigo-200",

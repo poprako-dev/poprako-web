@@ -4,6 +4,7 @@ import type { TranslatorMode } from "@/types/translatorMode";
 import { unitId, type UnitInfo, type UnitEdit } from "@/types/unit";
 import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
+import { useEffect, useRef } from "react";
 
 type Props = {
   units: UnitInfo[];
@@ -21,6 +22,19 @@ export default function UnitList({
   onFocusUnit,
   onModifyUnit,
 }: Props) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (focusedUnitId && listRef.current) {
+      const focusedElement = listRef.current.querySelector(
+        `[data-unit-id="${focusedUnitId}"]`
+      );
+      if (focusedElement) {
+        focusedElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+  }, [focusedUnitId]);
+
   const ItemComponent =
     mode === "translate" ? TranslateModeUnitItem : ProofreadModeUnitItem;
 
@@ -31,7 +45,7 @@ export default function UnitList({
   };
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div ref={listRef} className="w-full h-full flex flex-col">
       <div className="flex-1">
         {units.map((unit) => (
           <ItemComponent
@@ -40,6 +54,7 @@ export default function UnitList({
             isFocused={focusedUnitId === unitId(unit)}
             onSelect={onFocusUnit}
             onModifyUnit={onModifyUnit}
+            data-unit-id={unitId(unit)}
           />
         ))}
       </div>

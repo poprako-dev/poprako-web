@@ -342,54 +342,61 @@ export default function ComicDetailModal({
       </div>
 
       {/* Stats */}
-      {selectedChapter && (
-        <div className="space-y-0 mb-2 shrink-0">
-          <StatItem
-            icon={BookOpen}
-            label="总页数"
-            value={selectedChapter.pageCount}
-          />
-          <StatItem
-            icon={Hash}
-            label="总单元数"
-            value={selectedChapter.totalUnitCount}
-          />
-          <StatItem
-            icon={Languages}
-            label="已翻译"
-            value={selectedChapter.translatedUnitCount}
-          />
-          <StatItem
-            icon={CheckSquare}
-            label="已校对"
-            value={selectedChapter.proofreadUnitCount}
-          />
-        </div>
+      <div className="space-y-0 mb-2 shrink-0">
+        <StatItem
+          icon={BookOpen}
+          label="总页数"
+          value={selectedChapter?.pageCount ?? "-"}
+        />
+        <StatItem
+          icon={Hash}
+          label="总单元数"
+          value={selectedChapter?.totalUnitCount ?? "-"}
+        />
+        <StatItem
+          icon={Languages}
+          label="已翻译"
+          value={selectedChapter?.translatedUnitCount ?? "-"}
+        />
+        <StatItem
+          icon={CheckSquare}
+          label="已校对"
+          value={selectedChapter?.proofreadUnitCount ?? "-"}
+        />
+      </div>
+
+      {/* No-chapter hint */}
+      {!selectedChapter && (
+        <p className="text-[10px] text-slate-300 text-center leading-relaxed mb-2 shrink-0">
+          请从上方选择或创建一个章节
+        </p>
       )}
 
       {/* Actions */}
-      <div className="flex flex-col gap-1 shrink-0">
-        {canTranslateOrProofread && (
-          <ActionButton
-            icon={Pencil}
-            title="开始翻校"
-            onClick={
-              selectedChapterId && onNavigateToTranslator
-                ? () => {
-                    const firstPageId = pages[0]?.id;
-                    if (!firstPageId) {
-                      showToast("当前章节暂无页面", "error");
-                      return;
+      {selectedChapter && (
+        <div className="flex flex-col gap-1 shrink-0">
+          {canTranslateOrProofread && (
+            <ActionButton
+              icon={Pencil}
+              title="开始翻校"
+              onClick={
+                selectedChapterId && onNavigateToTranslator
+                  ? () => {
+                      const firstPageId = pages[0]?.id;
+                      if (!firstPageId) {
+                        showToast("当前章节暂无页面", "error");
+                        return;
+                      }
+                      onNavigateToTranslator(selectedChapterId, firstPageId);
                     }
-                    onNavigateToTranslator(selectedChapterId, firstPageId);
-                  }
-                : undefined
-            }
-          />
-        )}
-        {canUploadRawPages && <ActionButton icon={CloudUpload} title="上传数据" />}
-        <ActionButton icon={Download} title="下载图源" />
-      </div>
+                  : undefined
+              }
+            />
+          )}
+          {canUploadRawPages && <ActionButton icon={CloudUpload} title="上传数据" />}
+          <ActionButton icon={Download} title="下载图源" />
+        </div>
+      )}
     </>
   );
 

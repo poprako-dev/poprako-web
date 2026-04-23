@@ -65,6 +65,9 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
     assignedTypesetterAt: unmaskedRoles.includes("typesetter")
       ? raw.updated_at
       : undefined,
+    assignedRedrawerAt: unmaskedRoles.includes("redrawer")
+      ? raw.updated_at
+      : undefined,
     assignedReviewerAt: unmaskedRoles.includes("reviewer")
       ? raw.updated_at
       : undefined,

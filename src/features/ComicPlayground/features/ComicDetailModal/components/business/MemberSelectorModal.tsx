@@ -2,6 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { Search, X, Loader2, Plus } from "lucide-react";
 import type { MemberInfo } from "@/types/member";
+import { unmaskRoles } from "@/types/role";
+
+const ROLE_LABEL: Record<string, string> = {
+  rawProvider: "图",
+  translator: "翻",
+  proofreader: "校",
+  typesetter: "嵌",
+  redrawer: "美",
+  reviewer: "监",
+  publisher: "传",
+  admin: "管",
+};
 
 type Props = {
   title: string;
@@ -46,14 +58,24 @@ export default function MemberSelectorModal({
   }, [assignedUserIds, keyword, members]);
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-sm">
+    <div
+      className={clsx(
+        "fixed inset-0 z-[90] flex items-center justify-center p-4",
+        "bg-slate-950/30 backdrop-blur-sm",
+      )}
+    >
       <button
         type="button"
         aria-label="关闭成员选择器"
         className="absolute inset-0 cursor-default"
         onClick={onClose}
       />
-      <div className="relative z-10 flex max-h-[75vh] w-full max-w-xl flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-xl">
+      <div
+        className={clsx(
+          "relative z-10 flex max-h-[75vh] w-full max-w-xl flex-col",
+          "overflow-hidden rounded-md border border-slate-200 bg-white shadow-xl",
+        )}
+      >
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
           <div>
             <h3 className="text-sm font-bold text-slate-800">{title}</h3>
@@ -62,20 +84,31 @@ export default function MemberSelectorModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-sm p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            className={clsx(
+              "rounded-sm p-1 text-slate-400 transition-colors",
+              "hover:bg-slate-100 hover:text-slate-700",
+            )}
           >
             <X size={16} />
           </button>
         </div>
 
         <div className="border-b border-slate-100 px-4 py-3">
-          <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+          <div
+            className={clsx(
+              "flex items-center gap-2 rounded-md border px-3 py-2",
+              "border-slate-200 bg-slate-50",
+            )}
+          >
             <Search size={14} className="text-slate-400" />
             <input
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
               placeholder="搜索昵称 / QQ"
-              className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-300"
+              className={clsx(
+                "w-full bg-transparent text-sm text-slate-700 outline-none",
+                "placeholder:text-slate-300",
+              )}
             />
           </div>
         </div>
@@ -89,12 +122,19 @@ export default function MemberSelectorModal({
                 onClick={() => onSelectUser(member.userId)}
                 disabled={isSubmitting}
                 className={clsx(
-                  "flex items-center gap-3 rounded-md border border-slate-200 px-3 py-2 text-left transition-all",
+                  "flex items-center gap-3 rounded-md border px-3 py-2 text-left transition-all",
+                  "border-slate-200",
                   "hover:border-slate-300 hover:bg-slate-50",
                   isSubmitting && "cursor-wait opacity-60",
                 )}
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+                <div
+                  className={clsx(
+                    "flex h-9 w-9 shrink-0 items-center justify-center",
+                    "overflow-hidden rounded-full bg-slate-100",
+                    "text-xs font-bold text-slate-500",
+                  )}
+                >
                   {member.user?.avatarUrl ? (
                     <img
                       src={member.user.avatarUrl}
@@ -109,11 +149,35 @@ export default function MemberSelectorModal({
                   <div className="truncate text-sm font-semibold text-slate-700">
                     {member.user?.name ?? member.userId}
                   </div>
-                  <div className="truncate text-xs text-slate-400">
-                    {member.user?.qq ?? member.userId}
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    {unmaskRoles(member.roles)
+                      .filter((r) => r !== "admin")
+                      .map((r) => (
+                        <span
+                          key={r}
+                          className={clsx(
+                            "inline-block rounded px-1 py-px",
+                            "text-[10px] font-bold leading-tight",
+                            "bg-slate-100 text-slate-500",
+                          )}
+                        >
+                          {ROLE_LABEL[r] ?? r}
+                        </span>
+                      ))}
+                    {unmaskRoles(member.roles).filter((r) => r !== "admin")
+                      .length === 0 && (
+                      <span className="text-xs text-slate-300">
+                        {member.user?.qq ?? member.userId}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-slate-200 bg-white text-slate-400">
+                <div
+                  className={clsx(
+                    "flex h-7 w-7 shrink-0 items-center justify-center",
+                    "rounded-sm border border-slate-200 bg-white text-slate-400",
+                  )}
+                >
                   {isSubmitting ? (
                     <Loader2 size={14} className="animate-spin" />
                   ) : (
