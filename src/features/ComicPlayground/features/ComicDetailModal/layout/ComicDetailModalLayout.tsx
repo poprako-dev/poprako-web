@@ -67,8 +67,8 @@ export default function ComicDetailModalLayout({
             </div>
           </div>
 
-          {/* Footer – always fixed at bottom */}
-          <div className="shrink-0">{footer}</div>
+          {/* Footer – floats above content like a drawer */}
+          <div className="absolute bottom-0 left-0 right-0 z-10">{footer}</div>
         </div>
       </div>
     </div>

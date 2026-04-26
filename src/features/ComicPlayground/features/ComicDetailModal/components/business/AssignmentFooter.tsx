@@ -16,6 +16,7 @@ import type { WorkflowStatus } from "@/types/workflow";
 import type { Result } from "@/types/utils/result";
 import RoleTag from "./RoleTag";
 import type { Role } from "@/types/role";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 type Props = {
   selectedChapter?: ChapterInfo;
@@ -69,7 +70,7 @@ const ROLE_DEFS: RoleDef[] = [
   },
   {
     // 嵌字 and 美工 share the same typeset workflow stage.
-    label: "嵌/美",
+    label: "嵌",
     addRole: "typesetter",
     matches: (a) =>
       a.assignedTypesetterAt !== undefined ||
@@ -97,6 +98,23 @@ const ROLE_DEFS: RoleDef[] = [
   },
 ];
 
+const TRANSITION_LABELS: Record<WorkflowTransition, string> = {
+  upload_complete: "标记图源上传完成",
+  translate_start: "开始翻译",
+  translate_complete: "标记翻译完成",
+  proofread_start: "开始校对",
+  proofread_complete: "标记校对完成",
+  typeset_start: "开始嵌字",
+  typeset_complete: "标记嵌字完成",
+  review_complete: "标记审核通过",
+  publish_complete: "标记发布完成",
+};
+
+type PendingConfirm = {
+  transition: WorkflowTransition;
+  resolve: (result: Result<void>) => void;
+};
+
 export default function AssignmentFooter({
   selectedChapter,
   assignments,
@@ -107,9 +125,31 @@ export default function AssignmentFooter({
   canManageAssignments = false,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
+
+  const handleRequestTransition = (
+    transition: WorkflowTransition,
+  ): Promise<Result<void>> => {
+    return new Promise((resolve) => {
+      setPendingConfirm({ transition, resolve });
+    });
+  };
+
+  const handleConfirm = async () => {
+    if (!pendingConfirm) return;
+    const { transition, resolve } = pendingConfirm;
+    setPendingConfirm(null);
+    resolve(await onTransiteWorkflow(transition));
+  };
+
+  const handleCancelConfirm = () => {
+    if (!pendingConfirm) return;
+    pendingConfirm.resolve({ success: false, error: "用户取消" });
+    setPendingConfirm(null);
+  };
 
   return (
-    <div className="flex flex-col border-t border-slate-200 bg-slate-50/30 shrink-0">
+    <div className="flex flex-col border-t border-slate-200 bg-white shrink-0">
       {/* Toggle Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -148,7 +188,7 @@ export default function AssignmentFooter({
                 assignments={roleAssignments}
                 status={status}
                 transition={canOperateWorkflow ? transition : null}
-                onTransiteWorkflow={onTransiteWorkflow}
+                onTransiteWorkflow={handleRequestTransition}
                 onRemoveUser={canManageAssignments ? onRemoveAssignment : undefined}
                 onAddUser={
                   canManageAssignments
@@ -160,8 +200,16 @@ export default function AssignmentFooter({
           })}
         </div>
       </div>
+
+      {pendingConfirm && (
+        <ConfirmDialog
+          title="确认推进流程"
+          description={`即将执行：${TRANSITION_LABELS[pendingConfirm.transition]}，此操作不可撤销。`}
+          onConfirm={handleConfirm}
+          onCancel={handleCancelConfirm}
+        />
+      )}
     </div>
   );
 }
-
 

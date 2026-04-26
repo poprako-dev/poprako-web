@@ -69,7 +69,7 @@ export async function fetchComicAssignments(
   if (!chapter) return { success: true, data: [] };
   const result = await api.get<RawAssignmentInfo[]>(
     "/assignments",
-    { chapter_id: chapter.id, offset: 0, limit: 50 },
+    { chapter_id: chapter.id, includes: ["user"], offset: 0, limit: 50 },
     true,
   );
   if (!result.success) return result;

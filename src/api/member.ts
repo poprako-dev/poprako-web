@@ -20,6 +20,20 @@ type ListMembersArgs = {
   includes?: string[];
 };
 
+type UpdateMemberRoleArgs = {
+  id: string;
+  roles: number;
+};
+
+export async function updateMemberRole(
+  args: UpdateMemberRoleArgs,
+): Promise<Result<void>> {
+  return api.put<void, UpdateMemberRoleArgs>(
+    `/members/${args.id}`,
+    args,
+  );
+}
+
 export async function listMembers(
   args: ListMembersArgs,
 ): Promise<Result<MemberInfo[]>> {

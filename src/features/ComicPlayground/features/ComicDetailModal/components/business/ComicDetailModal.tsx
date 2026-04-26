@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
 import {
   X,
@@ -14,11 +14,15 @@ import {
 import type {
   ListChapterArgs,
   WorkflowTransition,
+  ChapterExport,
+  ImportChapterFormat,
+  ImportChapterResult,
 } from "@/features/ComicPlayground/types/chapter";
 import type { ChapterInfo, ComicInfo, PageInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import { useAppStore } from "@/store/app";
 import LazyImage from "./LazyImage";
 import StatItem from "./StatItem";
 import ActionButton from "./ActionButton";
@@ -29,6 +33,17 @@ import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import MemberSelectorModal from "./MemberSelectorModal";
 import type { MemberInfo } from "@/types/member";
 import { hasRole, type Role } from "@/types/role";
+
+const ROLE_TITLE_LABEL: Record<Role, string> = {
+  rawProvider: "图源",
+  translator: "翻译",
+  proofreader: "校对",
+  typesetter: "嵌字",
+  redrawer: "美工",
+  reviewer: "审核",
+  publisher: "发布",
+  admin: "管理员",
+};
 
 type Props = {
   comicInfo: ComicInfo;
@@ -57,8 +72,14 @@ type Props = {
   onDeleteChapter?: (chapterId: string) => Promise<Result<void>>;
   onNavigateToTranslator?: (chapterId: string, pageId: string) => void;
   currentUserId?: string | null;
-  canManageAssignments?: boolean;
   onAddPages?: (chapterId: string, files: File[]) => Promise<void>;
+  onDeletePage?: (pageId: string) => Promise<Result<void>>;
+  onImportChapter?: (args: {
+    chapterId: string;
+    content: string;
+    format: ImportChapterFormat;
+  }) => Promise<Result<ImportChapterResult>>;
+  onExportChapter?: (chapterId: string) => Promise<Result<ChapterExport>>;
   onClose: () => void;
 };
 
@@ -76,11 +97,14 @@ export default function ComicDetailModal({
   onDeleteChapter,
   onNavigateToTranslator,
   currentUserId,
-  canManageAssignments = false,
   onAddPages,
+  onDeletePage,
+  onImportChapter,
+  onExportChapter,
   onClose,
 }: Props) {
   const { showToast } = useToastStore();
+  const accessToken = useAppStore((s) => s.accessToken);
   const [chapters, setChapters] = useState<ChapterInfo[]>([]);
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
     pinnedChapter?.id ?? null,
@@ -91,8 +115,11 @@ export default function ComicDetailModal({
   const [isMemberSelectorLoading, setIsMemberSelectorLoading] = useState(false);
   const [memberSelectorRole, setMemberSelectorRole] = useState<Role | null>(null);
   const [isAddingAssignment, setIsAddingAssignment] = useState(false);
+  const [isImportingData, setIsImportingData] = useState(false);
+  const [isExportingData, setIsExportingData] = useState(false);
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
   const CHAPTERS_LIMIT = 20;
 
   const selectedChapter =
@@ -105,8 +132,16 @@ export default function ComicDetailModal({
     !!currentAssignment &&
     (hasRole(currentAssignment, "translator") ||
       hasRole(currentAssignment, "proofreader"));
+  const canManageChapterAssignments =
+    !!currentAssignment && hasRole(currentAssignment, "reviewer");
   const canUploadRawPages =
     !!currentAssignment && hasRole(currentAssignment, "rawProvider");
+  const assignedUserIdsForSelectedRole =
+    memberSelectorRole === null
+      ? []
+      : assignments
+          .filter((assignment) => hasRole(assignment, memberSelectorRole))
+          .map((assignment) => assignment.userId);
 
   // Load initial chapters
   useEffect(() => {
@@ -255,6 +290,224 @@ export default function ComicDetailModal({
     setMemberSelectorRole(null);
   };
 
+  const reloadCurrentPages = async () => {
+    if (!selectedChapterId) return;
+    const res = await onLoadPages(selectedChapterId);
+    if (!res.success) {
+      showToast(res.error, "error");
+      return;
+    }
+    setPages(res.data);
+  };
+
+  const handleAddRawPages = async (files: File[]) => {
+    if (!selectedChapterId || !onAddPages) return;
+    try {
+      await onAddPages(selectedChapterId, files);
+      await reloadCurrentPages();
+    } catch (err) {
+      console.error("[ComicDetailModal] 上传页面失败:", err);
+      showToast(err instanceof Error ? err.message : "上传页面失败", "error");
+    }
+  };
+
+  const handleDeleteRawPage = async (pageId: string) => {
+    if (!onDeletePage) return;
+    const res = await onDeletePage(pageId);
+    if (!res.success) {
+      showToast(res.error, "error");
+      return;
+    }
+    setPages((prev) => prev.filter((page) => page.id !== pageId));
+    showToast("页面删除成功", "success");
+  };
+
+  const handleOpenImportPicker = () => {
+    if (!selectedChapterId || !onImportChapter || isImportingData) return;
+    importFileInputRef.current?.click();
+  };
+
+  const detectImportFormat = (file: File): ImportChapterFormat | null => {
+    const name = file.name.toLowerCase();
+    if (name.endsWith(".json")) return "json";
+    if (name.endsWith(".txt")) return "lp";
+    return null;
+  };
+
+  const handleImportFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    e.target.value = "";
+    if (!selectedFile || !selectedChapterId || !onImportChapter) return;
+
+    const format = detectImportFormat(selectedFile);
+    if (!format) {
+      showToast("仅支持 .json 或 .txt 文件", "error");
+      return;
+    }
+
+    setIsImportingData(true);
+    try {
+      const content = await selectedFile.text();
+      const result = await onImportChapter({
+        chapterId: selectedChapterId,
+        content,
+        format,
+      });
+
+      if (!result.success) {
+        showToast(result.error, "error");
+        return;
+      }
+
+      await Promise.all([
+        reloadCurrentPages(),
+        onLoadChapters({ comicId: comicInfo.id, offset: 0, limit: CHAPTERS_LIMIT }).then(
+          (res) => {
+            if (res.success) {
+              setChapters(res.data);
+              return;
+            }
+            showToast(res.error, "error");
+          },
+        ),
+      ]);
+
+      showToast(
+        `导入成功：${result.data.importedPageCount} 页，${result.data.importedUnitCount} 单元`,
+        "success",
+      );
+    } catch (err) {
+      console.error("[ComicDetailModal] 导入章节数据异常:", err);
+      showToast("导入失败", "error");
+    } finally {
+      setIsImportingData(false);
+    }
+  };
+
+  const sanitizeFileName = (value: string) =>
+    (value || "")
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+      .trim()
+      .slice(0, 120) || "chapter-export";
+
+  const wait = (ms: number) =>
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, ms);
+    });
+
+  const blobToDataUrl = (blob: Blob) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          resolve(reader.result);
+          return;
+        }
+        reject(new Error("无法读取图片数据"));
+      };
+      reader.onerror = () => reject(new Error("读取图片失败"));
+      reader.readAsDataURL(blob);
+    });
+
+  const fetchImageAsDataUrlWithRetry = async (
+    imageUrl: string,
+    maxAttempts = 3,
+  ): Promise<string | null> => {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const response = await fetch(imageUrl, {
+          headers: accessToken
+            ? {
+                Authorization: `Bearer ${accessToken}`,
+              }
+            : undefined,
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const blob = await response.blob();
+        return await blobToDataUrl(blob);
+      } catch (err) {
+        if (attempt >= maxAttempts) {
+          console.error("[ComicDetailModal] 下载图片失败，已跳过:", imageUrl, err);
+          return null;
+        }
+        await wait(300 * attempt);
+      }
+    }
+    return null;
+  };
+
+  const handleExportData = async () => {
+    if (!selectedChapterId || !onExportChapter) return;
+
+    setIsExportingData(true);
+    try {
+      const exportResult = await onExportChapter(selectedChapterId);
+      if (!exportResult.success) {
+        showToast(exportResult.error, "error");
+        return;
+      }
+
+      const pagesWithImages = await Promise.all(
+        exportResult.data.pages.map(async (page) => {
+          if (!page.imageUrl) {
+            return {
+              ...page,
+              imageDataUrl: null as string | null,
+            };
+          }
+
+          const imageDataUrl = await fetchImageAsDataUrlWithRetry(page.imageUrl, 3);
+          return {
+            ...page,
+            imageDataUrl,
+          };
+        }),
+      );
+
+      const skippedImages = pagesWithImages.filter(
+        (page) => page.imageUrl && !page.imageDataUrl,
+      ).length;
+
+      const payload = {
+        ...exportResult.data,
+        exportedAt: new Date().toISOString(),
+        skippedImageCount: skippedImages,
+        pages: pagesWithImages,
+      };
+
+      const chapterLabel =
+        selectedChapter?.index !== undefined
+          ? `chapter-${selectedChapter.index}`
+          : `chapter-${selectedChapterId}`;
+      const fileName = sanitizeFileName(`${comicInfo.title}-${chapterLabel}-export.json`);
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: "application/json;charset=utf-8",
+      });
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(downloadUrl);
+
+      if (skippedImages > 0) {
+        showToast(`导出完成，${skippedImages} 张图片下载失败后已跳过`, "error");
+        return;
+      }
+      showToast("导出成功", "success");
+    } catch (err) {
+      console.error("[ComicDetailModal] 导出章节数据异常:", err);
+      showToast("导出失败", "error");
+    } finally {
+      setIsExportingData(false);
+    }
+  };
+
   const header = (
     <>
       <div className="flex items-center gap-2">
@@ -367,7 +620,12 @@ export default function ComicDetailModal({
 
       {/* No-chapter hint */}
       {!selectedChapter && (
-        <p className="text-[10px] text-slate-300 text-center leading-relaxed mb-2 shrink-0">
+        <p
+          className={clsx(
+            "text-[10px] sm:text-[9px] text-slate-300",
+            "text-center leading-relaxed mb-2 shrink-0",
+          )}
+        >
           请从上方选择或创建一个章节
         </p>
       )}
@@ -393,8 +651,27 @@ export default function ComicDetailModal({
               }
             />
           )}
-          {canUploadRawPages && <ActionButton icon={CloudUpload} title="上传数据" />}
-          <ActionButton icon={Download} title="下载图源" />
+          {canUploadRawPages && (
+            <ActionButton
+              icon={CloudUpload}
+              title="上传数据"
+              onClick={onImportChapter ? handleOpenImportPicker : undefined}
+              disabled={isImportingData}
+            />
+          )}
+          <ActionButton
+            icon={Download}
+            title="下载数据"
+            onClick={onExportChapter ? handleExportData : undefined}
+            disabled={isExportingData}
+          />
+          <input
+            ref={importFileInputRef}
+            type="file"
+            accept=".json,.txt,application/json,text/plain"
+            className="hidden"
+            onChange={handleImportFileChange}
+          />
         </div>
       )}
     </>
@@ -414,9 +691,16 @@ export default function ComicDetailModal({
       }
       onAddPages={
         canUploadRawPages && selectedChapterId && onAddPages
-          ? (files) => onAddPages(selectedChapterId, files)
+          ? handleAddRawPages
           : undefined
       }
+      onDeletePage={
+        canUploadRawPages && onDeletePage ? handleDeleteRawPage : undefined
+      }
+      enableDelete={canUploadRawPages}
+      accept="image/*"
+      emptyHintText="支持拖拽上传图片"
+      uploadButtonText="点击或拖拽图片上传"
     />
   );
 
@@ -427,8 +711,8 @@ export default function ComicDetailModal({
       onTransiteWorkflow={handleTransition}
       onRemoveAssignment={onRemoveAssignment ? handleRemoveUser : undefined}
       onAddAssignment={onAddAssignment ? handleOpenMemberSelector : undefined}
-      canOperateWorkflow={canManageAssignments}
-      canManageAssignments={canManageAssignments}
+      canOperateWorkflow={canManageChapterAssignments}
+      canManageAssignments={canManageChapterAssignments}
     />
   );
 
@@ -442,9 +726,9 @@ export default function ComicDetailModal({
       />
       {memberSelectorRole && (
         <MemberSelectorModal
-          title={`添加${memberSelectorRole}成员`}
+          title={`添加${ROLE_TITLE_LABEL[memberSelectorRole]}成员`}
           members={assignableMembers}
-          assignedUserIds={assignments.map((assignment) => assignment.userId)}
+          assignedUserIds={assignedUserIdsForSelectedRole}
           isSubmitting={isMemberSelectorLoading || isAddingAssignment}
           onSelectUser={handleAddAssignment}
           onClose={() => setMemberSelectorRole(null)}

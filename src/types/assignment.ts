@@ -1,4 +1,5 @@
 import type { ChapterInfo } from "./chapter";
+import { hasRole, type Role } from "./role";
 import type { UserInfo } from "./user";
 
 export type AssignmentInfo = {
@@ -21,3 +22,17 @@ export type AssignmentInfo = {
   createdAt: number;
   updatedAt: number;
 };
+
+const ASSIGNMENT_ROLES: Role[] = [
+  "rawProvider",
+  "translator",
+  "proofreader",
+  "typesetter",
+  "redrawer",
+  "reviewer",
+  "publisher",
+];
+
+export function assignmentRoles(assignment: AssignmentInfo): Role[] {
+  return ASSIGNMENT_ROLES.filter((role) => hasRole(assignment, role));
+}

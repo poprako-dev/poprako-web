@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToastStore } from "@/components/ui/NotificationToast";
-import { listMembers } from "@/api/member";
-import { listInvitations, createInvitation, deleteInvitation } from "@/api/invitation";
+import { listMembers, updateMemberRole } from "@/api/member";
+import {
+  listInvitations,
+  createInvitation,
+  deleteInvitation,
+} from "@/api/invitation";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
 import type { MemberInfo } from "@/types/member";
 import type { CreateInvitationArgs, InvitationInfo } from "@/types/invitation";
@@ -10,6 +14,7 @@ import { hasRole } from "@/types/role";
 import type { RoleFilter } from "../../types/types";
 import MemberList from "./MemberList";
 import MemberInvitorModal from "./MemberInvitorModal";
+import MemberDetailModal from "./MemberDetailModal";
 
 function matchesName(member: MemberInfo, fuzzyName: string) {
   const keyword = fuzzyName.trim().toLowerCase();
@@ -26,46 +31,55 @@ function matchesRoles(member: MemberInfo, activeRoles: RoleFilter[]) {
 }
 
 export default function MemberGlance() {
-  const { activeTeamId } = useActiveTeam();
+  const { activeTeamId, activeMember } = useActiveTeam();
   const { showToast } = useToastStore();
   const [fuzzyName, setFuzzyName] = useState("");
   const [activeRoles, setActiveRoles] = useState<RoleFilter[]>([]);
   const [members, setMembers] = useState<MemberInfo[]>([]);
   const [isInvitorOpen, setIsInvitorOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<MemberInfo | null>(
+    null,
+  );
+
+  const isAdmin =
+    activeMember !== null && hasRole(activeMember, "admin");
+
+  const loadMembers = useCallback(async () => {
+    if (!activeTeamId) {
+      setMembers([]);
+      return;
+    }
+
+    const result = await listMembers({
+      teamId: activeTeamId,
+      offset: 0,
+      limit: 200,
+      includes: ["user"],
+    });
+
+    if (!result.success) {
+      setMembers([]);
+      showToast(result.error, "error");
+      return;
+    }
+
+    setMembers(result.data);
+  }, [activeTeamId, showToast]);
 
   useEffect(() => {
     let isCancelled = false;
 
-    const loadMembers = async () => {
-      if (!activeTeamId) {
-        setMembers([]);
-        return;
-      }
-
-      const result = await listMembers({
-        teamId: activeTeamId,
-        offset: 0,
-        limit: 200,
-        includes: ["user"],
-      });
-
+    const reloadMembers = async () => {
       if (isCancelled) return;
-
-      if (!result.success) {
-        setMembers([]);
-        showToast(result.error, "error");
-        return;
-      }
-
-      setMembers(result.data);
+      await loadMembers();
     };
 
-    loadMembers();
+    reloadMembers();
 
     return () => {
       isCancelled = true;
     };
-  }, [activeTeamId, showToast]);
+  }, [loadMembers]);
 
   const filteredMembers = useMemo(
     () =>
@@ -105,6 +119,17 @@ export default function MemberGlance() {
     [],
   );
 
+  const handleUpdateRole = useCallback(
+    async (id: string, roles: number): Promise<Result<void>> => {
+      const result = await updateMemberRole({ id, roles });
+      if (result.success) {
+        await loadMembers();
+      }
+      return result;
+    },
+    [loadMembers],
+  );
+
   return (
     <div className="h-full w-full min-w-0 overflow-x-hidden p-4 sm:p-6">
       <MemberList
@@ -114,6 +139,7 @@ export default function MemberGlance() {
         onChangeRoles={setActiveRoles}
         onCreateMember={() => setIsInvitorOpen(true)}
         onLoadMembers={handleLoadMembers}
+        onMemberClick={isAdmin ? setSelectedMember : undefined}
       />
 
       {isInvitorOpen && activeTeamId && (
@@ -123,6 +149,14 @@ export default function MemberGlance() {
           onLoadInvitations={handleLoadInvitations}
           onCreateInvitation={handleCreateInvitation}
           onDeleteInvitation={handleDeleteInvitation}
+        />
+      )}
+
+      {selectedMember !== null && (
+        <MemberDetailModal
+          member={selectedMember}
+          onClose={() => setSelectedMember(null)}
+          onUpdateRole={handleUpdateRole}
         />
       )}
     </div>

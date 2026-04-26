@@ -13,6 +13,7 @@ type Props = {
     offset: number,
     limit: number,
   ) => Promise<MemberInfo[] | string>;
+  onMemberClick?: (member: MemberInfo) => void;
 };
 
 export default function MemberList({
@@ -22,6 +23,7 @@ export default function MemberList({
   onChangeRoles,
   onCreateMember,
   onLoadMembers,
+  onMemberClick,
 }: Props) {
   return (
     <div className="flex h-full w-full flex-col gap-3 overflow-hidden">
@@ -33,7 +35,10 @@ export default function MemberList({
         onCreateMember={onCreateMember}
       />
       <div className="min-h-0 flex-1">
-        <EmbeddedMemberList onLoadMembers={onLoadMembers} />
+        <EmbeddedMemberList
+          onLoadMembers={onLoadMembers}
+          onMemberClick={onMemberClick}
+        />
       </div>
     </div>
   );

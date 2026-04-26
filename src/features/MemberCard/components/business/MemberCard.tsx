@@ -4,6 +4,7 @@ import type { MemberInfo } from "@/types/member";
 
 type Props = {
   member: MemberInfo;
+  onClick?: () => void;
 };
 
 const ROLE_MAP = [
@@ -67,18 +68,20 @@ function RoleTag({ label, isActive, colorClass }: RoleTagProps) {
   );
 }
 
-export default function MemberCard({ member }: Props) {
+export default function MemberCard({ member, onClick }: Props) {
   const { user, updatedAt, createdAt } = member;
   const isAdmin = user?.isSuperAdmin || !!member.assignedAdminAt;
 
   return (
     <div
+      onClick={onClick}
       className={clsx(
         "group flex w-full",
         "bg-white border border-slate-200",
         " transition-all duration-200",
         "p-3 gap-4 rounded-sm shadow-sm",
         "hover:-translate-y-0.5 hover:shadow-md",
+        onClick && "cursor-pointer",
       )}
     >
       {/* 左侧：头像 */}

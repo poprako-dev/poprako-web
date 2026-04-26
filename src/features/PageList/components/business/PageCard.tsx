@@ -102,7 +102,7 @@ export default function PageCard({
             "absolute bottom-3 right-1.5 z-10 p-1.5 rounded-sm",
             "bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm",
             "text-slate-400 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100",
-            "opacity-0 group-hover:opacity-100 transition-all active:scale-95",
+            "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all active:scale-95",
           )}
         >
           <Trash2 className="w-3 h-3" />

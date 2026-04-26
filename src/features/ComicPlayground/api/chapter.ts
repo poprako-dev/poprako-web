@@ -10,6 +10,12 @@ import type {
   RawCreateChapterArgs,
   UpdateChapterArgs,
   RawUpdateChapterArgs,
+  ChapterExport,
+  RawChapterExport,
+  ImportChapterArgs,
+  RawImportChapterArgs,
+  ImportChapterResult,
+  RawImportChapterResult,
 } from "../types/chapter";
 
 export async function listChapters(
@@ -69,4 +75,74 @@ export async function deleteChapter(id: string): Promise<Result<void>> {
   const res = await api.delete<void>(`/chapters/${id}`);
   if (!res.success) return res;
   return { success: true, data: undefined };
+}
+
+function unwrapRawChapterExport(raw: RawChapterExport): ChapterExport {
+  return {
+    comicId: raw.comic_id,
+    comicTitle: raw.comic_title,
+    chapterId: raw.chapter_id,
+    chapterIndex: raw.chapter_index,
+    chapterSubtitle: raw.chapter_subtitle,
+    pages: (raw.pages ?? []).map((page) => ({
+      pageId: page.page_id,
+      pageIndex: page.page_index,
+      imageUrl: page.image_url,
+      isUploaded: page.is_uploaded,
+      units: (page.units ?? []).map((unit) => ({
+        unitId: unit.unit_id,
+        unitIndex: unit.unit_index,
+        pageId: unit.page_id,
+        pageIndex: unit.page_index,
+        translatedText: unit.translated_text,
+        proofreadText: unit.proofread_text,
+        translatorId: unit.translator_id,
+        proofreaderId: unit.proofreader_id,
+        translatorComment: unit.translator_comment,
+        proofreaderComment: unit.proofreader_comment,
+        xCoord: unit.x_coord,
+        yCoord: unit.y_coord,
+        isBubble: unit.is_bubble,
+        isProofread: unit.is_proofread,
+      })),
+    })),
+  };
+}
+
+export async function exportChapter(
+  chapterId: string,
+): Promise<Result<ChapterExport>> {
+  const res = await api.get<RawChapterExport>(`/chapters/${chapterId}/export`);
+  if (!res.success) return res;
+  return { success: true, data: unwrapRawChapterExport(res.data) };
+}
+
+function unwrapRawImportChapterResult(
+  raw: RawImportChapterResult,
+): ImportChapterResult {
+  return {
+    importedPageCount: raw.imported_page_count,
+    importedUnitCount: raw.imported_unit_count,
+  };
+}
+
+export async function importChapter(
+  args: ImportChapterArgs,
+): Promise<Result<ImportChapterResult>> {
+  const rawArgs: RawImportChapterArgs = {
+    chapter_id: args.chapterId,
+    content: args.content,
+    format: args.format,
+  };
+
+  const res = await api.post<RawImportChapterResult, RawImportChapterArgs>(
+    `/chapters/${args.chapterId}/import`,
+    rawArgs,
+  );
+  if (!res.success) return res;
+
+  return {
+    success: true,
+    data: unwrapRawImportChapterResult(res.data as RawImportChapterResult),
+  };
 }

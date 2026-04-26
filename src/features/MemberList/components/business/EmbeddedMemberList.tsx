@@ -9,11 +9,12 @@ type Props = {
     offset: number,
     limit: number,
   ) => Promise<MemberInfo[] | string>;
+  onMemberClick?: (member: MemberInfo) => void;
 };
 
 // 受控的成员列表展示组件，负责无限下滑加载
 // 过滤/搜索逻辑由父组件通过 onLoadMembers 闭包注入
-export default function EmbeddedMemberList({ onLoadMembers }: Props) {
+export default function EmbeddedMemberList({ onLoadMembers, onMemberClick }: Props) {
   const [members, setMembers] = useState<MemberInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -109,7 +110,11 @@ export default function EmbeddedMemberList({ onLoadMembers }: Props) {
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((m) => (
-          <MemberCard key={m.id} member={m} />
+          <MemberCard
+            key={m.id}
+            member={m}
+            onClick={onMemberClick ? () => onMemberClick(m) : undefined}
+          />
         ))}
       </div>
 

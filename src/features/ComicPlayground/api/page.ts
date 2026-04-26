@@ -11,6 +11,7 @@ import {
   type RawReserveChapterPagesArgs,
   type RawReserveChapterPagesResult,
   type RawPageInfo,
+  type RawUpdatePageArgs,
 } from "@/types/raw/page";
 
 export type ListPageArgs = {
@@ -62,4 +63,46 @@ export async function deletePage(pageId: string): Promise<Result<void>> {
   const res = await api.delete<void>(`/pages/${pageId}`);
   if (!res.success) return res;
   return { success: true, data: undefined };
+}
+
+export async function updatePage(
+  pageId: string,
+  args: { isUploaded?: boolean },
+): Promise<Result<void>> {
+  const rawArgs: RawUpdatePageArgs = {
+    id: pageId,
+    is_uploaded: args.isUploaded,
+  };
+  const res = await api.put<void, RawUpdatePageArgs>(`/pages/${pageId}`, rawArgs);
+  if (!res.success) return res;
+  return { success: true, data: undefined };
+}
+
+export async function uploadToPresignedUrl(
+  putUrl: string,
+  file: File,
+): Promise<Result<void>> {
+  try {
+    const response = await fetch(putUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: file,
+    });
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `上传失败: HTTP ${response.status}`,
+      };
+    }
+
+    return { success: true, data: undefined };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "上传失败",
+    };
+  }
 }

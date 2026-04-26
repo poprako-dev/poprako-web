@@ -4,13 +4,14 @@ import type { UserStatsInfo } from "@/types/userStats";
 import type { WorkspaceTab } from "../../types/types";
 import type { ComicInfo, ChapterInfo } from "@/types";
 import type { Result } from "@/types/utils/result";
-import type { AssignmentInfo } from "@/types/assignment";
+import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
 import WorkspaceHeaderNav from "./WorkspaceHeaderNav";
 import WorkspaceStatsCards from "./WorkspaceStatsCards";
 import EmbeddedComicList from "@/features/ComcList/components/business/EmbeddedComicList";
-import ComicDetailModal from "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
+import ComicDetailModal from
+  "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
@@ -21,26 +22,33 @@ import {
   fetchComicAssignments,
 } from "../../api/workspace";
 import { listMembers } from "@/api/member";
-import { listChapters, updateChapter } from "@/features/ComicPlayground/api/chapter";
-import { listPages } from "@/features/ComicPlayground/api/page";
+import {
+  listChapters,
+  updateChapter,
+  exportChapter,
+  importChapter,
+} from "@/features/ComicPlayground/api/chapter";
+import {
+  listPages,
+  deletePage,
+  reserveChapterPages,
+  updatePage,
+  uploadToPresignedUrl,
+} from "@/features/ComicPlayground/api/page";
 import { api } from "@/api/util";
 import { unwrapRawAssignmentInfo, type RawAssignmentInfo } from "@/types/raw/assignment";
 import type { ListChapterArgs, WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
-import { hasRole, roleMask, type Role } from "@/types/role";
+import { roleMask, type Role } from "@/types/role";
 import clsx from "clsx";
 
 // 个人工作区组件，会直接放置在 WorkspacePage 中，展示个人工作区的相关内容
 // 所以自身不设定高度，而是适应父组件
 export default function Workspace() {
-  const { activeTeamId: teamId, activeMember } = useActiveTeam();
+  const { activeTeamId: teamId } = useActiveTeam();
   const loginState = useAppStore((s) => s.loginState);
   const currentUserId = loginState?.userInfo.id ?? null;
-  const isSuperAdmin = !!loginState?.userInfo.isSuperAdmin;
   const { showToast } = useToastStore();
   const navigate = useNavigate();
-
-  const canManageAssignments =
-    !!activeMember && (hasRole(activeMember, "admin") || isSuperAdmin);
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("workspace");
   const [stats, setStats] = useState<UserStatsInfo | null>(null);
@@ -161,19 +169,31 @@ export default function Workspace() {
       userId: string,
       role: Role,
     ): Promise<Result<void>> => {
+      const assignmentResult = await handleLoadAssignmentsForChapter(chapterId);
+      if (!assignmentResult.success) {
+        return assignmentResult;
+      }
+
+      const existing = assignmentResult.data.find(
+        (assignment) => assignment.userId === userId,
+      );
+      const mergedRoles = existing
+        ? Array.from(new Set([...assignmentRoles(existing), role]))
+        : [role];
+
       const result = await api.post<
         { id: string },
         { chapter_id: string; user_id: string; roles: number }
       >("/assignments", {
         chapter_id: chapterId,
         user_id: userId,
-        roles: roleMask([role]),
+        roles: roleMask(mergedRoles),
       });
 
       if (!result.success) return result;
       return { success: true, data: undefined };
     },
-    [],
+    [handleLoadAssignmentsForChapter],
   );
 
   const handleTransiteWorkflow = useCallback(
@@ -185,6 +205,54 @@ export default function Workspace() {
     },
     [],
   );
+
+  const handleExportChapter = useCallback(async (chapterId: string) => {
+    return exportChapter(chapterId);
+  }, []);
+
+  const handleImportChapter = useCallback(
+    async (args: { chapterId: string; content: string; format: "json" | "lp" }) => {
+      return importChapter(args);
+    },
+    [],
+  );
+
+  const handleAddPages = useCallback(
+    async (chapterId: string, files: File[]) => {
+      const reserveResult = await reserveChapterPages({
+        chapterId,
+        pageCount: files.length,
+      });
+      if (!reserveResult.success) {
+        throw new Error(reserveResult.error);
+      }
+
+      const creations = reserveResult.data.creations;
+      if (creations.length !== files.length) {
+        throw new Error("预留页面数量与选择文件数量不一致");
+      }
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const creation = creations[i];
+
+        const uploadResult = await uploadToPresignedUrl(creation.putUrl, file);
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error);
+        }
+
+        const markResult = await updatePage(creation.pageId, { isUploaded: true });
+        if (!markResult.success) {
+          throw new Error(markResult.error);
+        }
+      }
+    },
+    [],
+  );
+
+  const handleDeletePage = useCallback(async (pageId: string): Promise<Result<void>> => {
+    return deletePage(pageId);
+  }, []);
 
   const handleNavigateToTranslator = useCallback(
     (chapterId: string, pageId: string) => {
@@ -250,12 +318,12 @@ export default function Workspace() {
           onLoadAssignments={handleLoadAssignmentsForChapter}
           onLoadPages={handleLoadPages}
           onTransiteWorkflow={handleTransiteWorkflow}
-          onRemoveAssignment={handleRemoveAssignment}
-          onLoadAssignableMembers={handleLoadAssignableMembers}
-          onAddAssignment={handleAddAssignment}
           onNavigateToTranslator={handleNavigateToTranslator}
           currentUserId={currentUserId}
-          canManageAssignments={canManageAssignments}
+          onAddPages={handleAddPages}
+          onDeletePage={handleDeletePage}
+          onImportChapter={handleImportChapter}
+          onExportChapter={handleExportChapter}
           onClose={() => {
             setSelectedComic(null);
             setSelectedComicPinnedChapter(null);
