@@ -33,6 +33,7 @@ import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import MemberSelectorModal from "./MemberSelectorModal";
 import type { MemberInfo } from "@/types/member";
 import { hasRole, type Role } from "@/types/role";
+import { useActiveTeam } from "@/hooks/useActiveTeam";
 
 const ROLE_TITLE_LABEL: Record<Role, string> = {
   rawProvider: "图源",
@@ -105,6 +106,7 @@ export default function ComicDetailModal({
 }: Props) {
   const { showToast } = useToastStore();
   const accessToken = useAppStore((s) => s.accessToken);
+  const { activeMember } = useActiveTeam();
   const [chapters, setChapters] = useState<ChapterInfo[]>([]);
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
     pinnedChapter?.id ?? null,
@@ -119,6 +121,7 @@ export default function ComicDetailModal({
   const [isExportingData, setIsExportingData] = useState(false);
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
+  const [canCreateChapter, setCanCreateChapter] = useState(false);
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const CHAPTERS_LIMIT = 20;
 
@@ -136,12 +139,58 @@ export default function ComicDetailModal({
     !!currentAssignment && hasRole(currentAssignment, "reviewer");
   const canUploadRawPages =
     !!currentAssignment && hasRole(currentAssignment, "rawProvider");
+  const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
   const assignedUserIdsForSelectedRole =
     memberSelectorRole === null
       ? []
       : assignments
           .filter((assignment) => hasRole(assignment, memberSelectorRole))
           .map((assignment) => assignment.userId);
+
+  useEffect(() => {
+    if (isTeamAdmin) {
+      setCanCreateChapter(true);
+      return;
+    }
+
+    if (!pinnedChapter?.id || !currentUserId) {
+      setCanCreateChapter(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    onLoadAssignments(pinnedChapter.id)
+      .then((res) => {
+        if (!res.success) {
+          console.error("[ComicDetailModal] 加载 pinned 章节分工失败:", res);
+          if (!cancelled) {
+            setCanCreateChapter(false);
+          }
+          return;
+        }
+
+        const pinnedAssignment = res.data.find(
+          (assignment) => assignment.userId === currentUserId,
+        );
+
+        if (!cancelled) {
+          setCanCreateChapter(
+            !!pinnedAssignment && hasRole(pinnedAssignment, "reviewer"),
+          );
+        }
+      })
+      .catch((err) => {
+        console.error("[ComicDetailModal] 加载 pinned 章节分工异常:", err);
+        if (!cancelled) {
+          setCanCreateChapter(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId, isTeamAdmin, onLoadAssignments, pinnedChapter?.id]);
 
   // Load initial chapters
   useEffect(() => {
@@ -523,7 +572,7 @@ export default function ComicDetailModal({
           onLoadMore={handleLoadMoreChapters}
           onSelect={setSelectedChapterId}
           onCreateChapter={
-            onCreateChapter
+            onCreateChapter && canCreateChapter
               ? async (subtitle) => {
                   const res = await onCreateChapter({
                     comicId: comicInfo.id,
