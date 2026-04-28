@@ -1,0 +1,44 @@
+root@iZ2ze60at22gdtqpxtmfzkZ:/opt/poprako-s# tree .
+.
+├── releases
+│   └── 4558998a9d5a
+│       ├── poprako-s-database-4558998a9d5a.tar.gz
+│       ├── poprako-s-main-4558998a9d5a.tar.gz
+│       └── poprako-s-migrations-4558998a9d5a.tar.gz
+└── shared
+    ├── bin
+    │   └── remote-switch-release.sh
+    ├── docker
+    │   ├── compose.prod.yml
+    │   └── prod-database-migrate.sh
+    └── migrations
+        ├── 20260301065010_features-enable.down.sql
+        ├── 20260301065010_features-enable.up.sql
+        ├── 20260301065012_team-table.down.sql
+        ├── 20260301065012_team-table.up.sql
+        ├── 20260301065022_user-table.down.sql
+        ├── 20260301065022_user-table.up.sql
+        ├── 20260301075641_member-table.down.sql
+        ├── 20260301075641_member-table.up.sql
+        ├── 20260301075642_member-invitation-table.down.sql
+        ├── 20260301075642_member-invitation-table.up.sql
+        ├── 20260306101211_workset-table.down.sql
+        ├── 20260306101211_workset-table.up.sql
+        ├── 20260306101212_comic-table.down.sql
+        ├── 20260306101212_comic-table.up.sql
+        ├── 20260306101213_chapter-table.down.sql
+        ├── 20260306101213_chapter-table.up.sql
+        ├── 20260306101214_page-table.down.sql
+        ├── 20260306101214_page-table.up.sql
+        ├── 20260306101215_assignment-table.down.sql
+        ├── 20260306101215_assignment-table.up.sql
+        ├── 20260306101216_unit-table.down.sql
+        ├── 20260306101216_unit-table.up.sql
+        ├── 20260306101217_user-stats-table.down.sql
+        ├── 20260306101217_user-stats-table.up.sql
+        ├── 20260306101218_notification-table.down.sql
+        ├── 20260306101218_notification-table.up.sql
+        ├── 20260306101219_chapter-invitation-table.down.sql
+        ├── 20260306101219_chapter-invitation-table.up.sql
+        ├── 20260421000001_oss-message-table.down.sql
+        └── 20260421000001_oss-message-table.up.sql
