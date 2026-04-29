@@ -1,6 +1,6 @@
-const CIRCLE_SIZE = 32;
-const DOT_SIZE = 8;
-const PIN_OFFSET = CIRCLE_SIZE + DOT_SIZE - 2;
+export const CIRCLE_SIZE = 32;
+export const DOT_SIZE = 8;
+export const PIN_OFFSET = CIRCLE_SIZE + DOT_SIZE - 2;
 
 type Props = {
   index: number;
@@ -30,9 +30,7 @@ export default function Marker({
       } ${isDragging ? "cursor-grabbing opacity-80" : "cursor-pointer"}`}
       style={{
         width: `${CIRCLE_SIZE}px`,
-        transform: `translate(-50%, -${PIN_OFFSET}px)${
-          isDragging ? " scale(1.1)" : ""
-        }`,
+        transform: isDragging ? "scale(1.1)" : undefined,
         transition: isDragging
           ? "none"
           : "transform 0.15s ease-out, opacity 0.15s ease-out",

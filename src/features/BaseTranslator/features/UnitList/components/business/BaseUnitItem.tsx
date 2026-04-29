@@ -62,7 +62,7 @@ export default function BaseUnitItem({
         {children}
       </div>
 
-      <div className={`w-0.5 shrink-0 ${rightIndicatorColor}`} />
+      <div className={`w-1 shrink-0 ${rightIndicatorColor}`} />
     </div>
   );
 }
