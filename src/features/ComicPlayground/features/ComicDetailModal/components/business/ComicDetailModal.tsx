@@ -787,7 +787,7 @@ export default function ComicDetailModal({
           {canUploadRawPages && (
             <ActionButton
               icon={CloudUpload}
-              title="上传数据"
+              title="上传翻校"
               onClick={onImportChapter ? handleOpenImportPicker : undefined}
               disabled={isImportingData}
             />

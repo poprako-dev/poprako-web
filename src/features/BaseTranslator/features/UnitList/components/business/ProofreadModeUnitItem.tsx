@@ -66,6 +66,7 @@ export default function ProofreadModeUnitItem({
       unit={unit}
       isFocused={isFocused}
       onSelect={onSelect}
+      onModifyUnit={onModifyUnit}
       isCompleted={unitIsProofread(unit)}
     >
       <div className="flex flex-col gap-1">

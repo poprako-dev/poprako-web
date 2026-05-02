@@ -118,8 +118,8 @@ export default function App() {
               {/* 操作按钮 */}
               <div className="flex flex-col gap-1 shrink-0">
                 <ActionButton icon={Pencil} title="开始翻校" />
-                <ActionButton icon={CloudUpload} title="上传数据" />
-                <ActionButton icon={Download} title="下载图源" />
+                <ActionButton icon={CloudUpload} title="上传翻校" />
+                <ActionButton icon={Download} title="下载" />
               </div>
             </div>
 

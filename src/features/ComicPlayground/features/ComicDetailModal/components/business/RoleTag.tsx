@@ -84,7 +84,7 @@ export default function RoleTag({
     <div
       onClick={handleClick}
       className={clsx(
-        "group/role relative flex items-center min-w-0 w-full",
+        "relative flex items-center min-w-0 w-full",
         "rounded-xs border pl-4 pr-2 py-1 gap-3",
         "transition-all duration-200 overflow-hidden",
         transition && "cursor-pointer",
@@ -123,7 +123,7 @@ export default function RoleTag({
         )}
       </div>
 
-      {/* Add user button — appears on hover at the far right */}
+      {/* Add user button */}
       {onAddUser && (
         <button
           onClick={(e) => {
@@ -131,9 +131,7 @@ export default function RoleTag({
             onAddUser();
           }}
           className={clsx(
-            "opacity-0 group-hover/role:opacity-100",
-            "transition-opacity duration-150 shrink-0",
-            "w-5 h-5 flex items-center justify-center rounded-sm",
+            "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
             "text-slate-300 hover:text-slate-600 hover:bg-slate-100/80",
             "border border-transparent hover:border-slate-200",
           )}

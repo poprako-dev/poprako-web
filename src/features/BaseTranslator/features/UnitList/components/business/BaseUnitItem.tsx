@@ -1,11 +1,12 @@
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
-import { unitId, unitIndex, unitIsBubble, type UnitInfo } from "@/types/unit";
+import { unitId, unitIndex, unitIsBubble, type UnitInfo, type UnitEdit } from "@/types/unit";
 
 type Props = {
   unit: UnitInfo;
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
+  onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
   isCompleted: boolean;
   children: React.ReactNode;
 };
@@ -14,10 +15,15 @@ export default function BaseUnitItem({
   unit,
   isFocused,
   onSelect,
+  onModifyUnit,
   isCompleted,
   children,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const pressTimer = useRef<number | null>(null);
+  const longPressHandled = useRef(false);
+  const currentPointerId = useRef<number | null>(null);
 
   const leftBorderColor = unitIsBubble(unit)
     ? "border-pink-300"
@@ -33,12 +39,61 @@ export default function BaseUnitItem({
         block: "nearest",
       });
     }
+    return () => {
+      if (pressTimer.current) {
+        clearTimeout(pressTimer.current);
+        pressTimer.current = null;
+      }
+    };
   }, [isFocused]);
+
+  function clearPress(pointerId?: number) {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+    const id = pointerId ?? currentPointerId.current;
+    if (id != null && containerRef.current) {
+      try {
+        containerRef.current.releasePointerCapture(id);
+      } catch (e) {}
+    }
+    currentPointerId.current = null;
+  }
+
+  function handlePointerDown(e: React.PointerEvent) {
+    longPressHandled.current = false;
+    currentPointerId.current = e.pointerId;
+    try {
+      containerRef.current?.setPointerCapture(e.pointerId);
+    } catch (e) {}
+    pressTimer.current = window.setTimeout(() => {
+      longPressHandled.current = true;
+      // toggle isBubble
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      onModifyUnit?.(unitId(unit), { isBubble: !unitIsBubble(unit) });
+    }, 2000);
+  }
+
+  function handlePointerUp(e: React.PointerEvent) {
+    const wasLong = longPressHandled.current;
+    clearPress(e.pointerId);
+    if (!wasLong) {
+      onSelect?.(unitId(unit));
+    }
+  }
+
+  function handlePointerCancel(e: React.PointerEvent) {
+    clearPress(e.pointerId);
+  }
 
   return (
     <div
       ref={containerRef}
-      onMouseDown={() => onSelect?.(unitId(unit))}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onPointerLeave={handlePointerCancel}
       className={clsx(
         "relative flex cursor-text items-stretch border-b border-gray-100",
         "last:border-b-0 transition-all duration-75",

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { ChevronRight, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, Plus  } from "lucide-react";
 import type { WorksetInfo } from "@/types/workset";
 
 type Props = {
@@ -23,7 +23,7 @@ export default function WorksetSidebar({
   worksets,
   onClose,
   onCreateWorkset,
-  onDeleteWorkset,
+  // TODO: onDeleteWorkset,
   onChangeWorkset,
 }: Props) {
   return (

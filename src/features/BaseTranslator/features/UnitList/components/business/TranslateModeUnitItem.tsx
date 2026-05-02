@@ -58,6 +58,7 @@ export default function TranslateModeUnitItem({
       unit={unit}
       isFocused={isFocused}
       onSelect={onSelect}
+      onModifyUnit={onModifyUnit}
       isCompleted={unitIsTranslated(unit)}
     >
       <AutoResizeTextarea

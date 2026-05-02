@@ -191,8 +191,8 @@ export default function AssignmentFooter({
                 onTransiteWorkflow={handleRequestTransition}
                 onRemoveUser={canManageAssignments ? onRemoveAssignment : undefined}
                 onAddUser={
-                  canManageAssignments
-                    ? () => onAddAssignment?.(roleDef.addRole)
+                  canManageAssignments && onAddAssignment
+                    ? () => onAddAssignment(roleDef.addRole)
                     : undefined
                 }
               />
