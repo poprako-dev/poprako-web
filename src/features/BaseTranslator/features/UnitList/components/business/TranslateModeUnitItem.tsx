@@ -28,7 +28,7 @@ export default function TranslateModeUnitItem({
   useEffect(() => {
     if (isFocused && inputRef.current) {
       const len = inputRef.current.value.length;
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
       inputRef.current.setSelectionRange(len, len);
     } else if (
       !isFocused &&

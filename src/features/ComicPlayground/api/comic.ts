@@ -29,6 +29,18 @@ export async function listComics(
   return { success: true, data: items.map((raw) => toComicInfo(raw)!) };
 }
 
+export async function getComic(id: string): Promise<Result<ComicInfo>> {
+  const res = await api.get<RawComicInfo>(`/comics/${id}`);
+  if (!res.success) return res;
+
+  const comic = toComicInfo(res.data);
+  if (!comic) {
+    return { success: false, error: "漫画不存在" };
+  }
+
+  return { success: true, data: comic };
+}
+
 export async function createComic(
   args: CreateComicArgs,
 ): Promise<Result<string>> {

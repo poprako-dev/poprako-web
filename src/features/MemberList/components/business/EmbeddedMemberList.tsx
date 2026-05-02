@@ -47,46 +47,11 @@ export default function EmbeddedMemberList({ onLoadMembers, onMemberClick }: Pro
   }, [isLoading, hasMore, offset, onLoadMembers, showToast]);
 
   useEffect(() => {
-    let isCancelled = false;
-
-    const reloadMembers = async () => {
-      setMembers([]);
-      setHasMore(true);
-      setOffset(0);
-      setIsLoading(true);
-
-      try {
-        const result = await onLoadMembers(0, 20);
-        if (isCancelled) return;
-
-        if (typeof result === "string") {
-          console.error("[EmbeddedMemberList] 加载成员列表失败:", result);
-          showToast(result, "error");
-          setHasMore(false);
-          return;
-        }
-
-        setMembers(result);
-        setOffset(result.length);
-        setHasMore(result.length >= 20);
-      } catch (err) {
-        if (isCancelled) return;
-        console.error("[EmbeddedMemberList] 加载成员列表异常:", err);
-        showToast("发生未知错误", "error");
-        setHasMore(false);
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    reloadMembers();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [onLoadMembers, showToast]);
+    setMembers([]);
+    setHasMore(true);
+    setOffset(0);
+    setIsLoading(false);
+  }, [onLoadMembers]);
 
   useEffect(() => {
     if (!loadMoreRef.current) return;

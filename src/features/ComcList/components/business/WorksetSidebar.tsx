@@ -59,8 +59,8 @@ export default function WorksetSidebar({
                 {ws.comicCount}
               </span>
             </button>
-            {/* 悬浮删除按钮 */}
-            <button
+            {/* TODO: 悬浮删除按钮 */}
+            {/* <button
               onClick={() => onDeleteWorkset(ws.id)}
               className={clsx(
                 "absolute right-1.5 p-1 rounded",
@@ -69,7 +69,7 @@ export default function WorksetSidebar({
               )}
             >
               <Trash2 className="w-3 h-3" strokeWidth={1.5} />
-            </button>
+            </button> */}
           </div>
         ))}
 

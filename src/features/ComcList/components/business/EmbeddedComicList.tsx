@@ -80,46 +80,11 @@ export default function EmbeddedComicList({
   }, [isLoading, hasMore, offset, onLoadComics, showToast]);
 
   useEffect(() => {
-    let isCancelled = false;
-
-    const reloadComics = async () => {
-      setComics([]);
-      setHasMore(true);
-      setOffset(0);
-      setIsLoading(true);
-
-      try {
-        const result = await onLoadComics(0, 12);
-        if (isCancelled) return;
-
-        if (typeof result === "string") {
-          console.error("[EmbeddedComicList] 加载漫画列表失败:", result);
-          showToast(result, "error");
-          setHasMore(false);
-          return;
-        }
-
-        setComics(result);
-        setOffset(result.length);
-        setHasMore(result.length >= 12);
-      } catch (err) {
-        if (isCancelled) return;
-        console.error("[EmbeddedComicList] 加载漫画列表异常:", err);
-        showToast("发生未知错误", "error");
-        setHasMore(false);
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    reloadComics();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [onLoadComics, showToast]);
+    setComics([]);
+    setHasMore(true);
+    setOffset(0);
+    setIsLoading(false);
+  }, [onLoadComics]);
 
   useEffect(() => {
     if (!loadMoreRef.current) return;

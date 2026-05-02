@@ -33,7 +33,7 @@ export default function ProofreadModeUnitItem({
   useEffect(() => {
     if (isFocused && proofRef.current) {
       const len = proofRef.current.value.length;
-      proofRef.current.focus();
+      proofRef.current.focus({ preventScroll: true });
       proofRef.current.setSelectionRange(len, len);
     } else if (
       !isFocused &&

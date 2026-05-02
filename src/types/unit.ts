@@ -47,7 +47,7 @@ export function unitIndex(unit: UnitInfo): number {
 }
 
 export function unitIsTranslated(unit: UnitInfo): boolean {
-  return unit.translatedText !== undefined && unit.translatedText != "";
+  return unit.translatedText != null && unit.translatedText != "";
 }
 
 export function unitIsProofread(unit: UnitInfo): boolean {

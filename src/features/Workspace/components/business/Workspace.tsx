@@ -1,18 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { UserStatsInfo } from "@/types/userStats";
 import type { WorkspaceTab } from "../../types/types";
 import type { ComicInfo, ChapterInfo } from "@/types";
 import type { Result } from "@/types/utils/result";
-import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
-import type { MemberInfo } from "@/types/member";
+import type { AssignmentInfo } from "@/types/assignment";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
 import WorkspaceHeaderNav from "./WorkspaceHeaderNav";
 import WorkspaceStatsCards from "./WorkspaceStatsCards";
 import EmbeddedComicList from "@/features/ComcList/components/business/EmbeddedComicList";
 import ComicDetailModal from
   "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
-import { useActiveTeam } from "@/hooks/useActiveTeam";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import {
@@ -21,7 +19,7 @@ import {
   fetchLatestChapter,
   fetchComicAssignments,
 } from "../../api/workspace";
-import { listMembers } from "@/api/member";
+import { getComic } from "@/features/ComicPlayground/api/comic";
 import {
   listChapters,
   updateChapter,
@@ -38,17 +36,16 @@ import {
 import { api } from "@/api/util";
 import { unwrapRawAssignmentInfo, type RawAssignmentInfo } from "@/types/raw/assignment";
 import type { ListChapterArgs, WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
-import { roleMask, type Role } from "@/types/role";
 import clsx from "clsx";
 
 // 个人工作区组件，会直接放置在 WorkspacePage 中，展示个人工作区的相关内容
 // 所以自身不设定高度，而是适应父组件
 export default function Workspace() {
-  const { activeTeamId: teamId } = useActiveTeam();
   const loginState = useAppStore((s) => s.loginState);
   const currentUserId = loginState?.userInfo.id ?? null;
   const { showToast } = useToastStore();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("workspace");
   const [stats, setStats] = useState<UserStatsInfo | null>(null);
@@ -56,6 +53,30 @@ export default function Workspace() {
   const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
   const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
     useState<ChapterInfo | null>(null);
+
+  const urlComicId = searchParams.get("comicId");
+  const urlChapterId = searchParams.get("chapterId");
+
+  const setComicDetailSearchParams = useCallback(
+    (comicId: string | null, chapterId: string | null) => {
+      const next = new URLSearchParams(searchParams);
+
+      if (comicId) {
+        next.set("comicId", comicId);
+      } else {
+        next.delete("comicId");
+      }
+
+      if (comicId && chapterId) {
+        next.set("chapterId", chapterId);
+      } else {
+        next.delete("chapterId");
+      }
+
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
 
   useEffect(() => {
     const loadStats = async () => {
@@ -83,9 +104,10 @@ export default function Workspace() {
   const userName = loginState?.userInfo.name ?? "用户";
 
   const handleOpenComicDetail = useCallback(
-    (comicInfo: ComicInfo) => {
+    (comicInfo: ComicInfo, desiredChapterId?: string | null) => {
       setSelectedComic(comicInfo);
       setSelectedComicPinnedChapter(null);
+      setComicDetailSearchParams(comicInfo.id, desiredChapterId ?? null);
 
       fetchLatestChapter(comicInfo).then((result) => {
         if (!result.success) {
@@ -93,10 +115,54 @@ export default function Workspace() {
           return;
         }
         setSelectedComicPinnedChapter(result.data);
+        if (!desiredChapterId) {
+          setComicDetailSearchParams(comicInfo.id, result.data?.id ?? null);
+        }
       });
     },
-    [showToast],
+    [setComicDetailSearchParams, showToast],
   );
+
+  useEffect(() => {
+    if (!urlComicId || selectedComic?.id === urlComicId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    getComic(urlComicId)
+      .then((result) => {
+        if (!result.success) {
+          showToast(result.error, "error");
+          if (!cancelled) {
+            setComicDetailSearchParams(null, null);
+          }
+          return;
+        }
+
+        if (!cancelled) {
+          handleOpenComicDetail(result.data, urlChapterId);
+        }
+      })
+      .catch((err) => {
+        console.error("[Workspace] 恢复漫画详情失败:", err);
+        showToast("恢复漫画详情失败", "error");
+        if (!cancelled) {
+          setComicDetailSearchParams(null, null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    handleOpenComicDetail,
+    selectedComic?.id,
+    setComicDetailSearchParams,
+    showToast,
+    urlChapterId,
+    urlComicId,
+  ]);
 
   const handleLoadDetailChapters = useCallback(
     async (args: ListChapterArgs): Promise<Result<ChapterInfo[]>> => {
@@ -125,76 +191,6 @@ export default function Workspace() {
   const handleLoadPages = useCallback(async (chapterId: string) => {
     return listPages({ chapterId, offset: 0, limit: 200 });
   }, []);
-
-  const handleRemoveAssignment = useCallback(
-    async (chapterId: string, userId: string): Promise<Result<void>> => {
-      const assignmentResult = await handleLoadAssignmentsForChapter(chapterId);
-      if (!assignmentResult.success) {
-        return assignmentResult;
-      }
-
-      const target = assignmentResult.data.find(
-        (assignment) => assignment.userId === userId,
-      );
-      if (!target) {
-        return { success: false, error: "未找到对应分工记录" };
-      }
-
-      const result = await api.delete<void>(`/assignments/${target.id}`);
-      if (!result.success) return result;
-      return { success: true, data: undefined };
-    },
-    [handleLoadAssignmentsForChapter],
-  );
-
-  const handleLoadAssignableMembers = useCallback(
-    async (_chapterId: string): Promise<Result<MemberInfo[]>> => {
-      if (!teamId) {
-        return { success: true, data: [] };
-      }
-
-      return listMembers({
-        teamId,
-        offset: 0,
-        limit: 200,
-        includes: ["user"],
-      });
-    },
-    [teamId],
-  );
-
-  const handleAddAssignment = useCallback(
-    async (
-      chapterId: string,
-      userId: string,
-      role: Role,
-    ): Promise<Result<void>> => {
-      const assignmentResult = await handleLoadAssignmentsForChapter(chapterId);
-      if (!assignmentResult.success) {
-        return assignmentResult;
-      }
-
-      const existing = assignmentResult.data.find(
-        (assignment) => assignment.userId === userId,
-      );
-      const mergedRoles = existing
-        ? Array.from(new Set([...assignmentRoles(existing), role]))
-        : [role];
-
-      const result = await api.post<
-        { id: string },
-        { chapter_id: string; user_id: string; roles: number }
-      >("/assignments", {
-        chapter_id: chapterId,
-        user_id: userId,
-        roles: roleMask(mergedRoles),
-      });
-
-      if (!result.success) return result;
-      return { success: true, data: undefined };
-    },
-    [handleLoadAssignmentsForChapter],
-  );
 
   const handleTransiteWorkflow = useCallback(
     async (
@@ -256,9 +252,23 @@ export default function Workspace() {
 
   const handleNavigateToTranslator = useCallback(
     (chapterId: string, pageId: string) => {
-      navigate(`/translator/${chapterId}/${pageId}`);
+      if (!selectedComic?.id) {
+        navigate(`/translator/${chapterId}/${pageId}`);
+        return;
+      }
+
+      const nextSearchParams = new URLSearchParams({
+        returnTo: "/workspace",
+        comicId: selectedComic.id,
+        chapterId,
+      });
+
+      navigate({
+        pathname: `/translator/${chapterId}/${pageId}`,
+        search: `?${nextSearchParams.toString()}`,
+      });
     },
-    [navigate],
+    [navigate, selectedComic?.id],
   );
 
   const workspaceBody = (
@@ -312,8 +322,10 @@ export default function Workspace() {
       />
       {selectedComic && (
         <ComicDetailModal
+          key={selectedComic.id}
           comicInfo={selectedComic}
           pinnedChapter={selectedComicPinnedChapter}
+          initialChapterId={urlChapterId}
           onLoadChapters={handleLoadDetailChapters}
           onLoadAssignments={handleLoadAssignmentsForChapter}
           onLoadPages={handleLoadPages}
@@ -327,6 +339,7 @@ export default function Workspace() {
           onClose={() => {
             setSelectedComic(null);
             setSelectedComicPinnedChapter(null);
+            setComicDetailSearchParams(null, null);
           }}
         />
       )}

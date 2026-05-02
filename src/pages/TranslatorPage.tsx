@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import WebTranslator from "@/features/WebTranslator";
 import { useAppStore } from "@/store/app";
 import { getMyUser } from "@/api/user";
@@ -12,9 +12,34 @@ export default function TranslatorPage() {
     pageId: string;
   }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const loginState = useAppStore((s) => s.loginState);
   const setLoginState = useAppStore((s) => s.setLoginState);
   const [isAuthReady, setIsAuthReady] = useState(loginState !== null);
+  const returnTo = searchParams.get("returnTo");
+  const returnComicId = searchParams.get("comicId");
+  const returnChapterId = searchParams.get("chapterId");
+
+  const handleExit = () => {
+    if (
+      (returnTo === "/workspace" || returnTo === "/comic-playground") &&
+      returnComicId &&
+      returnChapterId
+    ) {
+      const nextSearchParams = new URLSearchParams({
+        comicId: returnComicId,
+        chapterId: returnChapterId,
+      });
+
+      navigate({
+        pathname: returnTo,
+        search: `?${nextSearchParams.toString()}`,
+      });
+      return;
+    }
+
+    navigate(-1);
+  };
 
   // Ensure user is authenticated before rendering translator
   useEffect(() => {
@@ -60,7 +85,7 @@ export default function TranslatorPage() {
       <WebTranslator
         chapterId={chapterId}
         startPageId={pageId}
-        onExit={() => navigate(-1)}
+        onExit={handleExit}
       />
     </div>
   );

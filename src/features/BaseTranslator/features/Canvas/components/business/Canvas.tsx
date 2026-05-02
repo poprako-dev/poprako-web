@@ -16,7 +16,7 @@ import {
   unitIsTranslated,
   unitPosition,
 } from "@/types/unit";
-import Marker, { PIN_OFFSET } from "@/features/BaseTranslator/features/Marker";
+import Marker, { CIRCLE_SIZE, PIN_OFFSET } from "@/features/BaseTranslator/features/Marker";
 
 const PAN_THRESHOLD = 8;
 const MARKER_DRAG_THRESHOLD = 3;
@@ -483,7 +483,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     left: `${x * 100}%`,
                     top: `${y * 100}%`,
                     transformOrigin: "0 0",
-                    transform: `translate(-50%, -${PIN_OFFSET / transform.scale}px) scale(${1 / transform.scale})`,
+                    transform: `translate(-${CIRCLE_SIZE / 2 / transform.scale}px, -${PIN_OFFSET / transform.scale}px) scale(${1 / transform.scale})`,
                   }}
                   onMouseDown={(e) =>
                     handleMarkerMouseDown(

@@ -31,6 +31,7 @@ import AssignmentFooter from "./AssignmentFooter";
 import PageList from "@/features/PageList/components/business/PageList";
 import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import MemberSelectorModal from "./MemberSelectorModal";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import type { MemberInfo } from "@/types/member";
 import { hasRole, type Role } from "@/types/role";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
@@ -49,6 +50,7 @@ const ROLE_TITLE_LABEL: Record<Role, string> = {
 type Props = {
   comicInfo: ComicInfo;
   pinnedChapter: ChapterInfo | null;
+  initialChapterId?: string | null;
   onLoadChapters: (args: ListChapterArgs) => Promise<Result<ChapterInfo[]>>;
   onLoadAssignments: (chapterId: string) => Promise<Result<AssignmentInfo[]>>;
   onLoadPages: (chapterId: string) => Promise<Result<PageInfo[]>>;
@@ -87,6 +89,7 @@ type Props = {
 export default function ComicDetailModal({
   comicInfo,
   pinnedChapter,
+  initialChapterId,
   onLoadChapters,
   onLoadAssignments,
   onLoadPages,
@@ -109,7 +112,7 @@ export default function ComicDetailModal({
   const { activeMember } = useActiveTeam();
   const [chapters, setChapters] = useState<ChapterInfo[]>([]);
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
-    pinnedChapter?.id ?? null,
+    initialChapterId ?? pinnedChapter?.id ?? null,
   );
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
   const [pages, setPages] = useState<PageInfo[]>([]);
@@ -122,13 +125,17 @@ export default function ComicDetailModal({
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
   const [canCreateChapter, setCanCreateChapter] = useState(false);
+  const [pendingDeletePageId, setPendingDeletePageId] = useState<string | null>(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const CHAPTERS_LIMIT = 20;
 
   const selectedChapter =
     chapters.find((c) => c.id === selectedChapterId) ??
-    pinnedChapter ??
-    undefined;
+    (pinnedChapter?.id === selectedChapterId ? pinnedChapter : undefined);
+  const isSelectedChapterAvailable =
+    selectedChapterId !== null &&
+    (chapters.some((chapter) => chapter.id === selectedChapterId) ||
+      pinnedChapter?.id === selectedChapterId);
 
   const currentAssignment = assignments.find((item) => item.userId === currentUserId);
   const canTranslateOrProofread =
@@ -194,26 +201,83 @@ export default function ComicDetailModal({
 
   // Load initial chapters
   useEffect(() => {
-    setIsChaptersLoading(true);
-    onLoadChapters({ comicId: comicInfo.id, offset: 0, limit: CHAPTERS_LIMIT })
-      .then((res) => {
-        if (!res.success) {
-          console.error("[ComicDetailModal] 加载章节失败:", res);
-          showToast("加载章节失败", "error");
-          return;
+    let cancelled = false;
+
+    const loadInitialChapters = async () => {
+      setIsChaptersLoading(true);
+
+      try {
+        let offset = 0;
+        let hasMore = true;
+        const loadedChapters: ChapterInfo[] = [];
+
+        while (hasMore) {
+          const res = await onLoadChapters({
+            comicId: comicInfo.id,
+            offset,
+            limit: CHAPTERS_LIMIT,
+          });
+
+          if (!res.success) {
+            console.error("[ComicDetailModal] 加载章节失败:", res);
+            showToast("加载章节失败", "error");
+            return;
+          }
+
+          loadedChapters.push(...res.data);
+          hasMore = res.data.length === CHAPTERS_LIMIT;
+
+          if (
+            !initialChapterId ||
+            loadedChapters.some((chapter) => chapter.id === initialChapterId) ||
+            !hasMore
+          ) {
+            if (!cancelled) {
+              setChapters(loadedChapters);
+              setChaptersHasMore(hasMore);
+              setSelectedChapterId(() => {
+                if (
+                  initialChapterId &&
+                  loadedChapters.some((chapter) => chapter.id === initialChapterId)
+                ) {
+                  return initialChapterId;
+                }
+                if (
+                  pinnedChapter?.id &&
+                  loadedChapters.some((chapter) => chapter.id === pinnedChapter.id)
+                ) {
+                  return pinnedChapter.id;
+                }
+                return loadedChapters[0]?.id ?? null;
+              });
+            }
+            return;
+          }
+
+          offset += res.data.length;
         }
-        setChapters(res.data);
-        setChaptersHasMore(res.data.length === CHAPTERS_LIMIT);
-        if (!selectedChapterId && res.data.length > 0) {
-          setSelectedChapterId(res.data[0].id);
+
+        if (!cancelled) {
+          setChapters(loadedChapters);
+          setChaptersHasMore(false);
+          setSelectedChapterId(loadedChapters[0]?.id ?? null);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("[ComicDetailModal] 加载章节异常:", err);
         showToast("加载章节失败", "error");
-      })
-      .finally(() => setIsChaptersLoading(false));
-  }, [comicInfo.id]);
+      } finally {
+        if (!cancelled) {
+          setIsChaptersLoading(false);
+        }
+      }
+    };
+
+    loadInitialChapters();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [comicInfo.id, initialChapterId, onLoadChapters, pinnedChapter?.id, showToast]);
 
   const handleLoadMoreChapters = () => {
     if (isChaptersLoading || !chaptersHasMore) return;
@@ -237,7 +301,7 @@ export default function ComicDetailModal({
 
   // Load assignments when chapter changes
   useEffect(() => {
-    if (!selectedChapterId) return;
+    if (!selectedChapterId || !isSelectedChapterAvailable) return;
     setAssignments([]);
     onLoadAssignments(selectedChapterId)
       .then((res) => {
@@ -252,11 +316,11 @@ export default function ComicDetailModal({
         console.error("[ComicDetailModal] 加载分工异常:", err);
         showToast("加载分工失败", "error");
       });
-  }, [selectedChapterId]);
+  }, [isSelectedChapterAvailable, onLoadAssignments, selectedChapterId, showToast]);
 
   // Load pages when chapter changes
   useEffect(() => {
-    if (!selectedChapterId) return;
+    if (!selectedChapterId || !isSelectedChapterAvailable) return;
     setPages([]);
     onLoadPages(selectedChapterId)
       .then((res) => {
@@ -271,7 +335,7 @@ export default function ComicDetailModal({
         console.error("[ComicDetailModal] 加载页面异常:", err);
         showToast("加载页面失败", "error");
       });
-  }, [selectedChapterId]);
+  }, [isSelectedChapterAvailable, onLoadPages, selectedChapterId, showToast]);
 
   const handleTransition = async (
     transition: WorkflowTransition,
@@ -347,6 +411,26 @@ export default function ComicDetailModal({
       return;
     }
     setPages(res.data);
+  };
+
+  const pendingDeletePage =
+    pendingDeletePageId === null
+      ? null
+      : pages.find((page) => page.id === pendingDeletePageId) ?? null;
+
+  const handleRequestDeletePage = (pageId: string) => {
+    setPendingDeletePageId(pageId);
+  };
+
+  const handleConfirmDeletePage = async () => {
+    if (!pendingDeletePageId) return;
+    const pageId = pendingDeletePageId;
+    setPendingDeletePageId(null);
+    await handleDeleteRawPage(pageId);
+  };
+
+  const handleCancelDeletePage = () => {
+    setPendingDeletePageId(null);
   };
 
   const handleAddRawPages = async (files: File[]) => {
@@ -744,7 +828,7 @@ export default function ComicDetailModal({
           : undefined
       }
       onDeletePage={
-        canUploadRawPages && onDeletePage ? handleDeleteRawPage : undefined
+        canUploadRawPages && onDeletePage ? handleRequestDeletePage : undefined
       }
       enableDelete={canUploadRawPages}
       accept="image/*"
@@ -781,6 +865,15 @@ export default function ComicDetailModal({
           isSubmitting={isMemberSelectorLoading || isAddingAssignment}
           onSelectUser={handleAddAssignment}
           onClose={() => setMemberSelectorRole(null)}
+        />
+      )}
+      {pendingDeletePage && (
+        <ConfirmDialog
+          title="确认删除页面"
+          description={`即将删除第 ${pendingDeletePage.index} 页，此操作不可撤销。`}
+          confirmLabel="删除"
+          onConfirm={handleConfirmDeletePage}
+          onCancel={handleCancelDeletePage}
         />
       )}
     </>

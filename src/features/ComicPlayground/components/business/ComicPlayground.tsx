@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
 import { useAppStore } from "@/store/app";
@@ -8,7 +8,7 @@ import ComicCreatorModal from "./ComicCreatorModal";
 import WorksetCreatorModal from "./WorksetCreatorModal";
 import ComicDetailModal from "../../features/ComicDetailModal/components/business/ComicDetailModal";
 import { listWorksets, createWorkset, deleteWorkset } from "../../api/workset";
-import { listComics, createComic } from "../../api/comic";
+import { listComics, createComic, getComic } from "../../api/comic";
 import {
   listChapters,
   createChapter,
@@ -48,6 +48,7 @@ export default function ComicPlayground() {
   const currentUserId = useAppStore((s) => s.loginState?.userInfo.id ?? null);
   const { showToast } = useToastStore();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [worksets, setWorksets] = useState<WorksetInfo[]>([]);
   const [activeWorksetId, setActiveWorksetId] = useState<string>("");
@@ -72,6 +73,30 @@ export default function ComicPlayground() {
   const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
   const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
     useState<ChapterInfo | null>(null);
+
+  const urlComicId = searchParams.get("comicId");
+  const urlChapterId = searchParams.get("chapterId");
+
+  const setComicDetailSearchParams = useCallback(
+    (comicId: string | null, chapterId: string | null) => {
+      const next = new URLSearchParams(searchParams);
+
+      if (comicId) {
+        next.set("comicId", comicId);
+      } else {
+        next.delete("comicId");
+      }
+
+      if (comicId && chapterId) {
+        next.set("chapterId", chapterId);
+      } else {
+        next.delete("chapterId");
+      }
+
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
 
   const loadWorksets = useCallback(async () => {
     if (!teamId) {
@@ -172,19 +197,67 @@ export default function ComicPlayground() {
     [],
   );
 
-  const handleOpenComicDetail = useCallback((comicInfo: ComicInfo) => {
-    setSelectedComic(comicInfo);
-    setSelectedComicPinnedChapter(null);
+  const handleOpenComicDetail = useCallback(
+    (comicInfo: ComicInfo, desiredChapterId?: string | null) => {
+      setSelectedComic(comicInfo);
+      setSelectedComicPinnedChapter(null);
+      setComicDetailSearchParams(comicInfo.id, desiredChapterId ?? null);
 
-    handleLoadLatestChapter(comicInfo).then((pinnedResult) => {
-      if (!pinnedResult.success) {
-        showToast(pinnedResult.error, "error");
-        return;
-      }
+      handleLoadLatestChapter(comicInfo).then((pinnedResult) => {
+        if (!pinnedResult.success) {
+          showToast(pinnedResult.error, "error");
+          return;
+        }
 
-      setSelectedComicPinnedChapter(pinnedResult.data);
-    });
-  }, [handleLoadLatestChapter, showToast]);
+        setSelectedComicPinnedChapter(pinnedResult.data);
+        if (!desiredChapterId) {
+          setComicDetailSearchParams(comicInfo.id, pinnedResult.data?.id ?? null);
+        }
+      });
+    },
+    [handleLoadLatestChapter, setComicDetailSearchParams, showToast],
+  );
+
+  useEffect(() => {
+    if (!urlComicId || selectedComic?.id === urlComicId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    getComic(urlComicId)
+      .then((result) => {
+        if (!result.success) {
+          showToast(result.error, "error");
+          if (!cancelled) {
+            setComicDetailSearchParams(null, null);
+          }
+          return;
+        }
+
+        if (!cancelled) {
+          handleOpenComicDetail(result.data, urlChapterId);
+        }
+      })
+      .catch((err) => {
+        console.error("[ComicPlayground] 恢复漫画详情失败:", err);
+        showToast("恢复漫画详情失败", "error");
+        if (!cancelled) {
+          setComicDetailSearchParams(null, null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    handleOpenComicDetail,
+    selectedComic?.id,
+    setComicDetailSearchParams,
+    showToast,
+    urlChapterId,
+    urlComicId,
+  ]);
 
   const handleLoadDetailChapters = useCallback(
     async (args: ListChapterArgs): Promise<Result<ChapterInfo[]>> => {
@@ -377,9 +450,23 @@ export default function ComicPlayground() {
 
   const handleNavigateToTranslator = useCallback(
     (chapterId: string, pageId: string) => {
-      navigate(`/translator/${chapterId}/${pageId}`);
+      if (!selectedComic?.id) {
+        navigate(`/translator/${chapterId}/${pageId}`);
+        return;
+      }
+
+      const nextSearchParams = new URLSearchParams({
+        returnTo: "/comic-playground",
+        comicId: selectedComic.id,
+        chapterId,
+      });
+
+      navigate({
+        pathname: `/translator/${chapterId}/${pageId}`,
+        search: `?${nextSearchParams.toString()}`,
+      });
     },
-    [navigate],
+    [navigate, selectedComic?.id],
   );
 
   const handleDeleteWorkset = async (worksetId: string) => {
@@ -452,8 +539,10 @@ export default function ComicPlayground() {
       />
       {selectedComic && (
         <ComicDetailModal
+          key={selectedComic.id}
           comicInfo={selectedComic}
           pinnedChapter={selectedComicPinnedChapter}
+          initialChapterId={urlChapterId}
           onLoadChapters={handleLoadDetailChapters}
           onLoadAssignments={handleLoadAssignments}
           onLoadPages={handleLoadPages}
@@ -472,6 +561,7 @@ export default function ComicPlayground() {
           onClose={() => {
             setSelectedComic(null);
             setSelectedComicPinnedChapter(null);
+            setComicDetailSearchParams(null, null);
           }}
         />
       )}

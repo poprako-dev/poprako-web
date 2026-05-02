@@ -154,7 +154,7 @@ export default function ChapterOption({
                   )}
                 >
                   <span className="text-[10px] font-black italic text-slate-400 w-4 shrink-0">
-                    #{ch.index}
+                    #{ch.index + 1}
                   </span>
                   <span className="text-[11px] font-bold truncate">
                     {ch.subtitle || "无标题"}
