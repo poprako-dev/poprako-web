@@ -8,8 +8,10 @@ import type { Result } from "@/types/utils/result";
 import {
   unwrapRawPageInfo,
   unwrapRawReserveChapterPagesResult,
+  wrapDeleteChapterPagesArgs,
   type RawReserveChapterPagesArgs,
   type RawReserveChapterPagesResult,
+  type RawDeleteChapterPagesArgs,
   type RawPageInfo,
   type RawUpdatePageArgs,
 } from "@/types/raw/page";
@@ -61,6 +63,16 @@ export async function reserveChapterPages(
 
 export async function deletePage(pageId: string): Promise<Result<void>> {
   const res = await api.delete<void>(`/pages/${pageId}`);
+  if (!res.success) return res;
+  return { success: true, data: undefined };
+}
+
+export async function deleteChapterPages(chapterId: string): Promise<Result<void>> {
+  const rawArgs: RawDeleteChapterPagesArgs = wrapDeleteChapterPagesArgs(chapterId);
+  const res = await api.deleteWithBody<void, RawDeleteChapterPagesArgs>(
+    `/chapter/${chapterId}/pages`,
+    rawArgs,
+  );
   if (!res.success) return res;
   return { success: true, data: undefined };
 }

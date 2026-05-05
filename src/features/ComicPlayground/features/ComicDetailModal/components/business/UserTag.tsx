@@ -1,5 +1,7 @@
+import { useState } from "react";
 import clsx from "clsx";
 import { Trash2 } from "lucide-react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 type Props = {
   name: string;
@@ -8,6 +10,7 @@ type Props = {
 };
 
 export default function UserTag({ name, userId, onRemove }: Props) {
+  const [showConfirm, setShowConfirm] = useState(false);
   const displayName = name.length > 10 ? name.slice(0, 10) + "…" : name;
 
   return (
@@ -27,7 +30,7 @@ export default function UserTag({ name, userId, onRemove }: Props) {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onRemove(userId);
+            setShowConfirm(true);
           }}
           className={clsx(
             "absolute right-0.5 top-1/2 -translate-y-1/2",
@@ -38,6 +41,17 @@ export default function UserTag({ name, userId, onRemove }: Props) {
         >
           <Trash2 size={9} strokeWidth={2.5} />
         </button>
+      )}
+      {showConfirm && (
+        <ConfirmDialog
+          title="确认移除成员"
+          description={`即将移除 ${name} 的分配，此操作不可撤销。`}
+          onConfirm={() => {
+            onRemove?.(userId);
+            setShowConfirm(false);
+          }}
+          onCancel={() => setShowConfirm(false)}
+        />
       )}
     </div>
   );

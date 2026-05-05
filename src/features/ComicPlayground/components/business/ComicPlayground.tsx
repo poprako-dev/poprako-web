@@ -8,7 +8,7 @@ import ComicCreatorModal from "./ComicCreatorModal";
 import WorksetCreatorModal from "./WorksetCreatorModal";
 import ComicDetailModal from "../../features/ComicDetailModal/components/business/ComicDetailModal";
 import { listWorksets, createWorkset, deleteWorkset } from "../../api/workset";
-import { listComics, createComic, getComic } from "../../api/comic";
+import { listComics, createComic, deleteComic, getComic } from "../../api/comic";
 import {
   listChapters,
   createChapter,
@@ -19,7 +19,7 @@ import {
 } from "../../api/chapter";
 import {
   listPages,
-  deletePage,
+  deleteChapterPages,
   reserveChapterPages,
   updatePage,
   uploadToPresignedUrl,
@@ -430,9 +430,31 @@ export default function ComicPlayground() {
     [],
   );
 
-  const handleDeletePage = useCallback(async (pageId: string): Promise<Result<void>> => {
-    return deletePage(pageId);
-  }, []);
+  const handleDeleteChapterPages = useCallback(
+    async (chapterId: string): Promise<Result<void>> => {
+      return deleteChapterPages(chapterId);
+    },
+    [],
+  );
+
+  const handleDeleteComic = useCallback(
+    async (comicId: string): Promise<Result<void>> => {
+      const result = await deleteComic(comicId);
+      if (!result.success) {
+        console.error("[ComicPlayground] 删除漫画失败:", result.error);
+        return result;
+      }
+
+      setSelectedComic(null);
+      setSelectedComicPinnedChapter(null);
+      setComicDetailSearchParams(null, null);
+      await loadWorksets();
+      setComicListRefreshKey((k) => k + 1);
+
+      return result;
+    },
+    [loadWorksets, setComicDetailSearchParams],
+  );
 
   const handleCreateChapter = useCallback(
     async (args: { comicId: string; subtitle?: string }): Promise<Result<string>> => {
@@ -555,9 +577,10 @@ export default function ComicPlayground() {
           onNavigateToTranslator={handleNavigateToTranslator}
           currentUserId={currentUserId}
           onAddPages={handleAddPages}
-          onDeletePage={handleDeletePage}
+          onDeleteChapterPages={handleDeleteChapterPages}
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
+          onDeleteComic={handleDeleteComic}
           onClose={() => {
             setSelectedComic(null);
             setSelectedComicPinnedChapter(null);

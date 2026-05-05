@@ -19,7 +19,7 @@ import {
   fetchLatestChapter,
   fetchComicAssignments,
 } from "../../api/workspace";
-import { getComic } from "@/features/ComicPlayground/api/comic";
+import { deleteComic, getComic } from "@/features/ComicPlayground/api/comic";
 import {
   listChapters,
   updateChapter,
@@ -28,7 +28,7 @@ import {
 } from "@/features/ComicPlayground/api/chapter";
 import {
   listPages,
-  deletePage,
+  deleteChapterPages,
   reserveChapterPages,
   updatePage,
   uploadToPresignedUrl,
@@ -53,6 +53,7 @@ export default function Workspace() {
   const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
   const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
     useState<ChapterInfo | null>(null);
+  const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
 
   const urlComicId = searchParams.get("comicId");
   const urlChapterId = searchParams.get("chapterId");
@@ -246,9 +247,30 @@ export default function Workspace() {
     [],
   );
 
-  const handleDeletePage = useCallback(async (pageId: string): Promise<Result<void>> => {
-    return deletePage(pageId);
-  }, []);
+  const handleDeleteChapterPages = useCallback(
+    async (chapterId: string): Promise<Result<void>> => {
+      return deleteChapterPages(chapterId);
+    },
+    [],
+  );
+
+  const handleDeleteComic = useCallback(
+    async (comicId: string): Promise<Result<void>> => {
+      const result = await deleteComic(comicId);
+      if (!result.success) {
+        console.error("[Workspace] 删除漫画失败:", result.error);
+        return result;
+      }
+
+      setSelectedComic(null);
+      setSelectedComicPinnedChapter(null);
+      setComicDetailSearchParams(null, null);
+      setComicListRefreshKey((prev) => prev + 1);
+
+      return result;
+    },
+    [setComicDetailSearchParams],
+  );
 
   const handleNavigateToTranslator = useCallback(
     (chapterId: string, pageId: string) => {
@@ -292,6 +314,7 @@ export default function Workspace() {
 
       <div className={clsx("flex-1 min-h-0 min-w-0 overflow-x-hidden")}>
         <EmbeddedComicList
+          key={comicListRefreshKey}
           mode="translator"
           onLoadComics={fetchMyComics}
           onLoadLatestChapter={fetchLatestChapter}
@@ -333,9 +356,10 @@ export default function Workspace() {
           onNavigateToTranslator={handleNavigateToTranslator}
           currentUserId={currentUserId}
           onAddPages={handleAddPages}
-          onDeletePage={handleDeletePage}
+          onDeleteChapterPages={handleDeleteChapterPages}
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
+          onDeleteComic={handleDeleteComic}
           onClose={() => {
             setSelectedComic(null);
             setSelectedComicPinnedChapter(null);

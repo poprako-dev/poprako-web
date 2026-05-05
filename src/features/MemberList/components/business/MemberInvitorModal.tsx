@@ -15,6 +15,7 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { unmaskRoles } from "@/types/role";
 import type { InvitationInfo, CreateInvitationArgs } from "@/types/invitation";
 import type { Result } from "@/types/utils/result";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 // ── Role config ──────────────────────────────────────────────────────────────
 // Each entry carries the role bit value, the display label, and two Tailwind
@@ -144,6 +145,7 @@ export default function MemberInvitorModal({
   const [pendingInvitations, setPendingInvitations] = useState<
     InvitationInfo[]
   >([]);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // ── Load ─────────────────────────────────────────────────────────────────
   const loadInvitations = useCallback(async () => {
@@ -367,7 +369,7 @@ export default function MemberInvitorModal({
                   copyToClipboard(code);
                   showToast("已复制邀请码", "success");
                 }}
-                onDelete={onDeleteInvitation ? handleDelete : undefined}
+                onDelete={onDeleteInvitation ? setPendingDeleteId : undefined}
               />
             ))}
 
@@ -379,6 +381,17 @@ export default function MemberInvitorModal({
           </div>
         </div>
       </div>
+      {pendingDeleteId && (
+        <ConfirmDialog
+          title="确认撤销邀请"
+          description="撤销邀请后，该邀请码将立即失效。此操作不可撤销。"
+          onConfirm={() => {
+            handleDelete(pendingDeleteId);
+            setPendingDeleteId(null);
+          }}
+          onCancel={() => setPendingDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { ChevronDown, Trash2, Plus, Loader2 } from "lucide-react";
 import type { ChapterInfo, ComicInfo } from "@/types";
 import type { Result } from "@/types/utils/result";
 import ChapterCreatorModal from "./ChapterCreatorModal";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 type Props = {
   comicInfo: ComicInfo;
@@ -30,6 +31,7 @@ export default function ChapterOption({
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [showCreator, setShowCreator] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<HTMLDivElement>(null);
 
@@ -164,7 +166,7 @@ export default function ChapterOption({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onDelete(ch.id);
+                      setPendingDeleteId(ch.id);
                     }}
                     className={clsx(
                       "absolute right-1 p-1 rounded",
@@ -194,6 +196,17 @@ export default function ChapterOption({
           comicInfo={comicInfo}
           onCreateChapter={onCreateChapter}
           onClose={() => setShowCreator(false)}
+        />
+      )}
+      {pendingDeleteId && (
+        <ConfirmDialog
+          title="确认删除章节"
+          description="删除章节后，该章节下的所有页面也将被删除。此操作不可撤销。"
+          onConfirm={() => {
+            onDelete?.(pendingDeleteId);
+            setPendingDeleteId(null);
+          }}
+          onCancel={() => setPendingDeleteId(null)}
         />
       )}
     </div>

@@ -10,6 +10,8 @@ import {
   Image as ImageIcon,
   Download,
   Pencil,
+  Eraser,
+  Trash2,
 } from "lucide-react";
 import type {
   ListChapterArgs,
@@ -76,13 +78,14 @@ type Props = {
   onNavigateToTranslator?: (chapterId: string, pageId: string) => void;
   currentUserId?: string | null;
   onAddPages?: (chapterId: string, files: File[]) => Promise<void>;
-  onDeletePage?: (pageId: string) => Promise<Result<void>>;
+  onDeleteChapterPages?: (chapterId: string) => Promise<Result<void>>;
   onImportChapter?: (args: {
     chapterId: string;
     content: string;
     format: ImportChapterFormat;
   }) => Promise<Result<ImportChapterResult>>;
   onExportChapter?: (chapterId: string) => Promise<Result<ChapterExport>>;
+  onDeleteComic?: (comicId: string) => Promise<Result<void>>;
   onClose: () => void;
 };
 
@@ -102,9 +105,10 @@ export default function ComicDetailModal({
   onNavigateToTranslator,
   currentUserId,
   onAddPages,
-  onDeletePage,
+  onDeleteChapterPages,
   onImportChapter,
   onExportChapter,
+  onDeleteComic,
   onClose,
 }: Props) {
   const { showToast } = useToastStore();
@@ -122,10 +126,14 @@ export default function ComicDetailModal({
   const [isAddingAssignment, setIsAddingAssignment] = useState(false);
   const [isImportingData, setIsImportingData] = useState(false);
   const [isExportingData, setIsExportingData] = useState(false);
+  const [isDeletingChapterPages, setIsDeletingChapterPages] = useState(false);
+  const [isDeletingComic, setIsDeletingComic] = useState(false);
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
   const [canCreateChapter, setCanCreateChapter] = useState(false);
-  const [pendingDeletePageId, setPendingDeletePageId] = useState<string | null>(null);
+  const [pendingConfirmAction, setPendingConfirmAction] = useState<
+    "delete-pages" | "delete-comic" | null
+  >(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const CHAPTERS_LIMIT = 20;
 
@@ -146,6 +154,10 @@ export default function ComicDetailModal({
     !!currentAssignment && hasRole(currentAssignment, "reviewer");
   const canUploadRawPages =
     !!currentAssignment && hasRole(currentAssignment, "rawProvider");
+  const canDeleteChapterPages =
+    canUploadRawPages && pages.length > 0 && !!selectedChapterId && !!onDeleteChapterPages;
+  const canUploadNewRawPages =
+    canUploadRawPages && pages.length === 0 && !!selectedChapterId && !!onAddPages;
   const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
   const assignedUserIdsForSelectedRole =
     memberSelectorRole === null
@@ -413,46 +425,64 @@ export default function ComicDetailModal({
     setPages(res.data);
   };
 
-  const pendingDeletePage =
-    pendingDeletePageId === null
-      ? null
-      : pages.find((page) => page.id === pendingDeletePageId) ?? null;
+  const reloadLoadedChapters = async () => {
+    const res = await onLoadChapters({
+      comicId: comicInfo.id,
+      offset: 0,
+      limit: Math.max(chapters.length, CHAPTERS_LIMIT),
+    });
 
-  const handleRequestDeletePage = (pageId: string) => {
-    setPendingDeletePageId(pageId);
-  };
+    if (!res.success) {
+      console.error("[ComicDetailModal] 刷新章节失败:", res);
+      showToast("刷新章节失败", "error");
+      return;
+    }
 
-  const handleConfirmDeletePage = async () => {
-    if (!pendingDeletePageId) return;
-    const pageId = pendingDeletePageId;
-    setPendingDeletePageId(null);
-    await handleDeleteRawPage(pageId);
-  };
-
-  const handleCancelDeletePage = () => {
-    setPendingDeletePageId(null);
+    setChapters(res.data);
   };
 
   const handleAddRawPages = async (files: File[]) => {
     if (!selectedChapterId || !onAddPages) return;
     try {
       await onAddPages(selectedChapterId, files);
-      await reloadCurrentPages();
+      await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
     } catch (err) {
       console.error("[ComicDetailModal] 上传页面失败:", err);
       showToast(err instanceof Error ? err.message : "上传页面失败", "error");
     }
   };
 
-  const handleDeleteRawPage = async (pageId: string) => {
-    if (!onDeletePage) return;
-    const res = await onDeletePage(pageId);
+  const handleDeleteAllChapterPages = async () => {
+    if (!selectedChapterId || !onDeleteChapterPages) return;
+
+    setIsDeletingChapterPages(true);
+    const res = await onDeleteChapterPages(selectedChapterId);
+    setIsDeletingChapterPages(false);
+
     if (!res.success) {
+      console.error("[ComicDetailModal] 批量删除页面失败:", res);
       showToast(res.error, "error");
       return;
     }
-    setPages((prev) => prev.filter((page) => page.id !== pageId));
-    showToast("页面删除成功", "success");
+
+    await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
+    showToast("页面已清空", "success");
+  };
+
+  const handleDeleteCurrentComic = async () => {
+    if (!onDeleteComic) return;
+
+    setIsDeletingComic(true);
+    const res = await onDeleteComic(comicInfo.id);
+    setIsDeletingComic(false);
+
+    if (!res.success) {
+      console.error("[ComicDetailModal] 删除漫画失败:", res);
+      showToast(res.error, "error");
+      return;
+    }
+
+    showToast("漫画删除成功", "success");
   };
 
   const handleOpenImportPicker = () => {
@@ -784,10 +814,18 @@ export default function ComicDetailModal({
               }
             />
           )}
+          {canDeleteChapterPages && (
+            <ActionButton
+              icon={Eraser}
+              title="清空页面"
+              onClick={() => setPendingConfirmAction("delete-pages")}
+              disabled={isDeletingChapterPages}
+            />
+          )}
           {canUploadRawPages && (
             <ActionButton
               icon={CloudUpload}
-              title="上传翻校"
+              title="导入翻校"
               onClick={onImportChapter ? handleOpenImportPicker : undefined}
               disabled={isImportingData}
             />
@@ -798,6 +836,14 @@ export default function ComicDetailModal({
             onClick={onExportChapter ? handleExportData : undefined}
             disabled={isExportingData}
           />
+          {isTeamAdmin && onDeleteComic && (
+            <ActionButton
+              icon={Trash2}
+              title="删除漫画"
+              onClick={() => setPendingConfirmAction("delete-comic")}
+              disabled={isDeletingComic}
+            />
+          )}
           <input
             ref={importFileInputRef}
             type="file"
@@ -823,14 +869,10 @@ export default function ComicDetailModal({
           : undefined
       }
       onAddPages={
-        canUploadRawPages && selectedChapterId && onAddPages
+        canUploadNewRawPages
           ? handleAddRawPages
           : undefined
       }
-      onDeletePage={
-        canUploadRawPages && onDeletePage ? handleRequestDeletePage : undefined
-      }
-      enableDelete={canUploadRawPages}
       accept="image/*"
       emptyHintText="支持拖拽上传图片"
       uploadButtonText="点击或拖拽图片上传"
@@ -867,13 +909,28 @@ export default function ComicDetailModal({
           onClose={() => setMemberSelectorRole(null)}
         />
       )}
-      {pendingDeletePage && (
+      {pendingConfirmAction === "delete-pages" && (
         <ConfirmDialog
-          title="确认删除页面"
-          description={`即将删除第 ${pendingDeletePage.index} 页，此操作不可撤销。`}
+          title="确认清空页面"
+          description={`即将删除当前章节下的 ${pages.length} 页，删除后才能重新上传页面，此操作不可撤销。`}
+          confirmLabel="清空"
+          onConfirm={() => {
+            setPendingConfirmAction(null);
+            void handleDeleteAllChapterPages();
+          }}
+          onCancel={() => setPendingConfirmAction(null)}
+        />
+      )}
+      {pendingConfirmAction === "delete-comic" && (
+        <ConfirmDialog
+          title="确认删除漫画"
+          description={`即将删除《${comicInfo.title}》，其章节与页面数据也会一并删除，此操作不可撤销。`}
           confirmLabel="删除"
-          onConfirm={handleConfirmDeletePage}
-          onCancel={handleCancelDeletePage}
+          onConfirm={() => {
+            setPendingConfirmAction(null);
+            void handleDeleteCurrentComic();
+          }}
+          onCancel={() => setPendingConfirmAction(null)}
         />
       )}
     </>

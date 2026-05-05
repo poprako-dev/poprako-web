@@ -44,7 +44,7 @@ export default function PageCard({
         )}
       >
         <span className="text-[10px] font-bold text-white/90 leading-none">
-          P{page.index}
+          P{page.index+1}
         </span>
       </div>
 

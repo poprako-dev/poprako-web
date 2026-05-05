@@ -126,6 +126,9 @@ export const api = {
   delete: <T>(url: string, needAuth = true) =>
     request<T>(url, { method: "DELETE" }, needAuth),
 
+  deleteWithBody: <T, B>(url: string, body: B, needAuth = true) =>
+    request<T>(url, { method: "DELETE", body: JSON.stringify(body) }, needAuth),
+
   patch: <T, B>(url: string, body: B, needAuth = true) =>
     request<T>(url, { method: "PATCH", body: JSON.stringify(body) }, needAuth),
 };
