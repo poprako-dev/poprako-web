@@ -9,6 +9,8 @@ export type RawPageInfo = {
   id: string;
   chapter_id: string;
   image_url: string;
+  image_uploaded?: boolean;
+  creator_id?: string;
   index: number;
   proofread_unit_count: number;
   total_unit_count: number;
@@ -26,6 +28,8 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
     proofreadUnitCount: raw.proofread_unit_count,
     chapterId: raw.chapter_id,
     imageUrl: raw.image_url,
+    isUploaded: raw.image_uploaded ?? false,
+    creatorId: raw.creator_id ?? "",
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   } as PageInfo;

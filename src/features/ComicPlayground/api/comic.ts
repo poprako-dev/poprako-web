@@ -15,14 +15,16 @@ import type { ComicInfo } from "@/types";
 export async function listComics(
   args: ListComicArgs,
 ): Promise<Result<ComicInfo[]>> {
-  const rawArgs: RawListComicArgs = {
-    workset_id: args.worksetId,
+  const rawArgs: Omit<RawListComicArgs, "workset_id"> = {
     includes: args.includes,
     offset: args.offset,
     limit: args.limit,
   };
 
-  const res = await api.get<RawComicInfo[]>("/comics", rawArgs);
+  const res = await api.get<RawComicInfo[]>(
+    `/comics/worksets/${args.worksetId}`,
+    rawArgs,
+  );
   if (!res.success) return res;
 
   const items = Array.isArray(res.data) ? res.data : [];

@@ -2,22 +2,11 @@ import { api } from "@/api/util";
 import { listChapters } from "@/features/ComicPlayground/api/chapter";
 import type { ComicInfo, ChapterInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
-import type { UserStatsInfo } from "@/types/userStats";
 import type { Result } from "@/types/utils/result";
 import {
   unwrapRawAssignmentInfo,
   type RawAssignmentInfo,
 } from "@/types/raw/assignment";
-
-export async function fetchMyStats(): Promise<UserStatsInfo | string> {
-  const result = await api.get<UserStatsInfo>(
-    "/users/mine/stats",
-    undefined,
-    true,
-  );
-  if (!result.success) return result.error;
-  return result.data;
-}
 
 export async function fetchMyComics(
   offset: number,
@@ -68,8 +57,8 @@ export async function fetchComicAssignments(
     chaptersResult.data.find((c) => c.isPinned) ?? chaptersResult.data[0];
   if (!chapter) return { success: true, data: [] };
   const result = await api.get<RawAssignmentInfo[]>(
-    "/assignments",
-    { chapter_id: chapter.id, includes: ["user"], offset: 0, limit: 50 },
+    `/assignments/chapters/${chapter.id}`,
+    { offset: 0, limit: 50 },
     true,
   );
   if (!result.success) return result;

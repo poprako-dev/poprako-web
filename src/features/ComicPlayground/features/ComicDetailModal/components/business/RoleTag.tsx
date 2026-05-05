@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import clsx from "clsx";
 import { Plus } from "lucide-react";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
@@ -72,12 +73,18 @@ export default function RoleTag({
   onAddUser,
 }: Props) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+  const transitioningRef = useRef(false);
 
   const handleClick = () => {
-    if (!transition) return;
-    onTransiteWorkflow(transition).catch((err) => {
-      console.error("[RoleTag] 推进流程失败:", err);
-    });
+    if (!transition || transitioningRef.current) return;
+    transitioningRef.current = true;
+    onTransiteWorkflow(transition)
+      .catch((err) => {
+        console.error("[RoleTag] 推进流程失败:", err);
+      })
+      .finally(() => {
+        transitioningRef.current = false;
+      });
   };
 
   return (

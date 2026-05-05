@@ -47,53 +47,48 @@ export default function BaseUnitItem({
     };
   }, [isFocused]);
 
-  function clearPress(pointerId?: number) {
+  function clearPress() {
     if (pressTimer.current) {
       clearTimeout(pressTimer.current);
       pressTimer.current = null;
     }
-    const id = pointerId ?? currentPointerId.current;
-    if (id != null && containerRef.current) {
-      try {
-        containerRef.current.releasePointerCapture(id);
-      } catch (e) {}
-    }
     currentPointerId.current = null;
   }
 
-  function handlePointerDown(e: React.PointerEvent) {
+  function handleIndexPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
     longPressHandled.current = false;
     currentPointerId.current = e.pointerId;
-    try {
-      containerRef.current?.setPointerCapture(e.pointerId);
-    } catch (e) {}
     pressTimer.current = window.setTimeout(() => {
       longPressHandled.current = true;
-      // toggle isBubble
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       onModifyUnit?.(unitId(unit), { isBubble: !unitIsBubble(unit) });
-    }, 2000);
+    }, 1000);
   }
 
-  function handlePointerUp(e: React.PointerEvent) {
+  function handleIndexPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
     const wasLong = longPressHandled.current;
-    clearPress(e.pointerId);
+    clearPress();
     if (!wasLong) {
       onSelect?.(unitId(unit));
     }
   }
 
-  function handlePointerCancel(e: React.PointerEvent) {
-    clearPress(e.pointerId);
+  function handleIndexPointerCancel(e: React.PointerEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    clearPress();
+  }
+
+  function handleIndexContextMenu(e: React.MouseEvent<HTMLDivElement>) {
+    e.preventDefault();
   }
 
   return (
     <div
       ref={containerRef}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerCancel}
-      onPointerLeave={handlePointerCancel}
       className={clsx(
         "relative flex cursor-text items-stretch border-b border-gray-100",
         "last:border-b-0 transition-all duration-75",
@@ -107,8 +102,18 @@ export default function BaseUnitItem({
       />
 
       <div
-        className={`w-8 flex items-center justify-center shrink-0 text-xs font-bold font-mono
-          tracking-tighter ${isFocused ? "text-gray-500" : "text-gray-300"}`}
+        onPointerDown={handleIndexPointerDown}
+        onPointerUp={handleIndexPointerUp}
+        onPointerCancel={handleIndexPointerCancel}
+        onPointerLeave={handleIndexPointerCancel}
+        onContextMenu={handleIndexContextMenu}
+        title="长按 2 秒切换框内/框外"
+        className={clsx(
+          "w-8 shrink-0 flex items-center justify-center select-none touch-none",
+          "text-xs font-bold font-mono tracking-tighter transition-colors duration-150",
+          "cursor-pointer hover:bg-gray-200/70",
+          isFocused ? "text-gray-500" : "text-gray-300 hover:text-gray-500",
+        )}
       >
         {(unitIndex(unit) + 1).toString().padStart(2, "0")}
       </div>

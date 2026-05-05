@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { WorksetCreatorModal } from "../../features/ComicPlayground";
+import WorksetCreatorModal from
+  "@/features/ComicPlayground/components/business/WorksetCreatorModal";
+import type { CreateWorksetArgs } from "@/features/ComicPlayground/types/workset";
 
 const meta: Meta<typeof WorksetCreatorModal> = {
   title: "Features/WorksetCreatorModal",
@@ -16,7 +18,7 @@ type Story = StoryObj<typeof WorksetCreatorModal>;
 export const Default: Story = {
   args: {
     teamId: "team-1",
-    onCreateWorkset: async (args) => {
+    onCreateWorkset: async (args: CreateWorksetArgs) => {
       await new Promise((r) => setTimeout(r, 800));
       console.log("创建作品集:", args);
       return { success: true, data: "new-workset-id" };
@@ -29,7 +31,7 @@ export const SubmitError: Story = {
   name: "提交失败",
   args: {
     teamId: "team-1",
-    onCreateWorkset: async (args) => {
+    onCreateWorkset: async (args: CreateWorksetArgs) => {
       await new Promise((r) => setTimeout(r, 800));
       console.log("创建作品集（模拟失败）:", args);
       return { success: false, error: "网络错误，请稍后重试" };

@@ -268,12 +268,13 @@ export default function ComicPlayground() {
 
   const handleLoadAssignments = useCallback(
     async (chapterId: string): Promise<Result<AssignmentInfo[]>> => {
-      const result = await api.get<RawAssignmentInfo[]>("/assignments", {
-        chapter_id: chapterId,
-        includes: ["user"],
+      const result = await api.get<RawAssignmentInfo[]>(
+        `/assignments/chapters/${chapterId}`,
+        {
         offset: 0,
         limit: 100,
-      });
+        },
+      );
 
       if (!result.success) return result;
 
@@ -361,13 +362,13 @@ export default function ComicPlayground() {
         ? Array.from(new Set([...assignmentRoles(existing), role]))
         : [role];
 
-      const result = await api.post<
+      const result = await api.put<
         { id: string },
-        { chapter_id: string; user_id: string; roles: number }
+        { chapter_id: string; user_id: string; role_mask: number }
       >("/assignments", {
         chapter_id: chapterId,
         user_id: userId,
-        roles: roleMask(mergedRoles),
+        role_mask: roleMask(mergedRoles),
       });
 
       if (!result.success) return result;

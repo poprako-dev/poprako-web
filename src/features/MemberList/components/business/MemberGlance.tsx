@@ -121,7 +121,7 @@ export default function MemberGlance() {
 
   const handleUpdateRole = useCallback(
     async (id: string, roles: number): Promise<Result<void>> => {
-      const result = await updateMemberRole({ id, roles });
+      const result = await updateMemberRole({ id, role_mask: roles });
       if (result.success) {
         await loadMembers();
       }

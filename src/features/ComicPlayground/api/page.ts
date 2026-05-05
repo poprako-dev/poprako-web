@@ -8,12 +8,9 @@ import type { Result } from "@/types/utils/result";
 import {
   unwrapRawPageInfo,
   unwrapRawReserveChapterPagesResult,
-  wrapDeleteChapterPagesArgs,
   type RawReserveChapterPagesArgs,
   type RawReserveChapterPagesResult,
-  type RawDeleteChapterPagesArgs,
   type RawPageInfo,
-  type RawUpdatePageArgs,
 } from "@/types/raw/page";
 
 export type ListPageArgs = {
@@ -25,8 +22,7 @@ export type ListPageArgs = {
 export async function listPages(
   args: ListPageArgs,
 ): Promise<Result<PageInfo[]>> {
-  const res = await api.get<RawPageInfo[]>("/pages", {
-    chapter_id: args.chapterId,
+  const res = await api.get<RawPageInfo[]>(`/chapters/${args.chapterId}/pages`, {
     offset: args.offset,
     limit: args.limit,
   });
@@ -50,7 +46,7 @@ export async function reserveChapterPages(
   const res = await api.post<
     RawReserveChapterPagesResult,
     RawReserveChapterPagesArgs
-  >("/pages", rawArgs);
+  >(`/chapters/${args.chapterId}/pages/reserve`, rawArgs);
   if (!res.success) return res;
 
   return {
@@ -68,11 +64,7 @@ export async function deletePage(pageId: string): Promise<Result<void>> {
 }
 
 export async function deleteChapterPages(chapterId: string): Promise<Result<void>> {
-  const rawArgs: RawDeleteChapterPagesArgs = wrapDeleteChapterPagesArgs(chapterId);
-  const res = await api.deleteWithBody<void, RawDeleteChapterPagesArgs>(
-    `/chapter/${chapterId}/pages`,
-    rawArgs,
-  );
+  const res = await api.delete<void>(`/chapters/${chapterId}/pages`);
   if (!res.success) return res;
   return { success: true, data: undefined };
 }
@@ -81,11 +73,13 @@ export async function updatePage(
   pageId: string,
   args: { isUploaded?: boolean },
 ): Promise<Result<void>> {
-  const rawArgs: RawUpdatePageArgs = {
-    id: pageId,
-    is_uploaded: args.isUploaded,
-  };
-  const res = await api.put<void, RawUpdatePageArgs>(`/pages/${pageId}`, rawArgs);
+  if (!args.isUploaded) {
+    return { success: true, data: undefined };
+  }
+  const res = await api.post<void, Record<string, never>>(
+    `/pages/${pageId}/image/uploaded`,
+    {},
+  );
   if (!res.success) return res;
   return { success: true, data: undefined };
 }

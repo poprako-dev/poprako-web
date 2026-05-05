@@ -21,13 +21,15 @@ import type {
 export async function listChapters(
   args: ListChapterArgs,
 ): Promise<Result<ChapterInfo[]>> {
-  const rawArgs: RawListChapterArgs = {
-    comic_id: args.comicId,
+  const rawArgs: Omit<RawListChapterArgs, "comic_id"> = {
     offset: args.offset,
     limit: args.limit,
   };
 
-  const res = await api.get<RawChapterInfo[]>("/chapters", rawArgs);
+  const res = await api.get<RawChapterInfo[]>(
+    `/chapters/comics/${args.comicId}`,
+    rawArgs,
+  );
 
   if (!res.success) return res;
 
@@ -63,7 +65,7 @@ export async function updateChapter(
     workflow_transition: args.workflowTransition,
   };
 
-  const res = await api.patch<void, RawUpdateChapterArgs>(
+  const res = await api.put<void, RawUpdateChapterArgs>(
     `/chapters/${id}`,
     rawArgs,
   );

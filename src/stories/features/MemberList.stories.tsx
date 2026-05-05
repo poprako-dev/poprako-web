@@ -40,6 +40,7 @@ function makeMockMember(idx: number): MemberInfo {
     },
     assignedAdminAt: idx === 0 ? now : undefined,
     [assignedRole]: now - 1000 * 60 * 60 * 24 * idx,
+    roles: idx === 0 ? 0b1 : 0,
     createdAt: now - 1000 * 60 * 60 * 24 * 30,
     updatedAt: now - 1000 * 60 * 60 * idx,
   };

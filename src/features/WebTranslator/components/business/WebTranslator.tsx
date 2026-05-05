@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import BaseTranslator from "@/features/BaseTranslator";
 import type { Project } from "@/types/project";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
+import type { Page } from "@/types/page";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
@@ -23,6 +24,37 @@ type LoadingState =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "ready"; project: Project; isCurrUserProofreader: boolean };
+
+function aggregateProjectCounters(pages: Page[]) {
+  const totalUnitCount = pages.reduce((sum, page) => sum + page.totalUnitCount, 0);
+  const translatedUnitCount = pages.reduce(
+    (sum, page) => sum + page.translatedUnitCount,
+    0,
+  );
+  const proofreadUnitCount = pages.reduce(
+    (sum, page) => sum + page.proofreadUnitCount,
+    0,
+  );
+
+  return { totalUnitCount, translatedUnitCount, proofreadUnitCount };
+}
+
+function mergePageCounters(
+  pages: Page[],
+  pageId: string,
+  counters: Pick<Page, "totalUnitCount" | "translatedUnitCount" | "proofreadUnitCount">,
+) {
+  return pages.map((page) =>
+    page.id === pageId
+      ? {
+          ...page,
+          totalUnitCount: counters.totalUnitCount,
+          translatedUnitCount: counters.translatedUnitCount,
+          proofreadUnitCount: counters.proofreadUnitCount,
+        }
+      : page,
+  );
+}
 
 export default function WebTranslator({ chapterId, startPageId, onExit }: Props) {
   const [state, setState] = useState<LoadingState>({ status: "loading" });
@@ -56,8 +88,8 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
 
       if (userId) {
         const assignResult = await api.get<RawAssignmentInfo[]>(
-          "/assignments",
-          { chapter_id: chapterId, includes: ["user"], offset: 0, limit: 100 },
+          `/assignments/chapters/${chapterId}`,
+          { offset: 0, limit: 100 },
         );
         if (assignResult.success) {
           const assignments = (assignResult.data ?? []).map(unwrapRawAssignmentInfo);
@@ -68,15 +100,8 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
       }
 
       // 3. Build Project
-      const totalUnitCount = pages.reduce((sum, p) => sum + p.totalUnitCount, 0);
-      const translatedUnitCount = pages.reduce(
-        (sum, p) => sum + p.translatedUnitCount,
-        0,
-      );
-      const proofreadUnitCount = pages.reduce(
-        (sum, p) => sum + p.proofreadUnitCount,
-        0,
-      );
+      const { totalUnitCount, translatedUnitCount, proofreadUnitCount } =
+        aggregateProjectCounters(pages);
 
       const project: Project = {
         id: chapterId,
@@ -115,10 +140,32 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
     async (pageId: string) => {
       const result = await listUnits(pageId);
       if (!result.success) {
+        console.error("[WebTranslator] 加载单页单位失败", { pageId, error: result.error });
         showToast(result.error, "error");
         return [];
       }
-      return result.data;
+
+      setState((prev) => {
+        if (prev.status !== "ready") return prev;
+
+        const nextPages = mergePageCounters(prev.project.pages, pageId, {
+          totalUnitCount: result.data.totalUnitCount,
+          translatedUnitCount: result.data.translatedUnitCount,
+          proofreadUnitCount: result.data.proofreadUnitCount,
+        });
+        const counters = aggregateProjectCounters(nextPages);
+
+        return {
+          ...prev,
+          project: {
+            ...prev.project,
+            pages: nextPages,
+            ...counters,
+          },
+        };
+      });
+
+      return [...result.data.units].sort((lhs, rhs) => lhs.index - rhs.index);
     },
     [showToast],
   );
@@ -127,8 +174,29 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
     async (pageId: string, diff: UnitDiff): Promise<void> => {
       const result = await saveUnits(pageId, diff);
       if (!result.success) {
+        console.error("[WebTranslator] 保存单页单位失败", { pageId, diff, error: result.error });
         throw new Error(result.error);
       }
+
+      setState((prev) => {
+        if (prev.status !== "ready") return prev;
+
+        const nextPages = mergePageCounters(prev.project.pages, pageId, {
+          totalUnitCount: result.data.totalUnitCount,
+          translatedUnitCount: result.data.translatedUnitCount,
+          proofreadUnitCount: result.data.proofreadUnitCount,
+        });
+        const counters = aggregateProjectCounters(nextPages);
+
+        return {
+          ...prev,
+          project: {
+            ...prev.project,
+            pages: nextPages,
+            ...counters,
+          },
+        };
+      });
     },
     [],
   );
@@ -163,11 +231,19 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
 
   if (state.status === "error") {
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
+      <div
+        className={
+          "flex h-screen w-full flex-col items-center " +
+          "justify-center gap-4 bg-background"
+        }
+      >
         <p className="text-sm text-destructive">{state.message}</p>
         <button
           onClick={onExit}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+          className={
+            "text-sm text-muted-foreground hover:text-foreground " +
+            "transition-colors underline"
+          }
         >
           返回
         </button>

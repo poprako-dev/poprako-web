@@ -1,7 +1,28 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import AssignmentCard from "@/features/AssignmentCard/components/business/AssignmentCard";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { ChapterInfo } from "@/types/chapter";
+
+type AssignmentCardProps = {
+  assignmentInfo: AssignmentInfo;
+  mode: "translator" | "reviewer";
+  onClick: () => void;
+  onLoadAssignments: (chapterId: string) => Promise<AssignmentInfo[]>;
+};
+
+function AssignmentCard({ assignmentInfo, mode, onClick }: AssignmentCardProps) {
+  const subtitle = assignmentInfo.chapter?.subtitle ?? "未指定章节";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded border border-border p-3 text-left"
+    >
+      <div className="text-sm font-medium">{subtitle}</div>
+      <div className="text-xs text-muted-foreground">模式: {mode}</div>
+    </button>
+  );
+}
 
 type AssignmentRoleField =
   | "assignedRawProviderAt"
@@ -196,13 +217,11 @@ export const TranslatorSingle: Story = {
     onClick: () => console.log("card clicked"),
     onLoadAssignments: async () => [],
   },
-  decorators: [
-    (StoryComponent) => (
-      <div className="w-120">
-        <StoryComponent />
-      </div>
-    ),
-  ],
+  render: (args) => (
+    <div className="w-120">
+      <AssignmentCard {...args} />
+    </div>
+  ),
 };
 
 export const TranslatorGrid: Story = {

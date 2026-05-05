@@ -1,4 +1,5 @@
-import type { UnitInfo, UnitCreation, UnitPatch } from "../unit";
+import type { UnitInfo } from "../unit";
+import type { UnitDiff, UnitOp } from "@/features/BaseTranslator/types/type";
 
 export type RawUnitInfo = {
   id: string;
@@ -12,11 +13,13 @@ export type RawUnitInfo = {
 
   translated_text?: string;
   translator_id?: string;
+  last_translator_id?: string;
   translator_comment?: string;
 
   is_proofread: boolean;
   proofread_text?: string;
   proofreader_id?: string;
+  last_proofreader_id?: string;
   proofreader_comment?: string;
 };
 
@@ -28,46 +31,119 @@ export function unwrapRawUnitInfo(raw: RawUnitInfo): UnitInfo {
     index: raw.index,
     isBubble: raw.is_bubble,
     translatedText: raw.translated_text,
-    translatorId: raw.translator_id,
+    translatorId: raw.last_translator_id ?? raw.translator_id,
     translatorCommnet: raw.translator_comment,
     isProofread: raw.is_proofread,
     proofreadText: raw.proofread_text,
-    proofreaderId: raw.proofreader_id,
+    proofreaderId: raw.last_proofreader_id ?? raw.proofreader_id,
     proofreaderComment: raw.proofreader_comment,
   };
 }
 
-export type RawUnitCreation = {
-  x_coord: number;
-  y_coord: number;
-  index: number;
-  is_bubble: boolean;
-  translated_text?: string;
-  translator_id?: string;
-  translator_comment?: string;
-  is_proofread?: boolean;
-  proofread_text?: string;
-  proofreader_id?: string;
-  proofreader_comment?: string;
+export type ListPageUnitsResult = {
+  totalUnitCount: number;
+  translatedUnitCount: number;
+  proofreadUnitCount: number;
+  units: UnitInfo[];
 };
 
-export function wrapUnitCreation(unit: UnitCreation): RawUnitCreation {
+export type RawListPageUnitsResult = {
+  total_unit_count: number;
+  translated_unit_count: number;
+  proofread_unit_count: number;
+  units?: RawUnitInfo[];
+};
+
+export function unwrapRawListPageUnitsResult(
+  raw: RawListPageUnitsResult,
+): ListPageUnitsResult {
   return {
-    x_coord: unit.xCoord,
-    y_coord: unit.yCoord,
-    index: unit.index,
-    is_bubble: unit.isBubble,
-    translated_text: unit.translatedText,
-    translator_id: unit.translatorId,
-    translator_comment: unit.translatorCommnet,
-    is_proofread: unit.isProofread || undefined,
-    proofread_text: unit.proofreadText,
-    proofreader_id: unit.proofreaderId,
-    proofreader_comment: unit.proofreaderComment,
+    totalUnitCount: raw.total_unit_count,
+    translatedUnitCount: raw.translated_unit_count,
+    proofreadUnitCount: raw.proofread_unit_count,
+    units: (raw.units ?? []).map(unwrapRawUnitInfo),
   };
 }
 
-export type RawUnitPatch = {
+export type RawUnitOp = {
+  id?: string;
+  local_id?: string;
+  x_coord?: number;
+  y_coord?: number;
+  is_bubble?: boolean;
+  is_proofread?: boolean;
+  translated_text?: string | null;
+  translator_comment?: string | null;
+  last_translator_id?: string | null;
+  proofread_text?: string | null;
+  proofreader_comment?: string | null;
+  last_proofreader_id?: string | null;
+};
+
+export function wrapUnitOp(op: UnitOp): RawUnitOp {
+  const raw: RawUnitOp = { id: op.id ?? "" };
+
+  if (op.localId !== undefined) raw.local_id = op.localId;
+  if (op.id === undefined) delete raw.id;
+  if (op.xCoord !== undefined) raw.x_coord = op.xCoord;
+  if (op.yCoord !== undefined) raw.y_coord = op.yCoord;
+  if (op.isBubble !== undefined) raw.is_bubble = op.isBubble;
+  if (op.isProofread !== undefined) raw.is_proofread = op.isProofread;
+  if (op.translatedText !== undefined) raw.translated_text = op.translatedText;
+  if (op.translatorComment !== undefined) {
+    raw.translator_comment = op.translatorComment;
+  }
+  if (op.lastTranslatorId !== undefined) {
+    raw.last_translator_id = op.lastTranslatorId;
+  }
+  if (op.proofreadText !== undefined) raw.proofread_text = op.proofreadText;
+  if (op.proofreaderComment !== undefined) {
+    raw.proofreader_comment = op.proofreaderComment;
+  }
+  if (op.lastProofreaderId !== undefined) {
+    raw.last_proofreader_id = op.lastProofreaderId;
+  }
+
+  return raw;
+}
+
+export type RawUnitDiff = {
+  page_id: string;
+  ops: RawUnitOp[];
+  cand_order: string[];
+};
+
+export function wrapUnitDiff(pageId: string, diff: UnitDiff): RawUnitDiff {
+  return {
+    page_id: pageId,
+    ops: diff.ops.map(wrapUnitOp),
+    cand_order: diff.candOrder,
+  };
+}
+
+export type RawSavePageUnitsResult = {
+  total_unit_count: number;
+  translated_unit_count: number;
+  proofread_unit_count: number;
+};
+
+export type SavePageUnitsResult = {
+  totalUnitCount: number;
+  translatedUnitCount: number;
+  proofreadUnitCount: number;
+};
+
+export function unwrapRawSavePageUnitsResult(
+  raw: RawSavePageUnitsResult,
+): SavePageUnitsResult {
+  return {
+    totalUnitCount: raw.total_unit_count,
+    translatedUnitCount: raw.translated_unit_count,
+    proofreadUnitCount: raw.proofread_unit_count,
+  };
+}
+
+export type RawLegacyUnitPatch = {
   id: string;
   x_coord?: number;
   y_coord?: number;
@@ -81,21 +157,3 @@ export type RawUnitPatch = {
   proofreader_id?: string | null;
   proofreader_comment?: string | null;
 };
-
-export function wrapUnitPatch(patch: UnitPatch): RawUnitPatch {
-  const raw: RawUnitPatch = { id: patch.id };
-
-  if (patch.xCoord !== undefined) raw.x_coord = patch.xCoord;
-  if (patch.yCoord !== undefined) raw.y_coord = patch.yCoord;
-  if (patch.index !== undefined) raw.index = patch.index;
-  if (patch.isBubble !== undefined) raw.is_bubble = patch.isBubble;
-  if (patch.translatedText !== undefined) raw.translated_text = patch.translatedText;
-  if (patch.translatorId !== undefined) raw.translator_id = patch.translatorId;
-  if (patch.translatorCommnet !== undefined) raw.translator_comment = patch.translatorCommnet;
-  if (patch.isProofread !== undefined) raw.is_proofread = patch.isProofread;
-  if (patch.proofreadText !== undefined) raw.proofread_text = patch.proofreadText;
-  if (patch.proofreaderId !== undefined) raw.proofreader_id = patch.proofreaderId;
-  if (patch.proofreaderComment !== undefined) raw.proofreader_comment = patch.proofreaderComment;
-
-  return raw;
-}

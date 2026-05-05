@@ -11,7 +11,7 @@ export type RawTeamInfo = {
   name: string;
   description: string;
   avatar_url: string;
-  is_avatar_uploaded: boolean;
+  avatar_uploaded: boolean;
   created_at: number;
   updated_at: number;
 };
@@ -22,7 +22,7 @@ export function unwrapRawTeamInfo(raw: RawTeamInfo): TeamInfo {
     name: raw.name,
     description: raw.description,
     avatarUrl: raw.avatar_url,
-    isAvatarUploaded: raw.is_avatar_uploaded,
+    isAvatarUploaded: raw.avatar_uploaded,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   } as TeamInfo;

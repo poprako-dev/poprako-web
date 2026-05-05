@@ -9,21 +9,21 @@ export type RawMemberInfo = {
   user?: {
     id: string;
     qq: string;
-    name: string;
+    nickname: string;
     avatar_url: string;
-    is_avatar_uploaded: boolean;
+    avatar_uploaded: boolean;
     is_super_admin: boolean;
     created_at: number;
     updated_at: number;
   };
   team?: RawTeamInfo;
-  roles: number;
+  role_mask: number;
   created_at: number;
   updated_at: number;
 };
 
 export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
-  const unmaskedRoles = unmaskRoles(raw.roles);
+  const unmaskedRoles = unmaskRoles(raw.role_mask);
 
   return {
     id: raw.id,
@@ -32,9 +32,9 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
       ? {
           id: raw.user.id,
           qq: raw.user.qq,
-          name: raw.user.name,
+          name: raw.user.nickname,
           avatarUrl: raw.user.avatar_url,
-          isAvatarUploaded: raw.user.is_avatar_uploaded,
+          isAvatarUploaded: raw.user.avatar_uploaded,
           isSuperAdmin: raw.user.is_super_admin,
           createdAt: raw.user.created_at,
           updatedAt: raw.user.updated_at,
@@ -47,12 +47,12 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
           name: raw.team.name,
           description: raw.team.description,
           avatarUrl: raw.team.avatar_url,
-          isAvatarUploaded: raw.team.is_avatar_uploaded,
+          isAvatarUploaded: raw.team.avatar_uploaded,
           createdAt: raw.team.created_at,
           updatedAt: raw.team.updated_at,
         }
       : undefined,
-    roles: raw.roles,
+    roles: raw.role_mask,
     assignedRawProviderAt: unmaskedRoles.includes("rawProvider")
       ? raw.updated_at
       : undefined,

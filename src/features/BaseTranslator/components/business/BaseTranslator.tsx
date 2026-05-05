@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { SquareArrowRight, Command, ReplaceAll } from "lucide-react";
 import Paginator from "@/components/ui/Paginator";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import ToolboxDropdown from "@/features/ToolboxDropdown";
 import {
   applyUnitUpdates,
   createUnit,
-  createUnitCreation,
-  createUnitPatch,
-  isUnitSame,
   modifyUnitIndex,
   modifyUnitPosition,
   unitPosition,
@@ -27,7 +25,11 @@ import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
 import { useToastStore } from "@/components/ui/NotificationToast";
-import type { UnitDiff } from "../../types/type";
+import type { UnitDiff, UnitOp } from "../../types/type";
+
+type PendingAction =
+  | { type: "navigate"; newIndex: number }
+  | { type: "exit" };
 
 type Props = {
   project: Project;
@@ -71,6 +73,7 @@ export default function BaseTranslator({
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
   const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
   const isNavigating = useRef(false);
   const isSaving = useRef(false);
@@ -83,36 +86,164 @@ export default function BaseTranslator({
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
     useShortcuts();
 
+  function normalizedText(val?: string): string | null {
+    return val && val !== "" ? val : null;
+  }
+
+  function hasPersistedMutation(current: UnitInfo, baseline: UnitInfo): boolean {
+    if (current.xCoord !== baseline.xCoord || current.yCoord !== baseline.yCoord) {
+      return true;
+    }
+    if (current.isBubble !== baseline.isBubble) {
+      return true;
+    }
+    if (current.isProofread !== baseline.isProofread) {
+      return true;
+    }
+    if (normalizedText(current.translatedText) !== normalizedText(baseline.translatedText)) {
+      return true;
+    }
+    if (
+      normalizedText(current.translatorCommnet) !==
+      normalizedText(baseline.translatorCommnet)
+    ) {
+      return true;
+    }
+    if ((current.translatorId ?? null) !== (baseline.translatorId ?? null)) {
+      return true;
+    }
+    if (
+      normalizedText(current.proofreadText) !==
+      normalizedText(baseline.proofreadText)
+    ) {
+      return true;
+    }
+    if (
+      normalizedText(current.proofreaderComment) !==
+      normalizedText(baseline.proofreaderComment)
+    ) {
+      return true;
+    }
+
+    return (current.proofreaderId ?? null) !== (baseline.proofreaderId ?? null);
+  }
+
+  function buildCreateOp(unit: UnitInfo): UnitOp {
+    const op: UnitOp = {
+      localId: unitId(unit),
+      xCoord: unit.xCoord,
+      yCoord: unit.yCoord,
+      isBubble: unit.isBubble,
+      isProofread: unit.isProofread,
+    };
+
+    const translatedText = normalizedText(unit.translatedText);
+    if (translatedText !== null) op.translatedText = translatedText;
+
+    const translatorComment = normalizedText(unit.translatorCommnet);
+    if (translatorComment !== null) op.translatorComment = translatorComment;
+
+    if (unit.translatorId !== undefined) {
+      op.lastTranslatorId = unit.translatorId;
+    }
+
+    const proofreadText = normalizedText(unit.proofreadText);
+    if (proofreadText !== null) op.proofreadText = proofreadText;
+
+    const proofreaderComment = normalizedText(unit.proofreaderComment);
+    if (proofreaderComment !== null) op.proofreaderComment = proofreaderComment;
+
+    if (unit.proofreaderId !== undefined) {
+      op.lastProofreaderId = unit.proofreaderId;
+    }
+
+    return op;
+  }
+
+  function buildSaveOp(current: UnitInfo, baseline: UnitInfo): UnitOp {
+    const op: UnitOp = {
+      id: unitId(current),
+      xCoord: current.xCoord,
+      yCoord: current.yCoord,
+      isBubble: current.isBubble,
+      isProofread: current.isProofread,
+    };
+
+    const currentTranslated = normalizedText(current.translatedText);
+    const baselineTranslated = normalizedText(baseline.translatedText);
+    if (currentTranslated !== baselineTranslated) {
+      op.translatedText = currentTranslated;
+    }
+
+    const currentTranslatorComment = normalizedText(current.translatorCommnet);
+    const baselineTranslatorComment = normalizedText(baseline.translatorCommnet);
+    if (currentTranslatorComment !== baselineTranslatorComment) {
+      op.translatorComment = currentTranslatorComment;
+    }
+
+    const currentTranslatorId = current.translatorId ?? null;
+    const baselineTranslatorId = baseline.translatorId ?? null;
+    if (currentTranslatorId !== baselineTranslatorId) {
+      op.lastTranslatorId = currentTranslatorId;
+    }
+
+    const currentProofread = normalizedText(current.proofreadText);
+    const baselineProofread = normalizedText(baseline.proofreadText);
+    if (currentProofread !== baselineProofread) {
+      op.proofreadText = currentProofread;
+    }
+
+    const currentProofreaderComment = normalizedText(current.proofreaderComment);
+    const baselineProofreaderComment = normalizedText(baseline.proofreaderComment);
+    if (currentProofreaderComment !== baselineProofreaderComment) {
+      op.proofreaderComment = currentProofreaderComment;
+    }
+
+    const currentProofreaderId = current.proofreaderId ?? null;
+    const baselineProofreaderId = baseline.proofreaderId ?? null;
+    if (currentProofreaderId !== baselineProofreaderId) {
+      op.lastProofreaderId = currentProofreaderId;
+    }
+
+    return op;
+  }
+
   function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDiff {
     const baselineById = new Map(baseline.map((unit) => [unitId(unit), unit]));
     const currentById = new Map(current.map((unit) => [unitId(unit), unit]));
+    const ops: UnitOp[] = [];
 
-    const insert = current
-      .filter((unit) => !baselineById.has(unitId(unit)))
-      .map((unit) => createUnitCreation(unit));
-    const modify = current
-      .filter((unit) => {
-        const baselineUnit = baselineById.get(unitId(unit));
-        return baselineUnit !== undefined && !isUnitSame(unit, baselineUnit);
-      })
-      .map((unit) => {
-        const baselineUnit = baselineById.get(unitId(unit));
+    for (const unit of current) {
+      const baselineUnit = baselineById.get(unitId(unit));
 
-        return createUnitPatch(unit, baselineUnit!);
-      });
-    const del = baseline
-      .filter((unit) => !currentById.has(unitId(unit)))
-      .map((unit) => unitId(unit));
+      if (baselineUnit === undefined) {
+        ops.push(buildCreateOp(unit));
+        continue;
+      }
 
-    return { insert, patch: modify, delete: del };
+      if (!hasPersistedMutation(unit, baselineUnit)) {
+        continue;
+      }
+
+      ops.push(buildSaveOp(unit, baselineUnit));
+    }
+
+    for (const unit of baseline) {
+      if (currentById.has(unitId(unit))) {
+        continue;
+      }
+
+      ops.push({ id: unitId(unit) });
+    }
+
+    return {
+      ops,
+      candOrder: current.map((unit) => unitId(unit)),
+    };
   }
 
   function isDiffEmpty(diff: UnitDiff): boolean {
-    return (
-      diff.insert.length === 0 &&
-      diff.patch.length === 0 &&
-      diff.delete.length === 0
-    );
+    return diff.ops.length === 0;
   }
 
   function commitUnits(nextUnits: UnitInfo[]) {
@@ -169,12 +300,11 @@ export default function BaseTranslator({
     isSaving.current = true;
     try {
       await onSaveUnits(project.pages[pageIndex].id, diff);
-      baselineUnitsRef.current = unitBufRef.current;
+      await loadPage(pageIndex);
     } catch (err) {
       const summary =
-        `insert:${diff.insert.length} ` +
-        `modify:${diff.patch.length} ` +
-        `delete:${diff.delete.length}`;
+        `ops:${diff.ops.length} ` +
+        `candOrder:${diff.candOrder.length}`;
       console.error(
         `[BaseTranslator] 保存失败 pageId=${
           project.pages[pageIndex].id
@@ -191,11 +321,13 @@ export default function BaseTranslator({
   async function handleNavigate(newIndex: number) {
     if (isNavigating.current) return;
     isNavigating.current = true;
+    setPendingAction(null);
     try {
       await flushIfDirty();
       await loadPage(newIndex);
     } catch {
       // 保存失败时阻止翻页，toast 已在 flushIfDirty 中显示
+      setPendingAction({ type: "navigate", newIndex });
     } finally {
       isNavigating.current = false;
     }
@@ -206,12 +338,49 @@ export default function BaseTranslator({
   }
 
   async function handleExit() {
+    setPendingAction(null);
     try {
       await flushIfDirty();
       onExit();
     } catch {
       // 保存失败时阻止退出，toast 已在 flushIfDirty 中显示
+      setPendingAction({ type: "exit" });
     }
+  }
+
+  async function handleRetryPendingAction() {
+    if (!pendingAction || isNavigating.current) return;
+    isNavigating.current = true;
+
+    try {
+      await flushIfDirty();
+
+      if (pendingAction.type === "navigate") {
+        await loadPage(pendingAction.newIndex);
+      } else {
+        onExit();
+      }
+
+      setPendingAction(null);
+    } catch {
+      // 保存失败时保持弹窗，toast 已在 flushIfDirty 中显示
+    } finally {
+      isNavigating.current = false;
+    }
+  }
+
+  function handleDiscardPendingAction() {
+    if (!pendingAction || isNavigating.current) return;
+
+    const action = pendingAction;
+    setPendingAction(null);
+
+    if (action.type === "navigate") {
+      void loadPage(action.newIndex);
+      return;
+    }
+
+    onExit();
   }
 
   function handleModifyUnit(targetUnitId: string, updates: UnitEdit) {
@@ -408,6 +577,16 @@ export default function BaseTranslator({
           configurableShortcuts={configurableShortcuts}
           onUpdateConfigurableShortcuts={updateConfigurableShortcuts}
           onClose={() => setIsShortcutPanelOpen(false)}
+        />
+      )}
+      {pendingAction && (
+        <ConfirmDialog
+          title="保存失败，是否继续？"
+          description="可以选择再次重试保存；或放弃本页未保存修改并继续操作。"
+          confirmLabel="再次重试"
+          cancelLabel="放弃并继续"
+          onConfirm={handleRetryPendingAction}
+          onCancel={handleDiscardPendingAction}
         />
       )}
     </>

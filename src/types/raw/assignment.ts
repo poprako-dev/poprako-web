@@ -12,8 +12,8 @@ export type RawAssignmentInfo = {
   chapter_id: string;
   chapter?: RawChapterInfo;
 
-  // New API format: roles as a bitmask number
-  roles?: number;
+  // New API format: role_mask as a bitmask number
+  role_mask?: number;
 
   // Legacy individual timestamp fields (kept for backward compatibility)
   assigned_raw_provider_at?: number;
@@ -32,9 +32,9 @@ export type RawAssignmentInfo = {
 export function unwrapRawAssignmentInfo(
   raw: RawAssignmentInfo,
 ): AssignmentInfo {
-  // When the API returns a `roles` bitmask, derive individual role
+  // When the API returns a `role_mask` bitmask, derive individual role
   // timestamps from it. Use `created_at` as the timestamp value so the
-  // fields are truthy. Fall back to legacy individual fields when `roles`
+  // fields are truthy. Fall back to legacy individual fields when `role_mask`
   // is absent.
   let assignedRawProviderAt = raw.assigned_raw_provider_at;
   let assignedTranslatorAt = raw.assigned_translator_at;
@@ -44,8 +44,8 @@ export function unwrapRawAssignmentInfo(
   let assignedReviewerAt = raw.assigned_reviewer_at;
   let assignedPublisherAt = raw.assigned_publisher_at;
 
-  if (raw.roles !== undefined && raw.roles !== null) {
-    const roles = unmaskRoles(raw.roles);
+  if (raw.role_mask !== undefined && raw.role_mask !== null) {
+    const roles = unmaskRoles(raw.role_mask);
     const ts = raw.created_at;
     if (roles.includes("rawProvider")) assignedRawProviderAt = ts;
     if (roles.includes("translator")) assignedTranslatorAt = ts;

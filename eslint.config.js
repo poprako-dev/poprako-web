@@ -1,4 +1,5 @@
-// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+// For more info, see:
+// https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from "eslint-plugin-storybook";
 
 import js from "@eslint/js";
@@ -25,7 +26,7 @@ export default defineConfig([
     rules: {
       // 允许使用常量导出组件，防止 shadcn 组件库的组件被误报
       "react-refresh/only-export-components": [
-        "info",
+        "warn",
         { allowConstantExport: true },
       ],
     },

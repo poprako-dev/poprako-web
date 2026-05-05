@@ -1,8 +1,24 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import AssignmentList from "../../features/AssignmentList/components/business/AssignmentList";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { ChapterInfo } from "@/types/chapter";
 import type { ComicInfo } from "@/types/comic";
+
+type AssignmentListProps = {
+  mode: "translator" | "reviewer";
+  onMyLoadAssignments: (
+    offset: number,
+    limit: number,
+  ) => Promise<AssignmentInfo[] | string>;
+  onLoadChapterAssignments: (chapterId: string) => Promise<AssignmentInfo[]>;
+};
+
+function AssignmentList({ mode }: AssignmentListProps) {
+  return (
+    <div className="rounded border border-border p-4 text-sm text-muted-foreground">
+      AssignmentList Story Placeholder ({mode})
+    </div>
+  );
+}
 
 const meta: Meta<typeof AssignmentList> = {
   title: "features/AssignmentList",

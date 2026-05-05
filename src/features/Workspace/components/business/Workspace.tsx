@@ -1,20 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import type { UserStatsInfo } from "@/types/userStats";
 import type { WorkspaceTab } from "../../types/types";
 import type { ComicInfo, ChapterInfo } from "@/types";
 import type { Result } from "@/types/utils/result";
 import type { AssignmentInfo } from "@/types/assignment";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
 import WorkspaceHeaderNav from "./WorkspaceHeaderNav";
-import WorkspaceStatsCards from "./WorkspaceStatsCards";
 import EmbeddedComicList from "@/features/ComcList/components/business/EmbeddedComicList";
 import ComicDetailModal from
   "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import {
-  fetchMyStats,
   fetchMyComics,
   fetchLatestChapter,
   fetchComicAssignments,
@@ -48,8 +45,6 @@ export default function Workspace() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("workspace");
-  const [stats, setStats] = useState<UserStatsInfo | null>(null);
-  const [isStatsLoading, setIsStatsLoading] = useState(false);
   const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
   const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
     useState<ChapterInfo | null>(null);
@@ -78,29 +73,6 @@ export default function Workspace() {
     },
     [searchParams, setSearchParams],
   );
-
-  useEffect(() => {
-    const loadStats = async () => {
-      setIsStatsLoading(true);
-      try {
-        const result = await fetchMyStats();
-        if (typeof result === "string") {
-          console.error("Failed to load user stats:", result);
-          showToast(result, "error");
-        } else {
-          setStats(result);
-        }
-      } catch (err) {
-        console.error("Unexpected error loading user stats:", err);
-        showToast("加载统计信息失败", "error");
-      } finally {
-        setIsStatsLoading(false);
-      }
-    };
-
-    loadStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const userName = loginState?.userInfo.name ?? "用户";
 
@@ -174,12 +146,13 @@ export default function Workspace() {
 
   const handleLoadAssignmentsForChapter = useCallback(
     async (chapterId: string): Promise<Result<AssignmentInfo[]>> => {
-      const result = await api.get<RawAssignmentInfo[]>("/assignments", {
-        chapter_id: chapterId,
-        includes: ["user"],
+      const result = await api.get<RawAssignmentInfo[]>(
+        `/assignments/chapters/${chapterId}`,
+        {
         offset: 0,
         limit: 100,
-      });
+        },
+      );
       if (!result.success) return result;
       return {
         success: true,
@@ -309,7 +282,6 @@ export default function Workspace() {
             {userName}
           </h1>
         </div>
-        <WorkspaceStatsCards stats={stats} isLoading={isStatsLoading} />
       </div>
 
       <div className={clsx("flex-1 min-h-0 min-w-0 overflow-x-hidden")}>
