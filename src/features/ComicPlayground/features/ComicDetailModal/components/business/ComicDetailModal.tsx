@@ -63,6 +63,7 @@ type Props = {
   onRemoveAssignment?: (
     chapterId: string,
     userId: string,
+    role: Role,
   ) => Promise<Result<void>>;
   onLoadAssignableMembers?: (chapterId: string) => Promise<Result<MemberInfo[]>>;
   onAddAssignment?: (
@@ -361,20 +362,24 @@ export default function ComicDetailModal({
     return res;
   };
 
-  const handleRemoveUser = (userId: string) => {
+  const handleRemoveAssignment = (userId: string, role: Role) => {
     if (!selectedChapterId || !onRemoveAssignment) return;
-    onRemoveAssignment(selectedChapterId, userId)
+    onRemoveAssignment(selectedChapterId, userId, role)
       .then((res) => {
         if (!res.success) {
-          console.error("[ComicDetailModal] 移除成员失败:", res);
-          showToast("移除成员失败", "error");
+          console.error("[ComicDetailModal] 移除角色失败:", res);
+          showToast("移除角色失败", "error");
           return;
         }
-        setAssignments((prev) => prev.filter((a) => a.userId !== userId));
+        onLoadAssignments(selectedChapterId).then((refreshed) => {
+          if (refreshed.success) {
+            setAssignments(refreshed.data);
+          }
+        });
       })
       .catch((err) => {
-        console.error("[ComicDetailModal] 移除成员异常:", err);
-        showToast("移除成员失败", "error");
+        console.error("[ComicDetailModal] 移除角色异常:", err);
+        showToast("移除角色失败", "error");
       });
   };
 
@@ -884,7 +889,7 @@ export default function ComicDetailModal({
       selectedChapter={selectedChapter}
       assignments={assignments}
       onTransiteWorkflow={handleTransition}
-      onRemoveAssignment={onRemoveAssignment ? handleRemoveUser : undefined}
+      onRemoveAssignment={onRemoveAssignment ? handleRemoveAssignment : undefined}
       onAddAssignment={onAddAssignment ? handleOpenMemberSelector : undefined}
       canOperateWorkflow={canManageChapterAssignments}
       canManageAssignments={canManageChapterAssignments}

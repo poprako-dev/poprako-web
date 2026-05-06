@@ -45,11 +45,16 @@ export function unwrapRawPageCreationResult(
 export type RawReserveChapterPagesArgs = {
   chapter_id: string;
   page_count: number;
+  file_extension: string;
 };
 export function unwrapRawReserveChapterPagesArgs(
   raw: RawReserveChapterPagesArgs,
 ): ReserveChapterPagesArgs {
-  return { chapterId: raw.chapter_id, pageCount: raw.page_count };
+  return {
+    chapterId: raw.chapter_id,
+    pageCount: raw.page_count,
+    fileExtension: raw.file_extension,
+  };
 }
 
 export type RawReserveChapterPagesResult = {

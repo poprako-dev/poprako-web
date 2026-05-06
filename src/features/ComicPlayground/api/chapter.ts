@@ -21,21 +21,36 @@ import type {
 export async function listChapters(
   args: ListChapterArgs,
 ): Promise<Result<ChapterInfo[]>> {
-  const rawArgs: Omit<RawListChapterArgs, "comic_id"> = {
+  const rawArgs: RawListChapterArgs = {
+    comic_id: args.comicId,
+    includes: args.includes,
     offset: args.offset,
     limit: args.limit,
   };
 
-  const res = await api.get<RawChapterInfo[]>(
-    `/chapters/comics/${args.comicId}`,
-    rawArgs,
-  );
+  const res = await api.get<RawChapterInfo[]>("/chapters", rawArgs);
 
   if (!res.success) return res;
 
   const items = Array.isArray(res.data) ? res.data : [];
 
   return { success: true, data: items.map((raw) => toChapterInfo(raw)!) };
+}
+
+export async function getPinnedChapter(
+  comicId: string,
+): Promise<Result<ChapterInfo>> {
+  const res = await api.get<RawChapterInfo>("/chapters/pinned", {
+    comic_id: comicId,
+  });
+  if (!res.success) return res;
+
+  const chapter = toChapterInfo(res.data);
+  if (!chapter) {
+    return { success: false, error: "未找到置顶章节" };
+  }
+
+  return { success: true, data: chapter };
 }
 
 export async function createChapter(

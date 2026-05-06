@@ -13,19 +13,26 @@ type FormatResponse<T> = {
 
 const BASE_URL = appConfig.apiBaseUrl;
 
+type QueryParams = Record<
+  string,
+  | string
+  | number
+  | boolean
+  | undefined
+  | null
+  | (string | number | boolean | undefined | null)[]
+>;
+
 function buildQuery(
   url: string,
-  params?: Record<
-    string,
-    string | number | boolean | (string | number | boolean)[]
-  >,
+  params?: QueryParams,
 ): string {
   if (!params || Object.keys(params).length === 0) return url;
 
   const usp = new URLSearchParams();
 
   for (const key of Object.keys(params)) {
-    const val = params[key as keyof typeof params] as any;
+    const val = params[key as keyof typeof params];
     if (val === undefined || val === null) continue;
     if (Array.isArray(val)) {
       for (const v of val) {
@@ -62,6 +69,7 @@ async function request<T>(
   const config: RequestInit = {
     ...options,
     headers,
+    credentials: "include", // 允许携带 cookie，适用于需要登录状态的请求
   };
 
   try {
@@ -70,7 +78,7 @@ async function request<T>(
     let body: FormatResponse<T> | null = null;
     try {
       body = (await response.json()) as FormatResponse<T>;
-    } catch (e) {
+    } catch {
       body = {
         code: response.ok ? 200 : response.status,
         message: response.statusText || "未知错误",
@@ -90,45 +98,105 @@ async function request<T>(
 
     return { success: true, data: body.message as unknown as T };
   } catch (err) {
+    const message = err instanceof Error ? err.message : "未知错误";
     return {
       success: false,
-      error: err && (err as any).message ? (err as any).message : "未知错误",
+      error: message,
     };
   }
 }
 
 function buildQueryUrl(
   url: string,
-  params?: Record<
-    string,
-    string | number | boolean | (string | number | boolean)[]
-  >,
+  params?: QueryParams,
 ) {
   return buildQuery(url, params);
+}
+
+function resolveQueryAndAuth(
+  queryParamsOrNeedAuth?: QueryParams | boolean,
+  needAuth = true,
+): { queryParams?: QueryParams; needAuth: boolean } {
+  if (typeof queryParamsOrNeedAuth === "boolean") {
+    return { needAuth: queryParamsOrNeedAuth };
+  }
+
+  return { queryParams: queryParamsOrNeedAuth, needAuth };
 }
 
 export const api = {
   get: <T>(
     url: string,
-    queryParams?: Record<
-      string,
-      string | number | boolean | (string | number | boolean)[]
-    >,
+    queryParams?: QueryParams,
     needAuth = true,
   ) => request<T>(buildQueryUrl(url, queryParams), { method: "GET" }, needAuth),
 
-  post: <T, B>(url: string, body: B, needAuth = true) =>
-    request<T>(url, { method: "POST", body: JSON.stringify(body) }, needAuth),
+  post: <T, B>(
+    url: string,
+    body: B,
+    queryParamsOrNeedAuth?: QueryParams | boolean,
+    needAuth = true,
+  ) => {
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    return request<T>(
+      buildQueryUrl(url, options.queryParams),
+      { method: "POST", body: JSON.stringify(body) },
+      options.needAuth,
+    );
+  },
 
-  put: <T, B>(url: string, body: B, needAuth = true) =>
-    request<T>(url, { method: "PUT", body: JSON.stringify(body) }, needAuth),
+  put: <T, B>(
+    url: string,
+    body: B,
+    queryParamsOrNeedAuth?: QueryParams | boolean,
+    needAuth = true,
+  ) => {
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    return request<T>(
+      buildQueryUrl(url, options.queryParams),
+      { method: "PUT", body: JSON.stringify(body) },
+      options.needAuth,
+    );
+  },
 
-  delete: <T>(url: string, needAuth = true) =>
-    request<T>(url, { method: "DELETE" }, needAuth),
+  delete: <T>(
+    url: string,
+    queryParamsOrNeedAuth?: QueryParams | boolean,
+    needAuth = true,
+  ) => {
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    return request<T>(
+      buildQueryUrl(url, options.queryParams),
+      { method: "DELETE" },
+      options.needAuth,
+    );
+  },
 
-  deleteWithBody: <T, B>(url: string, body: B, needAuth = true) =>
-    request<T>(url, { method: "DELETE", body: JSON.stringify(body) }, needAuth),
+  deleteWithBody: <T, B>(
+    url: string,
+    body: B,
+    queryParamsOrNeedAuth?: QueryParams | boolean,
+    needAuth = true,
+  ) => {
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    return request<T>(
+      buildQueryUrl(url, options.queryParams),
+      { method: "DELETE", body: JSON.stringify(body) },
+      options.needAuth,
+    );
+  },
 
-  patch: <T, B>(url: string, body: B, needAuth = true) =>
-    request<T>(url, { method: "PATCH", body: JSON.stringify(body) }, needAuth),
+  patch: <T, B>(
+    url: string,
+    body: B,
+    queryParamsOrNeedAuth?: QueryParams | boolean,
+    needAuth = true,
+  ) => {
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    return request<T>(
+      buildQueryUrl(url, options.queryParams),
+      { method: "PATCH", body: JSON.stringify(body) },
+      options.needAuth,
+    );
+  },
 };

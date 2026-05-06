@@ -1,4 +1,9 @@
-export type ChapterInclude = "creator";
+export type ChapterInclude =
+  | "comic"
+  | "comic.workset"
+  | "comic.workset.team"
+  | "comic.creator"
+  | "creator";
 
 export type WorkflowTransition =
   | "upload_complete"
@@ -13,12 +18,14 @@ export type WorkflowTransition =
 
 export type ListChapterArgs = {
   comicId: string;
+  includes?: ChapterInclude[];
   offset: number;
   limit: number;
 };
 
 export type RawListChapterArgs = {
   comic_id: string;
+  includes?: ChapterInclude[];
   offset: number;
   limit: number;
 };

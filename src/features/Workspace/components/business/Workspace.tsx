@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { WorkspaceTab } from "../../types/types";
 import type { ComicInfo, ChapterInfo } from "@/types";
@@ -30,10 +30,24 @@ import {
   updatePage,
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
-import { api } from "@/api/util";
-import { unwrapRawAssignmentInfo, type RawAssignmentInfo } from "@/types/raw/assignment";
+import { listAssignmentsByChapter } from "@/api/assignment";
 import type { ListChapterArgs, WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import clsx from "clsx";
+
+function getUniformFileExtension(files: File[]): string | null {
+  if (files.length === 0) return null;
+
+  const getExt = (file: File) => {
+    const dotIndex = file.name.lastIndexOf(".");
+    if (dotIndex < 0 || dotIndex === file.name.length - 1) return "";
+    return file.name.slice(dotIndex + 1).toLowerCase();
+  };
+
+  const first = getExt(files[0]);
+  const isUniform = files.every((file) => getExt(file) === first);
+
+  return isUniform ? first : null;
+}
 
 // 个人工作区组件，会直接放置在 WorkspacePage 中，展示个人工作区的相关内容
 // 所以自身不设定高度，而是适应父组件
@@ -49,6 +63,7 @@ export default function Workspace() {
   const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
     useState<ChapterInfo | null>(null);
   const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
+  const userClosedRef = useRef(false);
 
   const urlComicId = searchParams.get("comicId");
   const urlChapterId = searchParams.get("chapterId");
@@ -97,7 +112,8 @@ export default function Workspace() {
   );
 
   useEffect(() => {
-    if (!urlComicId || selectedComic?.id === urlComicId) {
+    if (!urlComicId || selectedComic?.id === urlComicId || userClosedRef.current) {
+      userClosedRef.current = false;
       return;
     }
 
@@ -146,18 +162,12 @@ export default function Workspace() {
 
   const handleLoadAssignmentsForChapter = useCallback(
     async (chapterId: string): Promise<Result<AssignmentInfo[]>> => {
-      const result = await api.get<RawAssignmentInfo[]>(
-        `/assignments/chapters/${chapterId}`,
-        {
+      return listAssignmentsByChapter({
+        chapterId,
         offset: 0,
         limit: 100,
-        },
-      );
-      if (!result.success) return result;
-      return {
-        success: true,
-        data: (result.data ?? []).map(unwrapRawAssignmentInfo),
-      };
+        includes: ["user"],
+      });
     },
     [],
   );
@@ -189,11 +199,24 @@ export default function Workspace() {
 
   const handleAddPages = useCallback(
     async (chapterId: string, files: File[]) => {
+      const fileExtension = getUniformFileExtension(files);
+      if (fileExtension === null) {
+        const errorMessage = "所选文件后缀必须一致";
+        console.error("[Workspace] 批量加页文件后缀不一致", {
+          chapterId,
+          files: files.map((file) => file.name),
+        });
+        showToast(errorMessage, "error");
+        throw new Error(errorMessage);
+      }
+
       const reserveResult = await reserveChapterPages({
         chapterId,
         pageCount: files.length,
+        fileExtension,
       });
       if (!reserveResult.success) {
+        console.error("[Workspace] 预留页面失败:", reserveResult.error);
         throw new Error(reserveResult.error);
       }
 
@@ -208,16 +231,18 @@ export default function Workspace() {
 
         const uploadResult = await uploadToPresignedUrl(creation.putUrl, file);
         if (!uploadResult.success) {
+          console.error("[Workspace] 上传页面失败:", uploadResult.error);
           throw new Error(uploadResult.error);
         }
 
         const markResult = await updatePage(creation.pageId, { isUploaded: true });
         if (!markResult.success) {
+          console.error("[Workspace] 标记页面上传状态失败:", markResult.error);
           throw new Error(markResult.error);
         }
       }
     },
-    [],
+    [showToast],
   );
 
   const handleDeleteChapterPages = useCallback(
@@ -333,6 +358,7 @@ export default function Workspace() {
           onExportChapter={handleExportChapter}
           onDeleteComic={handleDeleteComic}
           onClose={() => {
+            userClosedRef.current = true;
             setSelectedComic(null);
             setSelectedComicPinnedChapter(null);
             setComicDetailSearchParams(null, null);

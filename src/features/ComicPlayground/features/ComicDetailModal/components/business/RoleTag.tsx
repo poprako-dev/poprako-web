@@ -5,16 +5,18 @@ import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapte
 import type { WorkflowStatus } from "@/types/workflow";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
+import type { Role } from "@/types/role";
 import UserTag from "./UserTag";
 
 type Props = {
   label: string;
+  role: Role;
   assignments: AssignmentInfo[];
   status: WorkflowStatus;
   // The transition to fire when clicking this tag
   transition: WorkflowTransition | null;
   onTransiteWorkflow: (t: WorkflowTransition) => Promise<Result<void>>;
-  onRemoveUser?: (userId: string) => void;
+  onRemoveUser?: (userId: string, role: Role) => void;
   // Called to open the MemberSelectorModal for this role
   onAddUser?: () => void;
 };
@@ -65,6 +67,7 @@ const STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
 
 export default function RoleTag({
   label,
+  role,
   assignments,
   status,
   transition,
@@ -124,6 +127,7 @@ export default function RoleTag({
               key={a.userId}
               userId={a.userId}
               name={a.user?.name ?? a.userId}
+              role={role}
               onRemove={onRemoveUser}
             />
           ))

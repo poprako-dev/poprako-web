@@ -22,7 +22,8 @@ export type ListPageArgs = {
 export async function listPages(
   args: ListPageArgs,
 ): Promise<Result<PageInfo[]>> {
-  const res = await api.get<RawPageInfo[]>(`/chapters/${args.chapterId}/pages`, {
+  const res = await api.get<RawPageInfo[]>("/pages", {
+    chapter_id: args.chapterId,
     offset: args.offset,
     limit: args.limit,
   });
@@ -41,12 +42,13 @@ export async function reserveChapterPages(
   const rawArgs: RawReserveChapterPagesArgs = {
     chapter_id: args.chapterId,
     page_count: args.pageCount,
+    file_extension: args.fileExtension,
   };
 
   const res = await api.post<
     RawReserveChapterPagesResult,
     RawReserveChapterPagesArgs
-  >(`/chapters/${args.chapterId}/pages/reserve`, rawArgs);
+  >("/pages/reserve", rawArgs, { chapter_id: args.chapterId });
   if (!res.success) return res;
 
   return {
@@ -64,7 +66,7 @@ export async function deletePage(pageId: string): Promise<Result<void>> {
 }
 
 export async function deleteChapterPages(chapterId: string): Promise<Result<void>> {
-  const res = await api.delete<void>(`/chapters/${chapterId}/pages`);
+  const res = await api.delete<void>("/pages", { chapter_id: chapterId });
   if (!res.success) return res;
   return { success: true, data: undefined };
 }

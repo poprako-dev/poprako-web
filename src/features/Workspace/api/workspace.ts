@@ -1,27 +1,22 @@
-import { api } from "@/api/util";
+import { listAssignmentsByChapter, listMyAssignments } from "@/api/assignment";
 import { listChapters } from "@/features/ComicPlayground/api/chapter";
 import type { ComicInfo, ChapterInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
-import {
-  unwrapRawAssignmentInfo,
-  type RawAssignmentInfo,
-} from "@/types/raw/assignment";
 
 export async function fetchMyComics(
   offset: number,
   limit: number,
 ): Promise<ComicInfo[] | string> {
-  const result = await api.get<RawAssignmentInfo[]>(
-    "/assignments/mine",
-    { includes: ["chapter.comic"], offset, limit },
-    true,
-  );
+  const result = await listMyAssignments({
+    includes: ["chapter.comic"],
+    offset,
+    limit,
+  });
   if (!result.success) return result.error;
   const seen = new Set<string>();
   const comics: ComicInfo[] = [];
-  for (const raw of result.data) {
-    const assignment = unwrapRawAssignmentInfo(raw);
+  for (const assignment of result.data) {
     const comic = assignment.chapter?.comic;
     if (comic && !seen.has(comic.id)) {
       seen.add(comic.id);
@@ -56,11 +51,10 @@ export async function fetchComicAssignments(
   const chapter =
     chaptersResult.data.find((c) => c.isPinned) ?? chaptersResult.data[0];
   if (!chapter) return { success: true, data: [] };
-  const result = await api.get<RawAssignmentInfo[]>(
-    `/assignments/chapters/${chapter.id}`,
-    { offset: 0, limit: 50 },
-    true,
-  );
-  if (!result.success) return result;
-  return { success: true, data: result.data.map(unwrapRawAssignmentInfo) };
+  return listAssignmentsByChapter({
+    chapterId: chapter.id,
+    offset: 0,
+    limit: 50,
+    includes: ["user"],
+  });
 }

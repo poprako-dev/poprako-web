@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
@@ -25,7 +25,11 @@ import {
   uploadToPresignedUrl,
 } from "../../api/page";
 import type { WorksetInfo } from "@/types/workset";
-import { api } from "@/api/util";
+import {
+  deleteAssignment,
+  listAssignmentsByChapter,
+  upsertAssignment,
+} from "@/api/assignment";
 import type { ComicInfo, ChapterInfo } from "@/types";
 import { matchComicClientFilters, type ComicClientFilters } from "../../types/comic";
 import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
@@ -38,10 +42,24 @@ import type {
 import type { CreateWorksetArgs } from "../../types/workset";
 import type { CreateComicArgs } from "../../types/comic";
 import type { ListChapterArgs, WorkflowTransition } from "../../types/chapter";
-import { unwrapRawAssignmentInfo, type RawAssignmentInfo } from "@/types/raw/assignment";
 import type { Role } from "@/types/role";
 import { roleMask } from "@/types/role";
 import { listMembers } from "@/api/member";
+
+function getUniformFileExtension(files: File[]): string | null {
+  if (files.length === 0) return null;
+
+  const getExt = (file: File) => {
+    const dotIndex = file.name.lastIndexOf(".");
+    if (dotIndex < 0 || dotIndex === file.name.length - 1) return "";
+    return file.name.slice(dotIndex + 1).toLowerCase();
+  };
+
+  const first = getExt(files[0]);
+  const isUniform = files.every((file) => getExt(file) === first);
+
+  return isUniform ? first : null;
+}
 
 export default function ComicPlayground() {
   const { activeTeamId: teamId } = useActiveTeam();
@@ -73,6 +91,7 @@ export default function ComicPlayground() {
   const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
   const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
     useState<ChapterInfo | null>(null);
+  const userClosedRef = useRef(false);
 
   const urlComicId = searchParams.get("comicId");
   const urlChapterId = searchParams.get("chapterId");
@@ -219,7 +238,8 @@ export default function ComicPlayground() {
   );
 
   useEffect(() => {
-    if (!urlComicId || selectedComic?.id === urlComicId) {
+    if (!urlComicId || selectedComic?.id === urlComicId || userClosedRef.current) {
+      userClosedRef.current = false;
       return;
     }
 
@@ -268,20 +288,12 @@ export default function ComicPlayground() {
 
   const handleLoadAssignments = useCallback(
     async (chapterId: string): Promise<Result<AssignmentInfo[]>> => {
-      const result = await api.get<RawAssignmentInfo[]>(
-        `/assignments/chapters/${chapterId}`,
-        {
+      return listAssignmentsByChapter({
+        chapterId,
         offset: 0,
         limit: 100,
-        },
-      );
-
-      if (!result.success) return result;
-
-      return {
-        success: true,
-        data: (result.data ?? []).map(unwrapRawAssignmentInfo),
-      };
+        includes: ["user"],
+      });
     },
     [],
   );
@@ -303,8 +315,8 @@ export default function ComicPlayground() {
     [handleLoadAssignments, handleLoadLatestChapter],
   );
 
-  const handleRemoveAssignment = useCallback(
-    async (chapterId: string, userId: string): Promise<Result<void>> => {
+  const handleRemoveRole = useCallback(
+    async (chapterId: string, userId: string, role: Role): Promise<Result<void>> => {
       const assignmentResult = await handleLoadAssignments(chapterId);
       if (!assignmentResult.success) {
         return assignmentResult;
@@ -317,7 +329,20 @@ export default function ComicPlayground() {
         return { success: false, error: "未找到对应分工记录" };
       }
 
-      const result = await api.delete<void>(`/assignments/${target.id}`);
+      const remainingRoles = assignmentRoles(target).filter((r) => r !== role);
+
+      if (remainingRoles.length === 0) {
+        const result = await deleteAssignment(target.id);
+        if (!result.success) return result;
+        return { success: true, data: undefined };
+      }
+
+      const result = await upsertAssignment({
+        chapterId,
+        userId,
+        roleMask: roleMask(remainingRoles),
+      });
+
       if (!result.success) return result;
       return { success: true, data: undefined };
     },
@@ -329,7 +354,8 @@ export default function ComicPlayground() {
   }, []);
 
   const handleLoadAssignableMembers = useCallback(
-    async (_chapterId: string): Promise<Result<MemberInfo[]>> => {
+    async (chapterId: string): Promise<Result<MemberInfo[]>> => {
+      void chapterId;
       if (!teamId) {
         return { success: true, data: [] };
       }
@@ -362,13 +388,10 @@ export default function ComicPlayground() {
         ? Array.from(new Set([...assignmentRoles(existing), role]))
         : [role];
 
-      const result = await api.put<
-        { id: string },
-        { chapter_id: string; user_id: string; role_mask: number }
-      >("/assignments", {
-        chapter_id: chapterId,
-        user_id: userId,
-        role_mask: roleMask(mergedRoles),
+      const result = await upsertAssignment({
+        chapterId,
+        userId,
+        roleMask: roleMask(mergedRoles),
       });
 
       if (!result.success) return result;
@@ -400,11 +423,24 @@ export default function ComicPlayground() {
 
   const handleAddPages = useCallback(
     async (chapterId: string, files: File[]) => {
+      const fileExtension = getUniformFileExtension(files);
+      if (fileExtension === null) {
+        const errorMessage = "所选文件后缀必须一致";
+        console.error("[ComicPlayground] 批量加页文件后缀不一致", {
+          chapterId,
+          files: files.map((file) => file.name),
+        });
+        showToast(errorMessage, "error");
+        throw new Error(errorMessage);
+      }
+
       const reserveResult = await reserveChapterPages({
         chapterId,
         pageCount: files.length,
+        fileExtension,
       });
       if (!reserveResult.success) {
+        console.error("[ComicPlayground] 预留页面失败:", reserveResult.error);
         throw new Error(reserveResult.error);
       }
 
@@ -419,16 +455,18 @@ export default function ComicPlayground() {
 
         const uploadResult = await uploadToPresignedUrl(creation.putUrl, file);
         if (!uploadResult.success) {
+          console.error("[ComicPlayground] 上传页面失败:", uploadResult.error);
           throw new Error(uploadResult.error);
         }
 
         const markResult = await updatePage(creation.pageId, { isUploaded: true });
         if (!markResult.success) {
+          console.error("[ComicPlayground] 标记页面上传状态失败:", markResult.error);
           throw new Error(markResult.error);
         }
       }
     },
-    [],
+    [showToast],
   );
 
   const handleDeleteChapterPages = useCallback(
@@ -570,7 +608,7 @@ export default function ComicPlayground() {
           onLoadAssignments={handleLoadAssignments}
           onLoadPages={handleLoadPages}
           onTransiteWorkflow={handleTransiteWorkflow}
-          onRemoveAssignment={handleRemoveAssignment}
+          onRemoveAssignment={handleRemoveRole}
           onLoadAssignableMembers={handleLoadAssignableMembers}
           onAddAssignment={handleAddAssignment}
           onCreateChapter={handleCreateChapter}
@@ -583,6 +621,7 @@ export default function ComicPlayground() {
           onExportChapter={handleExportChapter}
           onDeleteComic={handleDeleteComic}
           onClose={() => {
+            userClosedRef.current = true;
             setSelectedComic(null);
             setSelectedComicPinnedChapter(null);
             setComicDetailSearchParams(null, null);

@@ -29,7 +29,11 @@ export type PageInfo = Page & {
 
 export type PageCreationResult = { pageId: string; putUrl: string };
 
-export type ReserveChapterPagesArgs = { chapterId: string; pageCount: number };
+export type ReserveChapterPagesArgs = {
+  chapterId: string;
+  pageCount: number;
+  fileExtension: string;
+};
 export type ReserveChapterPagesResult = { creations: PageCreationResult[] };
 
 export type UpdatePageArgs = { id: string; isUploaded?: boolean };

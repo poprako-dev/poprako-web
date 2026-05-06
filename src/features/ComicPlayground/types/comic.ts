@@ -20,6 +20,13 @@ export type ListComicArgs = {
   worksetId: string;
 
   includes?: ComicInclude[];
+  fuzzyTitle?: string;
+  uploadPhase?: number;
+  translatePhase?: number;
+  proofreadPhase?: number;
+  typesetPhase?: number;
+  reviewPhase?: number;
+  publishPhase?: number;
 
   offset: number;
   limit: number;
@@ -28,6 +35,13 @@ export type ListComicArgs = {
 export type RawListComicArgs = {
   workset_id: string;
   includes?: ComicInclude[];
+  fuzzy_title?: string;
+  upload_phase?: number;
+  translate_phase?: number;
+  proofread_phase?: number;
+  typeset_phase?: number;
+  review_phase?: number;
+  publish_phase?: number;
 
   offset: number;
   limit: number;

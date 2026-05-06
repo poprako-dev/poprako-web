@@ -22,7 +22,7 @@ type Props = {
   selectedChapter?: ChapterInfo;
   assignments: AssignmentInfo[];
   onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
-  onRemoveAssignment?: (userId: string) => void;
+  onRemoveAssignment?: (userId: string, role: Role) => void;
   onAddAssignment?: (role: Role) => void;
   canOperateWorkflow?: boolean;
   canManageAssignments?: boolean;
@@ -42,14 +42,14 @@ const ROLE_DEFS: RoleDef[] = [
   {
     label: "图",
     addRole: "rawProvider",
-    matches: (a) => a.assignedRawProviderAt !== undefined,
+    matches: (a) => a.assignedRawProviderAt != null,
     getStatus: uploadWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "upload_complete"),
   },
   {
     label: "翻",
     addRole: "translator",
-    matches: (a) => a.assignedTranslatorAt !== undefined,
+    matches: (a) => a.assignedTranslatorAt != null,
     getStatus: translateWorkflowStatus,
     nextTransition: (s) => {
       if (s === "pending") return "translate_start";
@@ -60,7 +60,7 @@ const ROLE_DEFS: RoleDef[] = [
   {
     label: "校",
     addRole: "proofreader",
-    matches: (a) => a.assignedProofreaderAt !== undefined,
+    matches: (a) => a.assignedProofreaderAt != null,
     getStatus: proofreadWorkflowStatus,
     nextTransition: (s) => {
       if (s === "pending") return "proofread_start";
@@ -73,8 +73,8 @@ const ROLE_DEFS: RoleDef[] = [
     label: "嵌",
     addRole: "typesetter",
     matches: (a) =>
-      a.assignedTypesetterAt !== undefined ||
-      a.assignedRedrawerAt !== undefined,
+      a.assignedTypesetterAt != null ||
+      a.assignedRedrawerAt != null,
     getStatus: typesetWorkflowStatus,
     nextTransition: (s) => {
       if (s === "pending") return "typeset_start";
@@ -85,14 +85,14 @@ const ROLE_DEFS: RoleDef[] = [
   {
     label: "监",
     addRole: "reviewer",
-    matches: (a) => a.assignedReviewerAt !== undefined,
+    matches: (a) => a.assignedReviewerAt != null,
     getStatus: reviewWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "review_complete"),
   },
   {
     label: "传",
     addRole: "publisher",
-    matches: (a) => a.assignedPublisherAt !== undefined,
+    matches: (a) => a.assignedPublisherAt != null,
     getStatus: publishWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "publish_complete"),
   },
@@ -185,6 +185,7 @@ export default function AssignmentFooter({
               <RoleTag
                 key={roleDef.label}
                 label={roleDef.label}
+                role={roleDef.addRole}
                 assignments={roleAssignments}
                 status={status}
                 transition={canOperateWorkflow ? transition : null}

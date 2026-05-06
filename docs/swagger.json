@@ -6,66 +6,8 @@
         "contact": {},
         "version": "0.4.0"
     },
-    "basePath": "/api/v1",
     "paths": {
-        "/assignment-invitations": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create assignment invitation for one chapter\nThe caller must be reviewer of the target chapter\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "assignment-invitation"
-                ],
-                "summary": "Create Assignment Invitation",
-                "parameters": [
-                    {
-                        "description": "create assignment invitation args",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.CreateAssignmentInvArgs"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_CreateAssignmentInvRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/assignment-invitations/chapters/{chapter_id}": {
+        "/api/v1/assignment-invitations": {
             "get": {
                 "security": [
                     {
@@ -85,7 +27,7 @@
                         "type": "string",
                         "description": "chapter id",
                         "name": "chapter_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -111,31 +53,86 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_AssignmentInvVal"
+                            "$ref": "#/definitions/res.HttpRes-array_val_AssignmentInvVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create assignment invitation for one chapter\nThe caller must be reviewer of the target chapter\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assignment-invitation"
+                ],
+                "summary": "Create Assignment Invitation",
+                "parameters": [
+                    {
+                        "description": "create assignment invitation args",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/val.CreateAssignmentInvArgs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-val_CreateAssignmentInvRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/assignment-invitations/join": {
+        "/api/v1/assignment-invitations/join": {
             "post": {
                 "security": [
                     {
@@ -160,7 +157,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.JoinAssignmentInvArgs"
+                            "$ref": "#/definitions/val.JoinAssignmentInvArgs"
                         }
                     }
                 ],
@@ -168,31 +165,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/assignment-invitations/{invitation_id}": {
+        "/api/v1/assignment-invitations/{invitation_id}": {
             "delete": {
                 "security": [
                     {
@@ -220,31 +217,103 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/assignments": {
+        "/api/v1/assignments": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List assignments for one chapter\nThe caller must be reviewer of the target chapter\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assignment"
+                ],
+                "summary": "List Assignments By Chapter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "chapter id",
+                        "name": "chapter_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "include related fields, optional: user, chapter, chapter.comic, chapter.comic.workset, chapter.comic.workset.team, chapter.creator, chapter.comic.creator",
+                        "name": "includes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-array_val_AssignmentVal"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -269,7 +338,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.UpsertAssignmentArgs"
+                            "$ref": "#/definitions/val.UpsertAssignmentArgs"
                         }
                     }
                 ],
@@ -277,95 +346,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/assignments/chapters/{chapter_id}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "List assignments for one chapter\nThe caller must be reviewer of the target chapter\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "assignment"
-                ],
-                "summary": "List Assignments By Chapter",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "chapter id",
-                        "name": "chapter_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination offset",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination limit",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_AssignmentVal"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/assignments/mine": {
+        "/api/v1/assignments/mine": {
             "get": {
                 "security": [
                     {
@@ -382,6 +387,16 @@
                 "summary": "List My Assignments",
                 "parameters": [
                     {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "include related fields, optional: user, chapter, chapter.comic, chapter.comic.workset, chapter.comic.workset.team, chapter.creator, chapter.comic.creator",
+                        "name": "includes",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "pagination offset",
                         "name": "offset",
@@ -398,31 +413,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_AssignmentVal"
+                            "$ref": "#/definitions/res.HttpRes-array_val_AssignmentVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/assignments/{assignment_id}": {
+        "/api/v1/assignments/{assignment_id}": {
             "delete": {
                 "security": [
                     {
@@ -450,31 +465,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/auth/login": {
+        "/api/v1/auth/login": {
             "post": {
                 "description": "Login by qid and password and return a `res.HttpRes` wrapper with `val.UserLoginRes`",
                 "consumes": [
@@ -494,7 +509,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.UserLoginArgs"
+                            "$ref": "#/definitions/val.UserLoginArgs"
                         }
                     }
                 ],
@@ -502,19 +517,19 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_UserLoginRes"
+                            "$ref": "#/definitions/res.HttpRes-val_UserLoginRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/auth/register": {
+        "/api/v1/auth/register": {
             "post": {
                 "description": "Register by invitation code and return a `res.HttpRes` wrapper with `val.UserRegRes`",
                 "consumes": [
@@ -534,7 +549,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.UserRegArgs"
+                            "$ref": "#/definitions/val.UserRegArgs"
                         }
                     }
                 ],
@@ -542,19 +557,91 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_UserRegRes"
+                            "$ref": "#/definitions/res.HttpRes-val_UserRegRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/chapters": {
+        "/api/v1/chapters": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List chapters for one comic\nThe caller must be a member of the target comic team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chapter"
+                ],
+                "summary": "List Chapters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "comic id",
+                        "name": "comic_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "include related fields, optional: comic, comic.workset, comic.workset.team, comic.creator, creator",
+                        "name": "includes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-array_val_ChapterVal"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -579,7 +666,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.CreateChapterArgs"
+                            "$ref": "#/definitions/val.CreateChapterArgs"
                         }
                     }
                 ],
@@ -587,95 +674,31 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ChapterCreatedRes"
+                            "$ref": "#/definitions/res.HttpRes-val_ChapterCreatedRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/chapters/comics/{comic_id}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "List chapters for one comic\nThe caller must be a member of the target comic team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "chapter"
-                ],
-                "summary": "List Chapters",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "comic id",
-                        "name": "comic_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination offset",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination limit",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_ChapterVal"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/chapters/comics/{comic_id}/pinned": {
+        "/api/v1/chapters/pinned": {
             "get": {
                 "security": [
                     {
@@ -695,7 +718,7 @@
                         "type": "string",
                         "description": "comic id",
                         "name": "comic_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -703,31 +726,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ChapterVal"
+                            "$ref": "#/definitions/res.HttpRes-val_ChapterVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/chapters/{chapter_id}": {
+        "/api/v1/chapters/{chapter_id}": {
             "get": {
                 "security": [
                     {
@@ -749,37 +772,47 @@
                         "name": "chapter_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "include related fields, optional: comic, comic.workset, comic.workset.team, comic.creator, creator",
+                        "name": "includes",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ChapterVal"
+                            "$ref": "#/definitions/res.HttpRes-val_ChapterVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -815,7 +848,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ChapterUpdArgs"
+                            "$ref": "#/definitions/val.ChapterUpdArgs"
                         }
                     }
                 ],
@@ -823,25 +856,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -873,31 +906,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/chapters/{chapter_id}/export": {
+        "/api/v1/chapters/{chapter_id}/export": {
             "get": {
                 "security": [
                     {
@@ -925,37 +958,37 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ChapterExportVal"
+                            "$ref": "#/definitions/res.HttpRes-val_ChapterExportVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/chapters/{chapter_id}/export/lp": {
+        "/api/v1/chapters/{chapter_id}/export/lp": {
             "get": {
                 "security": [
                     {
@@ -989,31 +1022,31 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/chapters/{chapter_id}/import": {
+        "/api/v1/chapters/{chapter_id}/import": {
             "post": {
                 "security": [
                     {
@@ -1045,7 +1078,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ImportChapterBody"
+                            "$ref": "#/definitions/val.ImportChapterBody"
                         }
                     }
                 ],
@@ -1053,272 +1086,37 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ImportChapterRes"
+                            "$ref": "#/definitions/res.HttpRes-val_ImportChapterRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/chapters/{chapter_id}/pages": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "List pages under one chapter with pagination\nThe caller must be a member of the owning team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "chapter"
-                ],
-                "summary": "List Chapter Pages",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "chapter id",
-                        "name": "chapter_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination offset",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination limit",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_PageVal"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Hard-delete all pages under one chapter\nThe caller must be an admin of the owning team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "chapter"
-                ],
-                "summary": "Delete Chapter Pages",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "chapter id",
-                        "name": "chapter_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/chapters/{chapter_id}/pages/reserve": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Reserve signed upload URLs for all pages of one chapter\nThe caller must be an admin of the owning team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "chapter"
-                ],
-                "summary": "Reserve Chapter Pages Upload",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "chapter id",
-                        "name": "chapter_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "reserve chapter pages args",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ResvChapterPagesArgs"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ResvChapterPagesRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/comics": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create one comic under a workset\nThe caller must be an admin of the target workset team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "comic"
-                ],
-                "summary": "Create Comic",
-                "parameters": [
-                    {
-                        "description": "create comic args",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.CreateComicArgs"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ComicCreatedRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/comics/worksets/{workset_id}": {
+        "/api/v1/comics": {
             "get": {
                 "security": [
                     {
@@ -1338,7 +1136,7 @@
                         "type": "string",
                         "description": "workset id",
                         "name": "workset_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -1384,6 +1182,16 @@
                         "in": "query"
                     },
                     {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "include related fields, optional: workset, workset.team, creator",
+                        "name": "includes",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "pagination offset",
                         "name": "offset",
@@ -1400,31 +1208,86 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_ComicVal"
+                            "$ref": "#/definitions/res.HttpRes-array_val_ComicVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create one comic under a workset\nThe caller must be an admin of the target workset team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comic"
+                ],
+                "summary": "Create Comic",
+                "parameters": [
+                    {
+                        "description": "create comic args",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/val.CreateComicArgs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-val_ComicCreatedRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/comics/{comic_id}": {
+        "/api/v1/comics/{comic_id}": {
             "get": {
                 "security": [
                     {
@@ -1446,37 +1309,47 @@
                         "name": "comic_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "include related fields, optional: workset, workset.team, creator",
+                        "name": "includes",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ComicVal"
+                            "$ref": "#/definitions/res.HttpRes-val_ComicVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -1512,7 +1385,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ComicUpdArgs"
+                            "$ref": "#/definitions/val.ComicUpdArgs"
                         }
                     }
                 ],
@@ -1520,25 +1393,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -1570,31 +1443,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/comics/{comic_id}/cover": {
+        "/api/v1/comics/{comic_id}/cover": {
             "post": {
                 "security": [
                     {
@@ -1626,7 +1499,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ResvComicCoverBody"
+                            "$ref": "#/definitions/val.ResvComicCoverBody"
                         }
                     }
                 ],
@@ -1634,31 +1507,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ResvComicCoverRes"
+                            "$ref": "#/definitions/res.HttpRes-val_ResvComicCoverRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/comics/{comic_id}/cover/confirm": {
+        "/api/v1/comics/{comic_id}/cover/confirm": {
             "post": {
                 "security": [
                     {
@@ -1686,88 +1559,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/member-invitations": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create one invitation under one team\nThe caller must be team admin\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "member-invitation"
-                ],
-                "summary": "Create Member Invitation",
-                "parameters": [
-                    {
-                        "description": "create invitation args",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.CreateMemberInvArgs"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_CreateMemberInvRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/member-invitations/teams/{team_id}": {
+        "/api/v1/member-invitations": {
             "get": {
                 "security": [
                     {
@@ -1787,8 +1603,18 @@
                         "type": "string",
                         "description": "team id",
                         "name": "team_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "include related fields, optional: invitor, invitee",
+                        "name": "includes",
+                        "in": "query"
                     },
                     {
                         "type": "boolean",
@@ -1813,31 +1639,86 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_MemberInvVal"
+                            "$ref": "#/definitions/res.HttpRes-array_val_MemberInvVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create one invitation under one team\nThe caller must be team admin\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "member-invitation"
+                ],
+                "summary": "Create Member Invitation",
+                "parameters": [
+                    {
+                        "description": "create invitation args",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/val.CreateMemberInvArgs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-val_CreateMemberInvRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/member-invitations/{invitation_id}": {
+        "/api/v1/member-invitations/{invitation_id}": {
             "put": {
                 "security": [
                     {
@@ -1869,7 +1750,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.MemberInvUpdArgs"
+                            "$ref": "#/definitions/val.MemberInvUpdArgs"
                         }
                     }
                 ],
@@ -1877,25 +1758,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -1927,31 +1808,103 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/members": {
+        "/api/v1/members": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List members under one team\nThe caller must be a member of the target team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "member"
+                ],
+                "summary": "List Team Members",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "team id",
+                        "name": "team_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "include related fields, optional: user, team",
+                        "name": "includes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-array_val_MemberVal"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -1976,7 +1929,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.CreateMemberArgs"
+                            "$ref": "#/definitions/val.CreateMemberArgs"
                         }
                     }
                 ],
@@ -1984,31 +1937,31 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_CreateMemberRes"
+                            "$ref": "#/definitions/res.HttpRes-val_CreateMemberRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/members/join": {
+        "/api/v1/members/join": {
             "post": {
                 "security": [
                     {
@@ -2033,7 +1986,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.JoinTeamArgs"
+                            "$ref": "#/definitions/val.JoinTeamArgs"
                         }
                     }
                 ],
@@ -2041,31 +1994,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/members/mine": {
+        "/api/v1/members/mine": {
             "get": {
                 "security": [
                     {
@@ -2108,105 +2061,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_MemberVal"
+                            "$ref": "#/definitions/res.HttpRes-array_val_MemberVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/members/team/{team_id}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "List members under one team\nThe caller must be a member of the target team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "member"
-                ],
-                "summary": "List Team Members",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "team id",
-                        "name": "team_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "include related fields, optional: user, team",
-                        "name": "includes",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination offset",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination limit",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_MemberVal"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/members/{member_id}": {
+        "/api/v1/members/{member_id}": {
             "put": {
                 "security": [
                     {
@@ -2238,7 +2117,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.MemberRoleUpdArgs"
+                            "$ref": "#/definitions/val.MemberRoleUpdArgs"
                         }
                     }
                 ],
@@ -2246,25 +2125,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -2296,31 +2175,209 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/pages/{page_id}/image/uploaded": {
+        "/api/v1/pages": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List pages under one chapter with pagination\nThe caller must be a member of the owning team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chapter"
+                ],
+                "summary": "List Chapter Pages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "chapter id",
+                        "name": "chapter_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-array_val_PageVal"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Hard-delete all pages under one chapter\nThe caller must be an admin of the owning team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chapter"
+                ],
+                "summary": "Delete Chapter Pages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "chapter id",
+                        "name": "chapter_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pages/reserve": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Reserve signed upload URLs for all pages of one chapter\nThe caller must be an admin of the owning team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chapter"
+                ],
+                "summary": "Reserve Chapter Pages Upload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "chapter id",
+                        "name": "chapter_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "reserve chapter pages args",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/val.ResvChapterPagesArgs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-val_ResvChapterPagesRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pages/{page_id}/image/uploaded": {
             "post": {
                 "security": [
                     {
@@ -2348,157 +2405,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/pages/{page_id}/units": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "List units for one page\nThe caller must have any assignment on the target chapter\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "unit"
-                ],
-                "summary": "List Page Units",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "page id",
-                        "name": "page_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ListPageUnitsRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Apply one page unit diff and synchronize page and chapter counters\n\n## Operations\nEach op in `diff.ops` is classified automatically by the server:\n- **CREATE**: set `local_id`, leave `id` empty  Must include `is_bubble`, `is_proofread`, `x_coord`, `y_coord`\n- **SAVE (update/upsert)**: set `id` plus \u003e=1 mutable field  Must include all geometry fields (`is_bubble`, `is_proofread`, `x_coord`, `y_coord`)\n- **DELETE**: set `id` only, no mutable fields\nMutable fields: `is_bubble`, `is_proofread`, `x_coord`, `y_coord`, `translated_text`, `translator_comment`, `last_translator_id`, `proofread_text`, `proofreader_comment`, `last_proofreader_id`\n\n## `cand_order` (client-suggested reindex order)\nAn ordered list of unit identifiers to control the final display order after mutations are applied\nUse `local_id` for CREATE ops or real `id` for SAVE ops\nMust include every `local_id` and `id` from CREATE/SAVE ops  Must exclude all deleted ids  No duplicates  No empty strings\nUnits not listed in `cand_order` are kept near their original neighbours\n\n## Validation rules (return 400 on failure)\n- `diff.page_id` must match the path `page_id`\n- Each op must have `local_id` xor `id` (not both, not neither)\n- CREATE ops require `is_bubble`, `is_proofread`, `x_coord`, `y_coord`\n- SAVE ops require all geometry fields plus at least one mutable field\n- The same unit cannot appear in both a CREATE/SAVE op and a DELETE op\n- `cand_order` must not contain ids being deleted\n\n## Permission\nThe caller must be translator or proofreader on the target chapter\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "unit"
-                ],
-                "summary": "Save Page Units",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "page id",
-                        "name": "page_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "save page units args",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.SavePageUnitsArgs"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_SavePageUnitsRes"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/sys-mails": {
+        "/api/v1/sys-mails": {
             "get": {
                 "security": [
                     {
@@ -2531,31 +2462,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_SysMailVal"
+                            "$ref": "#/definitions/res.HttpRes-array_val_SysMailVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/sys-mails/{sys_mail_id}/read": {
+        "/api/v1/sys-mails/{sys_mail_id}/read": {
             "post": {
                 "security": [
                     {
@@ -2583,31 +2514,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/teams": {
+        "/api/v1/teams": {
             "get": {
                 "security": [
                     {
@@ -2639,25 +2570,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_TeamVal"
+                            "$ref": "#/definitions/res.HttpRes-array_val_TeamVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -2685,7 +2616,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.TeamCreArgs"
+                            "$ref": "#/definitions/val.TeamCreArgs"
                         }
                     }
                 ],
@@ -2693,31 +2624,31 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_TeamCreRes"
+                            "$ref": "#/definitions/res.HttpRes-val_TeamCreRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/teams/mine": {
+        "/api/v1/teams/mine": {
             "get": {
                 "security": [
                     {
@@ -2749,31 +2680,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_TeamVal"
+                            "$ref": "#/definitions/res.HttpRes-array_val_TeamVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/teams/{team_id}": {
+        "/api/v1/teams/{team_id}": {
             "get": {
                 "security": [
                     {
@@ -2800,13 +2731,13 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_TeamVal"
+                            "$ref": "#/definitions/res.HttpRes-val_TeamVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -2841,7 +2772,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.TeamUpdArgs"
+                            "$ref": "#/definitions/val.TeamUpdArgs"
                         }
                     }
                 ],
@@ -2849,31 +2780,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/teams/{team_id}/avatar": {
+        "/api/v1/teams/{team_id}/avatar": {
             "post": {
                 "security": [
                     {
@@ -2904,7 +2835,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ResvTeamAvatarArgs"
+                            "$ref": "#/definitions/val.ResvTeamAvatarArgs"
                         }
                     }
                 ],
@@ -2912,31 +2843,31 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ResvTeamAvatarRes"
+                            "$ref": "#/definitions/res.HttpRes-val_ResvTeamAvatarRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/teams/{team_id}/avatar/confirm": {
+        "/api/v1/teams/{team_id}/avatar/confirm": {
             "post": {
                 "security": [
                     {
@@ -2963,31 +2894,157 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/users/avatar": {
+        "/api/v1/units": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List units for one page\nThe caller must have any assignment on the target chapter\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "unit"
+                ],
+                "summary": "List Page Units",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "page id",
+                        "name": "page_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-val_ListPageUnitsRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Apply one page unit diff and synchronize page and chapter counters\n\n## Operations\nEach op in `diff.ops` is classified automatically by the server:\n- **CREATE**: set `local_id`, leave `id` empty  Must include `is_bubble`, `is_proofread`, `x_coord`, `y_coord`\n- **SAVE (update/upsert)**: set `id` plus \u003e=1 mutable field  Must include all geometry fields (`is_bubble`, `is_proofread`, `x_coord`, `y_coord`)\n- **DELETE**: set `id` only, no mutable fields\nMutable fields: `is_bubble`, `is_proofread`, `x_coord`, `y_coord`, `translated_text`, `translator_comment`, `last_translator_id`, `proofread_text`, `proofreader_comment`, `last_proofreader_id`\n\n## `cand_order` (client-suggested reindex order)\nAn ordered list of unit identifiers to control the final display order after mutations are applied\nUse `local_id` for CREATE ops or real `id` for SAVE ops\nMust include every `local_id` and `id` from CREATE/SAVE ops  Must exclude all deleted ids  No duplicates  No empty strings\nUnits not listed in `cand_order` are kept near their original neighbours\n\n## Validation rules (return 400 on failure)\n- `diff.page_id` must match the query `page_id`\n- Each op must have `local_id` xor `id` (not both, not neither)\n- CREATE ops require `is_bubble`, `is_proofread`, `x_coord`, `y_coord`\n- SAVE ops require all geometry fields plus at least one mutable field\n- The same unit cannot appear in both a CREATE/SAVE op and a DELETE op\n- `cand_order` must not contain ids being deleted\n\n## Permission\nThe caller must be translator or proofreader on the target chapter\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "unit"
+                ],
+                "summary": "Save Page Units",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "page id",
+                        "name": "page_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "save page units args",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/val.SavePageUnitsArgs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-val_SavePageUnitsRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/avatar": {
             "post": {
                 "security": [
                     {
@@ -3012,7 +3069,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ResvUserAvatarArgs"
+                            "$ref": "#/definitions/val.ResvUserAvatarArgs"
                         }
                     }
                 ],
@@ -3020,25 +3077,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ResvUserAvatarRes"
+                            "$ref": "#/definitions/res.HttpRes-val_ResvUserAvatarRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/users/avatar/confirm": {
+        "/api/v1/users/avatar/confirm": {
             "post": {
                 "security": [
                     {
@@ -3060,13 +3117,13 @@
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/users/me": {
+        "/api/v1/users/me": {
             "get": {
                 "security": [
                     {
@@ -3085,13 +3142,13 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_UserVal"
+                            "$ref": "#/definitions/res.HttpRes-val_UserVal"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -3119,7 +3176,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.UserUpdArgs"
+                            "$ref": "#/definitions/val.UserUpdArgs"
                         }
                     }
                 ],
@@ -3127,25 +3184,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/users/{user_id}": {
+        "/api/v1/users/{user_id}": {
             "get": {
                 "security": [
                     {
@@ -3173,31 +3230,93 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_UserVal"
+                            "$ref": "#/definitions/res.HttpRes-val_UserVal"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/worksets": {
+        "/api/v1/worksets": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "List all active worksets for a team\nThe caller must be a member of the specified team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workset"
+                ],
+                "summary": "List Worksets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "team id",
+                        "name": "team_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pagination limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-array_val_WorksetVal"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/res.HttpRes-any"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -3222,7 +3341,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.CreateWorksetArgs"
+                            "$ref": "#/definitions/val.CreateWorksetArgs"
                         }
                     }
                 ],
@@ -3230,95 +3349,31 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_WorksetCreatedRes"
+                            "$ref": "#/definitions/res.HttpRes-val_WorksetCreatedRes"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
             }
         },
-        "/worksets/team/{team_id}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "List all active worksets for a team\nThe caller must be a member of the specified team\nAuth: `authorization` cookie is preferred over `Authorization` header when both are present",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "workset"
-                ],
-                "summary": "List Worksets",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "team id",
-                        "name": "team_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination offset",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "pagination limit",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_WorksetVal"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/worksets/{workset_id}": {
+        "/api/v1/worksets/{workset_id}": {
             "put": {
                 "security": [
                     {
@@ -3350,7 +3405,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.WorksetUpdArgs"
+                            "$ref": "#/definitions/val.WorksetUpdArgs"
                         }
                     }
                 ],
@@ -3358,25 +3413,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -3408,25 +3463,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/poprako-s_internal_api_http_res.HttpRes-any"
+                            "$ref": "#/definitions/res.HttpRes-any"
                         }
                     }
                 }
@@ -3434,7 +3489,32 @@
         }
     },
     "definitions": {
-        "poprako-s_internal_api_http_res.HttpRes-any": {
+        "enum.WorkflowTransition": {
+            "type": "string",
+            "enum": [
+                "upload_complete",
+                "translate_start",
+                "translate_complete",
+                "proofread_start",
+                "proofread_complete",
+                "typeset_start",
+                "typeset_complete",
+                "review_complete",
+                "publish_complete"
+            ],
+            "x-enum-varnames": [
+                "WorkflowUploadComplete",
+                "WorkflowTranslateStart",
+                "WorkflowTranslateComplete",
+                "WorkflowProofreadStart",
+                "WorkflowProofreadComplete",
+                "WorkflowTypesetStart",
+                "WorkflowTypesetComplete",
+                "WorkflowReviewComplete",
+                "WorkflowPublishComplete"
+            ]
+        },
+        "res.HttpRes-any": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3450,7 +3530,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_AssignmentInvVal": {
+        "res.HttpRes-array_val_AssignmentInvVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3461,7 +3541,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.AssignmentInvVal"
+                        "$ref": "#/definitions/val.AssignmentInvVal"
                     }
                 },
                 "message": {
@@ -3470,7 +3550,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_AssignmentVal": {
+        "res.HttpRes-array_val_AssignmentVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3481,7 +3561,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.AssignmentVal"
+                        "$ref": "#/definitions/val.AssignmentVal"
                     }
                 },
                 "message": {
@@ -3490,7 +3570,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_ChapterVal": {
+        "res.HttpRes-array_val_ChapterVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3501,7 +3581,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.ChapterVal"
+                        "$ref": "#/definitions/val.ChapterVal"
                     }
                 },
                 "message": {
@@ -3510,7 +3590,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_ComicVal": {
+        "res.HttpRes-array_val_ComicVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3521,7 +3601,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.ComicVal"
+                        "$ref": "#/definitions/val.ComicVal"
                     }
                 },
                 "message": {
@@ -3530,7 +3610,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_MemberInvVal": {
+        "res.HttpRes-array_val_MemberInvVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3541,7 +3621,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.MemberInvVal"
+                        "$ref": "#/definitions/val.MemberInvVal"
                     }
                 },
                 "message": {
@@ -3550,7 +3630,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_MemberVal": {
+        "res.HttpRes-array_val_MemberVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3561,7 +3641,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.MemberVal"
+                        "$ref": "#/definitions/val.MemberVal"
                     }
                 },
                 "message": {
@@ -3570,7 +3650,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_PageVal": {
+        "res.HttpRes-array_val_PageVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3581,7 +3661,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.PageVal"
+                        "$ref": "#/definitions/val.PageVal"
                     }
                 },
                 "message": {
@@ -3590,7 +3670,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_SysMailVal": {
+        "res.HttpRes-array_val_SysMailVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3601,7 +3681,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.SysMailVal"
+                        "$ref": "#/definitions/val.SysMailVal"
                     }
                 },
                 "message": {
@@ -3610,7 +3690,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_TeamVal": {
+        "res.HttpRes-array_val_TeamVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3621,7 +3701,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.TeamVal"
+                        "$ref": "#/definitions/val.TeamVal"
                     }
                 },
                 "message": {
@@ -3630,7 +3710,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-array_poprako-s_internal_app_val_WorksetVal": {
+        "res.HttpRes-array_val_WorksetVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3641,7 +3721,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.WorksetVal"
+                        "$ref": "#/definitions/val.WorksetVal"
                     }
                 },
                 "message": {
@@ -3650,7 +3730,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ChapterCreatedRes": {
+        "res.HttpRes-val_ChapterCreatedRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3661,7 +3741,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ChapterCreatedRes"
+                            "$ref": "#/definitions/val.ChapterCreatedRes"
                         }
                     ]
                 },
@@ -3671,7 +3751,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ChapterExportVal": {
+        "res.HttpRes-val_ChapterExportVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3682,7 +3762,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ChapterExportVal"
+                            "$ref": "#/definitions/val.ChapterExportVal"
                         }
                     ]
                 },
@@ -3692,7 +3772,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ChapterVal": {
+        "res.HttpRes-val_ChapterVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3703,7 +3783,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ChapterVal"
+                            "$ref": "#/definitions/val.ChapterVal"
                         }
                     ]
                 },
@@ -3713,7 +3793,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ComicCreatedRes": {
+        "res.HttpRes-val_ComicCreatedRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3724,7 +3804,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ComicCreatedRes"
+                            "$ref": "#/definitions/val.ComicCreatedRes"
                         }
                     ]
                 },
@@ -3734,7 +3814,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ComicVal": {
+        "res.HttpRes-val_ComicVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3745,7 +3825,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ComicVal"
+                            "$ref": "#/definitions/val.ComicVal"
                         }
                     ]
                 },
@@ -3755,7 +3835,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_CreateAssignmentInvRes": {
+        "res.HttpRes-val_CreateAssignmentInvRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3766,7 +3846,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.CreateAssignmentInvRes"
+                            "$ref": "#/definitions/val.CreateAssignmentInvRes"
                         }
                     ]
                 },
@@ -3776,7 +3856,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_CreateMemberInvRes": {
+        "res.HttpRes-val_CreateMemberInvRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3787,7 +3867,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.CreateMemberInvRes"
+                            "$ref": "#/definitions/val.CreateMemberInvRes"
                         }
                     ]
                 },
@@ -3797,7 +3877,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_CreateMemberRes": {
+        "res.HttpRes-val_CreateMemberRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3808,7 +3888,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.CreateMemberRes"
+                            "$ref": "#/definitions/val.CreateMemberRes"
                         }
                     ]
                 },
@@ -3818,7 +3898,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ImportChapterRes": {
+        "res.HttpRes-val_ImportChapterRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3829,7 +3909,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ImportChapterRes"
+                            "$ref": "#/definitions/val.ImportChapterRes"
                         }
                     ]
                 },
@@ -3839,7 +3919,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ListPageUnitsRes": {
+        "res.HttpRes-val_ListPageUnitsRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3850,7 +3930,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ListPageUnitsRes"
+                            "$ref": "#/definitions/val.ListPageUnitsRes"
                         }
                     ]
                 },
@@ -3860,7 +3940,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ResvChapterPagesRes": {
+        "res.HttpRes-val_ResvChapterPagesRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3871,7 +3951,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ResvChapterPagesRes"
+                            "$ref": "#/definitions/val.ResvChapterPagesRes"
                         }
                     ]
                 },
@@ -3881,7 +3961,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ResvComicCoverRes": {
+        "res.HttpRes-val_ResvComicCoverRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3892,7 +3972,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ResvComicCoverRes"
+                            "$ref": "#/definitions/val.ResvComicCoverRes"
                         }
                     ]
                 },
@@ -3902,7 +3982,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ResvTeamAvatarRes": {
+        "res.HttpRes-val_ResvTeamAvatarRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3913,7 +3993,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ResvTeamAvatarRes"
+                            "$ref": "#/definitions/val.ResvTeamAvatarRes"
                         }
                     ]
                 },
@@ -3923,7 +4003,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_ResvUserAvatarRes": {
+        "res.HttpRes-val_ResvUserAvatarRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3934,7 +4014,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.ResvUserAvatarRes"
+                            "$ref": "#/definitions/val.ResvUserAvatarRes"
                         }
                     ]
                 },
@@ -3944,7 +4024,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_SavePageUnitsRes": {
+        "res.HttpRes-val_SavePageUnitsRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3955,7 +4035,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.SavePageUnitsRes"
+                            "$ref": "#/definitions/val.SavePageUnitsRes"
                         }
                     ]
                 },
@@ -3965,7 +4045,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_TeamCreRes": {
+        "res.HttpRes-val_TeamCreRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3976,7 +4056,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.TeamCreRes"
+                            "$ref": "#/definitions/val.TeamCreRes"
                         }
                     ]
                 },
@@ -3986,7 +4066,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_TeamVal": {
+        "res.HttpRes-val_TeamVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -3997,7 +4077,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.TeamVal"
+                            "$ref": "#/definitions/val.TeamVal"
                         }
                     ]
                 },
@@ -4007,7 +4087,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_UserLoginRes": {
+        "res.HttpRes-val_UserLoginRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -4018,7 +4098,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.UserLoginRes"
+                            "$ref": "#/definitions/val.UserLoginRes"
                         }
                     ]
                 },
@@ -4028,7 +4108,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_UserRegRes": {
+        "res.HttpRes-val_UserRegRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -4039,7 +4119,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.UserRegRes"
+                            "$ref": "#/definitions/val.UserRegRes"
                         }
                     ]
                 },
@@ -4049,7 +4129,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_UserVal": {
+        "res.HttpRes-val_UserVal": {
             "type": "object",
             "properties": {
                 "code": {
@@ -4060,7 +4140,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.UserVal"
+                            "$ref": "#/definitions/val.UserVal"
                         }
                     ]
                 },
@@ -4070,7 +4150,7 @@
                 }
             }
         },
-        "poprako-s_internal_api_http_res.HttpRes-poprako-s_internal_app_val_WorksetCreatedRes": {
+        "res.HttpRes-val_WorksetCreatedRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -4081,7 +4161,7 @@
                     "description": "`Data` holds the response payload; nil when no body is returned",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_app_val.WorksetCreatedRes"
+                            "$ref": "#/definitions/val.WorksetCreatedRes"
                         }
                     ]
                 },
@@ -4091,7 +4171,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.AssignmentInvVal": {
+        "val.AssignmentInvVal": {
             "type": "object",
             "properties": {
                 "chapter_id": {
@@ -4123,7 +4203,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.AssignmentVal": {
+        "val.AssignmentVal": {
             "type": "object",
             "properties": {
                 "assigned_proofreader_at": {
@@ -4147,6 +4227,9 @@
                 "assigned_typesetter_at": {
                     "type": "integer"
                 },
+                "chapter": {
+                    "$ref": "#/definitions/val.ChapterVal"
+                },
                 "chapter_id": {
                     "type": "string"
                 },
@@ -4162,12 +4245,15 @@
                 "updated_at": {
                     "type": "integer"
                 },
+                "user": {
+                    "$ref": "#/definitions/val.UserVal"
+                },
                 "user_id": {
                     "type": "string"
                 }
             }
         },
-        "poprako-s_internal_app_val.ChapterCreatedRes": {
+        "val.ChapterCreatedRes": {
             "type": "object",
             "properties": {
                 "id": {
@@ -4176,7 +4262,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ChapterExportVal": {
+        "val.ChapterExportVal": {
             "type": "object",
             "properties": {
                 "chapter_id": {
@@ -4197,12 +4283,12 @@
                 "pages": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.PageExportVal"
+                        "$ref": "#/definitions/val.PageExportVal"
                     }
                 }
             }
         },
-        "poprako-s_internal_app_val.ChapterUpdArgs": {
+        "val.ChapterUpdArgs": {
             "type": "object",
             "properties": {
                 "id": {
@@ -4221,20 +4307,26 @@
                     "description": "`WorkflowTransition` drives workflow timestamp mutation.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/poprako-s_internal_domain_model_enum.WorkflowTransition"
+                            "$ref": "#/definitions/enum.WorkflowTransition"
                         }
                     ]
                 }
             }
         },
-        "poprako-s_internal_app_val.ChapterVal": {
+        "val.ChapterVal": {
             "type": "object",
             "properties": {
+                "comic": {
+                    "$ref": "#/definitions/val.ComicVal"
+                },
                 "comic_id": {
                     "type": "string"
                 },
                 "created_at": {
                     "type": "integer"
+                },
+                "creator": {
+                    "$ref": "#/definitions/val.UserVal"
                 },
                 "creator_id": {
                     "type": "string"
@@ -4295,7 +4387,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ComicCreatedRes": {
+        "val.ComicCreatedRes": {
             "type": "object",
             "properties": {
                 "id": {
@@ -4304,7 +4396,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ComicUpdArgs": {
+        "val.ComicUpdArgs": {
             "type": "object",
             "properties": {
                 "author": {
@@ -4325,7 +4417,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ComicVal": {
+        "val.ComicVal": {
             "type": "object",
             "properties": {
                 "author": {
@@ -4342,6 +4434,9 @@
                 },
                 "created_at": {
                     "type": "integer"
+                },
+                "creator": {
+                    "$ref": "#/definitions/val.UserVal"
                 },
                 "creator_id": {
                     "type": "string"
@@ -4367,12 +4462,15 @@
                 "updated_at": {
                     "type": "integer"
                 },
+                "workset": {
+                    "$ref": "#/definitions/val.WorksetVal"
+                },
                 "workset_id": {
                     "type": "string"
                 }
             }
         },
-        "poprako-s_internal_app_val.CreateAssignmentInvArgs": {
+        "val.CreateAssignmentInvArgs": {
             "type": "object",
             "properties": {
                 "chapter_id": {
@@ -4386,7 +4484,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.CreateAssignmentInvRes": {
+        "val.CreateAssignmentInvRes": {
             "type": "object",
             "properties": {
                 "id": {
@@ -4397,7 +4495,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.CreateChapterArgs": {
+        "val.CreateChapterArgs": {
             "type": "object",
             "properties": {
                 "comic_id": {
@@ -4410,7 +4508,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.CreateComicArgs": {
+        "val.CreateComicArgs": {
             "type": "object",
             "properties": {
                 "author": {
@@ -4431,7 +4529,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.CreateMemberArgs": {
+        "val.CreateMemberArgs": {
             "type": "object",
             "properties": {
                 "role_mask": {
@@ -4445,7 +4543,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.CreateMemberInvArgs": {
+        "val.CreateMemberInvArgs": {
             "type": "object",
             "properties": {
                 "invitee_qid": {
@@ -4459,7 +4557,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.CreateMemberInvRes": {
+        "val.CreateMemberInvRes": {
             "type": "object",
             "properties": {
                 "id": {
@@ -4470,7 +4568,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.CreateMemberRes": {
+        "val.CreateMemberRes": {
             "type": "object",
             "properties": {
                 "id": {
@@ -4478,7 +4576,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.CreateWorksetArgs": {
+        "val.CreateWorksetArgs": {
             "type": "object",
             "properties": {
                 "description": {
@@ -4495,7 +4593,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ImportChapterBody": {
+        "val.ImportChapterBody": {
             "type": "object",
             "properties": {
                 "content": {
@@ -4506,7 +4604,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ImportChapterRes": {
+        "val.ImportChapterRes": {
             "type": "object",
             "properties": {
                 "imported_page_count": {
@@ -4517,7 +4615,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.JoinAssignmentInvArgs": {
+        "val.JoinAssignmentInvArgs": {
             "type": "object",
             "properties": {
                 "invitation_code": {
@@ -4525,7 +4623,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.JoinTeamArgs": {
+        "val.JoinTeamArgs": {
             "type": "object",
             "properties": {
                 "invitation_code": {
@@ -4533,7 +4631,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ListPageUnitsRes": {
+        "val.ListPageUnitsRes": {
             "type": "object",
             "properties": {
                 "proofread_unit_count": {
@@ -4548,12 +4646,12 @@
                 "units": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.UnitVal"
+                        "$ref": "#/definitions/val.UnitVal"
                     }
                 }
             }
         },
-        "poprako-s_internal_app_val.MemberInvUpdArgs": {
+        "val.MemberInvUpdArgs": {
             "type": "object",
             "properties": {
                 "id": {
@@ -4564,7 +4662,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.MemberInvVal": {
+        "val.MemberInvVal": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -4576,8 +4674,14 @@
                 "invitation_code": {
                     "type": "string"
                 },
+                "invitee": {
+                    "$ref": "#/definitions/val.UserVal"
+                },
                 "invitee_qid": {
                     "type": "string"
+                },
+                "invitor": {
+                    "$ref": "#/definitions/val.UserVal"
                 },
                 "invitor_id": {
                     "type": "string"
@@ -4593,7 +4697,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.MemberRoleUpdArgs": {
+        "val.MemberRoleUpdArgs": {
             "type": "object",
             "properties": {
                 "id": {
@@ -4604,7 +4708,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.MemberVal": {
+        "val.MemberVal": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -4617,7 +4721,7 @@
                     "type": "integer"
                 },
                 "team": {
-                    "$ref": "#/definitions/poprako-s_internal_app_val.TeamVal"
+                    "$ref": "#/definitions/val.TeamVal"
                 },
                 "team_id": {
                     "type": "string"
@@ -4626,14 +4730,14 @@
                     "type": "integer"
                 },
                 "user": {
-                    "$ref": "#/definitions/poprako-s_internal_app_val.UserVal"
+                    "$ref": "#/definitions/val.UserVal"
                 },
                 "user_id": {
                     "type": "string"
                 }
             }
         },
-        "poprako-s_internal_app_val.PageCreationRes": {
+        "val.PageCreationRes": {
             "type": "object",
             "properties": {
                 "page_id": {
@@ -4644,7 +4748,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.PageExportVal": {
+        "val.PageExportVal": {
             "type": "object",
             "properties": {
                 "image_url": {
@@ -4662,12 +4766,12 @@
                 "units": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.UnitExportVal"
+                        "$ref": "#/definitions/val.UnitExportVal"
                     }
                 }
             }
         },
-        "poprako-s_internal_app_val.PageVal": {
+        "val.PageVal": {
             "type": "object",
             "properties": {
                 "chapter_id": {
@@ -4702,7 +4806,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ResvChapterPagesArgs": {
+        "val.ResvChapterPagesArgs": {
             "type": "object",
             "properties": {
                 "chapter_id": {
@@ -4716,18 +4820,18 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ResvChapterPagesRes": {
+        "val.ResvChapterPagesRes": {
             "type": "object",
             "properties": {
                 "creations": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.PageCreationRes"
+                        "$ref": "#/definitions/val.PageCreationRes"
                     }
                 }
             }
         },
-        "poprako-s_internal_app_val.ResvComicCoverBody": {
+        "val.ResvComicCoverBody": {
             "type": "object",
             "properties": {
                 "file_extension": {
@@ -4735,7 +4839,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ResvComicCoverRes": {
+        "val.ResvComicCoverRes": {
             "type": "object",
             "properties": {
                 "put_url": {
@@ -4743,7 +4847,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ResvTeamAvatarArgs": {
+        "val.ResvTeamAvatarArgs": {
             "type": "object",
             "properties": {
                 "file_extension": {
@@ -4754,7 +4858,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ResvTeamAvatarRes": {
+        "val.ResvTeamAvatarRes": {
             "type": "object",
             "properties": {
                 "put_url": {
@@ -4762,7 +4866,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ResvUserAvatarArgs": {
+        "val.ResvUserAvatarArgs": {
             "type": "object",
             "properties": {
                 "file_extension": {
@@ -4773,7 +4877,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.ResvUserAvatarRes": {
+        "val.ResvUserAvatarRes": {
             "type": "object",
             "properties": {
                 "put_url": {
@@ -4781,18 +4885,18 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.SavePageUnitsArgs": {
+        "val.SavePageUnitsArgs": {
             "type": "object",
             "properties": {
-                "diff": {
-                    "$ref": "#/definitions/poprako-s_internal_app_val.UnitDiffVal"
+                "difference": {
+                    "$ref": "#/definitions/val.UnitDiffVal"
                 },
                 "page_id": {
                     "type": "string"
                 }
             }
         },
-        "poprako-s_internal_app_val.SavePageUnitsRes": {
+        "val.SavePageUnitsRes": {
             "type": "object",
             "properties": {
                 "proofread_unit_count": {
@@ -4806,7 +4910,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.SysMailVal": {
+        "val.SysMailVal": {
             "type": "object",
             "properties": {
                 "content": {
@@ -4826,7 +4930,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.TeamCreArgs": {
+        "val.TeamCreArgs": {
             "type": "object",
             "properties": {
                 "description": {
@@ -4837,7 +4941,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.TeamCreRes": {
+        "val.TeamCreRes": {
             "type": "object",
             "properties": {
                 "id": {
@@ -4845,7 +4949,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.TeamUpdArgs": {
+        "val.TeamUpdArgs": {
             "type": "object",
             "properties": {
                 "description": {
@@ -4859,7 +4963,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.TeamVal": {
+        "val.TeamVal": {
             "type": "object",
             "properties": {
                 "avatar_uploaded": {
@@ -4885,21 +4989,21 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.UnitDiffVal": {
+        "val.UnitDiffVal": {
             "type": "object",
             "properties": {
-                "cand_order": {
+                "candidate_order": {
                     "description": "`CandOrder` is the client-suggested unit ordering for reindexing\nUse `local_id` for create ops or real `id` for save ops",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "ops": {
+                "operations": {
                     "description": "`Ops` is a list of unit operations applied before reindexing",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/poprako-s_internal_app_val.UnitOpVal"
+                        "$ref": "#/definitions/val.UnitOpVal"
                     }
                 },
                 "page_id": {
@@ -4908,7 +5012,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.UnitExportVal": {
+        "val.UnitExportVal": {
             "type": "object",
             "properties": {
                 "is_bubble": {
@@ -4955,7 +5059,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.UnitOpVal": {
+        "val.UnitOpVal": {
             "type": "object",
             "properties": {
                 "id": {
@@ -5008,7 +5112,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.UnitVal": {
+        "val.UnitVal": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -5058,7 +5162,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.UpsertAssignmentArgs": {
+        "val.UpsertAssignmentArgs": {
             "type": "object",
             "properties": {
                 "chapter_id": {
@@ -5072,18 +5176,18 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.UserLoginArgs": {
+        "val.UserLoginArgs": {
             "type": "object",
             "properties": {
-                "pwd": {
+                "password": {
                     "type": "string"
                 },
-                "qq": {
+                "qid": {
                     "type": "string"
                 }
             }
         },
-        "poprako-s_internal_app_val.UserLoginRes": {
+        "val.UserLoginRes": {
             "type": "object",
             "properties": {
                 "token": {
@@ -5094,7 +5198,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.UserRegArgs": {
+        "val.UserRegArgs": {
             "type": "object",
             "properties": {
                 "invitation_code": {
@@ -5106,12 +5210,12 @@
                 "password": {
                     "type": "string"
                 },
-                "qq": {
+                "qid": {
                     "type": "string"
                 }
             }
         },
-        "poprako-s_internal_app_val.UserRegRes": {
+        "val.UserRegRes": {
             "type": "object",
             "properties": {
                 "token": {
@@ -5122,7 +5226,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.UserUpdArgs": {
+        "val.UserUpdArgs": {
             "type": "object",
             "properties": {
                 "id": {
@@ -5131,12 +5235,12 @@
                 "name": {
                     "type": "string"
                 },
-                "qq": {
+                "qid": {
                     "type": "string"
                 }
             }
         },
-        "poprako-s_internal_app_val.UserVal": {
+        "val.UserVal": {
             "type": "object",
             "properties": {
                 "avatar_uploaded": {
@@ -5160,7 +5264,7 @@
                 "nickname": {
                     "type": "string"
                 },
-                "qq": {
+                "qid": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -5168,7 +5272,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.WorksetCreatedRes": {
+        "val.WorksetCreatedRes": {
             "type": "object",
             "properties": {
                 "id": {
@@ -5177,7 +5281,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.WorksetUpdArgs": {
+        "val.WorksetUpdArgs": {
             "type": "object",
             "properties": {
                 "description": {
@@ -5194,7 +5298,7 @@
                 }
             }
         },
-        "poprako-s_internal_app_val.WorksetVal": {
+        "val.WorksetVal": {
             "type": "object",
             "properties": {
                 "comic_count": {
@@ -5215,6 +5319,9 @@
                 "name": {
                     "type": "string"
                 },
+                "team": {
+                    "$ref": "#/definitions/val.TeamVal"
+                },
                 "team_id": {
                     "type": "string"
                 },
@@ -5222,31 +5329,6 @@
                     "type": "integer"
                 }
             }
-        },
-        "poprako-s_internal_domain_model_enum.WorkflowTransition": {
-            "type": "string",
-            "enum": [
-                "upload_complete",
-                "translate_start",
-                "translate_complete",
-                "proofread_start",
-                "proofread_complete",
-                "typeset_start",
-                "typeset_complete",
-                "review_complete",
-                "publish_complete"
-            ],
-            "x-enum-varnames": [
-                "WorkflowUploadComplete",
-                "WorkflowTranslateStart",
-                "WorkflowTranslateComplete",
-                "WorkflowProofreadStart",
-                "WorkflowProofreadComplete",
-                "WorkflowTypesetStart",
-                "WorkflowTypesetComplete",
-                "WorkflowReviewComplete",
-                "WorkflowPublishComplete"
-            ]
         }
     },
     "securityDefinitions": {

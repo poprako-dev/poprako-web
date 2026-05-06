@@ -37,7 +37,11 @@ export async function updateMemberRole(
 export async function listMembers(
   args: ListMembersArgs,
 ): Promise<Result<MemberInfo[]>> {
-  const query: Record<string, string | number | boolean | (string | number | boolean)[]> = {
+  const query: Record<
+    string,
+    string | number | boolean | (string | number | boolean)[]
+  > = {
+    team_id: args.teamId,
     offset: args.offset,
     limit: args.limit,
   };
@@ -46,10 +50,7 @@ export async function listMembers(
     query.includes = args.includes;
   }
 
-  const result = await api.get<RawMemberInfo[] | null>(
-    `/members/team/${args.teamId}`,
-    query,
-  );
+  const result = await api.get<RawMemberInfo[] | null>("/members", query);
   if (!result.success) return result;
 
   return {

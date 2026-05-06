@@ -15,16 +15,13 @@ import type {
 export async function listWorksets(
   args: ListWorksetArgs,
 ): Promise<Result<WorksetInfo[]>> {
-  const rawArgs: Omit<RawListWorksetArgs, "team_id"> = {
+  const rawArgs: RawListWorksetArgs = {
+    team_id: args.teamId,
     offset: args.offset,
     limit: args.limit,
-    includes: args.includes,
   };
 
-  const res = await api.get<RawWorksetInfo[]>(
-    `/worksets/team/${args.teamId}`,
-    rawArgs,
-  );
+  const res = await api.get<RawWorksetInfo[]>("/worksets", rawArgs);
   if (!res.success) return res;
 
   const items = Array.isArray(res.data) ? res.data : [];

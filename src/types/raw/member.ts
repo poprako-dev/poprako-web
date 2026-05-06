@@ -8,7 +8,7 @@ export type RawMemberInfo = {
   team_id: string;
   user?: {
     id: string;
-    qq: string;
+    qid: string;
     nickname: string;
     avatar_url: string;
     avatar_uploaded: boolean;
@@ -31,7 +31,7 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
     user: raw.user
       ? {
           id: raw.user.id,
-          qq: raw.user.qq,
+          qq: raw.user.qid,
           name: raw.user.nickname,
           avatarUrl: raw.user.avatar_url,
           isAvatarUploaded: raw.user.avatar_uploaded,

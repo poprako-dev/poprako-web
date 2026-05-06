@@ -2,7 +2,7 @@ import type { UserInfo, ReserveUserAvatarResult } from "../user";
 
 export type RawUserInfo = {
   id: string;
-  qq: string;
+  qid: string;
   nickname: string;
   avatar_url: string;
   avatar_uploaded: boolean;
@@ -14,7 +14,7 @@ export type RawUserInfo = {
 export function unwrapRawUserInfo(raw: RawUserInfo): UserInfo {
   return {
     id: raw.id,
-    qq: raw.qq,
+    qq: raw.qid,
     name: raw.nickname,
     avatarUrl: raw.avatar_url,
     isAvatarUploaded: raw.avatar_uploaded,

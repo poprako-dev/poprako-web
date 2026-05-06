@@ -10,16 +10,21 @@ type ListInvitationsArgs = {
   teamId: string;
   offset: number;
   limit: number;
+  includes?: Array<"invitor" | "invitee">;
+  pending?: boolean;
 };
 
 export async function listInvitations(
   args: ListInvitationsArgs,
 ): Promise<Result<InvitationInfo[]>> {
   const result = await api.get<RawInvitationInfo[] | null>(
-    `/member-invitations/teams/${args.teamId}`,
+    "/member-invitations",
     {
+    team_id: args.teamId,
     offset: args.offset,
     limit: args.limit,
+    pending: args.pending,
+    includes: args.includes,
     },
   );
 

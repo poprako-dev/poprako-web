@@ -24,7 +24,9 @@ export type ListPageUnitsResult = {
 export async function listUnits(
   pageId: string,
 ): Promise<Result<ListPageUnitsResult>> {
-  const res = await api.get<RawListPageUnitsResult>(`/pages/${pageId}/units`);
+  const res = await api.get<RawListPageUnitsResult>("/units", {
+    page_id: pageId,
+  });
   if (!res.success) return res;
 
   const data = unwrapRawListPageUnitsResult(res.data);
@@ -45,12 +47,13 @@ export async function saveUnits(
 ): Promise<Result<SavePageUnitsResult>> {
   const payload = {
     page_id: pageId,
-    diff: wrapUnitDiff(pageId, diff),
+    difference: wrapUnitDiff(pageId, diff),
   };
 
   const res = await api.post<RawSavePageUnitsResult, typeof payload>(
-    `/pages/${pageId}/units`,
+    "/units",
     payload,
+    { page_id: pageId },
   );
   if (!res.success) return res;
 
@@ -60,7 +63,8 @@ export async function saveUnits(
 export async function listPages(
   chapterId: string,
 ): Promise<Result<PageInfo[]>> {
-  const res = await api.get<RawPageInfo[]>(`/chapters/${chapterId}/pages`, {
+  const res = await api.get<RawPageInfo[]>("/pages", {
+    chapter_id: chapterId,
     offset: 0,
     limit: 500,
   });

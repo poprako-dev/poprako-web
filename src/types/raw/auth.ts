@@ -6,9 +6,9 @@ import type {
   UpdateUserArgs,
 } from "../auth";
 
-export type RawLoginUserArgs = { qq: string; password: string };
+export type RawLoginUserArgs = { qid: string; password: string };
 export function unwrapRawLoginUserArgs(raw: RawLoginUserArgs): LoginUserArgs {
-  return { qq: raw.qq, password: raw.password };
+  return { qq: raw.qid, password: raw.password };
 }
 
 export type RawLoginUserResult = { access_token: string; user_id: string };
@@ -19,7 +19,7 @@ export function unwrapRawLoginUserResult(
 }
 
 export type RawRegisterUserArgs = {
-  qq: string;
+  qid: string;
   password: string;
   name: string;
   invitation_code: string;
@@ -28,7 +28,7 @@ export function unwrapRawRegisterUserArgs(
   raw: RawRegisterUserArgs,
 ): RegisterUserArgs {
   return {
-    qq: raw.qq,
+    qq: raw.qid,
     password: raw.password,
     name: raw.name,
     invitationCode: raw.invitation_code,
@@ -44,7 +44,7 @@ export function unwrapRawRegisterUserResult(
 
 export type RawUpdateUserArgs = {
   user_id: string;
-  qq?: string;
+  qid?: string;
   name?: string;
   password?: string;
 };
@@ -53,7 +53,7 @@ export function unwrapRawUpdateUserArgs(
 ): UpdateUserArgs {
   return {
     userId: raw.user_id,
-    qq: raw.qq,
+    qq: raw.qid,
     name: raw.name,
     password: raw.password,
   };

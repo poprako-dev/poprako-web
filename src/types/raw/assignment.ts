@@ -36,24 +36,32 @@ export function unwrapRawAssignmentInfo(
   // timestamps from it. Use `created_at` as the timestamp value so the
   // fields are truthy. Fall back to legacy individual fields when `role_mask`
   // is absent.
-  let assignedRawProviderAt = raw.assigned_raw_provider_at;
-  let assignedTranslatorAt = raw.assigned_translator_at;
-  let assignedProofreaderAt = raw.assigned_proofreader_at;
-  let assignedTypesetterAt = raw.assigned_typesetter_at;
-  let assignedRedrawerAt = raw.assigned_redrawer_at;
-  let assignedReviewerAt = raw.assigned_reviewer_at;
-  let assignedPublisherAt = raw.assigned_publisher_at;
+  let assignedRawProviderAt: number | undefined;
+  let assignedTranslatorAt: number | undefined;
+  let assignedProofreaderAt: number | undefined;
+  let assignedTypesetterAt: number | undefined;
+  let assignedRedrawerAt: number | undefined;
+  let assignedReviewerAt: number | undefined;
+  let assignedPublisherAt: number | undefined;
 
   if (raw.role_mask !== undefined && raw.role_mask !== null) {
     const roles = unmaskRoles(raw.role_mask);
     const ts = raw.created_at;
-    if (roles.includes("rawProvider")) assignedRawProviderAt = ts;
-    if (roles.includes("translator")) assignedTranslatorAt = ts;
-    if (roles.includes("proofreader")) assignedProofreaderAt = ts;
-    if (roles.includes("typesetter")) assignedTypesetterAt = ts;
-    if (roles.includes("redrawer")) assignedRedrawerAt = ts;
-    if (roles.includes("reviewer")) assignedReviewerAt = ts;
-    if (roles.includes("publisher")) assignedPublisherAt = ts;
+    assignedRawProviderAt = roles.includes("rawProvider") ? ts : undefined;
+    assignedTranslatorAt = roles.includes("translator") ? ts : undefined;
+    assignedProofreaderAt = roles.includes("proofreader") ? ts : undefined;
+    assignedTypesetterAt = roles.includes("typesetter") ? ts : undefined;
+    assignedRedrawerAt = roles.includes("redrawer") ? ts : undefined;
+    assignedReviewerAt = roles.includes("reviewer") ? ts : undefined;
+    assignedPublisherAt = roles.includes("publisher") ? ts : undefined;
+  } else {
+    assignedRawProviderAt = raw.assigned_raw_provider_at ?? undefined;
+    assignedTranslatorAt = raw.assigned_translator_at ?? undefined;
+    assignedProofreaderAt = raw.assigned_proofreader_at ?? undefined;
+    assignedTypesetterAt = raw.assigned_typesetter_at ?? undefined;
+    assignedRedrawerAt = raw.assigned_redrawer_at ?? undefined;
+    assignedReviewerAt = raw.assigned_reviewer_at ?? undefined;
+    assignedPublisherAt = raw.assigned_publisher_at ?? undefined;
   }
 
   return {
@@ -75,7 +83,7 @@ export function unwrapRawAssignmentInfo(
 }
 
 export type RawListAssignmentArgs = {
-  chapter_id: number;
+  chapter_id: string;
   includes?: string[];
   offset: number;
   limit: number;

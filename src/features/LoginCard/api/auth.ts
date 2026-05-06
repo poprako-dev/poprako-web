@@ -18,9 +18,13 @@ import type { Result } from "@/types/utils/result";
 export async function loginUser(
   args: LoginUserArgs,
 ): Promise<Result<LoginUserResult>> {
-  const res = await api.post<RawLoginUserResult, LoginUserArgs>(
+  const rawArgs = {
+    qid: args.qq,
+    password: args.password,
+  };
+  const res = await api.post<RawLoginUserResult, typeof rawArgs>(
     "/auth/login",
-    args,
+    rawArgs,
     false,
   );
   if (!res.success) return res;
@@ -31,7 +35,7 @@ export async function registerUser(
   args: RegisterUserArgs,
 ): Promise<Result<RegisterUserResult>> {
   const rawArgs = {
-    qq: args.qq,
+    qid: args.qq,
     password: args.password,
     name: args.name,
     invitation_code: args.invitationCode,

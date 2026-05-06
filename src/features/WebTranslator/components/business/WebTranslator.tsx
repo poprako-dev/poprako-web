@@ -11,8 +11,7 @@ import {
   saveUnits,
   listPages,
 } from "../../api/translator";
-import { unwrapRawAssignmentInfo, type RawAssignmentInfo } from "@/types/raw/assignment";
-import { api } from "@/api/util";
+import { listAssignmentsByChapter } from "@/api/assignment";
 
 type Props = {
   chapterId: string;
@@ -87,14 +86,15 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
       let isCurrUserProofreader = false;
 
       if (userId) {
-        const assignResult = await api.get<RawAssignmentInfo[]>(
-          `/assignments/chapters/${chapterId}`,
-          { offset: 0, limit: 100 },
-        );
+        const assignResult = await listAssignmentsByChapter({
+          chapterId,
+          offset: 0,
+          limit: 100,
+        });
         if (assignResult.success) {
-          const assignments = (assignResult.data ?? []).map(unwrapRawAssignmentInfo);
+          const assignments = assignResult.data;
           isCurrUserProofreader = assignments.some(
-            (a) => a.userId === userId && a.assignedProofreaderAt !== undefined,
+            (a) => a.userId === userId && a.assignedProofreaderAt != null,
           );
         }
       }

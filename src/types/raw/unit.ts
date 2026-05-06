@@ -109,15 +109,15 @@ export function wrapUnitOp(op: UnitOp): RawUnitOp {
 
 export type RawUnitDiff = {
   page_id: string;
-  ops: RawUnitOp[];
-  cand_order: string[];
+  operations: RawUnitOp[];
+  candidate_order: string[];
 };
 
 export function wrapUnitDiff(pageId: string, diff: UnitDiff): RawUnitDiff {
   return {
     page_id: pageId,
-    ops: diff.ops.map(wrapUnitOp),
-    cand_order: diff.candOrder,
+    operations: diff.ops.map(wrapUnitOp),
+    candidate_order: diff.candOrder,
   };
 }
 

@@ -2,9 +2,14 @@ import type { LoginUserResult, LoginUserArgs } from "@/types";
 import { api } from "./util";
 
 export async function loginUser(args: LoginUserArgs) {
-  const result = await api.post<LoginUserResult, LoginUserArgs>(
+  const body = {
+    qid: args.qq,
+    password: args.password,
+  };
+
+  const result = await api.post<LoginUserResult, typeof body>(
     "/auth/login",
-    args,
+    body,
     false,
   );
 

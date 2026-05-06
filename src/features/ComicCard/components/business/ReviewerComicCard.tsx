@@ -235,7 +235,7 @@ export default function ReviewerComicCard({
           <div className="grid grid-cols-2 gap-1.5 overflow-hidden text-[12px]">
             {ROLE_MAP.map((roleDef) => {
               const matchedUsers = details.filter(
-                (detail) => detail[roleDef.field] !== undefined,
+                (detail) => detail[roleDef.field] != null,
               );
               const names =
                 matchedUsers

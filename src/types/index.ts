@@ -6,5 +6,6 @@ export * from "./unit";
 export * from "./comic";
 export * from "./chapter";
 export * from "./invitation";
+export * from "./assignmentInvitation";
 export * from "./auth";
 export * from "./workflow";
