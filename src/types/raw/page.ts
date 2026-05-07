@@ -4,6 +4,7 @@ import type {
   ReserveChapterPagesArgs,
   ReserveChapterPagesResult,
 } from "../page";
+import { ensureHttpsUrl } from "@/utils/url";
 
 export type RawPageInfo = {
   id: string;
@@ -27,7 +28,7 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
     translatedUnitCount: raw.translated_unit_count,
     proofreadUnitCount: raw.proofread_unit_count,
     chapterId: raw.chapter_id,
-    imageUrl: raw.image_url,
+    imageUrl: ensureHttpsUrl(raw.image_url),
     isUploaded: raw.image_uploaded ?? false,
     creatorId: raw.creator_id ?? "",
     createdAt: raw.created_at,

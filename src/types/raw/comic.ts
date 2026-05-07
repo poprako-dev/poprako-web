@@ -6,6 +6,7 @@ import type {
 } from "../comic";
 import type { RawUserInfo } from "./user";
 import type { RawWorksetInfo } from "./workset";
+import { ensureHttpsUrl } from "@/utils/url";
 
 export type RawComicInfo = {
   id: string;
@@ -39,7 +40,7 @@ export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
     creatorId: raw.creator_id,
     index: raw.index,
     chapterCount: raw.chapter_count,
-    coverUrl: raw.cover_url,
+    coverUrl: ensureHttpsUrl(raw.cover_url),
     lastActiveAt: raw.last_active_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,

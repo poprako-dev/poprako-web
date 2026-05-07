@@ -1,4 +1,5 @@
 import type { UserInfo, ReserveUserAvatarResult } from "../user";
+import { ensureHttpsUrl } from "@/utils/url";
 
 export type RawUserInfo = {
   id: string;
@@ -16,7 +17,7 @@ export function unwrapRawUserInfo(raw: RawUserInfo): UserInfo {
     id: raw.id,
     qq: raw.qid,
     name: raw.nickname,
-    avatarUrl: raw.avatar_url,
+    avatarUrl: ensureHttpsUrl(raw.avatar_url),
     isAvatarUploaded: raw.avatar_uploaded,
     isSuperAdmin: raw.is_super_admin,
     createdAt: raw.created_at,

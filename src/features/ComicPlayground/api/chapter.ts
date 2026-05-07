@@ -17,6 +17,7 @@ import type {
   ImportChapterResult,
   RawImportChapterResult,
 } from "../types/chapter";
+import { ensureHttpsUrl } from "@/utils/url";
 
 export async function listChapters(
   args: ListChapterArgs,
@@ -104,7 +105,7 @@ function unwrapRawChapterExport(raw: RawChapterExport): ChapterExport {
     pages: (raw.pages ?? []).map((page) => ({
       pageId: page.page_id,
       pageIndex: page.page_index,
-      imageUrl: page.image_url,
+      imageUrl: ensureHttpsUrl(page.image_url),
       isUploaded: page.is_uploaded,
       units: (page.units ?? []).map((unit) => ({
         unitId: unit.unit_id,

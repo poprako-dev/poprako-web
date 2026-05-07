@@ -2,6 +2,7 @@ import type { RawComicInfo } from "./raw/comic";
 import { unwrapRawUserInfo } from "./raw/user";
 import type { UserInfo } from "./user";
 import { toWorksetInfo, type WorksetInfo } from "./workset";
+import { ensureHttpsUrl } from "@/utils/url";
 
 export type ComicInfo = {
   id: string;
@@ -44,7 +45,7 @@ export function toComicInfo(raw?: RawComicInfo) {
     author: raw.author,
     description: raw.description,
 
-    coverUrl: raw.cover_url,
+    coverUrl: ensureHttpsUrl(raw.cover_url),
     isCoverUploaded: !!raw.cover_url,
 
     creatorId: raw.creator_id,

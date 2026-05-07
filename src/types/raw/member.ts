@@ -1,6 +1,7 @@
 import type { MemberInfo } from "../member";
 import { unmaskRoles } from "../role";
 import type { RawTeamInfo } from "./team";
+import { ensureHttpsUrl } from "@/utils/url";
 
 export type RawMemberInfo = {
   id: string;
@@ -33,7 +34,7 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
           id: raw.user.id,
           qq: raw.user.qid,
           name: raw.user.nickname,
-          avatarUrl: raw.user.avatar_url,
+          avatarUrl: ensureHttpsUrl(raw.user.avatar_url),
           isAvatarUploaded: raw.user.avatar_uploaded,
           isSuperAdmin: raw.user.is_super_admin,
           createdAt: raw.user.created_at,
@@ -46,7 +47,7 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
           id: raw.team.id,
           name: raw.team.name,
           description: raw.team.description,
-          avatarUrl: raw.team.avatar_url,
+          avatarUrl: ensureHttpsUrl(raw.team.avatar_url),
           isAvatarUploaded: raw.team.avatar_uploaded,
           createdAt: raw.team.created_at,
           updatedAt: raw.team.updated_at,

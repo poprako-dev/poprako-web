@@ -5,6 +5,7 @@ import type {
   UpdateTeamArgs,
   ReserveTeamAvatarResult,
 } from "../team";
+import { ensureHttpsUrl } from "@/utils/url";
 
 export type RawTeamInfo = {
   id: string;
@@ -21,7 +22,7 @@ export function unwrapRawTeamInfo(raw: RawTeamInfo): TeamInfo {
     id: raw.id,
     name: raw.name,
     description: raw.description,
-    avatarUrl: raw.avatar_url,
+    avatarUrl: ensureHttpsUrl(raw.avatar_url),
     isAvatarUploaded: raw.avatar_uploaded,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,

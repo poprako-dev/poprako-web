@@ -1,4 +1,5 @@
 import type { RawTeamInfo } from "./raw/team";
+import { ensureHttpsUrl } from "@/utils/url";
 
 export type TeamInfo = {
   id: string;
@@ -20,7 +21,7 @@ export function toTeamInfo(raw?: RawTeamInfo) {
     id: raw.id,
     name: raw.name,
     description: raw.description,
-    avatarUrl: raw.avatar_url,
+    avatarUrl: ensureHttpsUrl(raw.avatar_url),
     isAvatarUploaded: !!raw.avatar_url,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
