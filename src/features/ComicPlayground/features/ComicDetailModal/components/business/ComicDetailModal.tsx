@@ -25,6 +25,10 @@ import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useAppStore } from "@/store/app";
+import {
+  updatePage,
+  uploadToPresignedUrl,
+} from "@/features/ComicPlayground/api/page";
 import LazyImage from "./LazyImage";
 import StatItem from "./StatItem";
 import ActionButton from "./ActionButton";
@@ -80,6 +84,11 @@ type Props = {
   currentUserId?: string | null;
   onAddPages?: (chapterId: string, files: File[]) => Promise<void>;
   onDeleteChapterPages?: (chapterId: string) => Promise<Result<void>>;
+  onReservePageUpload?: (args: {
+    pageId: string;
+    fileExtension: string;
+  }) => Promise<Result<{ pageId: string; putUrl: string }>>;
+  onJoinChapterRole?: (chapterId: string, role: Role) => Promise<Result<void>>;
   onImportChapter?: (args: {
     chapterId: string;
     content: string;
@@ -107,6 +116,8 @@ export default function ComicDetailModal({
   currentUserId,
   onAddPages,
   onDeleteChapterPages,
+  onReservePageUpload,
+  onJoinChapterRole,
   onImportChapter,
   onExportChapter,
   onDeleteComic,
@@ -129,6 +140,10 @@ export default function ComicDetailModal({
   const [isExportingData, setIsExportingData] = useState(false);
   const [isDeletingChapterPages, setIsDeletingChapterPages] = useState(false);
   const [isDeletingComic, setIsDeletingComic] = useState(false);
+  const [reuploadingPageIds, setReuploadingPageIds] = useState<
+    Record<string, boolean>
+  >({});
+  const [joiningRoles, setJoiningRoles] = useState<Partial<Record<Role, boolean>>>({});
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
   const [canCreateChapter, setCanCreateChapter] = useState(false);
@@ -159,6 +174,7 @@ export default function ComicDetailModal({
     canUploadRawPages && pages.length > 0 && !!selectedChapterId && !!onDeleteChapterPages;
   const canUploadNewRawPages =
     canUploadRawPages && pages.length === 0 && !!selectedChapterId && !!onAddPages;
+  const canReuploadRawPages = canUploadRawPages && !!onReservePageUpload;
   const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
   const assignedUserIdsForSelectedRole =
     memberSelectorRole === null
@@ -472,6 +488,101 @@ export default function ComicDetailModal({
 
     await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
     showToast("页面已清空", "success");
+  };
+
+  const getFileExtension = (file: File): string | null => {
+    const dotIndex = file.name.lastIndexOf(".");
+    if (dotIndex < 0 || dotIndex === file.name.length - 1) return null;
+    return file.name.slice(dotIndex + 1).toLowerCase();
+  };
+
+  const handleReuploadPage = async (pageId: string, file: File) => {
+    if (!onReservePageUpload || reuploadingPageIds[pageId]) return;
+
+    const fileExtension = getFileExtension(file);
+    if (!fileExtension) {
+      showToast("请选择带后缀的图片文件", "error");
+      return;
+    }
+
+    setReuploadingPageIds((prev) => ({ ...prev, [pageId]: true }));
+    try {
+      const reserveResult = await onReservePageUpload({ pageId, fileExtension });
+      if (!reserveResult.success) {
+        console.error("[ComicDetailModal] 重上传预留失败:", reserveResult);
+        showToast(reserveResult.error, "error");
+        return;
+      }
+
+      const uploadResult = await uploadToPresignedUrl(reserveResult.data.putUrl, file);
+      if (!uploadResult.success) {
+        console.error("[ComicDetailModal] 重上传文件失败:", uploadResult.error);
+        showToast(uploadResult.error, "error");
+        return;
+      }
+
+      const markResult = await updatePage(reserveResult.data.pageId, { isUploaded: true });
+      if (!markResult.success) {
+        console.error("[ComicDetailModal] 标记重上传状态失败:", markResult.error);
+        showToast(markResult.error, "error");
+        return;
+      }
+
+      await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
+      showToast("重上传成功", "success");
+    } catch (err) {
+      console.error("[ComicDetailModal] 重上传异常:", err);
+      showToast(err instanceof Error ? err.message : "重上传失败", "error");
+    } finally {
+      setReuploadingPageIds((prev) => ({ ...prev, [pageId]: false }));
+    }
+  };
+
+  const isRoleAlreadyJoined = (role: Role) => {
+    if (!currentAssignment) return false;
+    if (role === "typesetter") {
+      return (
+        hasRole(currentAssignment, "typesetter") ||
+        hasRole(currentAssignment, "redrawer")
+      );
+    }
+    return hasRole(currentAssignment, role);
+  };
+
+  const canJoinRole = (role: Role) => {
+    if (!activeMember || !onJoinChapterRole || !selectedChapterId || !currentUserId) {
+      return false;
+    }
+    return hasRole(activeMember, role) && !isRoleAlreadyJoined(role);
+  };
+
+  const handleJoinRole = async (role: Role) => {
+    if (!selectedChapterId || !onJoinChapterRole || joiningRoles[role]) return;
+
+    setJoiningRoles((prev) => ({ ...prev, [role]: true }));
+    try {
+      const result = await onJoinChapterRole(selectedChapterId, role);
+      if (!result.success) {
+        console.error("[ComicDetailModal] 加入章节分工失败:", result);
+        showToast(result.error, "error");
+        return;
+      }
+
+      const refreshedAssignments = await onLoadAssignments(selectedChapterId);
+      if (!refreshedAssignments.success) {
+        console.error("[ComicDetailModal] 刷新分工失败:", refreshedAssignments);
+        showToast(refreshedAssignments.error, "error");
+        return;
+      }
+
+      setAssignments(refreshedAssignments.data);
+      showToast("加入分工成功", "success");
+    } catch (err) {
+      console.error("[ComicDetailModal] 加入章节分工异常:", err);
+      showToast(err instanceof Error ? err.message : "加入分工失败", "error");
+    } finally {
+      setJoiningRoles((prev) => ({ ...prev, [role]: false }));
+    }
   };
 
   const handleDeleteCurrentComic = async () => {
@@ -878,6 +989,10 @@ export default function ComicDetailModal({
           ? handleAddRawPages
           : undefined
       }
+      canReuploadPage={canReuploadRawPages ? () => true : undefined}
+      isPageReuploading={(pageId) => !!reuploadingPageIds[pageId]}
+      onReuploadPage={canReuploadRawPages ? handleReuploadPage : undefined}
+      reuploadAccept="image/*"
       accept="image/*"
       emptyHintText="支持拖拽上传图片"
       uploadButtonText="点击或拖拽图片上传"
@@ -891,6 +1006,9 @@ export default function ComicDetailModal({
       onTransiteWorkflow={handleTransition}
       onRemoveAssignment={onRemoveAssignment ? handleRemoveAssignment : undefined}
       onAddAssignment={onAddAssignment ? handleOpenMemberSelector : undefined}
+      onJoinRole={onJoinChapterRole ? handleJoinRole : undefined}
+      canJoinRole={onJoinChapterRole ? canJoinRole : undefined}
+      isRoleJoining={(role) => !!joiningRoles[role]}
       canOperateWorkflow={canManageChapterAssignments}
       canManageAssignments={canManageChapterAssignments}
     />

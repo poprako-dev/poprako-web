@@ -24,6 +24,9 @@ type Props = {
   onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
   onRemoveAssignment?: (userId: string, role: Role) => void;
   onAddAssignment?: (role: Role) => void;
+  onJoinRole?: (role: Role) => void;
+  canJoinRole?: (role: Role) => boolean;
+  isRoleJoining?: (role: Role) => boolean;
   canOperateWorkflow?: boolean;
   canManageAssignments?: boolean;
 };
@@ -121,6 +124,9 @@ export default function AssignmentFooter({
   onTransiteWorkflow,
   onRemoveAssignment,
   onAddAssignment,
+  onJoinRole,
+  canJoinRole,
+  isRoleJoining,
   canOperateWorkflow = false,
   canManageAssignments = false,
 }: Props) {
@@ -195,6 +201,15 @@ export default function AssignmentFooter({
                   canManageAssignments && onAddAssignment
                     ? () => onAddAssignment(roleDef.addRole)
                     : undefined
+                }
+                canJoinSelf={
+                  canJoinRole ? canJoinRole(roleDef.addRole) : false
+                }
+                isJoiningSelf={
+                  isRoleJoining ? isRoleJoining(roleDef.addRole) : false
+                }
+                onJoinSelf={
+                  onJoinRole ? () => onJoinRole(roleDef.addRole) : undefined
                 }
               />
             );

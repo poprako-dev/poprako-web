@@ -23,12 +23,16 @@ export default function LazyImage({
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
+        const isVisible = entry.isIntersecting;
+        setVisible(isVisible);
+        if (!isVisible) {
+          setLoaded(false);
         }
       },
-      { threshold: 0.05 },
+      {
+        rootMargin: "200px",
+        threshold: 0.05,
+      },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -48,6 +52,7 @@ export default function LazyImage({
         <img
           src={src}
           alt={alt}
+          decoding="async"
           onLoad={() => setLoaded(true)}
           className={clsx(
             "w-full h-full object-cover transition-opacity duration-300",

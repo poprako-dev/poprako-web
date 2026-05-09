@@ -59,6 +59,50 @@ export async function reserveChapterPages(
   };
 }
 
+type ReserveExistingPageUploadArgs = {
+  pageId: string;
+  fileExtension: string;
+};
+
+type RawReserveExistingPageUploadArgs = {
+  page_id: string;
+  file_extension: string;
+};
+
+type ReserveExistingPageUploadResult = {
+  pageId: string;
+  putUrl: string;
+};
+
+type RawReserveExistingPageUploadResult = {
+  page_id: string;
+  put_url: string;
+};
+
+export async function reserveExistingPageUpload(
+  args: ReserveExistingPageUploadArgs,
+): Promise<Result<ReserveExistingPageUploadResult>> {
+  const rawArgs: RawReserveExistingPageUploadArgs = {
+    page_id: args.pageId,
+    file_extension: args.fileExtension,
+  };
+
+  const res = await api.post<
+    RawReserveExistingPageUploadResult,
+    RawReserveExistingPageUploadArgs
+  >(`/pages/${args.pageId}/reserve`, rawArgs);
+
+  if (!res.success) return res;
+
+  return {
+    success: true,
+    data: {
+      pageId: res.data.page_id,
+      putUrl: res.data.put_url,
+    },
+  };
+}
+
 export async function deletePage(pageId: string): Promise<Result<void>> {
   const res = await api.delete<void>(`/pages/${pageId}`);
   if (!res.success) return res;

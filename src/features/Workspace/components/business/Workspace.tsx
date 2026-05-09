@@ -22,16 +22,19 @@ import {
   updateChapter,
   exportChapter,
   importChapter,
+  joinChapter,
 } from "@/features/ComicPlayground/api/chapter";
 import {
   listPages,
   deleteChapterPages,
   reserveChapterPages,
+  reserveExistingPageUpload,
   updatePage,
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
 import { listAssignmentsByChapter } from "@/api/assignment";
 import type { ListChapterArgs, WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
+import { roleMask, type Role } from "@/types/role";
 import clsx from "clsx";
 
 function getUniformFileExtension(files: File[]): string | null {
@@ -182,6 +185,24 @@ export default function Workspace() {
       transition: WorkflowTransition,
     ): Promise<Result<void>> => {
       return updateChapter(chapterId, { workflowTransition: transition });
+    },
+    [],
+  );
+
+  const handleJoinChapterRole = useCallback(
+    async (chapterId: string, role: Role): Promise<Result<void>> => {
+      const result = await joinChapter(chapterId, roleMask([role]));
+      if (!result.success) {
+        console.error("[Workspace] 加入章节分工失败:", result.error);
+      }
+      return result;
+    },
+    [],
+  );
+
+  const handleReservePageUpload = useCallback(
+    async (args: { pageId: string; fileExtension: string }) => {
+      return reserveExistingPageUpload(args);
     },
     [],
   );
@@ -354,6 +375,8 @@ export default function Workspace() {
           currentUserId={currentUserId}
           onAddPages={handleAddPages}
           onDeleteChapterPages={handleDeleteChapterPages}
+          onReservePageUpload={handleReservePageUpload}
+          onJoinChapterRole={handleJoinChapterRole}
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
           onDeleteComic={handleDeleteComic}

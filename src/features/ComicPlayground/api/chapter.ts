@@ -164,3 +164,18 @@ export async function importChapter(
     data: unwrapRawImportChapterResult(res.data as RawImportChapterResult),
   };
 }
+
+export async function joinChapter(
+  chapterId: string,
+  roleMask: number,
+): Promise<Result<void>> {
+  const res = await api.post<void, { chapter_id: string; role_mask: number }>(
+    `/chapters/${chapterId}/join`,
+    {
+      chapter_id: chapterId,
+      role_mask: roleMask,
+    },
+  );
+  if (!res.success) return res;
+  return { success: true, data: undefined };
+}

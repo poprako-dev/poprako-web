@@ -16,11 +16,13 @@ import {
   updateChapter,
   exportChapter,
   importChapter,
+  joinChapter,
 } from "../../api/chapter";
 import {
   listPages,
   deleteChapterPages,
   reserveChapterPages,
+  reserveExistingPageUpload,
   updatePage,
   uploadToPresignedUrl,
 } from "../../api/page";
@@ -410,6 +412,24 @@ export default function ComicPlayground() {
     [],
   );
 
+  const handleJoinChapterRole = useCallback(
+    async (chapterId: string, role: Role): Promise<Result<void>> => {
+      const result = await joinChapter(chapterId, roleMask([role]));
+      if (!result.success) {
+        console.error("[ComicPlayground] 加入章节分工失败:", result.error);
+      }
+      return result;
+    },
+    [],
+  );
+
+  const handleReservePageUpload = useCallback(
+    async (args: { pageId: string; fileExtension: string }) => {
+      return reserveExistingPageUpload(args);
+    },
+    [],
+  );
+
   const handleExportChapter = useCallback(async (chapterId: string) => {
     return exportChapter(chapterId);
   }, []);
@@ -617,6 +637,8 @@ export default function ComicPlayground() {
           currentUserId={currentUserId}
           onAddPages={handleAddPages}
           onDeleteChapterPages={handleDeleteChapterPages}
+          onReservePageUpload={handleReservePageUpload}
+          onJoinChapterRole={handleJoinChapterRole}
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
           onDeleteComic={handleDeleteComic}

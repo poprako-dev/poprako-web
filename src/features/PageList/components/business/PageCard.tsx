@@ -1,8 +1,10 @@
+import { useRef, type ChangeEvent } from "react";
 import clsx from "clsx";
-import { Trash2 } from "lucide-react";
+import { Trash2, Upload } from "lucide-react";
 import type { PageInfo } from "@/types";
 import MultiProgressBar from "@/components/ui/MultiProgressBar";
-import LazyImage from "@/features/ComicPlayground/features/ComicDetailModal/components/business/LazyImage";
+import LazyImage from
+  "@/features/ComicPlayground/features/ComicDetailModal/components/business/LazyImage";
 
 type Props = {
   page: PageInfo;
@@ -10,6 +12,10 @@ type Props = {
   onDelete?: () => void;
   enableDelete?: boolean;
   enableClick?: boolean;
+  onReupload?: (file: File) => void;
+  canReupload?: boolean;
+  isReuploading?: boolean;
+  reuploadAccept?: string;
 };
 
 export default function PageCard({
@@ -18,16 +24,29 @@ export default function PageCard({
   onDelete,
   enableDelete,
   enableClick = true,
+  onReupload,
+  canReupload = false,
+  isReuploading = false,
+  reuploadAccept,
 }: Props) {
   const total = page.totalUnitCount;
   const translated = page.translatedUnitCount;
   const proofread = page.proofreadUnitCount;
   const transPct = total > 0 ? Math.round((translated / total) * 100) : 0;
   const proofPct = total > 0 ? Math.round((proofread / total) * 100) : 0;
+  const reuploadInputRef = useRef<HTMLInputElement>(null);
+
+  const handleReuploadFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !onReupload) return;
+    onReupload(file);
+  };
 
   return (
     <div
       onClick={enableClick ? onClick : undefined}
+      style={{ contentVisibility: "auto", containIntrinsicSize: "auto 150px" }}
       className={clsx(
         "relative aspect-3/4 border rounded-sm flex flex-col",
         "hover:border-slate-300 hover:shadow-sm",
@@ -80,7 +99,12 @@ export default function PageCard({
       )}
 
       {/* Multi progress bar — bottom */}
-      <div className="absolute bottom-1.5 left-1.5 right-1.5 z-10 rounded-full overflow-hidden shadow-sm">
+      <div
+        className={clsx(
+          "absolute bottom-1.5 left-1.5 right-1.5 z-10",
+          "rounded-full overflow-hidden shadow-sm",
+        )}
+      >
         <MultiProgressBar
           fullWidth
           height={0.35}
@@ -107,6 +131,45 @@ export default function PageCard({
         >
           <Trash2 className="w-3 h-3" />
         </button>
+      )}
+
+      {canReupload && onReupload && (
+        <>
+          <input
+            ref={reuploadInputRef}
+            type="file"
+            accept={reuploadAccept ?? "image/*"}
+            className="hidden"
+            onClick={(event) => event.stopPropagation()}
+            onChange={handleReuploadFileChange}
+          />
+          <div
+            className={clsx(
+              "absolute inset-0 z-10 flex items-center justify-center",
+              "pointer-events-none",
+            )}
+          >
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                reuploadInputRef.current?.click();
+              }}
+              disabled={isReuploading}
+              className={clsx(
+                "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-sm",
+                "bg-slate-50/20 backdrop-blur-[1px] border border-slate-300/20",
+                "text-slate-400 hover:text-slate-600",
+                "hover:bg-slate-50/35 hover:border-slate-300/45",
+                "opacity-100 sm:opacity-0 sm:group-hover:opacity-100",
+                "transition-all active:scale-95",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+              )}
+              title="重上传"
+            >
+              <Upload className="h-3 w-3" strokeWidth={2.25} />
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

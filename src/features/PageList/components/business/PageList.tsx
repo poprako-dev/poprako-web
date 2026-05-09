@@ -8,11 +8,15 @@ type Props = {
   pages: PageInfo[];
   onClickPage?: (pageId: string) => void;
   onDeletePage?: (pageId: string) => void;
+  onReuploadPage?: (pageId: string, file: File) => void;
+  canReuploadPage?: (page: PageInfo) => boolean;
+  isPageReuploading?: (pageId: string) => boolean;
   enableDelete?: boolean;
   enableClick?: boolean;
   /** 当提供时，区域支持拖放批量上传，文件按 Windows 自然排序顺序排列 */
   onAddPages?: (files: File[]) => Promise<void>;
   accept?: string;
+  reuploadAccept?: string;
   emptyHintText?: string;
   uploadButtonText?: string;
 };
@@ -32,10 +36,14 @@ export default function PageList({
   pages,
   onClickPage,
   onDeletePage,
+  onReuploadPage,
+  canReuploadPage,
+  isPageReuploading,
   enableDelete,
   enableClick = true,
   onAddPages,
   accept,
+  reuploadAccept,
   emptyHintText,
   uploadButtonText,
 }: Props) {
@@ -105,6 +113,12 @@ export default function PageList({
             onDelete={onDeletePage ? () => onDeletePage(page.id) : undefined}
             enableDelete={enableDelete}
             enableClick={enableClick}
+            canReupload={canReuploadPage ? canReuploadPage(page) : false}
+            isReuploading={isPageReuploading ? isPageReuploading(page.id) : false}
+            onReupload={
+              onReuploadPage ? (file) => onReuploadPage(page.id, file) : undefined
+            }
+            reuploadAccept={reuploadAccept}
           />
         ))}
       </div>

@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import clsx from "clsx";
-import { Plus } from "lucide-react";
+import { Plus, UserPlus } from "lucide-react";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import type { WorkflowStatus } from "@/types/workflow";
 import type { AssignmentInfo } from "@/types/assignment";
@@ -19,6 +19,9 @@ type Props = {
   onRemoveUser?: (userId: string, role: Role) => void;
   // Called to open the MemberSelectorModal for this role
   onAddUser?: () => void;
+  onJoinSelf?: () => void;
+  canJoinSelf?: boolean;
+  isJoiningSelf?: boolean;
 };
 
 type StatusConfig = {
@@ -74,6 +77,9 @@ export default function RoleTag({
   onTransiteWorkflow,
   onRemoveUser,
   onAddUser,
+  onJoinSelf,
+  canJoinSelf = false,
+  isJoiningSelf = false,
 }: Props) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
   const transitioningRef = useRef(false);
@@ -149,6 +155,25 @@ export default function RoleTag({
           title="添加成员"
         >
           <Plus size={12} strokeWidth={2.5} />
+        </button>
+      )}
+
+      {canJoinSelf && onJoinSelf && (
+        <button
+          onClick={(event) => {
+            event.stopPropagation();
+            onJoinSelf();
+          }}
+          disabled={isJoiningSelf}
+          className={clsx(
+            "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
+            "text-slate-300 hover:text-slate-600 hover:bg-slate-100/80",
+            "border border-transparent hover:border-slate-200",
+            "disabled:opacity-60 disabled:cursor-not-allowed",
+          )}
+          title="加入当前分工"
+        >
+          <UserPlus size={12} strokeWidth={2.5} />
         </button>
       )}
 
