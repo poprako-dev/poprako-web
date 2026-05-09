@@ -37,3 +37,10 @@ export type ReserveChapterPagesArgs = {
 export type ReserveChapterPagesResult = { creations: PageCreationResult[] };
 
 export type UpdatePageArgs = { id: string; isUploaded?: boolean };
+
+export type PendingPage = { pageId: string; index: number };
+
+export type UploadProgressCallbacks = {
+  onPagesReserved: (pendingPages: PendingPage[]) => void;
+  onPageUploaded: (pageId: string, file: File) => void;
+};

@@ -20,7 +20,7 @@ import type {
   ImportChapterFormat,
   ImportChapterResult,
 } from "@/features/ComicPlayground/types/chapter";
-import type { ChapterInfo, ComicInfo, PageInfo } from "@/types";
+import type { ChapterInfo, ComicInfo, PageInfo, UploadProgressCallbacks } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
@@ -82,7 +82,11 @@ type Props = {
   onDeleteChapter?: (chapterId: string) => Promise<Result<void>>;
   onNavigateToTranslator?: (chapterId: string, pageId: string) => void;
   currentUserId?: string | null;
-  onAddPages?: (chapterId: string, files: File[]) => Promise<void>;
+  onAddPages?: (
+    chapterId: string,
+    files: File[],
+    callbacks?: UploadProgressCallbacks,
+  ) => Promise<void>;
   onDeleteChapterPages?: (chapterId: string) => Promise<Result<void>>;
   onReservePageUpload?: (args: {
     pageId: string;
@@ -464,10 +468,49 @@ export default function ComicDetailModal({
 
   const handleAddRawPages = async (files: File[]) => {
     if (!selectedChapterId || !onAddPages) return;
+
+    const blobUrls: string[] = [];
+    const pendingPageIds = new Set<string>();
+    const startIndex = pages.length;
+
+    const callbacks: UploadProgressCallbacks = {
+      onPagesReserved: (pendingPages) => {
+        const newPages: PageInfo[] = pendingPages.map((pp) => ({
+          id: pp.pageId,
+          chapterId: selectedChapterId!,
+          index: startIndex + pp.index,
+          imageUrl: "",
+          isUploaded: false,
+          creatorId: currentUserId ?? "",
+          totalUnitCount: 0,
+          translatedUnitCount: 0,
+          proofreadUnitCount: 0,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        }));
+        for (const pp of pendingPages) pendingPageIds.add(pp.pageId);
+        setPages((prev) => [...prev, ...newPages]);
+      },
+      onPageUploaded: (pageId, file) => {
+        const blobUrl = URL.createObjectURL(file);
+        blobUrls.push(blobUrl);
+        setPages((prev) =>
+          prev.map((p) =>
+            p.id === pageId ? { ...p, imageUrl: blobUrl, isUploaded: true } : p,
+          ),
+        );
+      },
+    };
+
     try {
-      await onAddPages(selectedChapterId, files);
+      await onAddPages(selectedChapterId, files, callbacks);
+      // Revoke blob URLs now that real URLs will replace them
+      for (const url of blobUrls) URL.revokeObjectURL(url);
       await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
     } catch (err) {
+      // Remove pending pages from this batch and revoke blob URLs
+      for (const url of blobUrls) URL.revokeObjectURL(url);
+      setPages((prev) => prev.filter((p) => !pendingPageIds.has(p.id)));
       console.error("[ComicDetailModal] 上传页面失败:", err);
       showToast(err instanceof Error ? err.message : "上传页面失败", "error");
     }
@@ -828,12 +871,25 @@ export default function ComicDetailModal({
             onDeleteChapter
               ? async (id) => {
                   const res = await onDeleteChapter(id);
-                  if (res.success) {
-                    setChapters(chapters.filter((c) => c.id !== id));
-                    if (selectedChapterId === id) setSelectedChapterId(null);
-                  } else {
+                  if (!res.success) {
                     showToast("删除失败", "error");
+                    return;
                   }
+                  if (selectedChapterId === id) {
+                    const reloaded = await onLoadChapters({
+                      comicId: comicInfo.id,
+                      offset: 0,
+                      limit: CHAPTERS_LIMIT,
+                    });
+                    if (reloaded.success) {
+                      setChapters(reloaded.data);
+                      setSelectedChapterId(reloaded.data[0]?.id ?? null);
+                      return;
+                    }
+                    showToast("刷新章节失败", "error");
+                  }
+                  setChapters(chapters.filter((c) => c.id !== id));
+                  if (selectedChapterId === id) setSelectedChapterId(null);
                 }
               : undefined
           }

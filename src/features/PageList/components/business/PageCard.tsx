@@ -29,6 +29,7 @@ export default function PageCard({
   isReuploading = false,
   reuploadAccept,
 }: Props) {
+  const isPending = !page.imageUrl;
   const total = page.totalUnitCount;
   const translated = page.translatedUnitCount;
   const proofread = page.proofreadUnitCount;
@@ -51,8 +52,9 @@ export default function PageCard({
         "relative aspect-3/4 border rounded-sm flex flex-col",
         "hover:border-slate-300 hover:shadow-sm",
         "transition-all group",
-        enableClick ? "cursor-pointer" : "cursor-default",
+        enableClick && !isPending ? "cursor-pointer" : "cursor-default",
         "bg-white border-slate-100 overflow-hidden",
+        isPending && "opacity-60",
       )}
     >
       {/* Index badge — top left */}
@@ -68,16 +70,18 @@ export default function PageCard({
       </div>
 
       {/* Unit count — top right */}
-      <div
-        className={clsx(
-          "absolute top-2 right-2 z-10",
-          "bg-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded flex items-center justify-center",
-        )}
-      >
-        <span className="text-[10px] font-bold text-white/90 leading-none tabular-nums">
-          {translated} / {total}
-        </span>
-      </div>
+      {!isPending && (
+        <div
+          className={clsx(
+            "absolute top-2 right-2 z-10",
+            "bg-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded flex items-center justify-center",
+          )}
+        >
+          <span className="text-[10px] font-bold text-white/90 leading-none tabular-nums">
+            {translated} / {total}
+          </span>
+        </div>
+      )}
 
       {/* Image */}
       {page.imageUrl ? (
@@ -89,34 +93,38 @@ export default function PageCard({
       ) : (
         <div
           className={clsx(
-            "absolute inset-0 flex items-center justify-center bg-slate-50",
-            "text-slate-300 font-bold tracking-tighter",
-            "group-hover:text-slate-400 transition-colors",
+            "absolute inset-0 flex flex-col items-center justify-center gap-1.5",
+            "bg-slate-100 animate-pulse",
           )}
         >
-          P{page.index}
+          <Upload className="w-4 h-4 text-slate-300" />
+          <span className="text-[10px] font-bold text-slate-300 tracking-tighter">
+            P{page.index + 1}
+          </span>
         </div>
       )}
 
       {/* Multi progress bar — bottom */}
-      <div
-        className={clsx(
-          "absolute bottom-1.5 left-1.5 right-1.5 z-10",
-          "rounded-full overflow-hidden shadow-sm",
-        )}
-      >
-        <MultiProgressBar
-          fullWidth
-          height={0.35}
-          bars={[
-            { progressPercent: transPct, barColorClass: "bg-orange-300" },
-            { progressPercent: proofPct, barColorClass: "bg-pink-300" },
-          ]}
-        />
-      </div>
+      {!isPending && (
+        <div
+          className={clsx(
+            "absolute bottom-1.5 left-1.5 right-1.5 z-10",
+            "rounded-full overflow-hidden shadow-sm",
+          )}
+        >
+          <MultiProgressBar
+            fullWidth
+            height={0.35}
+            bars={[
+              { progressPercent: transPct, barColorClass: "bg-orange-300" },
+              { progressPercent: proofPct, barColorClass: "bg-pink-300" },
+            ]}
+          />
+        </div>
+      )}
 
       {/* Delete button */}
-      {enableDelete && onDelete && (
+      {enableDelete && onDelete && !isPending && (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -133,7 +141,7 @@ export default function PageCard({
         </button>
       )}
 
-      {canReupload && onReupload && (
+      {canReupload && onReupload && !isPending && (
         <>
           <input
             ref={reuploadInputRef}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { WorkspaceTab } from "../../types/types";
-import type { ComicInfo, ChapterInfo } from "@/types";
+import type { ComicInfo, ChapterInfo, UploadProgressCallbacks } from "@/types";
 import type { Result } from "@/types/utils/result";
 import type { AssignmentInfo } from "@/types/assignment";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
@@ -219,7 +219,11 @@ export default function Workspace() {
   );
 
   const handleAddPages = useCallback(
-    async (chapterId: string, files: File[]) => {
+    async (
+      chapterId: string,
+      files: File[],
+      callbacks?: UploadProgressCallbacks,
+    ) => {
       const fileExtension = getUniformFileExtension(files);
       if (fileExtension === null) {
         const errorMessage = "所选文件后缀必须一致";
@@ -246,6 +250,10 @@ export default function Workspace() {
         throw new Error("预留页面数量与选择文件数量不一致");
       }
 
+      callbacks?.onPagesReserved(
+        creations.map((c, i) => ({ pageId: c.pageId, index: i })),
+      );
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const creation = creations[i];
@@ -261,6 +269,8 @@ export default function Workspace() {
           console.error("[Workspace] 标记页面上传状态失败:", markResult.error);
           throw new Error(markResult.error);
         }
+
+        callbacks?.onPageUploaded(creation.pageId, file);
       }
     },
     [showToast],
