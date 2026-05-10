@@ -49,12 +49,12 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
   {
     action: "pageUp",
     label: "上一页",
-    keys: ["Control", "d"],
+    keys: ["Control", "u"],
   },
   {
     action: "pageDown",
     label: "下一页",
-    keys: ["Control", "u"],
+    keys: ["Control", "d"],
   },
 ];
 
