@@ -29,7 +29,7 @@ function TeamList({
     >
       <div
         className={clsx(
-          "w-64 bg-white py-3",
+          "w-64 bg-[#F8F5F0] py-3",
           "border border-gray-100 rounded-sm",
           "shadow-[0_20px_50px_rgba(0,0,0,0.1)]",
         )}
@@ -62,7 +62,7 @@ function TeamList({
               >
                 <div
                   className={clsx(
-                    "w-10 h-10 rounded-lg flex",
+                    "w-10 h-10 rounded-lg flex shrink-0",
                     "items-center justify-center",
                     "font-black text-sm",
                     isSelected
@@ -72,9 +72,9 @@ function TeamList({
                 >
                   {t.short}
                 </div>
-                <div className={clsx("flex flex-col items-start", "text-left")}>
-                  <span className="text-sm font-bold">{t.name}</span>
-                  <span className="text-[10px] opacity-60">{t.desc}</span>
+                <div className={clsx("flex flex-col items-start min-w-0", "text-left")}>
+                  <span className="text-sm font-bold truncate w-full">{t.name}</span>
+                  <span className="text-[10px] opacity-60 truncate w-full">{t.desc}</span>
                 </div>
                 {isSelected && (
                   <Check

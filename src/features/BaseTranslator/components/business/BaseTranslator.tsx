@@ -301,6 +301,7 @@ export default function BaseTranslator({
     try {
       await onSaveUnits(project.pages[pageIndex].id, diff);
       await loadPage(pageIndex);
+      showToast("保存成功", "success");
     } catch (err) {
       const summary =
         `ops:${diff.ops.length} ` +

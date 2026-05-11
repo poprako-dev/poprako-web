@@ -27,7 +27,7 @@ export default function WorksetSidebar({
   onChangeWorkset,
 }: Props) {
   return (
-    <div className="flex flex-col h-full bg-white border-l border-slate-100 w-56">
+    <div className="flex flex-col h-full bg-[#FAF9F4] border-l border-stone-200 w-56">
       {/* 头部 */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
         <h2 className="text-md font-bold text-slate-600">作品集</h2>

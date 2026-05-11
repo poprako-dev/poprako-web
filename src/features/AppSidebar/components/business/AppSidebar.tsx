@@ -36,12 +36,7 @@ export default function AppSidebar() {
       .filter((m) => m.team)
       .map((m) => {
         const team = m.team!;
-        const short = team.name
-          .split(/\s+/)
-          .map((w) => w[0])
-          .join("")
-          .toUpperCase()
-          .slice(0, 3);
+        const short = team.name[0].toUpperCase();
         return { id: team.id, name: team.name, short, desc: team.description };
       });
   }, [loginState]);

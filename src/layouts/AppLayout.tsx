@@ -23,7 +23,7 @@ function MobileBottomNav() {
       className={clsx(
         "fixed bottom-0 left-0 right-0 z-50 sm:hidden",
         "flex h-14 items-center justify-around",
-        "bg-white/95 backdrop-blur-sm border-t border-gray-100",
+        "bg-[#F2EFE8]/95 backdrop-blur-sm border-t border-stone-200",
       )}
     >
       {mobileNavItems.map((item) => {
@@ -76,7 +76,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-[#FEFDF9]">
       <AppSidebar />
       <main className={clsx("w-full sm:pl-14", "pb-14 sm:pb-0")}>
         <Outlet />

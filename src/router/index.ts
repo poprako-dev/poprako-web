@@ -8,6 +8,7 @@ import MemberGlancePage from "@/pages/MemberGlancePage";
 import LoginPage from "@/pages/LoginPage";
 import RootGuard from "@/pages/RootGuard";
 import TranslatorPage from "@/pages/TranslatorPage";
+import SettingsPage from "@/pages/SettingsPage";
 
 const errorElement = createElement(
   Suspense,
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
       {
         path: "member-list",
         element: createElement(MemberGlancePage),
+      },
+      {
+        path: "settings",
+        element: createElement(SettingsPage),
       },
     ],
   },

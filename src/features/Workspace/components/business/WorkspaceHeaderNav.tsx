@@ -20,7 +20,7 @@ export default function WorkspaceHeaderNav({ activeTab, onTabChange }: Props) {
   return (
     <nav
       className={clsx(
-        "h-10 border-b border-slate-100 bg-white/80 px-4 sm:px-6",
+        "h-10 border-b border-slate-100 bg-[#FEFDF9]/80 px-4 sm:px-6",
         "backdrop-blur-md",
       )}
     >

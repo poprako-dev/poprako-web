@@ -18,3 +18,10 @@ export async function loginUser(args: LoginUserArgs) {
   }
   return result.data;
 }
+
+export async function logoutUser() {
+  const result = await api.post("/auth/logout", {}, true);
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+}

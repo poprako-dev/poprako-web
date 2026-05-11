@@ -27,7 +27,7 @@ export default function ErrorPage({
     container: clsx(
       "min-h-screen w-full",
       "flex flex-col items-center justify-center",
-      "bg-white",
+      "bg-[#FEFDF9]",
       "px-4 sm:px-6 lg:px-8",
       "selection:bg-emerald-100 selection:text-emerald-700", // 选中态也保持自然色
     ),

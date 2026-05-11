@@ -1,6 +1,8 @@
-import { LoginCard } from "@/features/LoginCard";
+import { SettingsPanel } from "@/features/Settings";
 
-export default function LoginPage() {
+type Props = {};
+
+export default function SettingsPage({}: Props) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FEFDF9]">
       <div
@@ -11,8 +13,8 @@ export default function LoginPage() {
         }}
       />
 
-      <div className="relative">
-        <LoginCard />
+      <div className="relative w-full flex justify-center">
+        <SettingsPanel />
       </div>
     </div>
   );
