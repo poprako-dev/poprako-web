@@ -7,10 +7,11 @@ type Props = {
   placeholder?: string;
   className?: string;
   readOnly?: boolean;
+  onFocus?: React.FocusEventHandler<HTMLTextAreaElement>;
 };
 
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, Props>(
-  ({ value, onChange, placeholder, className, readOnly }, ref) => {
+  ({ value, onChange, placeholder, className, readOnly, onFocus }, ref) => {
     const localRef = useRef<HTMLTextAreaElement>(null);
 
     const combinedRef = (node: HTMLTextAreaElement | null) => {
@@ -32,6 +33,7 @@ const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, Props>(
         ref={combinedRef}
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
         placeholder={placeholder}
         rows={1}
         readOnly={readOnly}

@@ -5,7 +5,7 @@ import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 import type { Page } from "@/types/page";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast";
-import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 import {
   listUnits,
   saveUnits,
@@ -224,7 +224,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
   if (state.status === "loading") {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
-        <LoadingEllipsis />
+        <LoadingCircle />
       </div>
     );
   }

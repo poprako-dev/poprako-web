@@ -9,6 +9,7 @@ type Props = {
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
   isCompleted: boolean;
   children: React.ReactNode;
+  dataUnitId?: string;
 };
 
 export default function BaseUnitItem({
@@ -18,6 +19,7 @@ export default function BaseUnitItem({
   onModifyUnit,
   isCompleted,
   children,
+  dataUnitId,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -89,6 +91,7 @@ export default function BaseUnitItem({
   return (
     <div
       ref={containerRef}
+      data-unit-id={dataUnitId}
       className={clsx(
         "relative flex cursor-text items-stretch border-b border-gray-100",
         "last:border-b-0 transition-all duration-75",

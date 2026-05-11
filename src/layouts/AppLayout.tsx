@@ -6,7 +6,7 @@ import { AppSidebar } from "@/features/AppSidebar";
 import { getMyUser } from "@/api/user";
 import { listMyMembers } from "@/api/member";
 import { useAppStore } from "@/store/app";
-import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 
 const mobileNavItems = [
   { path: "/workspace", icon: LayoutDashboard, label: "工作区" },
@@ -70,7 +70,7 @@ export default function AppLayout() {
   if (!isReady) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <LoadingEllipsis />
+        <LoadingCircle />
       </div>
     );
   }

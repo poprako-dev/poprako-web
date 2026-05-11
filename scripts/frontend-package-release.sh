@@ -54,7 +54,8 @@ if [ "$RUN_REMOTE" = "1" ]; then
         '${REMOTE_BIN_DIR}/${REMOTE_SCRIPT_NAME}'"
 else
     printf '%s\n' "Run on server:"
-    printf '%s\n' \
+    printf '%s ' \
         "IMAGE_TAG=${IMAGE_TAG} DEPLOY_ROOT=${DEPLOY_ROOT} sh"
     printf '%s\n' "${REMOTE_BIN_DIR}/${REMOTE_SCRIPT_NAME}"
 fi
+

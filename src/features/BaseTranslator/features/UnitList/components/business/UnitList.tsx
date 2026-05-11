@@ -54,7 +54,7 @@ export default function UnitList({
             isFocused={focusedUnitId === unitId(unit)}
             onSelect={onFocusUnit}
             onModifyUnit={onModifyUnit}
-            data-unit-id={unitId(unit)}
+            dataUnitId={unitId(unit)}
           />
         ))}
       </div>

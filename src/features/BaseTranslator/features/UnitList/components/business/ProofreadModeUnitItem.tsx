@@ -18,6 +18,7 @@ type Props = {
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
+  dataUnitId?: string;
 };
 
 export default function ProofreadModeUnitItem({
@@ -25,6 +26,7 @@ export default function ProofreadModeUnitItem({
   isFocused,
   onSelect,
   onModifyUnit,
+  dataUnitId,
 }: Props) {
   const proofRef = useRef<HTMLTextAreaElement>(null);
   const hasProofreadText = !!unitProofreadText(unit);
@@ -32,9 +34,11 @@ export default function ProofreadModeUnitItem({
 
   useEffect(() => {
     if (isFocused && proofRef.current) {
-      const len = proofRef.current.value.length;
-      proofRef.current.focus({ preventScroll: true });
-      proofRef.current.setSelectionRange(len, len);
+      if (document.activeElement !== proofRef.current) {
+        const len = proofRef.current.value.length;
+        proofRef.current.focus({ preventScroll: true });
+        proofRef.current.setSelectionRange(len, len);
+      }
     } else if (
       !isFocused &&
       proofRef.current &&
@@ -68,6 +72,7 @@ export default function ProofreadModeUnitItem({
       onSelect={onSelect}
       onModifyUnit={onModifyUnit}
       isCompleted={unitIsProofread(unit)}
+      dataUnitId={dataUnitId}
     >
       <div className="flex flex-col gap-1">
         {/* 初翻文本（只读展示） */}
@@ -76,6 +81,7 @@ export default function ProofreadModeUnitItem({
             value={unitTranslatedText(unit) ?? undefined}
             readOnly
             onChange={() => {}}
+            onFocus={() => onSelect?.(unitId(unit))}
             placeholder="无翻译内容"
             className={clsx(
               "flex-1 text-[15px] cursor-default leading-relaxed",
@@ -122,6 +128,7 @@ export default function ProofreadModeUnitItem({
                     isProofread: val.trim().length > 0,
                   })
                 }
+                onFocus={() => onSelect?.(unitId(unit))}
                 placeholder="输入校对..."
                 className={clsx(
                   "flex-1 text-[15px] leading-relaxed",

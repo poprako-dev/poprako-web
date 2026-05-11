@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { ChevronRight, Plus  } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import type { WorksetInfo } from "@/types/workset";
 
 type Props = {
@@ -54,7 +54,9 @@ export default function WorksetSidebar({
                   : "text-slate-500 hover:bg-slate-50",
               )}
             >
-              <span className="text-[13px] truncate pr-2">{ws.name}</span>
+              <span className="text-[13px] truncate pr-2">
+                【 {ws.index + 1} 】{ws.name}
+              </span>
               <span className="text-[11px] text-slate-400 shrink-0">
                 {ws.comicCount}
               </span>

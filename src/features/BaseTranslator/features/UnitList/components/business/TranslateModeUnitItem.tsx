@@ -15,6 +15,7 @@ type Props = {
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
+  dataUnitId?: string;
 };
 
 export default function TranslateModeUnitItem({
@@ -22,14 +23,17 @@ export default function TranslateModeUnitItem({
   isFocused,
   onSelect,
   onModifyUnit,
+  dataUnitId,
 }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (isFocused && inputRef.current) {
-      const len = inputRef.current.value.length;
-      inputRef.current.focus({ preventScroll: true });
-      inputRef.current.setSelectionRange(len, len);
+      if (document.activeElement !== inputRef.current) {
+        const len = inputRef.current.value.length;
+        inputRef.current.focus({ preventScroll: true });
+        inputRef.current.setSelectionRange(len, len);
+      }
     } else if (
       !isFocused &&
       inputRef.current &&
@@ -60,6 +64,7 @@ export default function TranslateModeUnitItem({
       onSelect={onSelect}
       onModifyUnit={onModifyUnit}
       isCompleted={unitIsTranslated(unit)}
+      dataUnitId={dataUnitId}
     >
       <AutoResizeTextarea
         ref={inputRef}
@@ -67,6 +72,7 @@ export default function TranslateModeUnitItem({
         onChange={(val) =>
           onModifyUnit?.(unitId(unit), { translatedText: val })
         }
+        onFocus={() => onSelect?.(unitId(unit))}
         placeholder="点击输入翻译..."
         className={`text-[15px] leading-relaxed ${
           isFocused ? "text-gray-900 font-medium" : "text-gray-700"

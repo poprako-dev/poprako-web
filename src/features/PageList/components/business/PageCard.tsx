@@ -16,6 +16,7 @@ type Props = {
   canReupload?: boolean;
   isReuploading?: boolean;
   reuploadAccept?: string;
+  uploadProgress?: number;
 };
 
 export default function PageCard({
@@ -28,6 +29,7 @@ export default function PageCard({
   canReupload = false,
   isReuploading = false,
   reuploadAccept,
+  uploadProgress,
 }: Props) {
   const isPending = !page.imageUrl;
   const total = page.totalUnitCount;
@@ -36,6 +38,10 @@ export default function PageCard({
   const transPct = total > 0 ? Math.round((translated / total) * 100) : 0;
   const proofPct = total > 0 ? Math.round((proofread / total) * 100) : 0;
   const reuploadInputRef = useRef<HTMLInputElement>(null);
+  const clampedUploadProgress =
+    typeof uploadProgress === "number"
+      ? Math.max(0, Math.min(100, Math.round(uploadProgress)))
+      : null;
 
   const handleReuploadFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -100,6 +106,32 @@ export default function PageCard({
           <Upload className="w-4 h-4 text-slate-300" />
           <span className="text-[10px] font-bold text-slate-300 tracking-tighter">
             P{page.index + 1}
+          </span>
+        </div>
+      )}
+
+      {clampedUploadProgress !== null && clampedUploadProgress < 100 && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center">
+          <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
+            <circle
+              cx="20" cy="20" r="16"
+              fill="none"
+              stroke="rgba(255,255,255,0.3)"
+              strokeWidth="3"
+            />
+            <circle
+              cx="20" cy="20" r="16"
+              fill="none"
+              stroke="rgba(255,255,255,0.9)"
+              strokeWidth="3"
+              strokeDasharray={100.531}
+              strokeDashoffset={100.531 * (1 - clampedUploadProgress / 100)}
+              strokeLinecap="round"
+              className="transition-all duration-300 ease-out"
+            />
+          </svg>
+          <span className="absolute text-[11px] font-bold text-white/90">
+            {clampedUploadProgress}%
           </span>
         </div>
       )}

@@ -133,28 +133,51 @@ export async function updatePage(
 export async function uploadToPresignedUrl(
   putUrl: string,
   file: File,
+  onProgress?: (percent: number) => void,
 ): Promise<Result<void>> {
-  try {
-    const response = await fetch(putUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type || "application/octet-stream",
-      },
-      body: file,
-    });
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
 
-    if (!response.ok) {
-      return {
-        success: false,
-        error: `上传失败: HTTP ${response.status}`,
-      };
-    }
+    xhr.open("PUT", putUrl, true);
+    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
 
-    return { success: true, data: undefined };
-  } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "上传失败",
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      const percent = Math.max(
+        0,
+        Math.min(100, Math.round((event.loaded / event.total) * 100)),
+      );
+      onProgress?.(percent);
     };
-  }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress?.(100);
+        resolve({ success: true, data: undefined });
+        return;
+      }
+
+      resolve({
+        success: false,
+        error: `上传失败: HTTP ${xhr.status}`,
+      });
+    };
+
+    xhr.onerror = () => {
+      resolve({ success: false, error: "上传失败" });
+    };
+
+    xhr.onabort = () => {
+      resolve({ success: false, error: "上传已取消" });
+    };
+
+    try {
+      xhr.send(file);
+    } catch (err) {
+      resolve({
+        success: false,
+        error: err instanceof Error ? err.message : "上传失败",
+      });
+    }
+  });
 }

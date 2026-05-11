@@ -43,4 +43,5 @@ export type PendingPage = { pageId: string; index: number };
 export type UploadProgressCallbacks = {
   onPagesReserved: (pendingPages: PendingPage[]) => void;
   onPageUploaded: (pageId: string, file: File) => void;
+  onPageUploadProgress?: (pageId: string, percent: number) => void;
 };

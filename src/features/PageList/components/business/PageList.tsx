@@ -19,6 +19,7 @@ type Props = {
   reuploadAccept?: string;
   emptyHintText?: string;
   uploadButtonText?: string;
+  uploadProgressByPageId?: Record<string, number>;
 };
 
 function naturalSort(files: FileList): File[] {
@@ -46,6 +47,7 @@ export default function PageList({
   reuploadAccept,
   emptyHintText,
   uploadButtonText,
+  uploadProgressByPageId,
 }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -114,11 +116,16 @@ export default function PageList({
             enableDelete={enableDelete}
             enableClick={enableClick}
             canReupload={canReuploadPage ? canReuploadPage(page) : false}
-            isReuploading={isPageReuploading ? isPageReuploading(page.id) : false}
+            isReuploading={
+              isPageReuploading ? isPageReuploading(page.id) : false
+            }
             onReupload={
-              onReuploadPage ? (file) => onReuploadPage(page.id, file) : undefined
+              onReuploadPage
+                ? (file) => onReuploadPage(page.id, file)
+                : undefined
             }
             reuploadAccept={reuploadAccept}
+            uploadProgress={uploadProgressByPageId?.[page.id]}
           />
         ))}
       </div>
@@ -126,14 +133,14 @@ export default function PageList({
       {/* Drop overlay */}
       {onAddPages && (
         <>
-            <input
-              ref={inputRef}
-              type="file"
-              multiple
-              accept={accept ?? "image/*"}
-              className="hidden"
-              onChange={(e) => handleFiles(e.target.files)}
-            />
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            accept={accept ?? "image/*"}
+            className="hidden"
+            onChange={(e) => handleFiles(e.target.files)}
+          />
           {isDragging && (
             <div
               className={clsx(
@@ -151,7 +158,7 @@ export default function PageList({
             <button
               onClick={() => inputRef.current?.click()}
               className={clsx(
-                  "mt-4 w-full flex flex-col items-center justify-center gap-2 py-8",
+                "mt-4 w-full flex flex-col items-center justify-center gap-2 py-8",
                 "rounded-sm border border-dashed border-slate-200",
                 "text-slate-400 hover:text-slate-500 hover:border-slate-300 hover:bg-slate-50",
                 "transition-all",
@@ -159,7 +166,7 @@ export default function PageList({
             >
               <UploadCloud className="w-6 h-6" strokeWidth={1.5} />
               <span className="text-xs font-bold sm:text-[11px]">
-                {uploadButtonText ?? "点击或拖拽图片至此上传"}
+                {uploadButtonText ?? "点击此处上传"}
               </span>
               {emptyHintText && (
                 <span className="text-[11px] sm:text-[10px] text-slate-400">

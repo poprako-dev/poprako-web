@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 
 export default function RootGuard() {
   const navigate = useNavigate();
@@ -11,7 +11,7 @@ export default function RootGuard() {
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center">
-      <LoadingEllipsis />
+      <LoadingCircle />
     </div>
   );
 }

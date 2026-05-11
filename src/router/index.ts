@@ -1,5 +1,5 @@
 import { createElement, lazy, Suspense } from "react";
-import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 import { createBrowserRouter } from "react-router-dom";
 import AppLayout from "@/layouts/AppLayout";
 import WorkspacePage from "@/pages/WorkspacePage";
@@ -12,7 +12,7 @@ import SettingsPage from "@/pages/SettingsPage";
 
 const errorElement = createElement(
   Suspense,
-  { fallback: createElement(LoadingEllipsis) },
+  { fallback: createElement(LoadingCircle) },
   createElement(lazy(() => import("@/pages/ErrorPage"))),
 );
 

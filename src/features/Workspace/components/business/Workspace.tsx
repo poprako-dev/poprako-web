@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import type { WorkspaceTab } from "../../types/types";
 import type { ComicInfo, ChapterInfo, UploadProgressCallbacks } from "@/types";
 import type { Result } from "@/types/utils/result";
 import type { AssignmentInfo } from "@/types/assignment";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
-import WorkspaceHeaderNav from "./WorkspaceHeaderNav";
 import EmbeddedComicList from "@/features/ComcList/components/business/EmbeddedComicList";
 import ComicDetailModal from
   "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
@@ -61,7 +59,6 @@ export default function Workspace() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>("workspace");
   const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
   const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
     useState<ChapterInfo | null>(null);
@@ -258,7 +255,11 @@ export default function Workspace() {
         const file = files[i];
         const creation = creations[i];
 
-        const uploadResult = await uploadToPresignedUrl(creation.putUrl, file);
+        const uploadResult = await uploadToPresignedUrl(
+          creation.putUrl,
+          file,
+          (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
+        );
         if (!uploadResult.success) {
           console.error("[Workspace] 上传页面失败:", uploadResult.error);
           throw new Error(uploadResult.error);
@@ -353,24 +354,9 @@ export default function Workspace() {
     </div>
   );
 
-  const symbolsBody = (
-    <div
-      className={clsx(
-        "flex h-48 items-center justify-center text-sm text-slate-400",
-      )}
-    >
-      特殊符号功能开发中
-    </div>
-  );
-
   return (
     <>
-      <WorkspaceLayout
-        header={
-          <WorkspaceHeaderNav activeTab={activeTab} onTabChange={setActiveTab} />
-        }
-        body={activeTab === "workspace" ? workspaceBody : symbolsBody}
-      />
+      <WorkspaceLayout>{workspaceBody}</WorkspaceLayout>
       {selectedComic && (
         <ComicDetailModal
           key={selectedComic.id}

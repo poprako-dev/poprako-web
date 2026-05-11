@@ -7,9 +7,7 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import TeamSwitchModal from "./TeamSwitchModal";
 import type { TeamConfig } from "@/features/AppSidebar/types/types";
 
-type Props = {};
-
-export default function SettingsPanel({}: Props) {
+export default function SettingsPanel() {
   const navigate = useNavigate();
   const { showToast } = useToastStore();
   const loginState = useAppStore((s) => s.loginState);
@@ -49,7 +47,7 @@ export default function SettingsPanel({}: Props) {
     <div className="flex w-1/3 flex-col gap-4">
       <div
         className={[
-          "flex cursor-pointer items-center justify-between rounded-xl px-6 py-4 transition-colors",
+          "flex cursor-pointer items-center justify-between rounded-sm px-6 py-4 transition-colors",
           "bg-white/80 ring-1 shadow-sm ring-black/5 hover:bg-green-50/80 hover:ring-green-200 hover:text-green-700",
         ].join(" ")}
         onClick={() => setIsTeamModalOpen(true)}
@@ -60,7 +58,7 @@ export default function SettingsPanel({}: Props) {
 
       <div
         className={[
-          "flex cursor-pointer items-center justify-between rounded-xl px-6 py-4 transition-colors",
+          "flex cursor-pointer items-center justify-between rounded-sm px-6 py-4 transition-colors",
           "bg-white/80 ring-1 shadow-sm ring-black/5 hover:bg-red-50/80 hover:ring-red-200 hover:text-red-500",
         ].join(" ")}
         onClick={handleLogout}

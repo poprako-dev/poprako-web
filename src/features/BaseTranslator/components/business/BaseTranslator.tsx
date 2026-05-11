@@ -300,7 +300,7 @@ export default function BaseTranslator({
     isSaving.current = true;
     try {
       await onSaveUnits(project.pages[pageIndex].id, diff);
-      await loadPage(pageIndex);
+      baselineUnitsRef.current = [...unitBufRef.current];
       showToast("保存成功", "success");
     } catch (err) {
       const summary =

@@ -4,7 +4,7 @@ import WebTranslator from "@/features/WebTranslator";
 import { useAppStore } from "@/store/app";
 import { getMyUser } from "@/api/user";
 import { listMyMembers } from "@/api/member";
-import LoadingEllipsis from "@/components/ui/LoadingEllipsis";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 
 export default function TranslatorPage() {
   const { chapterId, pageId } = useParams<{
@@ -59,7 +59,7 @@ export default function TranslatorPage() {
   if (!isAuthReady) {
     return (
       <div className="flex h-dvh w-full items-center justify-center">
-        <LoadingEllipsis />
+        <LoadingCircle />
       </div>
     );
   }

@@ -20,7 +20,12 @@ import type {
   ImportChapterFormat,
   ImportChapterResult,
 } from "@/features/ComicPlayground/types/chapter";
-import type { ChapterInfo, ComicInfo, PageInfo, UploadProgressCallbacks } from "@/types";
+import type {
+  ChapterInfo,
+  ComicInfo,
+  PageInfo,
+  UploadProgressCallbacks,
+} from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
@@ -69,7 +74,9 @@ type Props = {
     userId: string,
     role: Role,
   ) => Promise<Result<void>>;
-  onLoadAssignableMembers?: (chapterId: string) => Promise<Result<MemberInfo[]>>;
+  onLoadAssignableMembers?: (
+    chapterId: string,
+  ) => Promise<Result<MemberInfo[]>>;
   onAddAssignment?: (
     chapterId: string,
     userId: string,
@@ -138,7 +145,9 @@ export default function ComicDetailModal({
   const [pages, setPages] = useState<PageInfo[]>([]);
   const [assignableMembers, setAssignableMembers] = useState<MemberInfo[]>([]);
   const [isMemberSelectorLoading, setIsMemberSelectorLoading] = useState(false);
-  const [memberSelectorRole, setMemberSelectorRole] = useState<Role | null>(null);
+  const [memberSelectorRole, setMemberSelectorRole] = useState<Role | null>(
+    null,
+  );
   const [isAddingAssignment, setIsAddingAssignment] = useState(false);
   const [isImportingData, setIsImportingData] = useState(false);
   const [isExportingData, setIsExportingData] = useState(false);
@@ -147,7 +156,12 @@ export default function ComicDetailModal({
   const [reuploadingPageIds, setReuploadingPageIds] = useState<
     Record<string, boolean>
   >({});
-  const [joiningRoles, setJoiningRoles] = useState<Partial<Record<Role, boolean>>>({});
+  const [uploadProgressByPageId, setUploadProgressByPageId] = useState<
+    Record<string, number>
+  >({});
+  const [joiningRoles, setJoiningRoles] = useState<
+    Partial<Record<Role, boolean>>
+  >({});
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
   const [canCreateChapter, setCanCreateChapter] = useState(false);
@@ -165,7 +179,9 @@ export default function ComicDetailModal({
     (chapters.some((chapter) => chapter.id === selectedChapterId) ||
       pinnedChapter?.id === selectedChapterId);
 
-  const currentAssignment = assignments.find((item) => item.userId === currentUserId);
+  const currentAssignment = assignments.find(
+    (item) => item.userId === currentUserId,
+  );
   const canTranslateOrProofread =
     !!currentAssignment &&
     (hasRole(currentAssignment, "translator") ||
@@ -175,9 +191,15 @@ export default function ComicDetailModal({
   const canUploadRawPages =
     !!currentAssignment && hasRole(currentAssignment, "rawProvider");
   const canDeleteChapterPages =
-    canUploadRawPages && pages.length > 0 && !!selectedChapterId && !!onDeleteChapterPages;
+    canUploadRawPages &&
+    pages.length > 0 &&
+    !!selectedChapterId &&
+    !!onDeleteChapterPages;
   const canUploadNewRawPages =
-    canUploadRawPages && pages.length === 0 && !!selectedChapterId && !!onAddPages;
+    canUploadRawPages &&
+    pages.length === 0 &&
+    !!selectedChapterId &&
+    !!onAddPages;
   const canReuploadRawPages = canUploadRawPages && !!onReservePageUpload;
   const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
   const assignedUserIdsForSelectedRole =
@@ -271,13 +293,17 @@ export default function ComicDetailModal({
               setSelectedChapterId(() => {
                 if (
                   initialChapterId &&
-                  loadedChapters.some((chapter) => chapter.id === initialChapterId)
+                  loadedChapters.some(
+                    (chapter) => chapter.id === initialChapterId,
+                  )
                 ) {
                   return initialChapterId;
                 }
                 if (
                   pinnedChapter?.id &&
-                  loadedChapters.some((chapter) => chapter.id === pinnedChapter.id)
+                  loadedChapters.some(
+                    (chapter) => chapter.id === pinnedChapter.id,
+                  )
                 ) {
                   return pinnedChapter.id;
                 }
@@ -310,7 +336,13 @@ export default function ComicDetailModal({
     return () => {
       cancelled = true;
     };
-  }, [comicInfo.id, initialChapterId, onLoadChapters, pinnedChapter?.id, showToast]);
+  }, [
+    comicInfo.id,
+    initialChapterId,
+    onLoadChapters,
+    pinnedChapter?.id,
+    showToast,
+  ]);
 
   const handleLoadMoreChapters = () => {
     if (isChaptersLoading || !chaptersHasMore) return;
@@ -349,12 +381,18 @@ export default function ComicDetailModal({
         console.error("[ComicDetailModal] 加载分工异常:", err);
         showToast("加载分工失败", "error");
       });
-  }, [isSelectedChapterAvailable, onLoadAssignments, selectedChapterId, showToast]);
+  }, [
+    isSelectedChapterAvailable,
+    onLoadAssignments,
+    selectedChapterId,
+    showToast,
+  ]);
 
   // Load pages when chapter changes
   useEffect(() => {
     if (!selectedChapterId || !isSelectedChapterAvailable) return;
     setPages([]);
+    setUploadProgressByPageId({});
     onLoadPages(selectedChapterId)
       .then((res) => {
         if (!res.success) {
@@ -425,7 +463,11 @@ export default function ComicDetailModal({
   const handleAddAssignment = async (userId: string) => {
     if (!selectedChapterId || !memberSelectorRole || !onAddAssignment) return;
     setIsAddingAssignment(true);
-    const result = await onAddAssignment(selectedChapterId, userId, memberSelectorRole);
+    const result = await onAddAssignment(
+      selectedChapterId,
+      userId,
+      memberSelectorRole,
+    );
     setIsAddingAssignment(false);
 
     if (!result.success) {
@@ -448,6 +490,7 @@ export default function ComicDetailModal({
       return;
     }
     setPages(res.data);
+    setUploadProgressByPageId({});
   };
 
   const reloadLoadedChapters = async () => {
@@ -470,30 +513,79 @@ export default function ComicDetailModal({
     if (!selectedChapterId || !onAddPages) return;
 
     const blobUrls: string[] = [];
-    const pendingPageIds = new Set<string>();
+    const tempPageIds = files.map(
+      (_, index) =>
+        `tmp-page-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
+    );
+    const pendingPageIds = new Set<string>(tempPageIds);
     const startIndex = pages.length;
+
+    const tempPages: PageInfo[] = tempPageIds.map((tempId, index) => ({
+      id: tempId,
+      chapterId: selectedChapterId,
+      index: startIndex + index,
+      imageUrl: "",
+      isUploaded: false,
+      creatorId: currentUserId ?? "",
+      totalUnitCount: 0,
+      translatedUnitCount: 0,
+      proofreadUnitCount: 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }));
+    setPages((prev) => [...prev, ...tempPages]);
+    setUploadProgressByPageId((prev) => {
+      const next = { ...prev };
+      for (const tempId of tempPageIds) next[tempId] = 0;
+      return next;
+    });
 
     const callbacks: UploadProgressCallbacks = {
       onPagesReserved: (pendingPages) => {
-        const newPages: PageInfo[] = pendingPages.map((pp) => ({
-          id: pp.pageId,
-          chapterId: selectedChapterId!,
-          index: startIndex + pp.index,
-          imageUrl: "",
-          isUploaded: false,
-          creatorId: currentUserId ?? "",
-          totalUnitCount: 0,
-          translatedUnitCount: 0,
-          proofreadUnitCount: 0,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        }));
-        for (const pp of pendingPages) pendingPageIds.add(pp.pageId);
-        setPages((prev) => [...prev, ...newPages]);
+        pendingPageIds.clear();
+        for (let i = 0; i < pendingPages.length; i++) {
+          pendingPageIds.add(pendingPages[i].pageId);
+        }
+
+        setPages((prev) => {
+          const idMap = new Map<string, string>();
+          for (let i = 0; i < pendingPages.length; i++) {
+            const tempId = tempPageIds[i];
+            const reservedPageId = pendingPages[i].pageId;
+            if (tempId) idMap.set(tempId, reservedPageId);
+          }
+
+          return prev.map((page) => {
+            const reservedPageId = idMap.get(page.id);
+            if (!reservedPageId) return page;
+            return { ...page, id: reservedPageId };
+          });
+        });
+
+        setUploadProgressByPageId((prev) => {
+          const next = { ...prev };
+          for (let i = 0; i < pendingPages.length; i++) {
+            const tempId = tempPageIds[i];
+            const reservedPageId = pendingPages[i].pageId;
+            if (!tempId) continue;
+            next[reservedPageId] = next[tempId] ?? 0;
+            delete next[tempId];
+          }
+          return next;
+        });
+      },
+      onPageUploadProgress: (pageId, percent) => {
+        setUploadProgressByPageId((prev) => ({ ...prev, [pageId]: percent }));
       },
       onPageUploaded: (pageId, file) => {
         const blobUrl = URL.createObjectURL(file);
         blobUrls.push(blobUrl);
+        setUploadProgressByPageId((prev) => {
+          if (!(pageId in prev)) return prev;
+          const next = { ...prev };
+          delete next[pageId];
+          return next;
+        });
         setPages((prev) =>
           prev.map((p) =>
             p.id === pageId ? { ...p, imageUrl: blobUrl, isUploaded: true } : p,
@@ -506,11 +598,18 @@ export default function ComicDetailModal({
       await onAddPages(selectedChapterId, files, callbacks);
       // Revoke blob URLs now that real URLs will replace them
       for (const url of blobUrls) URL.revokeObjectURL(url);
+      setUploadProgressByPageId({});
       await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
     } catch (err) {
       // Remove pending pages from this batch and revoke blob URLs
       for (const url of blobUrls) URL.revokeObjectURL(url);
       setPages((prev) => prev.filter((p) => !pendingPageIds.has(p.id)));
+      setUploadProgressByPageId((prev) => {
+        const next = { ...prev };
+        for (const pageId of pendingPageIds) delete next[pageId];
+        for (const tempId of tempPageIds) delete next[tempId];
+        return next;
+      });
       console.error("[ComicDetailModal] 上传页面失败:", err);
       showToast(err instanceof Error ? err.message : "上传页面失败", "error");
     }
@@ -549,24 +648,39 @@ export default function ComicDetailModal({
     }
 
     setReuploadingPageIds((prev) => ({ ...prev, [pageId]: true }));
+    setUploadProgressByPageId((prev) => ({ ...prev, [pageId]: 0 }));
     try {
-      const reserveResult = await onReservePageUpload({ pageId, fileExtension });
+      const reserveResult = await onReservePageUpload({
+        pageId,
+        fileExtension,
+      });
       if (!reserveResult.success) {
         console.error("[ComicDetailModal] 重上传预留失败:", reserveResult);
         showToast(reserveResult.error, "error");
         return;
       }
 
-      const uploadResult = await uploadToPresignedUrl(reserveResult.data.putUrl, file);
+      const uploadResult = await uploadToPresignedUrl(
+        reserveResult.data.putUrl,
+        file,
+        (percent) => {
+          setUploadProgressByPageId((prev) => ({ ...prev, [pageId]: percent }));
+        },
+      );
       if (!uploadResult.success) {
         console.error("[ComicDetailModal] 重上传文件失败:", uploadResult.error);
         showToast(uploadResult.error, "error");
         return;
       }
 
-      const markResult = await updatePage(reserveResult.data.pageId, { isUploaded: true });
+      const markResult = await updatePage(reserveResult.data.pageId, {
+        isUploaded: true,
+      });
       if (!markResult.success) {
-        console.error("[ComicDetailModal] 标记重上传状态失败:", markResult.error);
+        console.error(
+          "[ComicDetailModal] 标记重上传状态失败:",
+          markResult.error,
+        );
         showToast(markResult.error, "error");
         return;
       }
@@ -578,6 +692,12 @@ export default function ComicDetailModal({
       showToast(err instanceof Error ? err.message : "重上传失败", "error");
     } finally {
       setReuploadingPageIds((prev) => ({ ...prev, [pageId]: false }));
+      setUploadProgressByPageId((prev) => {
+        if (!(pageId in prev)) return prev;
+        const next = { ...prev };
+        delete next[pageId];
+        return next;
+      });
     }
   };
 
@@ -593,7 +713,12 @@ export default function ComicDetailModal({
   };
 
   const canJoinRole = (role: Role) => {
-    if (!activeMember || !onJoinChapterRole || !selectedChapterId || !currentUserId) {
+    if (
+      !activeMember ||
+      !onJoinChapterRole ||
+      !selectedChapterId ||
+      !currentUserId
+    ) {
       return false;
     }
     return hasRole(activeMember, role) && !isRoleAlreadyJoined(role);
@@ -683,15 +808,17 @@ export default function ComicDetailModal({
 
       await Promise.all([
         reloadCurrentPages(),
-        onLoadChapters({ comicId: comicInfo.id, offset: 0, limit: CHAPTERS_LIMIT }).then(
-          (res) => {
-            if (res.success) {
-              setChapters(res.data);
-              return;
-            }
-            showToast(res.error, "error");
-          },
-        ),
+        onLoadChapters({
+          comicId: comicInfo.id,
+          offset: 0,
+          limit: CHAPTERS_LIMIT,
+        }).then((res) => {
+          if (res.success) {
+            setChapters(res.data);
+            return;
+          }
+          showToast(res.error, "error");
+        }),
       ]);
 
       showToast(
@@ -751,7 +878,11 @@ export default function ComicDetailModal({
         return await blobToDataUrl(blob);
       } catch (err) {
         if (attempt >= maxAttempts) {
-          console.error("[ComicDetailModal] 下载图片失败，已跳过:", imageUrl, err);
+          console.error(
+            "[ComicDetailModal] 下载图片失败，已跳过:",
+            imageUrl,
+            err,
+          );
           return null;
         }
         await wait(300 * attempt);
@@ -780,7 +911,10 @@ export default function ComicDetailModal({
             };
           }
 
-          const imageDataUrl = await fetchImageAsDataUrlWithRetry(page.imageUrl, 3);
+          const imageDataUrl = await fetchImageAsDataUrlWithRetry(
+            page.imageUrl,
+            3,
+          );
           return {
             ...page,
             imageDataUrl,
@@ -803,7 +937,9 @@ export default function ComicDetailModal({
         selectedChapter?.index !== undefined
           ? `chapter-${selectedChapter.index}`
           : `chapter-${selectedChapterId}`;
-      const fileName = sanitizeFileName(`${comicInfo.title}-${chapterLabel}-export.json`);
+      const fileName = sanitizeFileName(
+        `${comicInfo.title}-${chapterLabel}-export.json`,
+      );
 
       const blob = new Blob([JSON.stringify(payload, null, 2)], {
         type: "application/json;charset=utf-8",
@@ -1041,18 +1177,15 @@ export default function ComicDetailModal({
             }
           : undefined
       }
-      onAddPages={
-        canUploadNewRawPages
-          ? handleAddRawPages
-          : undefined
-      }
+      onAddPages={canUploadNewRawPages ? handleAddRawPages : undefined}
       canReuploadPage={canReuploadRawPages ? () => true : undefined}
       isPageReuploading={(pageId) => !!reuploadingPageIds[pageId]}
       onReuploadPage={canReuploadRawPages ? handleReuploadPage : undefined}
       reuploadAccept="image/*"
       accept="image/*"
-      emptyHintText="支持拖拽上传图片"
-      uploadButtonText="点击或拖拽图片上传"
+      emptyHintText=""
+      uploadButtonText="点击此处以上传图片"
+      uploadProgressByPageId={uploadProgressByPageId}
     />
   );
 
@@ -1061,7 +1194,9 @@ export default function ComicDetailModal({
       selectedChapter={selectedChapter}
       assignments={assignments}
       onTransiteWorkflow={handleTransition}
-      onRemoveAssignment={onRemoveAssignment ? handleRemoveAssignment : undefined}
+      onRemoveAssignment={
+        onRemoveAssignment ? handleRemoveAssignment : undefined
+      }
       onAddAssignment={onAddAssignment ? handleOpenMemberSelector : undefined}
       onJoinRole={onJoinChapterRole ? handleJoinRole : undefined}
       canJoinRole={onJoinChapterRole ? canJoinRole : undefined}

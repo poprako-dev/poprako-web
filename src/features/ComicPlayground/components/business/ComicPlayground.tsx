@@ -481,7 +481,11 @@ export default function ComicPlayground() {
         const file = files[i];
         const creation = creations[i];
 
-        const uploadResult = await uploadToPresignedUrl(creation.putUrl, file);
+        const uploadResult = await uploadToPresignedUrl(
+          creation.putUrl,
+          file,
+          (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
+        );
         if (!uploadResult.success) {
           console.error("[ComicPlayground] 上传页面失败:", uploadResult.error);
           throw new Error(uploadResult.error);

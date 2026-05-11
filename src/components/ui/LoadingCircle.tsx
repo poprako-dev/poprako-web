@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { CircleEllipsis } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 type Props = {
   className?: string;
@@ -7,14 +7,14 @@ type Props = {
   "aria-label"?: string;
 };
 
-export default function LoadingEllipsis({
+export default function LoadingCircle({
   className = "h-6 w-6 text-emerald-500 animate-spin",
   size = 24,
   "aria-label": ariaLabel = "loading",
 }: Props) {
   return (
     <span role="status" aria-label={ariaLabel} className={clsx(className)}>
-      <CircleEllipsis className="h-full w-full" size={size} />
+      <LoaderCircle className="h-full w-full" size={size} />
     </span>
   );
 }
