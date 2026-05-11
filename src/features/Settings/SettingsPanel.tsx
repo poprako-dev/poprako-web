@@ -46,7 +46,7 @@ export default function SettingsPanel({}: Props) {
   };
 
   return (
-    <div className="flex w-2/3 flex-col gap-4">
+    <div className="flex w-1/3 flex-col gap-4">
       <div
         className={[
           "flex cursor-pointer items-center justify-between rounded-xl px-6 py-4 transition-colors",

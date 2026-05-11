@@ -23,7 +23,7 @@ function MobileBottomNav() {
       className={clsx(
         "fixed bottom-0 left-0 right-0 z-50 sm:hidden",
         "flex h-14 items-center justify-around",
-        "bg-[#F2EFE8]/95 backdrop-blur-sm border-t border-stone-200",
+        "bg-[#D6C2A2]/95 backdrop-blur-sm border-t border-stone-200",
       )}
     >
       {mobileNavItems.map((item) => {

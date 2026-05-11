@@ -5,6 +5,7 @@ type Props = {
   title: string;
   onClick?: () => void;
   disabled?: boolean;
+  danger?: boolean;
 };
 
 export default function ActionButton({
@@ -12,6 +13,7 @@ export default function ActionButton({
   title,
   onClick,
   disabled,
+  danger,
 }: Props) {
   return (
     <button
@@ -21,9 +23,10 @@ export default function ActionButton({
       className={clsx(
         "h-6 w-full rounded-sm flex items-center justify-center",
         "transition-all duration-200 active:scale-95",
-        "border border-slate-200 bg-white text-slate-500",
-        "hover:border-slate-400 hover:text-slate-800 shrink-0",
-        "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-200 disabled:hover:text-slate-500",
+        "border shrink-0",
+        !danger && "border-slate-200 bg-white text-slate-500 hover:border-slate-400 hover:text-slate-800",
+        danger && "border-rose-200 bg-white text-rose-400 hover:bg-rose-50 hover:border-rose-400 hover:text-rose-600",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
       )}
     >
       <Icon size={14} strokeWidth={2.5} />

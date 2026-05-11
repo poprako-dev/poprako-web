@@ -410,7 +410,7 @@ function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProp
   return (
     <div
       className={clsx(
-        "group/card relative rounded-md border border-slate-100 bg-white p-3",
+        "rounded-md border border-slate-100 bg-white p-3",
         "shadow-[0_1px_4px_rgb(0,0,0,0.03)]",
         "transition-all hover:border-slate-200 hover:shadow-[0_2px_8px_rgb(0,0,0,0.05)]",
       )}
@@ -439,37 +439,33 @@ function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProp
         </div>
       </div>
 
-      {/* Role chips */}
-      <div className="mt-2.5 flex flex-wrap gap-1 border-t border-slate-50 pt-2.5">
-        {roleConfigs.map((rc) => (
-          <span
-            key={rc.roleKey}
-            className={clsx(
-              "rounded border px-1.5 py-0.5 text-[10px] font-bold",
-              rc.chipClass,
-            )}
-          >
-            {rc.label}
-          </span>
-        ))}
-      </div>
+      {/* Role chips + delete */}
+      <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-slate-50 pt-2.5">
+        <div className="flex flex-wrap gap-1">
+          {roleConfigs.map((rc) => (
+            <span
+              key={rc.roleKey}
+              className={clsx(
+                "rounded border px-1.5 py-0.5 text-[10px] font-bold",
+                rc.chipClass,
+              )}
+            >
+              {rc.label}
+            </span>
+          ))}
+        </div>
 
-      {/* Delete button — appears on hover at top-right */}
-      {onDelete && (
-        <button
-          type="button"
-          onClick={() => onDelete(invitation.id)}
-          className={clsx(
-            "absolute right-2 top-2",
-            "opacity-0 group-hover/card:opacity-100",
-            "transition-opacity duration-150",
-            "text-slate-300 hover:text-red-400",
-          )}
-          title="撤销邀请"
-        >
-          <Trash2 size={11} strokeWidth={2.5} />
-        </button>
-      )}
+        {onDelete && (
+          <button
+            type="button"
+            onClick={() => onDelete(invitation.id)}
+            className="shrink-0 text-slate-300 transition-colors hover:text-red-400"
+            title="撤销邀请"
+          >
+            <Trash2 size={11} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

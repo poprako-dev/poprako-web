@@ -1014,6 +1014,7 @@ export default function ComicDetailModal({
               title="删除漫画"
               onClick={() => setPendingConfirmAction("delete-comic")}
               disabled={isDeletingComic}
+              danger
             />
           )}
           <input

@@ -4,7 +4,7 @@ type Props = {};
 
 export default function SettingsPage({}: Props) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FEFDF9]">
+    <div className="min-h-screen flex items-start justify-center pt-32 bg-[#FEFDF9]">
       <div
         className="absolute inset-0 opacity-[0.04] pointer-events-none"
         style={{
