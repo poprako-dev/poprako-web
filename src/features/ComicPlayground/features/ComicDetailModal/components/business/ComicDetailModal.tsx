@@ -50,7 +50,7 @@ import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import MemberSelectorModal from "./MemberSelectorModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import type { MemberInfo } from "@/types/member";
-import { hasRole, type Role } from "@/types/role";
+import { hasRole, matchesAssignmentRole, type Role } from "@/types/role";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
 
 const ROLE_TITLE_LABEL: Record<Role, string> = {
@@ -294,11 +294,14 @@ export default function ComicDetailModal({
     !!onAddPages;
   const canReuploadRawPages = canUploadRawPages && !!onReservePageUpload;
   const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
+  const canUploadCover = isTeamAdmin || canUploadRawPages;
   const assignedUserIdsForSelectedRole =
     memberSelectorRole === null
       ? []
       : assignments
-          .filter((assignment) => hasRole(assignment, memberSelectorRole))
+          .filter((assignment) =>
+            matchesAssignmentRole(assignment, memberSelectorRole),
+          )
           .map((assignment) => assignment.userId);
 
   useEffect(() => {
@@ -1259,7 +1262,7 @@ export default function ComicDetailModal({
           </div>
         )}
 
-        {!isUploadingCover && (
+        {!isUploadingCover && canUploadCover && (
           <>
             <input
               ref={coverInputRef}
@@ -1327,8 +1330,9 @@ export default function ComicDetailModal({
       )}
 
       {/* Actions */}
-      {selectedChapter && (
-        <div className="flex flex-col gap-1 shrink-0">
+      <div className="flex flex-col gap-1 shrink-0">
+        {selectedChapter && (
+          <>
           {canTranslateOrProofread && (
             <ActionButton
               icon={Pencil}
@@ -1369,15 +1373,6 @@ export default function ComicDetailModal({
             onClick={onExportChapter ? handleExportData : undefined}
             disabled={isExportingData}
           />
-          {isTeamAdmin && onDeleteComic && (
-            <ActionButton
-              icon={Trash2}
-              title="删除漫画"
-              onClick={() => setPendingConfirmAction("delete-comic")}
-              disabled={isDeletingComic}
-              danger
-            />
-          )}
           <input
             ref={importFileInputRef}
             type="file"
@@ -1385,8 +1380,18 @@ export default function ComicDetailModal({
             className="hidden"
             onChange={handleImportFileChange}
           />
-        </div>
-      )}
+          </>
+        )}
+        {isTeamAdmin && onDeleteComic && (
+          <ActionButton
+            icon={Trash2}
+            title="删除漫画"
+            onClick={() => setPendingConfirmAction("delete-comic")}
+            disabled={isDeletingComic}
+            danger
+          />
+        )}
+      </div>
     </>
   );
 
@@ -1442,6 +1447,7 @@ export default function ComicDetailModal({
       {memberSelectorRole && (
         <MemberSelectorModal
           title={`添加${ROLE_TITLE_LABEL[memberSelectorRole]}成员`}
+          role={memberSelectorRole}
           members={assignableMembers}
           assignedUserIds={assignedUserIdsForSelectedRole}
           isSubmitting={isMemberSelectorLoading || isAddingAssignment}

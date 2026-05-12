@@ -8,13 +8,18 @@ type Props = {
 };
 
 export default function LoadingCircle({
-  className = "h-6 w-6 text-emerald-500 animate-spin",
+  className = "inline-flex shrink-0 items-center justify-center text-emerald-500 animate-spin",
   size = 24,
   "aria-label": ariaLabel = "loading",
 }: Props) {
   return (
-    <span role="status" aria-label={ariaLabel} className={clsx(className)}>
-      <LoaderCircle className="h-full w-full" size={size} />
+    <span
+      role="status"
+      aria-label={ariaLabel}
+      className={clsx(className)}
+      style={{ width: size, height: size }}
+    >
+      <LoaderCircle size={size} />
     </span>
   );
 }

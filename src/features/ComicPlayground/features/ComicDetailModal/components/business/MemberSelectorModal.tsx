@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { Search, X, Loader2, Plus } from "lucide-react";
 import type { MemberInfo } from "@/types/member";
-import { unmaskRoles } from "@/types/role";
+import {
+  matchesAssignmentRole,
+  type Role,
+  unmaskRoles,
+} from "@/types/role";
 
 const ROLE_LABEL: Record<string, string> = {
   rawProvider: "图",
@@ -17,6 +21,7 @@ const ROLE_LABEL: Record<string, string> = {
 
 type Props = {
   title: string;
+  role: Role;
   members: MemberInfo[];
   assignedUserIds: string[];
   isSubmitting?: boolean;
@@ -26,6 +31,7 @@ type Props = {
 
 export default function MemberSelectorModal({
   title,
+  role,
   members,
   assignedUserIds,
   isSubmitting,
@@ -49,13 +55,14 @@ export default function MemberSelectorModal({
     const normalized = keyword.trim().toLowerCase();
     return members.filter((member) => {
       if (assignedUserIds.includes(member.userId)) return false;
+      if (!matchesAssignmentRole(member, role)) return false;
       if (!normalized) return true;
 
       const name = member.user?.name?.toLowerCase() ?? "";
       const qq = member.user?.qq?.toLowerCase() ?? "";
       return name.includes(normalized) || qq.includes(normalized);
     });
-  }, [assignedUserIds, keyword, members]);
+  }, [assignedUserIds, keyword, members, role]);
 
   return (
     <div

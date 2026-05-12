@@ -49,6 +49,14 @@ export function hasRole(withRole: WithRole, role: Role) {
   return false;
 }
 
+export function matchesAssignmentRole(withRole: WithRole, role: Role) {
+  if (role === "typesetter") {
+    return hasRole(withRole, "typesetter") || hasRole(withRole, "redrawer");
+  }
+
+  return hasRole(withRole, role);
+}
+
 export type RoleMask = number;
 
 const roleToBit: Record<Role, number> = {
