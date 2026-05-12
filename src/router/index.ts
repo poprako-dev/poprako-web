@@ -1,50 +1,52 @@
-import { createElement, lazy, Suspense } from "react";
+import { createElement, lazy, Suspense, type ComponentType } from "react";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import { createBrowserRouter } from "react-router-dom";
-import AppLayout from "@/layouts/AppLayout";
-import WorkspacePage from "@/pages/WorkspacePage";
-import ComicPlaygroundPage from "@/pages/ComicPlaygroundPage";
-import MemberGlancePage from "@/pages/MemberGlancePage";
-import LoginPage from "@/pages/LoginPage";
 import RootGuard from "@/pages/RootGuard";
-import TranslatorPage from "@/pages/TranslatorPage";
-import SettingsPage from "@/pages/SettingsPage";
 
-const errorElement = createElement(
-  Suspense,
-  { fallback: createElement(LoadingCircle) },
-  createElement(lazy(() => import("@/pages/ErrorPage"))),
-);
+function lazyElement(loader: () => Promise<{ default: ComponentType }>) {
+  const Component = lazy(loader);
+
+  return createElement(
+    Suspense,
+    { fallback: createElement(LoadingCircle) },
+    createElement(Component),
+  );
+}
+
+const errorElement = lazyElement(() => import("@/pages/ErrorPage"));
 
 export const router = createBrowserRouter([
   {
     path: "/login",
-    element: createElement(LoginPage),
+    element: lazyElement(() => import("@/pages/LoginPage")),
     errorElement,
   },
   {
     path: "/translator/:chapterId/:pageId",
-    element: createElement(TranslatorPage),
+    element: lazyElement(() => import("@/pages/TranslatorPage")),
     errorElement,
   },
   {
     path: "/",
-    element: createElement(AppLayout),
+    element: lazyElement(() => import("@/layouts/AppLayout")),
     errorElement,
     children: [
       { index: true, element: createElement(RootGuard) },
-      { path: "workspace", element: createElement(WorkspacePage) },
+      {
+        path: "workspace",
+        element: lazyElement(() => import("@/pages/WorkspacePage")),
+      },
       {
         path: "comic-playground",
-        element: createElement(ComicPlaygroundPage),
+        element: lazyElement(() => import("@/pages/ComicPlaygroundPage")),
       },
       {
         path: "member-list",
-        element: createElement(MemberGlancePage),
+        element: lazyElement(() => import("@/pages/MemberGlancePage")),
       },
       {
         path: "settings",
-        element: createElement(SettingsPage),
+        element: lazyElement(() => import("@/pages/SettingsPage")),
       },
     ],
   },
