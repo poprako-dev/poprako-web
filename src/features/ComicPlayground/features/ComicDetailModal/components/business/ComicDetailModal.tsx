@@ -29,6 +29,7 @@ import type {
 } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
+import { canApplyWorkflowTransition } from "@/types/chapter";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useAppStore } from "@/store/app";
 import {
@@ -62,6 +63,16 @@ const ROLE_TITLE_LABEL: Record<Role, string> = {
   publisher: "发布",
   admin: "管理员",
 };
+
+function pickFallbackChapterId(chapters: ChapterInfo[]): string | null {
+  if (chapters.length === 0) return null;
+
+  const fallbackChapter = chapters.reduce((currentHighest, chapter) => {
+    return chapter.index > currentHighest.index ? chapter : currentHighest;
+  });
+
+  return fallbackChapter.id;
+}
 
 type Props = {
   comicInfo: ComicInfo;
@@ -114,6 +125,69 @@ type Props = {
   onDeleteComic?: (comicId: string) => Promise<Result<void>>;
   onClose: () => void;
 };
+
+function applyWorkflowTransition(
+  chapter: ChapterInfo,
+  transition: WorkflowTransition,
+): ChapterInfo {
+  const now = Date.now();
+
+  switch (transition) {
+    case "upload_complete":
+      return {
+        ...chapter,
+        uploadedAt: chapter.uploadedAt ?? now,
+      };
+    case "translate_start":
+      return {
+        ...chapter,
+        translatingAt: now,
+        translatedAt: undefined,
+      };
+    case "translate_complete":
+      return {
+        ...chapter,
+        translatingAt: undefined,
+        translatedAt: now,
+      };
+    case "proofread_start":
+      return {
+        ...chapter,
+        proofreadingAt: now,
+        proofreadAt: undefined,
+      };
+    case "proofread_complete":
+      return {
+        ...chapter,
+        proofreadingAt: undefined,
+        proofreadAt: now,
+      };
+    case "typeset_start":
+      return {
+        ...chapter,
+        typesettingAt: now,
+        typesetAt: undefined,
+      };
+    case "typeset_complete":
+      return {
+        ...chapter,
+        typesettingAt: undefined,
+        typesetAt: now,
+      };
+    case "review_complete":
+      return {
+        ...chapter,
+        reviewedAt: now,
+      };
+    case "publish_complete":
+      return {
+        ...chapter,
+        publishedAt: now,
+      };
+    default:
+      return chapter;
+  }
+}
 
 export default function ComicDetailModal({
   comicInfo,
@@ -188,6 +262,14 @@ export default function ComicDetailModal({
     selectedChapterId !== null &&
     (chapters.some((chapter) => chapter.id === selectedChapterId) ||
       pinnedChapter?.id === selectedChapterId);
+
+  useEffect(() => {
+    if (selectedChapterId && isSelectedChapterAvailable) return;
+
+    setAssignments([]);
+    setPages([]);
+    setUploadProgressByPageId({});
+  }, [isSelectedChapterAvailable, selectedChapterId]);
 
   const currentAssignment = assignments.find(
     (item) => item.userId === currentUserId,
@@ -421,12 +503,30 @@ export default function ComicDetailModal({
   const handleTransition = async (
     transition: WorkflowTransition,
   ): Promise<Result<void>> => {
-    if (!selectedChapterId) return { success: false, error: "未选择章节" };
+    if (!selectedChapterId || !selectedChapter) {
+      return { success: false, error: "未选择章节" };
+    }
+    if (!canApplyWorkflowTransition(selectedChapter, transition)) {
+      return {
+        success: false,
+        error: "当前章节状态已更新，不能重复推进该流程",
+      };
+    }
     const res = await onTransiteWorkflow(selectedChapterId, transition);
     if (!res.success) {
       console.error("[ComicDetailModal] 推进流程失败:", res);
       showToast("操作失败", "error");
+      return res;
     }
+
+    setChapters((prev) =>
+      prev.map((chapter) =>
+        chapter.id === selectedChapterId
+          ? applyWorkflowTransition(chapter, transition)
+          : chapter,
+      ),
+    );
+
     return res;
   };
 
@@ -1082,7 +1182,9 @@ export default function ComicDetailModal({
                     });
                     if (reloaded.success) {
                       setChapters(reloaded.data);
-                      setSelectedChapterId(reloaded.data[0]?.id ?? null);
+                      setSelectedChapterId(
+                        pickFallbackChapterId(reloaded.data),
+                      );
                       return;
                     }
                     showToast("刷新章节失败", "error");
@@ -1166,7 +1268,9 @@ export default function ComicDetailModal({
               className="hidden"
               onChange={handleCoverFileChange}
             />
-            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+            <div
+              className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
+            >
               <button
                 onClick={() => coverInputRef.current?.click()}
                 className={clsx(

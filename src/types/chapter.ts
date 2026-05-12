@@ -126,6 +126,34 @@ export function publishWorkflowStatus(chapter: WithWorkflow) {
   return "pending" as WorkflowStatus;
 }
 
+export function canApplyWorkflowTransition(
+  chapter: WithWorkflow,
+  transition: WorkflowTransition,
+) {
+  switch (transition) {
+    case "upload_complete":
+      return !chapter.uploadedAt;
+    case "translate_start":
+      return !chapter.translatingAt && !chapter.translatedAt;
+    case "translate_complete":
+      return !!chapter.translatingAt && !chapter.translatedAt;
+    case "proofread_start":
+      return !chapter.proofreadingAt && !chapter.proofreadAt;
+    case "proofread_complete":
+      return !!chapter.proofreadingAt && !chapter.proofreadAt;
+    case "typeset_start":
+      return !chapter.typesettingAt && !chapter.typesetAt;
+    case "typeset_complete":
+      return !!chapter.typesettingAt && !chapter.typesetAt;
+    case "review_complete":
+      return !chapter.reviewedAt;
+    case "publish_complete":
+      return !chapter.publishedAt;
+    default:
+      return false;
+  }
+}
+
 export function toChapterInfo(raw?: RawChapterInfo): ChapterInfo | undefined {
   if (!raw) return undefined;
 

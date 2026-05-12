@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import {
+  canApplyWorkflowTransition,
   uploadWorkflowStatus,
   translateWorkflowStatus,
   proofreadWorkflowStatus,
@@ -184,8 +185,17 @@ export default function AssignmentFooter({
             const roleAssignments = assignments.filter(roleDef.matches);
             const status = selectedChapter
               ? roleDef.getStatus(selectedChapter)
-              : ("pending" as WorkflowStatus);
-            const transition = roleDef.nextTransition(status);
+              : ("unset" as WorkflowStatus);
+            const nextTransition =
+              selectedChapter && status !== "unset"
+                ? roleDef.nextTransition(status)
+                : null;
+            const transition =
+              selectedChapter &&
+              nextTransition &&
+              canApplyWorkflowTransition(selectedChapter, nextTransition)
+                ? nextTransition
+                : null;
 
             return (
               <RoleTag
