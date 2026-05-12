@@ -17,6 +17,7 @@ import {
   unitPosition,
 } from "@/types/unit";
 import Marker, { CIRCLE_SIZE, PIN_OFFSET } from "@/features/BaseTranslator/features/Marker";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 
 const PAN_THRESHOLD = 8;
 const MARKER_DRAG_THRESHOLD = 3;
@@ -49,6 +50,7 @@ type Props = {
   imageSrc: string | null;
   units: UnitInfo[];
   mode: TranslatorMode;
+  isLoading?: boolean;
   isUnitCreationEnabled?: boolean;
   focusedUnitId?: string;
   onFocusUnit?: (unitId: string) => void;
@@ -62,6 +64,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     imageSrc,
     units,
     mode,
+    isLoading = false,
     isUnitCreationEnabled = true,
     focusedUnitId,
     onFocusUnit,
@@ -433,7 +436,11 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
       onContextMenu={handleContextMenu}
       onWheel={handleWheel}
     >
-      {imageSrc ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center w-full h-full">
+          <LoadingCircle />
+        </div>
+      ) : imageSrc ? (
         <div
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
           style={{

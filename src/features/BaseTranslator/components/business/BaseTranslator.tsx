@@ -513,6 +513,7 @@ export default function BaseTranslator({
         imageSrc={imageUrl}
         units={unitBuf}
         mode={mode}
+        isLoading={isLoadingPage}
         isUnitCreationEnabled={isUnitCreationEnabled}
         focusedUnitId={focusedUnitId}
         onFocusUnit={setFocusedUnitId}
@@ -532,11 +533,6 @@ export default function BaseTranslator({
           onPageDown={() => handleNavigate(pageIndex + 1)}
         />
       </div>
-      {isLoadingPage && (
-        <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
-          <span className="text-sm text-muted-foreground">加载中…</span>
-        </div>
-      )}
     </div>
   );
 
