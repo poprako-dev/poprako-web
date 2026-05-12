@@ -5,11 +5,11 @@ type Props = {
 };
 
 export default function SpecialCharsBar({ onInsert }: Props) {
-  const { specialChars } = useSpecialChars();
+  const { favoriteChars } = useSpecialChars();
 
   return (
     <div className="flex flex-wrap gap-1 mt-1 pt-1 border-t border-gray-100 animate-in fade-in slide-in-from-top-1">
-      {specialChars.map((char, index) => (
+      {favoriteChars.map((char, index) => (
         <button
           key={index}
           onMouseDown={(e) => {

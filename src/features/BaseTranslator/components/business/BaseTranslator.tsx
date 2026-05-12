@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { SquareArrowRight, Command, ReplaceAll } from "lucide-react";
+import { SquareArrowRight, Command, CaseSensitive } from "lucide-react";
 import Paginator from "@/components/ui/Paginator";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import ToolboxDropdown from "@/features/ToolboxDropdown";
@@ -21,6 +21,7 @@ import Canvas, {
 import UnitList from "@/features/BaseTranslator/features/UnitList";
 import BaseTranslatorLayout from "@/features/BaseTranslator/layout/BaseTranslatorLayout";
 import ShortcutPanel from "@/features/BaseTranslator/features/ShortcutPanel";
+import SpecialCharPanel from "@/features/BaseTranslator/features/SpecialCharPanel";
 import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
@@ -73,6 +74,7 @@ export default function BaseTranslator({
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
   const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
+  const [isSpecialCharPanelOpen, setIsSpecialCharPanelOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
   const isNavigating = useRef(false);
@@ -493,9 +495,9 @@ export default function BaseTranslator({
       onClick: () => setIsShortcutPanelOpen(true),
     },
     {
-      icon: <ReplaceAll size={20} />,
-      title: "批量替换",
-      onClick: () => {},
+      icon: <CaseSensitive size={20} />,
+      title: "特殊符号面板",
+      onClick: () => setIsSpecialCharPanelOpen(true),
     },
     {
       icon: <SquareArrowRight size={20} />,
@@ -579,6 +581,9 @@ export default function BaseTranslator({
           onUpdateConfigurableShortcuts={updateConfigurableShortcuts}
           onClose={() => setIsShortcutPanelOpen(false)}
         />
+      )}
+      {isSpecialCharPanelOpen && (
+        <SpecialCharPanel onClose={() => setIsSpecialCharPanelOpen(false)} />
       )}
       {pendingAction && (
         <ConfirmDialog

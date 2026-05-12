@@ -7,6 +7,7 @@ import {
   Languages,
   CheckSquare,
   CloudUpload,
+  Upload,
   Image as ImageIcon,
   Download,
   Pencil,
@@ -34,6 +35,10 @@ import {
   updatePage,
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
+import {
+  reserveCoverUpload,
+  markCoverUploaded,
+} from "@/features/ComicPlayground/api/comic";
 import LazyImage from "./LazyImage";
 import StatItem from "./StatItem";
 import ActionButton from "./ActionButton";
@@ -169,7 +174,12 @@ export default function ComicDetailModal({
     "delete-pages" | "delete-comic" | null
   >(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const CHAPTERS_LIMIT = 20;
+
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [coverUploadProgress, setCoverUploadProgress] = useState<number | null>(null);
+  const [localCoverUrl, setLocalCoverUrl] = useState<string | null>(null);
 
   const selectedChapter =
     chapters.find((c) => c.id === selectedChapterId) ??
@@ -701,6 +711,59 @@ export default function ComicDetailModal({
     }
   };
 
+  const handleCoverFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    handleUploadCover(file);
+  };
+
+  const handleUploadCover = async (file: File) => {
+    if (isUploadingCover) return;
+
+    const ext = getFileExtension(file);
+    if (!ext) {
+      showToast("请选择带后缀的图片文件", "error");
+      return;
+    }
+
+    setIsUploadingCover(true);
+    setCoverUploadProgress(0);
+
+    try {
+      const reserveRes = await reserveCoverUpload(comicInfo.id, ext);
+      if (!reserveRes.success) {
+        showToast(reserveRes.error, "error");
+        return;
+      }
+
+      const uploadRes = await uploadToPresignedUrl(
+        reserveRes.data.putUrl,
+        file,
+        (percent) => setCoverUploadProgress(percent),
+      );
+      if (!uploadRes.success) {
+        showToast(uploadRes.error, "error");
+        return;
+      }
+
+      const markRes = await markCoverUploaded(comicInfo.id);
+      if (!markRes.success) {
+        showToast(markRes.error, "error");
+        return;
+      }
+
+      setLocalCoverUrl(URL.createObjectURL(file));
+      showToast("封面上传成功", "success");
+    } catch (err) {
+      console.error("[ComicDetailModal] 封面上传异常:", err);
+      showToast(err instanceof Error ? err.message : "封面上传失败", "error");
+    } finally {
+      setIsUploadingCover(false);
+      setCoverUploadProgress(null);
+    }
+  };
+
   const isRoleAlreadyJoined = (role: Role) => {
     if (!currentAssignment) return false;
     if (role === "typesetter") {
@@ -1045,15 +1108,15 @@ export default function ComicDetailModal({
       {/* Cover */}
       <div
         className={clsx(
-          "w-28 mx-auto aspect-3/4 bg-slate-50 rounded-sm border border-slate-100",
+          "relative w-28 mx-auto aspect-3/4 bg-slate-50 rounded-sm border border-slate-100",
           "flex items-center justify-center text-slate-200 mb-4 mt-2",
           "overflow-hidden shrink-0",
           "hover:border-slate-300 transition-colors group",
         )}
       >
-        {comicInfo.coverUrl ? (
+        {(localCoverUrl || comicInfo.coverUrl) ? (
           <LazyImage
-            src={comicInfo.coverUrl}
+            src={localCoverUrl ?? comicInfo.coverUrl}
             alt={comicInfo.title}
             className="w-full h-full"
           />
@@ -1062,6 +1125,64 @@ export default function ComicDetailModal({
             size={24}
             className="group-hover:scale-110 transition-transform duration-300"
           />
+        )}
+
+        {isUploadingCover && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
+            {coverUploadProgress !== null && coverUploadProgress < 100 && (
+              <>
+                <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
+                  <circle
+                    cx="20" cy="20" r="16"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.3)"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx="20" cy="20" r="16"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.9)"
+                    strokeWidth="3"
+                    strokeDasharray={100.531}
+                    strokeDashoffset={100.531 * (1 - (coverUploadProgress ?? 0) / 100)}
+                    strokeLinecap="round"
+                    className="transition-all duration-300 ease-out"
+                  />
+                </svg>
+                <span className="absolute text-[11px] font-bold text-white/90">
+                  {coverUploadProgress}%
+                </span>
+              </>
+            )}
+          </div>
+        )}
+
+        {!isUploadingCover && (
+          <>
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleCoverFileChange}
+            />
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+              <button
+                onClick={() => coverInputRef.current?.click()}
+                className={clsx(
+                  "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-sm",
+                  "bg-slate-50/20 backdrop-blur-[1px] border border-slate-300/20",
+                  "text-slate-400 hover:text-slate-600",
+                  "hover:bg-slate-50/35 hover:border-slate-300/45",
+                  "opacity-0 group-hover:opacity-100",
+                  "transition-all active:scale-95",
+                )}
+                title="上传封面"
+              >
+                <Upload className="h-3 w-3" strokeWidth={2.25} />
+              </button>
+            </div>
+          </>
         )}
       </div>
 

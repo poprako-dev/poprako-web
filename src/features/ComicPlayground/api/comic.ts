@@ -87,3 +87,26 @@ export async function deleteComic(id: string): Promise<Result<void>> {
   if (!res.success) return res;
   return { success: true, data: undefined };
 }
+
+export async function reserveCoverUpload(
+  comicId: string,
+  fileExtension: string,
+): Promise<Result<{ putUrl: string }>> {
+  const res = await api.post<
+    { put_url: string },
+    { file_extension: string }
+  >(`/comics/${comicId}/cover/reserve`, { file_extension: fileExtension });
+  if (!res.success) return res;
+  return { success: true, data: { putUrl: res.data.put_url } };
+}
+
+export async function markCoverUploaded(
+  comicId: string,
+): Promise<Result<void>> {
+  const res = await api.post<void, Record<string, never>>(
+    `/comics/${comicId}/cover/uploaded`,
+    {},
+  );
+  if (!res.success) return res;
+  return { success: true, data: undefined };
+}

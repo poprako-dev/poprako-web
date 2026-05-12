@@ -10,3 +10,7 @@
 - [x] add quick join.
 - [x] frontend auto refresh after chapter deletion.
 - [x] unexpected “漫画不存在” after comic deletion.
+- [ ] add special character modal.
+- [ ] add assignment card.
+- [x] fallback of comic cover.
+- [x] comic cover upload.

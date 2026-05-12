@@ -213,7 +213,15 @@ export default function ReviewerComicCard({
 
       {/* 主体区域：左封面 + 右侧三行 */}
       <div className="group flex flex-1 px-3 pb-2 pt-1 gap-3 items-stretch min-h-0">
-        <div className="w-16 h-full shrink-0 rounded overflow-hidden bg-slate-100" />
+        <div className="w-16 h-full shrink-0 rounded overflow-hidden bg-slate-100">
+          {comicInfo.coverUrl && (
+            <img
+              src={comicInfo.coverUrl}
+              alt={comicInfo.title}
+              className="w-full h-full object-cover"
+            />
+          )}
+        </div>
 
         <div className="flex-1 flex flex-col min-w-0 h-full justify-between">
           <div className="flex items-center gap-2 text-sm text-slate-400">
