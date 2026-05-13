@@ -20,14 +20,14 @@ export default function NavItem({
       className={clsx(
         "group/item relative flex h-11 w-full",
         "items-center outline-none transition-all",
-        isActive ? "text-green-500" : "text-[#7a8c80] hover:text-[#2e3c33]",
+        isActive ? "text-[#166534]" : "text-[#3D3028]",
       )}
     >
       <div
         className={clsx(
           "absolute inset-y-0 left-2 right-2",
           "rounded-lg transition-colors",
-          isActive ? "bg-green-50" : "group-hover/item:bg-[#f0f4f1]",
+          isActive ? "bg-[#FAF9F6] shadow-sm" : "group-hover/item:bg-white/40",
         )}
       />
 

@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, BookOpen, Users } from "lucide-react";
+import { LayoutDashboard, BookOpen, Users, Mail, Settings } from "lucide-react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AppSidebar } from "@/features/AppSidebar";
 import { getMyUser } from "@/api/user";
@@ -12,6 +12,8 @@ const mobileNavItems = [
   { path: "/workspace", icon: LayoutDashboard, label: "工作区" },
   { path: "/comic-playground", icon: BookOpen, label: "漫画广场" },
   { path: "/member-list", icon: Users, label: "成员" },
+  { path: "/system-mail", icon: Mail, label: "消息" },
+  { path: "/settings", icon: Settings, label: "设置" },
 ];
 
 function MobileBottomNav() {
@@ -23,7 +25,7 @@ function MobileBottomNav() {
       className={clsx(
         "fixed bottom-0 left-0 right-0 z-50 sm:hidden",
         "flex h-14 items-center justify-around",
-        "bg-[#D6C2A2]/95 backdrop-blur-sm border-t border-stone-200",
+        "bg-[#E8DCC4]/95 backdrop-blur-sm border-t border-stone-200",
       )}
     >
       {mobileNavItems.map((item) => {
@@ -35,7 +37,7 @@ function MobileBottomNav() {
             onClick={() => navigate(item.path)}
             className={clsx(
               "flex flex-col items-center gap-0.5 px-4 py-1 transition-colors",
-              isActive ? "text-emerald-600" : "text-slate-400",
+              isActive ? "text-[#166534]" : "text-[#7A6D63]",
             )}
           >
             <item.icon size={20} strokeWidth={isActive ? 2.4 : 2} />

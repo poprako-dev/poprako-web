@@ -27,7 +27,7 @@ export default function AppSidebarLayout({
       className={clsx(
         "fixed left-0 top-0 z-50",
         "hidden sm:flex h-screen flex-col",
-        "bg-[#F2EFE8] border-r border-stone-200",
+        "bg-[#E8DCC4] border-r border-stone-200",
         "transition-[width] duration-400 ease-in-out",
         "group",
         isExpanded ? "w-56 shadow-xl" : "w-14.5",

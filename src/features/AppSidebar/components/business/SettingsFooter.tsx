@@ -9,7 +9,7 @@ type Props = {
 
 export default function SettingsFooter({ config, isActive, onClick }: Props) {
   return (
-    <div className="py-2 border-t border-gray-50">
+    <div className="py-2 border-t border-[#D9CDB4]">
       <NavItem
         icon={config.icon}
         label={config.label}

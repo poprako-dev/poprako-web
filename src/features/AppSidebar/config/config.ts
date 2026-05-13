@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, BookOpen, Settings } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen, Mail, Settings } from "lucide-react";
 import type { NavConfig, TeamConfig } from "../types/types";
 
 export const mainNavConfigs: NavConfig[] = [
@@ -19,6 +19,12 @@ export const mainNavConfigs: NavConfig[] = [
     label: "成员一览",
     icon: Users,
     path: "/member-list",
+  },
+  {
+    id: "system-mail",
+    label: "系统消息",
+    icon: Mail,
+    path: "/system-mail",
   },
 ];
 

@@ -17,7 +17,7 @@ export default function TitleHeader() {
         className={clsx(
           "absolute left-14 whitespace-nowrap",
           "text-lg font-black tracking-tighter",
-          "text-gray-800",
+          "text-[#3D3028]",
           "opacity-0 transition-opacity",
           "duration-100 delay-0",
           "group-hover:opacity-100",

@@ -4,6 +4,7 @@ export type NavId =
   | "workspace"
   | "comic-playground"
   | "member-list"
+  | "system-mail"
   | "settings";
 
 export type NavConfig = {
