@@ -10,7 +10,7 @@ const PAGE_SIZE = 15;
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
 function formatMailDate(ts: number): string {
-  return new Date(ts * 1000).toLocaleString("zh-CN", {
+  return new Date(ts).toLocaleString("zh-CN", {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -88,8 +88,8 @@ export default function SystemMailViewer() {
   };
 
   const cutoff = Date.now() - THREE_DAYS_MS;
-  const recentItems = items.filter((m) => m.createdAt * 1000 >= cutoff);
-  const olderItems = items.filter((m) => m.createdAt * 1000 < cutoff);
+  const recentItems = items.filter((m) => m.createdAt >= cutoff);
+  const olderItems = items.filter((m) => m.createdAt < cutoff);
 
   return (
     <div className="w-full h-full flex flex-col pt-2">

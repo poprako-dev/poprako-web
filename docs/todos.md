@@ -15,4 +15,5 @@
 - [x] fallback of comic cover.
 - [x] comic cover upload.
 - [ ] team load in workspace(assignment card & comic detail modal)
-- [ ] sys mail box.
+- [x] sys mail box.
+- [ ] exit chapter button.

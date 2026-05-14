@@ -22,7 +22,7 @@ export const mainNavConfigs: NavConfig[] = [
   },
   {
     id: "system-mail",
-    label: "系统消息",
+    label: "系统信箱",
     icon: Mail,
     path: "/system-mail",
   },
