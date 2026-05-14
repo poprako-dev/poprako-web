@@ -17,3 +17,6 @@
 - [ ] team load in workspace(assignment card & comic detail modal)
 - [x] sys mail box.
 - [ ] exit chapter button.
+- [ ] base translator RO mode.
+- [ ] preview bubble disable.
+- [ ] comic subscription.

@@ -19,6 +19,7 @@ export default function TranslatorPage() {
   const returnTo = searchParams.get("returnTo");
   const returnComicId = searchParams.get("comicId");
   const returnChapterId = searchParams.get("chapterId");
+  const readOnly = searchParams.get("readOnly") === "true";
 
   const handleExit = () => {
     if (
@@ -86,6 +87,7 @@ export default function TranslatorPage() {
         chapterId={chapterId}
         startPageId={pageId}
         onExit={handleExit}
+        enableReadOnly={readOnly}
       />
     </div>
   );

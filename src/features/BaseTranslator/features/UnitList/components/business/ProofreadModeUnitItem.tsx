@@ -19,6 +19,7 @@ type Props = {
   onSelect?: (unitId: string) => void;
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
   dataUnitId?: string;
+  enableReadOnly?: boolean;
 };
 
 export default function ProofreadModeUnitItem({
@@ -27,6 +28,7 @@ export default function ProofreadModeUnitItem({
   onSelect,
   onModifyUnit,
   dataUnitId,
+  enableReadOnly = false,
 }: Props) {
   const proofRef = useRef<HTMLTextAreaElement>(null);
   const hasProofreadText = !!unitProofreadText(unit);
@@ -92,28 +94,30 @@ export default function ProofreadModeUnitItem({
                   : "text-gray-700",
             )}
           />
-          <button
-            title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
-            onClick={() =>
-              onModifyUnit?.(unitId(unit), {
-                isProofread: !unitIsProofread(unit),
-              })
-            }
-            className={clsx(
-              "shrink-0 mt-0.5 p-0.5 rounded",
-              "border border-gray-300",
-              unitIsProofread(unit)
-                ? "text-gray-400 hover:text-gray-500 hover:border-gray-400"
-                : "text-gray-400 hover:text-green-500 hover:border-green-300",
-              "transition-colors",
-            )}
-          >
-            {unitIsProofread(unit) ? <X size={13} /> : <Check size={13} />}
-          </button>
+          {!enableReadOnly && (
+            <button
+              title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
+              onClick={() =>
+                onModifyUnit?.(unitId(unit), {
+                  isProofread: !unitIsProofread(unit),
+                })
+              }
+              className={clsx(
+                "shrink-0 mt-0.5 p-0.5 rounded",
+                "border border-gray-300",
+                unitIsProofread(unit)
+                  ? "text-gray-400 hover:text-gray-500 hover:border-gray-400"
+                  : "text-gray-400 hover:text-green-500 hover:border-green-300",
+                "transition-colors",
+              )}
+            >
+              {unitIsProofread(unit) ? <X size={13} /> : <Check size={13} />}
+            </button>
+          )}
         </div>
 
-        {/* 校对框：仅在聚焦或已有校对内容时显示 */}
-        {(isFocused || hasProofreadText) && (
+        {/* 校对框：仅在聚焦或已有校对内容时显示；只读模式下有校对内容就始终显示 */}
+        {(enableReadOnly ? hasProofreadText : isFocused || hasProofreadText) && (
           <>
             {unitTranslatedText(unit) && hasProofreadText && (
               <div className="w-12 h-px bg-gray-200" />
@@ -130,12 +134,13 @@ export default function ProofreadModeUnitItem({
                 }
                 onFocus={() => onSelect?.(unitId(unit))}
                 placeholder="输入校对..."
+                readOnly={enableReadOnly}
                 className={clsx(
                   "flex-1 text-[15px] leading-relaxed",
                   isFocused ? "text-gray-900 font-medium" : "text-gray-700",
                 )}
               />
-              {!hasProofreadText && hasTranslatedText && (
+              {!enableReadOnly && !hasProofreadText && hasTranslatedText && (
                 <button
                   title="从初翻复制"
                   onClick={() => {
@@ -157,7 +162,7 @@ export default function ProofreadModeUnitItem({
                   <Copy size={13} />
                 </button>
               )}
-              {hasProofreadText && (
+              {!enableReadOnly && hasProofreadText && (
                 <button
                   title="清空校对内容"
                   onClick={() =>
@@ -177,7 +182,7 @@ export default function ProofreadModeUnitItem({
                 </button>
               )}
             </div>
-            {isFocused && <SpecialCharsBar onInsert={insertChar} />}
+            {isFocused && !enableReadOnly && <SpecialCharsBar onInsert={insertChar} />}
           </>
         )}
       </div>

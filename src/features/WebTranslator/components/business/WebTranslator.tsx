@@ -17,6 +17,7 @@ type Props = {
   chapterId: string;
   startPageId?: string;
   onExit: () => void;
+  enableReadOnly?: boolean;
 };
 
 type LoadingState =
@@ -55,7 +56,7 @@ function mergePageCounters(
   );
 }
 
-export default function WebTranslator({ chapterId, startPageId, onExit }: Props) {
+export default function WebTranslator({ chapterId, startPageId, onExit, enableReadOnly }: Props) {
   const [state, setState] = useState<LoadingState>({ status: "loading" });
   const { showToast } = useToastStore();
 
@@ -85,7 +86,9 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
       const userId = useAppStore.getState().loginState?.userInfo?.id;
       let isCurrUserProofreader = false;
 
-      if (userId) {
+      if (enableReadOnly) {
+        isCurrUserProofreader = true;
+      } else if (userId) {
         const assignResult = await listAssignmentsByChapter({
           chapterId,
           offset: 0,
@@ -260,6 +263,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit }: Props)
       onExit={onExit}
       isCurrUserProofreader={state.isCurrUserProofreader}
       startPageId={startPageId}
+      enableReadOnly={enableReadOnly}
     />
   );
 }

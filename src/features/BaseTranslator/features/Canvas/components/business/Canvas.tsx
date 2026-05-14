@@ -57,6 +57,7 @@ type Props = {
   onMoveUnit?: (unitId: string, xCoord: number, yCoord: number) => void;
   onAddUnit?: (xCoord: number, yCoord: number, isBubble: boolean) => void;
   onDeleteUnit?: (unitId: string) => void;
+  enableReadOnly?: boolean;
 };
 
 const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
@@ -71,6 +72,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     onMoveUnit,
     onAddUnit,
     onDeleteUnit,
+    enableReadOnly = false,
   }: Props,
   ref: React.Ref<CanvasHandle>,
 ) {
@@ -355,6 +357,10 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
+    if (enableReadOnly) {
+      onFocusUnit?.(unitId);
+      return;
+    }
     startDrag("marker", e.clientX, e.clientY, unitId, xCoord, yCoord);
   }
 
@@ -373,6 +379,8 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
 
   function handleContextMenu(e: React.MouseEvent) {
     e.preventDefault();
+
+    if (enableReadOnly) return;
 
     // Right-click on marker → delete
     const markerEl = (e.target as HTMLElement).closest("[data-marker]");

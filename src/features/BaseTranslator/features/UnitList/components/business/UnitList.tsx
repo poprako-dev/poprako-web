@@ -13,6 +13,7 @@ type Props = {
   onFocusUnit?: (unitId: string) => void;
   // 在 units 长度为 0 时，不存在这个字段
   onModifyUnit?: (unitId: string, unit: UnitEdit) => void;
+  enableReadOnly?: boolean;
 };
 
 export default function UnitList({
@@ -21,6 +22,7 @@ export default function UnitList({
   mode,
   onFocusUnit,
   onModifyUnit,
+  enableReadOnly = false,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -55,10 +57,11 @@ export default function UnitList({
             onSelect={onFocusUnit}
             onModifyUnit={onModifyUnit}
             dataUnitId={unitId(unit)}
+            enableReadOnly={enableReadOnly}
           />
         ))}
       </div>
-      {mode === "proofread" && (
+      {mode === "proofread" && !enableReadOnly && (
         <div className="flex justify-center px-0 py-1">
           <button
             title="全部确认校对"

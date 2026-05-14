@@ -10,7 +10,7 @@ import {
   Upload,
   Image as ImageIcon,
   Download,
-  Pencil,
+  Search,
   Eraser,
   Trash2,
 } from "lucide-react";
@@ -103,7 +103,7 @@ type Props = {
     subtitle?: string;
   }) => Promise<Result<string>>;
   onDeleteChapter?: (chapterId: string) => Promise<Result<void>>;
-  onNavigateToTranslator?: (chapterId: string, pageId: string) => void;
+  onNavigateToTranslator?: (chapterId: string, pageId: string, readOnly?: boolean) => void;
   currentUserId?: string | null;
   onAddPages?: (
     chapterId: string,
@@ -278,6 +278,7 @@ export default function ComicDetailModal({
     !!currentAssignment &&
     (hasRole(currentAssignment, "translator") ||
       hasRole(currentAssignment, "proofreader"));
+  const canReadOnly = activeMember !== null && !canTranslateOrProofread;
   const canManageChapterAssignments =
     !!currentAssignment && hasRole(currentAssignment, "reviewer");
   const canUploadRawPages =
@@ -1333,10 +1334,10 @@ export default function ComicDetailModal({
       <div className="flex flex-col gap-1 shrink-0">
         {selectedChapter && (
           <>
-          {canTranslateOrProofread && (
+          {canReadOnly && selectedChapter && (
             <ActionButton
-              icon={Pencil}
-              title="开始翻校"
+              icon={Search}
+              title="只读查看"
               onClick={
                 selectedChapterId && onNavigateToTranslator
                   ? () => {
@@ -1345,7 +1346,7 @@ export default function ComicDetailModal({
                         showToast("当前章节暂无页面", "error");
                         return;
                       }
-                      onNavigateToTranslator(selectedChapterId, firstPageId);
+                      onNavigateToTranslator(selectedChapterId, firstPageId, true);
                     }
                   : undefined
               }
@@ -1395,15 +1396,18 @@ export default function ComicDetailModal({
     </>
   );
 
+  const canClickPage = canTranslateOrProofread || canReadOnly;
+
   const pageGrid = (
     <PageList
       pages={pages}
-      enableClick={canTranslateOrProofread}
+      enableClick={canClickPage}
       onClickPage={
-        canTranslateOrProofread
+        canClickPage
           ? (pageId) => {
               if (!selectedChapterId || !onNavigateToTranslator) return;
-              onNavigateToTranslator(selectedChapterId, pageId);
+              const readOnly = !canTranslateOrProofread;
+              onNavigateToTranslator(selectedChapterId, pageId, readOnly || undefined);
             }
           : undefined
       }

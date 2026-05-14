@@ -303,7 +303,7 @@ export default function Workspace() {
   );
 
   const handleNavigateToTranslator = useCallback(
-    (chapterId: string, pageId: string) => {
+    (chapterId: string, pageId: string, readOnly?: boolean) => {
       if (!selectedComic?.id) {
         navigate(`/translator/${chapterId}/${pageId}`);
         return;
@@ -314,6 +314,10 @@ export default function Workspace() {
         comicId: selectedComic.id,
         chapterId,
       });
+
+      if (readOnly) {
+        nextSearchParams.set("readOnly", "true");
+      }
 
       navigate({
         pathname: `/translator/${chapterId}/${pageId}`,

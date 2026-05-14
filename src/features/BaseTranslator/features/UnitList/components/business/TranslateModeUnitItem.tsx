@@ -16,6 +16,7 @@ type Props = {
   onSelect?: (unitId: string) => void;
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
   dataUnitId?: string;
+  enableReadOnly?: boolean;
 };
 
 export default function TranslateModeUnitItem({
@@ -24,6 +25,7 @@ export default function TranslateModeUnitItem({
   onSelect,
   onModifyUnit,
   dataUnitId,
+  enableReadOnly = false,
 }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -74,11 +76,12 @@ export default function TranslateModeUnitItem({
         }
         onFocus={() => onSelect?.(unitId(unit))}
         placeholder="点击输入翻译..."
+        readOnly={enableReadOnly}
         className={`text-[15px] leading-relaxed ${
           isFocused ? "text-gray-900 font-medium" : "text-gray-700"
         }`}
       />
-      {isFocused && <SpecialCharsBar onInsert={insertChar} />}
+      {isFocused && !enableReadOnly && <SpecialCharsBar onInsert={insertChar} />}
     </BaseUnitItem>
   );
 }

@@ -51,6 +51,7 @@ type Props = {
   startPageIndex?: number;
   // 初始页 ID，优先级高于 startPageIndex
   startPageId?: string;
+  enableReadOnly?: boolean;
 };
 
 export default function BaseTranslator({
@@ -62,6 +63,7 @@ export default function BaseTranslator({
   isCurrUserProofreader,
   startPageIndex,
   startPageId,
+  enableReadOnly = false,
 }: Props) {
   const [pageIndex, setPageIndex] = useState(0);
   const [unitBuf, setUnitBuf] = useState<UnitInfo[]>([]);
@@ -87,6 +89,12 @@ export default function BaseTranslator({
 
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
     useShortcuts();
+
+  const activeShortcuts = enableReadOnly
+    ? configurableShortcuts.filter((s) =>
+        ["nextMarker", "prevMarker", "pageUp", "pageDown"].includes(s.action),
+      )
+    : configurableShortcuts;
 
   function normalizedText(val?: string): string | null {
     return val && val !== "" ? val : null;
@@ -473,7 +481,7 @@ export default function BaseTranslator({
         }
       },
     },
-    configurableShortcuts,
+    activeShortcuts,
     isShortcutPanelOpen,
   );
 
@@ -489,16 +497,20 @@ export default function BaseTranslator({
   }, [isShortcutPanelOpen]);
 
   const toolboxOptions = [
-    {
-      icon: <Command size={20} />,
-      title: "快捷键说明",
-      onClick: () => setIsShortcutPanelOpen(true),
-    },
-    {
-      icon: <CaseSensitive size={20} />,
-      title: "特殊符号面板",
-      onClick: () => setIsSpecialCharPanelOpen(true),
-    },
+    ...(enableReadOnly
+      ? []
+      : [
+          {
+            icon: <Command size={20} />,
+            title: "快捷键说明",
+            onClick: () => setIsShortcutPanelOpen(true),
+          },
+          {
+            icon: <CaseSensitive size={20} />,
+            title: "特殊符号面板",
+            onClick: () => setIsSpecialCharPanelOpen(true),
+          },
+        ]),
     {
       icon: <SquareArrowRight size={20} />,
       title: "退出",
@@ -514,12 +526,13 @@ export default function BaseTranslator({
         units={unitBuf}
         mode={mode}
         isLoading={isLoadingPage}
-        isUnitCreationEnabled={isUnitCreationEnabled}
+        isUnitCreationEnabled={enableReadOnly ? false : isUnitCreationEnabled}
         focusedUnitId={focusedUnitId}
         onFocusUnit={setFocusedUnitId}
-        onMoveUnit={handleMoveUnit}
-        onAddUnit={handleAddUnit}
-        onDeleteUnit={handleDeleteUnit}
+        onMoveUnit={enableReadOnly ? undefined : handleMoveUnit}
+        onAddUnit={enableReadOnly ? undefined : handleAddUnit}
+        onDeleteUnit={enableReadOnly ? undefined : handleDeleteUnit}
+        enableReadOnly={enableReadOnly}
       />
       <div className="absolute top-2 left-2">
         <ToolboxDropdown options={toolboxOptions} />
@@ -538,9 +551,10 @@ export default function BaseTranslator({
 
   const sidebar = (
     <>
-      <div className="flex items-center border-b border-border shrink-0">
-        <div className="flex-1 min-w-0">
-          <StatusOptionBar
+      {!enableReadOnly && (
+        <div className="flex items-center border-b border-border shrink-0">
+          <div className="flex-1 min-w-0">
+            <StatusOptionBar
             currMode={mode}
             enabledModes={
               isCurrUserProofreader ? ["translate", "proofread"] : ["translate"]
@@ -555,13 +569,15 @@ export default function BaseTranslator({
           />
         </div>
       </div>
+      )}
       <div className="flex-1 overflow-y-auto">
         <UnitList
           units={unitBuf}
           focusedUnitId={focusedUnitId}
-          mode={mode}
+          mode={enableReadOnly ? "proofread" : mode}
           onFocusUnit={setFocusedUnitId}
-          onModifyUnit={handleModifyUnit}
+          onModifyUnit={enableReadOnly ? undefined : handleModifyUnit}
+          enableReadOnly={enableReadOnly}
         />
       </div>
     </>

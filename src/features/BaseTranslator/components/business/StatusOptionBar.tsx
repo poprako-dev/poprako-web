@@ -58,38 +58,38 @@ export default function StatusOptionBar({
       )}
       <button
         title="切换重定位模式"
-        onClick={onRelocationClick}
-        className={clsx(
-          "flex-1 flex items-center justify-center py-1.5 transition-colors",
-          isRelocationEnabled
-            ? "bg-green-50 text-green-500"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground",
-        )}
-      >
-        <MapPin size={14} />
-      </button>
-      <button
-        title={isUnitCreationEnabled ? "禁用标记创建" : "启用标记创建"}
-        onClick={onUnitCreationClick}
-        className={clsx(
-          "flex-1 flex items-center justify-center py-1.5 transition-colors",
-          !isUnitCreationEnabled
-            ? "bg-green-50 text-green-500"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground",
-        )}
-      >
-        <CircleSlash size={14} />
-      </button>
-      <button
-        title="保存"
-        onClick={onSaveClick}
-        className={clsx(
-          "flex-1 flex items-center justify-center py-1.5 transition-colors",
-          "text-muted-foreground hover:bg-muted hover:text-foreground",
-        )}
-      >
-        <Save size={14} />
-      </button>
+            onClick={onRelocationClick}
+            className={clsx(
+              "flex-1 flex items-center justify-center py-1.5 transition-colors",
+              isRelocationEnabled
+                ? "bg-green-50 text-green-500"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <MapPin size={14} />
+          </button>
+          <button
+            title={isUnitCreationEnabled ? "禁用标记创建" : "启用标记创建"}
+            onClick={onUnitCreationClick}
+            className={clsx(
+              "flex-1 flex items-center justify-center py-1.5 transition-colors",
+              !isUnitCreationEnabled
+                ? "bg-green-50 text-green-500"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <CircleSlash size={14} />
+          </button>
+          <button
+            title="保存"
+            onClick={onSaveClick}
+            className={clsx(
+              "flex-1 flex items-center justify-center py-1.5 transition-colors",
+              "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <Save size={14} />
+          </button>
     </div>
   );
 }
