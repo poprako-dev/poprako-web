@@ -24,6 +24,9 @@ function InteractiveWrapper({
 }) {
   const [mode, setMode] = useState<TranslatorMode>(initialMode);
   const [relocation, setRelocation] = useState(false);
+  const [previewVisibility, setPreviewVisibility] = useState<
+    "visible" | "dimmed"
+  >("visible");
 
   return (
     <div className="w-64 border border-border rounded">
@@ -32,10 +35,14 @@ function InteractiveWrapper({
         enabledModes={enabledModes}
         isRelocationEnabled={relocation}
         isUnitCreationEnabled={true}
+        proofreadPreviewVisibility={previewVisibility}
         onTranslateModeClick={() => setMode("translate")}
         onProofreadModeClick={() => setMode("proofread")}
         onRelocationClick={() => setRelocation((v) => !v)}
         onUnitCreationClick={() => console.log("unit creation toggled")}
+        onToggleProofreadPreviewClick={() =>
+          setPreviewVisibility((v) => (v === "visible" ? "dimmed" : "visible"))
+        }
         onSaveClick={async () => console.log("saved")}
       />
     </div>

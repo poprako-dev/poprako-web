@@ -37,6 +37,11 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
     keys: ["Control", "l"],
   },
   {
+    action: "toggleProofreadPreview",
+    label: "切换校对预览黑框",
+    keys: ["Control", "i"],
+  },
+  {
     action: "nextMarker",
     label: "下一个标记",
     keys: ["Tab"],
@@ -61,36 +66,61 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
 function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
   if (!Array.isArray(raw)) return null;
 
-  const byLabel = new Map(
-    defaultConfigurableShortcuts.map((s) => [s.label, s]),
+  const byAction = new Map(
+    defaultConfigurableShortcuts.map((s) => [s.action, s]),
   );
 
+  const byLabel = new Map(defaultConfigurableShortcuts.map((s) => [s.label, s]));
+
   const migrated: ConfigurableShortcut[] = [];
+  const migratedActions = new Set<ConfigurableShortcut["action"]>();
+
   for (const item of raw) {
-    if (
-      !item ||
-      typeof item !== "object" ||
-      !("label" in item) ||
-      !("keys" in item)
-    ) {
+    if (!item || typeof item !== "object" || !("keys" in item)) {
       return null;
     }
 
-    const fallback = byLabel.get(item.label as string);
+    const keys = item.keys;
+    if (!Array.isArray(keys) || !keys.every((key) => typeof key === "string")) {
+      return null;
+    }
+
+    const action =
+      "action" in item && typeof item.action === "string" ? item.action : undefined;
+    const fallbackByAction = action ? byAction.get(action) : undefined;
+    const fallbackByLabel =
+      "label" in item && typeof item.label === "string"
+        ? byLabel.get(item.label)
+        : undefined;
+
+    const fallback = fallbackByAction ?? fallbackByLabel;
     if (!fallback) continue;
+    if (migratedActions.has(fallback.action)) continue;
 
     migrated.push({
       action: fallback.action,
       label: fallback.label,
-      keys: item.keys as string[],
+      keys,
     });
+
+    migratedActions.add(fallback.action);
   }
 
-  if (migrated.length !== defaultConfigurableShortcuts.length) {
-    return null;
+  for (const shortcut of defaultConfigurableShortcuts) {
+    if (!migratedActions.has(shortcut.action)) {
+      migrated.push(shortcut);
+    }
   }
 
-  return migrated;
+  const orderByAction = new Map(
+    defaultConfigurableShortcuts.map((s, idx) => [s.action, idx]),
+  );
+
+  return migrated.sort(
+    (a, b) =>
+      (orderByAction.get(a.action) ?? Number.MAX_SAFE_INTEGER) -
+      (orderByAction.get(b.action) ?? Number.MAX_SAFE_INTEGER),
+  );
 }
 
 export function useShortcuts() {

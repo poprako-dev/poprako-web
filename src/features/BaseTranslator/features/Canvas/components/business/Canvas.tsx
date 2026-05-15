@@ -18,6 +18,7 @@ import {
 } from "@/types/unit";
 import Marker, { CIRCLE_SIZE, PIN_OFFSET } from "@/features/BaseTranslator/features/Marker";
 import LoadingCircle from "@/components/ui/LoadingCircle";
+import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
 
 const PAN_THRESHOLD = 8;
 const MARKER_DRAG_THRESHOLD = 3;
@@ -58,6 +59,7 @@ type Props = {
   onAddUnit?: (xCoord: number, yCoord: number, isBubble: boolean) => void;
   onDeleteUnit?: (unitId: string) => void;
   enableReadOnly?: boolean;
+  proofreadPreviewVisibility?: ProofreadPreviewVisibility;
 };
 
 const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
@@ -73,6 +75,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     onAddUnit,
     onDeleteUnit,
     enableReadOnly = false,
+    proofreadPreviewVisibility = "visible",
   }: Props,
   ref: React.Ref<CanvasHandle>,
 ) {
@@ -528,7 +531,9 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     isSelected={focusedUnitId === id}
                     isDragging={isDraggingThis}
                     previewText={unitFinalText(unit)}
-                    withPreview={mode === "proofread"}
+                    previewMode={
+                      mode === "proofread" ? proofreadPreviewVisibility : "hidden"
+                    }
                   />
                 </div>
               );

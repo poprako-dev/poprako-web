@@ -6,6 +6,7 @@ export type FixedShortcut = {
 export type ShortcutAction =
   | "toggleMode"
   | "toggleRelocation"
+  | "toggleProofreadPreview"
   | "nextMarker"
   | "prevMarker"
   | "pageUp"

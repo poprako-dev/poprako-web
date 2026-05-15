@@ -27,6 +27,7 @@ import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import type { UnitDiff, UnitOp } from "../../types/type";
+import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
 
 type PendingAction =
   | { type: "navigate"; newIndex: number }
@@ -71,6 +72,8 @@ export default function BaseTranslator({
     undefined,
   );
   const [mode, setMode] = useState<TranslatorMode>("translate");
+  const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
+    useState<ProofreadPreviewVisibility>("visible");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
@@ -460,6 +463,12 @@ export default function BaseTranslator({
       toggleRelocation: () => {
         setIsRelocationEnabled((v) => !v);
       },
+      toggleProofreadPreview: () => {
+        if (mode !== "proofread") return;
+        setProofreadPreviewVisibility((v) =>
+          v === "visible" ? "dimmed" : "visible",
+        );
+      },
       nextMarker: () => {
         if (unitBuf.length === 0) return;
         const cur = unitBuf.findIndex((unit) => unitId(unit) === focusedUnitId);
@@ -533,6 +542,7 @@ export default function BaseTranslator({
         onAddUnit={enableReadOnly ? undefined : handleAddUnit}
         onDeleteUnit={enableReadOnly ? undefined : handleDeleteUnit}
         enableReadOnly={enableReadOnly}
+        proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
       <div className="absolute top-2 left-2">
         <ToolboxDropdown options={toolboxOptions} />
@@ -555,20 +565,26 @@ export default function BaseTranslator({
         <div className="flex items-center border-b border-border shrink-0">
           <div className="flex-1 min-w-0">
             <StatusOptionBar
-            currMode={mode}
-            enabledModes={
-              isCurrUserProofreader ? ["translate", "proofread"] : ["translate"]
-            }
-            isRelocationEnabled={isRelocationEnabled}
-            isUnitCreationEnabled={isUnitCreationEnabled}
-            onTranslateModeClick={() => setMode("translate")}
-            onProofreadModeClick={() => setMode("proofread")}
-            onRelocationClick={() => setIsRelocationEnabled((v) => !v)}
-            onUnitCreationClick={() => setIsUnitCreationEnabled((v) => !v)}
-            onSaveClick={handleSave}
-          />
+              currMode={mode}
+              enabledModes={
+                isCurrUserProofreader ? ["translate", "proofread"] : ["translate"]
+              }
+              isRelocationEnabled={isRelocationEnabled}
+              isUnitCreationEnabled={isUnitCreationEnabled}
+              proofreadPreviewVisibility={proofreadPreviewVisibility}
+              onTranslateModeClick={() => setMode("translate")}
+              onProofreadModeClick={() => setMode("proofread")}
+              onRelocationClick={() => setIsRelocationEnabled((v) => !v)}
+              onUnitCreationClick={() => setIsUnitCreationEnabled((v) => !v)}
+              onToggleProofreadPreviewClick={() =>
+                setProofreadPreviewVisibility((v) =>
+                  v === "visible" ? "dimmed" : "visible",
+                )
+              }
+              onSaveClick={handleSave}
+            />
+          </div>
         </div>
-      </div>
       )}
       <div className="flex-1 overflow-y-auto">
         <UnitList

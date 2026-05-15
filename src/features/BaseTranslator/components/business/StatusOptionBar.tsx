@@ -1,16 +1,19 @@
-import { FileType, CheckCheck, CircleSlash, MapPin, Save } from "lucide-react";
+import { FileType, CheckCheck, CircleSlash, MapPin, Eye, Save } from "lucide-react";
 import clsx from "clsx";
 import type { TranslatorMode } from "@/types/translatorMode";
+import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
 
 type Props = {
   currMode: TranslatorMode;
   enabledModes: TranslatorMode[];
   isRelocationEnabled: boolean;
   isUnitCreationEnabled: boolean;
+  proofreadPreviewVisibility: ProofreadPreviewVisibility;
   onTranslateModeClick: () => void;
   onProofreadModeClick: () => void;
   onRelocationClick: () => void;
   onUnitCreationClick: () => void;
+  onToggleProofreadPreviewClick: () => void;
   onSaveClick: () => Promise<void>;
 };
 
@@ -20,10 +23,12 @@ export default function StatusOptionBar({
   enabledModes,
   isRelocationEnabled,
   isUnitCreationEnabled,
+  proofreadPreviewVisibility,
   onTranslateModeClick,
   onProofreadModeClick,
   onRelocationClick,
   onUnitCreationClick,
+  onToggleProofreadPreviewClick,
   onSaveClick,
 }: Props) {
   const hasProofread = enabledModes.includes("proofread");
@@ -58,38 +63,56 @@ export default function StatusOptionBar({
       )}
       <button
         title="切换重定位模式"
-            onClick={onRelocationClick}
-            className={clsx(
-              "flex-1 flex items-center justify-center py-1.5 transition-colors",
-              isRelocationEnabled
-                ? "bg-green-50 text-green-500"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <MapPin size={14} />
-          </button>
-          <button
-            title={isUnitCreationEnabled ? "禁用标记创建" : "启用标记创建"}
-            onClick={onUnitCreationClick}
-            className={clsx(
-              "flex-1 flex items-center justify-center py-1.5 transition-colors",
-              !isUnitCreationEnabled
-                ? "bg-green-50 text-green-500"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <CircleSlash size={14} />
-          </button>
-          <button
-            title="保存"
-            onClick={onSaveClick}
-            className={clsx(
-              "flex-1 flex items-center justify-center py-1.5 transition-colors",
-              "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <Save size={14} />
-          </button>
+        onClick={onRelocationClick}
+        className={clsx(
+          "flex-1 flex items-center justify-center py-1.5 transition-colors",
+          isRelocationEnabled
+            ? "bg-green-50 text-green-500"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
+      >
+        <MapPin size={14} />
+      </button>
+      <button
+        title={isUnitCreationEnabled ? "禁用标记创建" : "启用标记创建"}
+        onClick={onUnitCreationClick}
+        className={clsx(
+          "flex-1 flex items-center justify-center py-1.5 transition-colors",
+          !isUnitCreationEnabled
+            ? "bg-green-50 text-green-500"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
+      >
+        <CircleSlash size={14} />
+      </button>
+      {currMode === "proofread" && (
+        <button
+          title={
+            proofreadPreviewVisibility === "visible"
+              ? "预览黑框已显示"
+              : "预览黑框已弱化"
+          }
+          onClick={onToggleProofreadPreviewClick}
+          className={clsx(
+            "flex-1 flex items-center justify-center py-1.5 transition-colors",
+            proofreadPreviewVisibility === "visible"
+              ? "bg-green-50 text-green-500"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          )}
+        >
+          <Eye size={14} />
+        </button>
+      )}
+      <button
+        title="保存"
+        onClick={onSaveClick}
+        className={clsx(
+          "flex-1 flex items-center justify-center py-1.5 transition-colors",
+          "text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
+      >
+        <Save size={14} />
+      </button>
     </div>
   );
 }
