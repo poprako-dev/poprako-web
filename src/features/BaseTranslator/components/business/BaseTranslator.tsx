@@ -156,81 +156,33 @@ export default function BaseTranslator({
   }
 
   function buildCreateOp(unit: UnitInfo): UnitOp {
-    const op: UnitOp = {
-      localId: unitId(unit),
-      xCoord: unit.xCoord,
-      yCoord: unit.yCoord,
-      isBubble: unit.isBubble,
-      isProofread: unit.isProofread,
-    };
-
-    const translatedText = normalizedText(unit.translatedText);
-    if (translatedText !== null) op.translatedText = translatedText;
-
-    const translatorComment = normalizedText(unit.translatorCommnet);
-    if (translatorComment !== null) op.translatorComment = translatorComment;
-
-    if (unit.translatorId !== undefined) {
-      op.lastTranslatorId = unit.translatorId;
-    }
-
-    const proofreadText = normalizedText(unit.proofreadText);
-    if (proofreadText !== null) op.proofreadText = proofreadText;
-
-    const proofreaderComment = normalizedText(unit.proofreaderComment);
-    if (proofreaderComment !== null) op.proofreaderComment = proofreaderComment;
-
-    if (unit.proofreaderId !== undefined) {
-      op.lastProofreaderId = unit.proofreaderId;
-    }
-
-    return op;
+    return buildUnitOp(unit, true);
   }
 
-  function buildSaveOp(current: UnitInfo, baseline: UnitInfo): UnitOp {
-    const op: UnitOp = {
-      id: unitId(current),
-      xCoord: current.xCoord,
-      yCoord: current.yCoord,
-      isBubble: current.isBubble,
-      isProofread: current.isProofread,
-    };
+  function buildSaveOp(unit: UnitInfo): UnitOp {
+    return buildUnitOp(unit);
+  }
 
-    const currentTranslated = normalizedText(current.translatedText);
-    const baselineTranslated = normalizedText(baseline.translatedText);
-    if (currentTranslated !== baselineTranslated) {
-      op.translatedText = currentTranslated;
-    }
+  function buildUnitOp(unit: UnitInfo, local?: boolean): UnitOp {
+    const op: UnitOp = local
+      ? { localId: unitId(unit) }
+      : { id: unitId(unit) };
 
-    const currentTranslatorComment = normalizedText(current.translatorCommnet);
-    const baselineTranslatorComment = normalizedText(baseline.translatorCommnet);
-    if (currentTranslatorComment !== baselineTranslatorComment) {
-      op.translatorComment = currentTranslatorComment;
-    }
+    op.xCoord = unit.xCoord;
+    op.yCoord = unit.yCoord;
+    op.isBubble = unit.isBubble;
+    op.isProofread = unit.isProofread;
 
-    const currentTranslatorId = current.translatorId ?? null;
-    const baselineTranslatorId = baseline.translatorId ?? null;
-    if (currentTranslatorId !== baselineTranslatorId) {
-      op.lastTranslatorId = currentTranslatorId;
-    }
-
-    const currentProofread = normalizedText(current.proofreadText);
-    const baselineProofread = normalizedText(baseline.proofreadText);
-    if (currentProofread !== baselineProofread) {
-      op.proofreadText = currentProofread;
-    }
-
-    const currentProofreaderComment = normalizedText(current.proofreaderComment);
-    const baselineProofreaderComment = normalizedText(baseline.proofreaderComment);
-    if (currentProofreaderComment !== baselineProofreaderComment) {
-      op.proofreaderComment = currentProofreaderComment;
-    }
-
-    const currentProofreaderId = current.proofreaderId ?? null;
-    const baselineProofreaderId = baseline.proofreaderId ?? null;
-    if (currentProofreaderId !== baselineProofreaderId) {
-      op.lastProofreaderId = currentProofreaderId;
-    }
+    const t = normalizedText(unit.translatedText);
+    if (t) op.translatedText = t;
+    const tc = normalizedText(unit.translatorCommnet);
+    if (tc) op.translatorComment = tc;
+    if (unit.translatorId) op.lastTranslatorId = unit.translatorId;
+    const pt = normalizedText(unit.proofreadText);
+    if (pt) op.proofreadText = pt;
+    const pc = normalizedText(unit.proofreaderComment);
+    if (pc) op.proofreaderComment = pc;
+    if (unit.proofreaderId) op.lastProofreaderId = unit.proofreaderId;
 
     return op;
   }
@@ -252,7 +204,7 @@ export default function BaseTranslator({
         continue;
       }
 
-      ops.push(buildSaveOp(unit, baselineUnit));
+      ops.push(buildSaveOp(unit));
     }
 
     for (const unit of baseline) {
