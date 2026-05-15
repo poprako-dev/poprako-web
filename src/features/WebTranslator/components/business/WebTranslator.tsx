@@ -13,11 +13,13 @@ import {
 } from "../../api/translator";
 import { listAssignmentsByChapter } from "@/api/assignment";
 
+import type { TranslatorMode } from "@/types/translatorMode";
+
 type Props = {
   chapterId: string;
   startPageId?: string;
   onExit: () => void;
-  enableReadOnly?: boolean;
+  startMode?: TranslatorMode;
 };
 
 type LoadingState =
@@ -56,7 +58,7 @@ function mergePageCounters(
   );
 }
 
-export default function WebTranslator({ chapterId, startPageId, onExit, enableReadOnly }: Props) {
+export default function WebTranslator({ chapterId, startPageId, onExit, startMode }: Props) {
   const [state, setState] = useState<LoadingState>({ status: "loading" });
   const { showToast } = useToastStore();
 
@@ -86,9 +88,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, enableRe
       const userId = useAppStore.getState().loginState?.userInfo?.id;
       let isCurrUserProofreader = false;
 
-      if (enableReadOnly) {
-        isCurrUserProofreader = true;
-      } else if (userId) {
+      if (userId) {
         const assignResult = await listAssignmentsByChapter({
           chapterId,
           offset: 0,
@@ -263,7 +263,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, enableRe
       onExit={onExit}
       isCurrUserProofreader={state.isCurrUserProofreader}
       startPageId={startPageId}
-      enableReadOnly={enableReadOnly}
+      startMode={startMode}
     />
   );
 }

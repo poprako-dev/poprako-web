@@ -28,7 +28,7 @@ const fixedShortcuts: FixedShortcut[] = [
 const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
   {
     action: "toggleMode",
-    label: "切换翻校模式",
+    label: "切换模式",
     keys: ["Control", "m"],
   },
   {
@@ -38,7 +38,7 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
   },
   {
     action: "toggleProofreadPreview",
-    label: "切换校对预览黑框",
+    label: "切换标记透明度",
     keys: ["Control", "i"],
   },
   {

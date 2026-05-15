@@ -532,8 +532,9 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     isDragging={isDraggingThis}
                     previewText={unitFinalText(unit)}
                     previewMode={
-                      mode === "proofread" ? proofreadPreviewVisibility : "hidden"
+                      mode === "proofread" ? "visible" : "hidden"
                     }
+                    dimmed={proofreadPreviewVisibility === "dimmed"}
                   />
                 </div>
               );

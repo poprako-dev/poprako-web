@@ -52,7 +52,7 @@ type Props = {
   startPageIndex?: number;
   // 初始页 ID，优先级高于 startPageIndex
   startPageId?: string;
-  enableReadOnly?: boolean;
+  startMode?: TranslatorMode;
 };
 
 export default function BaseTranslator({
@@ -64,16 +64,22 @@ export default function BaseTranslator({
   isCurrUserProofreader,
   startPageIndex,
   startPageId,
-  enableReadOnly = false,
+  startMode,
 }: Props) {
   const [pageIndex, setPageIndex] = useState(0);
   const [unitBuf, setUnitBuf] = useState<UnitInfo[]>([]);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>(
     undefined,
   );
-  const [mode, setMode] = useState<TranslatorMode>("translate");
+  const [mode, setMode] = useState<TranslatorMode>(startMode ?? "translate");
   const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
     useState<ProofreadPreviewVisibility>("visible");
+
+  const displayMode = mode === "readOnly" ? "proofread" : mode;
+  const readOnly = mode === "readOnly";
+  const availableModes: TranslatorMode[] = isCurrUserProofreader
+    ? ["translate", "proofread", "readOnly"]
+    : [startMode ?? "translate"];
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
@@ -84,6 +90,7 @@ export default function BaseTranslator({
 
   const isNavigating = useRef(false);
   const isSaving = useRef(false);
+  const [saving, setSaving] = useState(false);
   const unitBufRef = useRef<UnitInfo[]>([]);
   const baselineUnitsRef = useRef<UnitInfo[]>([]);
   const canvasRef = useRef<CanvasHandle>(null);
@@ -93,11 +100,18 @@ export default function BaseTranslator({
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
     useShortcuts();
 
-  const activeShortcuts = enableReadOnly
-    ? configurableShortcuts.filter((s) =>
-        ["nextMarker", "prevMarker", "pageUp", "pageDown"].includes(s.action),
-      )
-    : configurableShortcuts;
+  const activeShortcuts = (() => {
+    let shortcuts = configurableShortcuts;
+    if (readOnly) {
+      shortcuts = shortcuts.filter((s) =>
+        ["nextMarker", "prevMarker", "pageUp", "pageDown", "toggleMode", "toggleProofreadPreview"].includes(s.action),
+      );
+    }
+    if (availableModes.length <= 1) {
+      shortcuts = shortcuts.filter((s) => s.action !== "toggleMode");
+    }
+    return shortcuts;
+  })();
 
   function normalizedText(val?: string): string | null {
     return val && val !== "" ? val : null;
@@ -311,6 +325,7 @@ export default function BaseTranslator({
     const diff = buildUnitDiff(unitBufRef.current, baselineUnitsRef.current);
     if (isDiffEmpty(diff)) return;
     isSaving.current = true;
+    setSaving(true);
     try {
       await onSaveUnits(project.pages[pageIndex].id, diff);
       baselineUnitsRef.current = [...unitBufRef.current];
@@ -329,6 +344,7 @@ export default function BaseTranslator({
       throw err;
     } finally {
       isSaving.current = false;
+      setSaving(false);
     }
   }
 
@@ -454,17 +470,46 @@ export default function BaseTranslator({
     canvasRef.current?.centerOn(position.xCoord, position.yCoord);
   }, [focusedUnitId, isRelocationEnabled, unitBuf]);
 
+  function getNextMode(
+    current: TranslatorMode,
+    isProofreader: boolean,
+  ): TranslatorMode {
+    if (isProofreader) {
+      if (current === "translate") return "proofread";
+      if (current === "proofread") return "readOnly";
+      return "translate";
+    }
+    if (current === "translate") return "readOnly";
+    return "translate";
+  }
+
+  function handleCycleMode() {
+    const next = getNextMode(mode, isCurrUserProofreader);
+    if (mode === "proofread" && next === "readOnly") {
+      flushIfDirty()
+        .then(() => setMode(next))
+        .catch(() => {});
+    } else {
+      setMode(next);
+    }
+  }
+
   useShortcutActions(
     {
       toggleMode: () => {
-        if (!isCurrUserProofreader) return;
-        setMode((m) => (m === "translate" ? "proofread" : "translate"));
+        const next = getNextMode(mode, isCurrUserProofreader);
+        if (mode === "proofread" && next === "readOnly") {
+          flushIfDirty()
+            .then(() => setMode(next))
+            .catch(() => {});
+        } else {
+          setMode(next);
+        }
       },
       toggleRelocation: () => {
         setIsRelocationEnabled((v) => !v);
       },
       toggleProofreadPreview: () => {
-        if (mode !== "proofread") return;
         setProofreadPreviewVisibility((v) =>
           v === "visible" ? "dimmed" : "visible",
         );
@@ -506,7 +551,7 @@ export default function BaseTranslator({
   }, [isShortcutPanelOpen]);
 
   const toolboxOptions = [
-    ...(enableReadOnly
+    ...(readOnly
       ? []
       : [
           {
@@ -533,15 +578,15 @@ export default function BaseTranslator({
         ref={canvasRef}
         imageSrc={imageUrl}
         units={unitBuf}
-        mode={mode}
+        mode={displayMode}
         isLoading={isLoadingPage}
-        isUnitCreationEnabled={enableReadOnly ? false : isUnitCreationEnabled}
+        isUnitCreationEnabled={readOnly ? false : isUnitCreationEnabled}
         focusedUnitId={focusedUnitId}
         onFocusUnit={setFocusedUnitId}
-        onMoveUnit={enableReadOnly ? undefined : handleMoveUnit}
-        onAddUnit={enableReadOnly ? undefined : handleAddUnit}
-        onDeleteUnit={enableReadOnly ? undefined : handleDeleteUnit}
-        enableReadOnly={enableReadOnly}
+        onMoveUnit={readOnly ? undefined : handleMoveUnit}
+        onAddUnit={readOnly ? undefined : handleAddUnit}
+        onDeleteUnit={readOnly ? undefined : handleDeleteUnit}
+        enableReadOnly={readOnly}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
       <div className="absolute top-2 left-2">
@@ -561,39 +606,35 @@ export default function BaseTranslator({
 
   const sidebar = (
     <>
-      {!enableReadOnly && (
-        <div className="flex items-center border-b border-border shrink-0">
-          <div className="flex-1 min-w-0">
-            <StatusOptionBar
-              currMode={mode}
-              enabledModes={
-                isCurrUserProofreader ? ["translate", "proofread"] : ["translate"]
-              }
-              isRelocationEnabled={isRelocationEnabled}
-              isUnitCreationEnabled={isUnitCreationEnabled}
-              proofreadPreviewVisibility={proofreadPreviewVisibility}
-              onTranslateModeClick={() => setMode("translate")}
-              onProofreadModeClick={() => setMode("proofread")}
-              onRelocationClick={() => setIsRelocationEnabled((v) => !v)}
-              onUnitCreationClick={() => setIsUnitCreationEnabled((v) => !v)}
-              onToggleProofreadPreviewClick={() =>
-                setProofreadPreviewVisibility((v) =>
-                  v === "visible" ? "dimmed" : "visible",
-                )
-              }
-              onSaveClick={handleSave}
-            />
-          </div>
+      <div className="flex items-center border-b border-border shrink-0">
+        <div className="flex-1 min-w-0">
+          <StatusOptionBar
+            currMode={mode}
+            availableModes={availableModes}
+            isRelocationEnabled={isRelocationEnabled}
+            isUnitCreationEnabled={isUnitCreationEnabled}
+            proofreadPreviewVisibility={proofreadPreviewVisibility}
+            onCycleMode={handleCycleMode}
+            onRelocationClick={() => setIsRelocationEnabled((v) => !v)}
+            onUnitCreationClick={() => setIsUnitCreationEnabled((v) => !v)}
+            onToggleProofreadPreviewClick={() =>
+              setProofreadPreviewVisibility((v) =>
+                v === "visible" ? "dimmed" : "visible",
+              )
+            }
+            onSaveClick={handleSave}
+            saving={saving}
+          />
         </div>
-      )}
+      </div>
       <div className="flex-1 overflow-y-auto">
         <UnitList
           units={unitBuf}
           focusedUnitId={focusedUnitId}
-          mode={enableReadOnly ? "proofread" : mode}
+          mode={displayMode}
           onFocusUnit={setFocusedUnitId}
-          onModifyUnit={enableReadOnly ? undefined : handleModifyUnit}
-          enableReadOnly={enableReadOnly}
+          onModifyUnit={readOnly ? undefined : handleModifyUnit}
+          enableReadOnly={readOnly}
         />
       </div>
     </>

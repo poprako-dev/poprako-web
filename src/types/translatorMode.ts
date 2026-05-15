@@ -1,1 +1,1 @@
-export type TranslatorMode = "translate" | "proofread";
+export type TranslatorMode = "translate" | "proofread" | "readOnly";

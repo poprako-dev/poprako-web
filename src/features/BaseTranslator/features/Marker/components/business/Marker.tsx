@@ -12,6 +12,7 @@ type Props = {
   isDragging: boolean;
   previewText: string | null;
   previewMode: MarkerPreviewMode;
+  dimmed: boolean;
 };
 
 export default function Marker({
@@ -22,13 +23,11 @@ export default function Marker({
   isDragging,
   previewText,
   previewMode,
+  dimmed,
 }: Props) {
   const bgClass = isBubble ? "bg-pink-100" : "bg-amber-100";
   const shouldRenderPreview =
     previewMode !== "hidden" && isSelected && previewText && !isDragging;
-
-  const previewStyle =
-    previewMode === "dimmed" ? { opacity: 0.05 } : undefined;
 
   return (
     <div
@@ -41,6 +40,7 @@ export default function Marker({
         transition: isDragging
           ? "none"
           : "transform 0.15s ease-out, opacity 0.15s ease-out",
+        opacity: dimmed ? 0.2 : undefined,
       }}
     >
       <div
@@ -62,7 +62,6 @@ export default function Marker({
           <div className="absolute left-full top-0 ml-3 z-50 pointer-events-none">
             <div
               className="px-2 py-1 rounded-sm bg-slate-800/90 text-slate-50 text-xs backdrop-blur-md shadow-xl border border-white/10 whitespace-pre"
-              style={previewStyle}
             >
               {previewText}
             </div>

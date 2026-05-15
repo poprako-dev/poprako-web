@@ -17,10 +17,10 @@ type Story = StoryObj<typeof StatusOptionBar>;
 
 function InteractiveWrapper({
   initialMode,
-  enabledModes,
+  availableModes,
 }: {
   initialMode: TranslatorMode;
-  enabledModes: TranslatorMode[];
+  availableModes: TranslatorMode[];
 }) {
   const [mode, setMode] = useState<TranslatorMode>(initialMode);
   const [relocation, setRelocation] = useState(false);
@@ -28,40 +28,49 @@ function InteractiveWrapper({
     "visible" | "dimmed"
   >("visible");
 
+  function cycleMode() {
+    const idx = availableModes.indexOf(mode);
+    const next = availableModes[(idx + 1) % availableModes.length];
+    setMode(next);
+  }
+
   return (
     <div className="w-64 border border-border rounded">
       <StatusOptionBar
         currMode={mode}
-        enabledModes={enabledModes}
+        availableModes={availableModes}
         isRelocationEnabled={relocation}
         isUnitCreationEnabled={true}
         proofreadPreviewVisibility={previewVisibility}
-        onTranslateModeClick={() => setMode("translate")}
-        onProofreadModeClick={() => setMode("proofread")}
+        onCycleMode={cycleMode}
         onRelocationClick={() => setRelocation((v) => !v)}
         onUnitCreationClick={() => console.log("unit creation toggled")}
         onToggleProofreadPreviewClick={() =>
           setPreviewVisibility((v) => (v === "visible" ? "dimmed" : "visible"))
         }
         onSaveClick={async () => console.log("saved")}
+        saving={false}
       />
     </div>
   );
 }
 
-export const TranslateOnly: Story = {
-  name: "仅翻译模式（三等分）",
-  render: () => (
-    <InteractiveWrapper initialMode="translate" enabledModes={["translate"]} />
-  ),
-};
-
-export const WithProofread: Story = {
-  name: "含校对模式（四等分）",
+export const NonProofreaderTranslate: Story = {
+  name: "非校对用户（翻译模式，无循环按钮）",
   render: () => (
     <InteractiveWrapper
       initialMode="translate"
-      enabledModes={["translate", "proofread"]}
+      availableModes={["translate"]}
+    />
+  ),
+};
+
+export const WithProofreadCycle: Story = {
+  name: "校对用户（三模式循环）",
+  render: () => (
+    <InteractiveWrapper
+      initialMode="translate"
+      availableModes={["translate", "proofread", "readOnly"]}
     />
   ),
 };
@@ -71,7 +80,17 @@ export const ProofreadActive: Story = {
   render: () => (
     <InteractiveWrapper
       initialMode="proofread"
-      enabledModes={["translate", "proofread"]}
+      availableModes={["translate", "proofread", "readOnly"]}
+    />
+  ),
+};
+
+export const ReadOnlyActive: Story = {
+  name: "只读模式（编辑按钮隐藏）",
+  render: () => (
+    <InteractiveWrapper
+      initialMode="readOnly"
+      availableModes={["translate", "proofread", "readOnly"]}
     />
   ),
 };

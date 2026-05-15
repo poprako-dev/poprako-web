@@ -5,6 +5,7 @@ import { useAppStore } from "@/store/app";
 import { getMyUser } from "@/api/user";
 import { listMyMembers } from "@/api/member";
 import LoadingCircle from "@/components/ui/LoadingCircle";
+import type { TranslatorMode } from "@/types/translatorMode";
 
 export default function TranslatorPage() {
   const { chapterId, pageId } = useParams<{
@@ -19,7 +20,8 @@ export default function TranslatorPage() {
   const returnTo = searchParams.get("returnTo");
   const returnComicId = searchParams.get("comicId");
   const returnChapterId = searchParams.get("chapterId");
-  const readOnly = searchParams.get("readOnly") === "true";
+  const startMode: TranslatorMode | undefined =
+    searchParams.get("readOnly") === "true" ? "readOnly" : undefined;
 
   const handleExit = () => {
     if (
@@ -87,7 +89,7 @@ export default function TranslatorPage() {
         chapterId={chapterId}
         startPageId={pageId}
         onExit={handleExit}
-        enableReadOnly={readOnly}
+        startMode={startMode}
       />
     </div>
   );
