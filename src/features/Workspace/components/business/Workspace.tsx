@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { ComicInfo, ChapterInfo, UploadProgressCallbacks } from "@/types";
 import type { Result } from "@/types/utils/result";
-import type { AssignmentInfo } from "@/types/assignment";
+import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
+import type { MemberInfo } from "@/types/member";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
 import EmbeddedComicList from "@/features/ComcList/components/business/EmbeddedComicList";
 import ComicDetailModal from
@@ -17,6 +18,8 @@ import {
 import { deleteComic, getComic } from "@/features/ComicPlayground/api/comic";
 import {
   listChapters,
+  createChapter,
+  deleteChapter,
   updateChapter,
   exportChapter,
   importChapter,
@@ -30,9 +33,14 @@ import {
   updatePage,
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
-import { listAssignmentsByChapter } from "@/api/assignment";
+import {
+  deleteAssignment,
+  listAssignmentsByChapter,
+  upsertAssignment,
+} from "@/api/assignment";
 import type { ListChapterArgs, WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import { roleMask, type Role } from "@/types/role";
+import { listMembers } from "@/api/member";
 import clsx from "clsx";
 
 function getUniformFileExtension(files: File[]): string | null {
@@ -90,6 +98,16 @@ export default function Workspace() {
   );
 
   const userName = loginState?.userInfo.name ?? "用户";
+  const selectedComicTeamId = selectedComic?.workset?.teamId ?? null;
+  const selectedComicActiveMember = useMemo(() => {
+    const teamId = selectedComicTeamId;
+    if (!teamId) return null;
+    return loginState?.memberInfos.find((member) => member.teamId === teamId) ?? null;
+  }, [loginState?.memberInfos, selectedComicTeamId]);
+
+  const resolveActiveMember = useCallback(() => {
+    return selectedComicActiveMember;
+  }, [selectedComicActiveMember]);
 
   const handleOpenComicDetail = useCallback(
     (comicInfo: ComicInfo, desiredChapterId?: string | null) => {
@@ -193,6 +211,100 @@ export default function Workspace() {
         console.error("[Workspace] 加入章节分工失败:", result.error);
       }
       return result;
+    },
+    [],
+  );
+
+  const handleLoadAssignableMembers = useCallback(
+    async (chapterId: string): Promise<Result<MemberInfo[]>> => {
+      void chapterId;
+      if (!selectedComicTeamId) {
+        return { success: true, data: [] };
+      }
+
+      return listMembers({
+        teamId: selectedComicTeamId,
+        offset: 0,
+        limit: 200,
+        includes: ["user"],
+      });
+    },
+    [selectedComicTeamId],
+  );
+
+  const handleAddAssignment = useCallback(
+    async (
+      chapterId: string,
+      userId: string,
+      role: Role,
+    ): Promise<Result<void>> => {
+      const assignmentResult = await handleLoadAssignmentsForChapter(chapterId);
+      if (!assignmentResult.success) {
+        return assignmentResult;
+      }
+
+      const existing = assignmentResult.data.find(
+        (assignment) => assignment.userId === userId,
+      );
+      const mergedRoles = existing
+        ? Array.from(new Set([...assignmentRoles(existing), role]))
+        : [role];
+
+      const result = await upsertAssignment({
+        chapterId,
+        userId,
+        roleMask: roleMask(mergedRoles),
+      });
+
+      if (!result.success) return result;
+      return { success: true, data: undefined };
+    },
+    [handleLoadAssignmentsForChapter],
+  );
+
+  const handleRemoveRole = useCallback(
+    async (chapterId: string, userId: string, role: Role): Promise<Result<void>> => {
+      const assignmentResult = await handleLoadAssignmentsForChapter(chapterId);
+      if (!assignmentResult.success) {
+        return assignmentResult;
+      }
+
+      const target = assignmentResult.data.find(
+        (assignment) => assignment.userId === userId,
+      );
+      if (!target) {
+        return { success: false, error: "未找到对应分工记录" };
+      }
+
+      const remainingRoles = assignmentRoles(target).filter((r) => r !== role);
+      if (remainingRoles.length === 0) {
+        const result = await deleteAssignment(target.id);
+        if (!result.success) return result;
+        return { success: true, data: undefined };
+      }
+
+      const result = await upsertAssignment({
+        chapterId,
+        userId,
+        roleMask: roleMask(remainingRoles),
+      });
+
+      if (!result.success) return result;
+      return { success: true, data: undefined };
+    },
+    [handleLoadAssignmentsForChapter],
+  );
+
+  const handleCreateChapter = useCallback(
+    async (args: { comicId: string; subtitle?: string }): Promise<Result<string>> => {
+      return createChapter(args);
+    },
+    [],
+  );
+
+  const handleDeleteChapter = useCallback(
+    async (chapterId: string): Promise<Result<void>> => {
+      return deleteChapter(chapterId);
     },
     [],
   );
@@ -371,6 +483,11 @@ export default function Workspace() {
           onLoadAssignments={handleLoadAssignmentsForChapter}
           onLoadPages={handleLoadPages}
           onTransiteWorkflow={handleTransiteWorkflow}
+          onRemoveAssignment={handleRemoveRole}
+          onLoadAssignableMembers={handleLoadAssignableMembers}
+          onAddAssignment={handleAddAssignment}
+          onCreateChapter={handleCreateChapter}
+          onDeleteChapter={handleDeleteChapter}
           onNavigateToTranslator={handleNavigateToTranslator}
           currentUserId={currentUserId}
           onAddPages={handleAddPages}
@@ -380,6 +497,7 @@ export default function Workspace() {
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
           onDeleteComic={handleDeleteComic}
+          onResolveActiveMember={resolveActiveMember}
           onClose={() => {
             userClosedRef.current = true;
             setSelectedComic(null);

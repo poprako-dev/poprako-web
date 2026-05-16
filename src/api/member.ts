@@ -34,6 +34,14 @@ export async function updateMemberRole(
   );
 }
 
+export async function joinMember(
+  invitationCode: string,
+): Promise<Result<void>> {
+  return api.post<void, { invitation_code: string }>("/members/join", {
+    invitation_code: invitationCode,
+  });
+}
+
 export async function listMembers(
   args: ListMembersArgs,
 ): Promise<Result<MemberInfo[]>> {

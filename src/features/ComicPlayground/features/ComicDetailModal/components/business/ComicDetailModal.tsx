@@ -51,7 +51,6 @@ import MemberSelectorModal from "./MemberSelectorModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import type { MemberInfo } from "@/types/member";
 import { hasRole, matchesAssignmentRole, type Role } from "@/types/role";
-import { useActiveTeam } from "@/hooks/useActiveTeam";
 
 const ROLE_TITLE_LABEL: Record<Role, string> = {
   rawProvider: "图源",
@@ -123,6 +122,7 @@ type Props = {
   }) => Promise<Result<ImportChapterResult>>;
   onExportChapter?: (chapterId: string) => Promise<Result<ChapterExport>>;
   onDeleteComic?: (comicId: string) => Promise<Result<void>>;
+  onResolveActiveMember: () => MemberInfo | null | Promise<MemberInfo | null>;
   onClose: () => void;
 };
 
@@ -211,11 +211,12 @@ export default function ComicDetailModal({
   onImportChapter,
   onExportChapter,
   onDeleteComic,
+  onResolveActiveMember,
   onClose,
 }: Props) {
   const { showToast } = useToastStore();
   const accessToken = useAppStore((s) => s.accessToken);
-  const { activeMember } = useActiveTeam();
+  const [activeMember, setActiveMember] = useState<MemberInfo | null>(null);
   const [chapters, setChapters] = useState<ChapterInfo[]>([]);
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
     initialChapterId ?? pinnedChapter?.id ?? null,
@@ -241,6 +242,9 @@ export default function ComicDetailModal({
   const [joiningRoles, setJoiningRoles] = useState<
     Partial<Record<Role, boolean>>
   >({});
+  const [leavingRoles, setLeavingRoles] = useState<
+    Partial<Record<Role, boolean>>
+  >({});
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
   const [canCreateChapter, setCanCreateChapter] = useState(false);
@@ -254,6 +258,9 @@ export default function ComicDetailModal({
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [coverUploadProgress, setCoverUploadProgress] = useState<number | null>(null);
   const [localCoverUrl, setLocalCoverUrl] = useState<string | null>(null);
+  const resolveActiveMemberRef = useRef(onResolveActiveMember);
+
+  resolveActiveMemberRef.current = onResolveActiveMember;
 
   const selectedChapter =
     chapters.find((c) => c.id === selectedChapterId) ??
@@ -262,6 +269,30 @@ export default function ComicDetailModal({
     selectedChapterId !== null &&
     (chapters.some((chapter) => chapter.id === selectedChapterId) ||
       pinnedChapter?.id === selectedChapterId);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadActiveMember = async () => {
+      try {
+        const resolvedMember = await resolveActiveMemberRef.current();
+        if (!cancelled) {
+          setActiveMember(resolvedMember ?? null);
+        }
+      } catch (err) {
+        console.error("[ComicDetailModal] 解析团队成员信息异常:", err);
+        if (!cancelled) {
+          setActiveMember(null);
+        }
+      }
+    };
+
+    void loadActiveMember();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedChapterId && isSelectedChapterAvailable) return;
@@ -891,6 +922,22 @@ export default function ComicDetailModal({
     return hasRole(activeMember, role) && !isRoleAlreadyJoined(role);
   };
 
+  const resolveSelfRoleForRemoval = (role: Role): Role | null => {
+    if (!currentAssignment) return null;
+    if (role !== "typesetter") return role;
+    if (hasRole(currentAssignment, "typesetter")) return "typesetter";
+    if (hasRole(currentAssignment, "redrawer")) return "redrawer";
+    return null;
+  };
+
+  const canLeaveRole = (role: Role) => {
+    if (!onRemoveAssignment || !selectedChapterId || !currentUserId) {
+      return false;
+    }
+
+    return resolveSelfRoleForRemoval(role) !== null;
+  };
+
   const handleJoinRole = async (role: Role) => {
     if (!selectedChapterId || !onJoinChapterRole || joiningRoles[role]) return;
 
@@ -917,6 +964,52 @@ export default function ComicDetailModal({
       showToast(err instanceof Error ? err.message : "加入分工失败", "error");
     } finally {
       setJoiningRoles((prev) => ({ ...prev, [role]: false }));
+    }
+  };
+
+  const handleLeaveRole = async (role: Role) => {
+    if (
+      !selectedChapterId ||
+      !currentUserId ||
+      !onRemoveAssignment ||
+      leavingRoles[role]
+    ) {
+      return;
+    }
+
+    setLeavingRoles((prev) => ({ ...prev, [role]: true }));
+    try {
+      const removableRole = resolveSelfRoleForRemoval(role);
+      if (!removableRole) {
+        showToast("当前分工无需退出", "error");
+        return;
+      }
+
+      const result = await onRemoveAssignment(
+        selectedChapterId,
+        currentUserId,
+        removableRole,
+      );
+      if (!result.success) {
+        console.error("[ComicDetailModal] 退出章节分工失败:", result);
+        showToast(result.error, "error");
+        return;
+      }
+
+      const refreshedAssignments = await onLoadAssignments(selectedChapterId);
+      if (!refreshedAssignments.success) {
+        console.error("[ComicDetailModal] 刷新分工失败:", refreshedAssignments);
+        showToast(refreshedAssignments.error, "error");
+        return;
+      }
+
+      setAssignments(refreshedAssignments.data);
+      showToast("退出分工成功", "success");
+    } catch (err) {
+      console.error("[ComicDetailModal] 退出章节分工异常:", err);
+      showToast(err instanceof Error ? err.message : "退出分工失败", "error");
+    } finally {
+      setLeavingRoles((prev) => ({ ...prev, [role]: false }));
     }
   };
 
@@ -1435,6 +1528,9 @@ export default function ComicDetailModal({
       onJoinRole={onJoinChapterRole ? handleJoinRole : undefined}
       canJoinRole={onJoinChapterRole ? canJoinRole : undefined}
       isRoleJoining={(role) => !!joiningRoles[role]}
+      onLeaveRole={onRemoveAssignment ? handleLeaveRole : undefined}
+      canLeaveRole={onRemoveAssignment ? canLeaveRole : undefined}
+      isRoleLeaving={(role) => !!leavingRoles[role]}
       canOperateWorkflow={canManageChapterAssignments}
       canManageAssignments={canManageChapterAssignments}
     />

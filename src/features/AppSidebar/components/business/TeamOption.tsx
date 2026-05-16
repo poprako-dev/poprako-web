@@ -1,6 +1,9 @@
-import { Globe2, Check } from "lucide-react";
+import { Globe2, Check, Plus } from "lucide-react";
+import { useState, type KeyboardEvent } from "react";
 import clsx from "clsx";
 import type { TeamConfig } from "../../types/types";
+import { joinMember } from "@/api/member";
+import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 
 type Props = {
   teams: TeamConfig[];
@@ -8,17 +11,43 @@ type Props = {
   isListOpen: boolean;
   onToggleList: () => void;
   onSelectTeam: (team: TeamConfig) => void;
+  onJoinTeam: () => void;
 };
 
 function TeamList({
   teams,
   activeId,
   onSelect,
+  onJoin,
 }: {
   teams: TeamConfig[];
   activeId: string;
   onSelect: (team: TeamConfig) => void;
+  onJoin: () => void;
 }) {
+  const [inviteCode, setInviteCode] = useState("");
+  const [isJoining, setIsJoining] = useState(false);
+  const showToast = useToastStore((s) => s.showToast);
+
+  const handleJoin = async () => {
+    const code = inviteCode.trim();
+    if (!code || isJoining) return;
+    setIsJoining(true);
+    const result = await joinMember(code);
+    setIsJoining(false);
+    if (result.success) {
+      setInviteCode("");
+      showToast("成功加入汉化组", "success");
+      onJoin();
+    } else {
+      showToast(result.error, "error");
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleJoin();
+  };
+
   return (
     <div
       className={clsx(
@@ -29,12 +58,13 @@ function TeamList({
     >
       <div
         className={clsx(
-          "w-64 bg-[#F8F5F0] py-3",
+          "w-64 bg-[#F8F5F0]",
           "border border-gray-100 rounded-sm",
           "shadow-[0_20px_50px_rgba(0,0,0,0.1)]",
+          "flex flex-col",
         )}
       >
-        <div className="px-5 py-2 mb-2">
+        <div className="px-5 pt-3 pb-2">
           <h4
             className={clsx(
               "text-[11px] font-black uppercase",
@@ -46,7 +76,7 @@ function TeamList({
           </h4>
         </div>
 
-        <div className="space-y-1 px-2">
+        <div className="space-y-1 px-2 pb-2">
           {teams.map((t) => {
             const isSelected = t.id === activeId;
             return (
@@ -86,6 +116,31 @@ function TeamList({
             );
           })}
         </div>
+
+        <div
+          className={clsx(
+            "border-t border-gray-100",
+            "px-3 py-2",
+            "flex items-center gap-2",
+          )}
+        >
+          <Plus size={14} className="text-gray-300 shrink-0" />
+          <input
+            type="text"
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="输入邀请码加入..."
+            disabled={isJoining}
+            className={clsx(
+              "flex-1 min-w-0",
+              "text-xs text-gray-600",
+              "bg-transparent outline-none",
+              "placeholder:text-gray-300",
+              isJoining && "opacity-50",
+            )}
+          />
+        </div>
       </div>
     </div>
   );
@@ -97,6 +152,7 @@ export default function TeamOption({
   isListOpen,
   onToggleList,
   onSelectTeam,
+  onJoinTeam,
 }: Props) {
   return (
     <div className="relative w-full h-16 group/trans">
@@ -169,6 +225,7 @@ export default function TeamOption({
           teams={teams}
           activeId={activeTeam.id}
           onSelect={onSelectTeam}
+          onJoin={onJoinTeam}
         />
       )}
     </div>

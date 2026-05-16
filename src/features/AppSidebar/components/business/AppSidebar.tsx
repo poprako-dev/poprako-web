@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import type { NavId, TeamConfig } from "../../types/types";
 import { mainNavConfigs, footerNavConfig } from "../../config/config";
 import { useAppStore } from "@/store/app";
+import { listMyMembers } from "@/api/member";
 import AppSidebarLayout from "../../layouts/AppSidebarLayout";
 import TitleHeader from "./TitleHeader";
 import TeamOption from "./TeamOption";
@@ -56,6 +57,17 @@ export default function AppSidebar() {
     setIsSelectingTeam(false);
   };
 
+  const handleJoinTeam = async () => {
+    const state = loginState;
+    if (!state) return;
+    try {
+      const memberInfos = await listMyMembers();
+      setLoginState({ userInfo: state.userInfo, memberInfos });
+    } catch {
+      // toast already shown in TeamOption
+    }
+  };
+
   const handleMouseLeave = () => {
     setIsHovered(false);
     setIsSelectingTeam(false);
@@ -74,6 +86,7 @@ export default function AppSidebar() {
           isListOpen={isSelectingTeam}
           onToggleList={() => setIsSelectingTeam((v) => !v)}
           onSelectTeam={handleTeamSelect}
+          onJoinTeam={handleJoinTeam}
         />
       }
       nav={

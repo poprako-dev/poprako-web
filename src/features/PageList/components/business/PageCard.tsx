@@ -37,6 +37,12 @@ export default function PageCard({
   const proofread = page.proofreadUnitCount;
   const transPct = total > 0 ? Math.round((translated / total) * 100) : 0;
   const proofPct = total > 0 ? Math.round((proofread / total) * 100) : 0;
+  const circleColor =
+    total > 0 && proofread >= total
+      ? "bg-green-500"
+      : total > 0 && translated >= total
+        ? "bg-orange-400"
+        : "bg-gray-400";
   const reuploadInputRef = useRef<HTMLInputElement>(null);
   const clampedUploadProgress =
     typeof uploadProgress === "number"
@@ -75,7 +81,7 @@ export default function PageCard({
         </span>
       </div>
 
-      {/* Unit count — top right */}
+      {/* Status indicator — top right */}
       {!isPending && (
         <div
           className={clsx(
@@ -83,9 +89,7 @@ export default function PageCard({
             "bg-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded flex items-center justify-center",
           )}
         >
-          <span className="text-[10px] font-bold text-white/90 leading-none tabular-nums">
-            {translated} / {total}
-          </span>
+          <div className={clsx("w-2.5 h-2.5 rounded-full shadow-sm", circleColor)} />
         </div>
       )}
 

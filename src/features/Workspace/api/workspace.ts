@@ -9,7 +9,7 @@ export async function fetchMyComics(
   limit: number,
 ): Promise<ComicInfo[] | string> {
   const result = await listMyAssignments({
-    includes: ["chapter.comic"],
+    includes: ["chapter.comic.workset.team"],
     offset,
     limit,
   });

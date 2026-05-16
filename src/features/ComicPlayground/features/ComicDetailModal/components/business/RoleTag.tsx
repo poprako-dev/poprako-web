@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import clsx from "clsx";
-import { Plus, UserPlus } from "lucide-react";
+import { Plus, UserMinus, UserPlus } from "lucide-react";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import type { WorkflowStatus } from "@/types/workflow";
 import type { AssignmentInfo } from "@/types/assignment";
@@ -22,6 +22,9 @@ type Props = {
   onJoinSelf?: () => void;
   canJoinSelf?: boolean;
   isJoiningSelf?: boolean;
+  onLeaveSelf?: () => void;
+  canLeaveSelf?: boolean;
+  isLeavingSelf?: boolean;
 };
 
 type StatusConfig = {
@@ -80,6 +83,9 @@ export default function RoleTag({
   onJoinSelf,
   canJoinSelf = false,
   isJoiningSelf = false,
+  onLeaveSelf,
+  canLeaveSelf = false,
+  isLeavingSelf = false,
 }: Props) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
   const transitioningRef = useRef(false);
@@ -174,6 +180,25 @@ export default function RoleTag({
           title="加入当前分工"
         >
           <UserPlus size={12} strokeWidth={2.5} />
+        </button>
+      )}
+
+      {!canJoinSelf && canLeaveSelf && onLeaveSelf && (
+        <button
+          onClick={(event) => {
+            event.stopPropagation();
+            onLeaveSelf();
+          }}
+          disabled={isLeavingSelf}
+          className={clsx(
+            "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
+            "text-slate-300 hover:text-slate-600 hover:bg-slate-100/80",
+            "border border-transparent hover:border-slate-200",
+            "disabled:opacity-60 disabled:cursor-not-allowed",
+          )}
+          title="退出当前分工"
+        >
+          <UserMinus size={12} strokeWidth={2.5} />
         </button>
       )}
 

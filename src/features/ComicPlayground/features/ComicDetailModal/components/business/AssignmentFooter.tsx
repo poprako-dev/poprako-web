@@ -28,6 +28,9 @@ type Props = {
   onJoinRole?: (role: Role) => void;
   canJoinRole?: (role: Role) => boolean;
   isRoleJoining?: (role: Role) => boolean;
+  onLeaveRole?: (role: Role) => void;
+  canLeaveRole?: (role: Role) => boolean;
+  isRoleLeaving?: (role: Role) => boolean;
   canOperateWorkflow?: boolean;
   canManageAssignments?: boolean;
 };
@@ -128,6 +131,9 @@ export default function AssignmentFooter({
   onJoinRole,
   canJoinRole,
   isRoleJoining,
+  onLeaveRole,
+  canLeaveRole,
+  isRoleLeaving,
   canOperateWorkflow = false,
   canManageAssignments = false,
 }: Props) {
@@ -220,6 +226,15 @@ export default function AssignmentFooter({
                 }
                 onJoinSelf={
                   onJoinRole ? () => onJoinRole(roleDef.addRole) : undefined
+                }
+                canLeaveSelf={
+                  canLeaveRole ? canLeaveRole(roleDef.addRole) : false
+                }
+                isLeavingSelf={
+                  isRoleLeaving ? isRoleLeaving(roleDef.addRole) : false
+                }
+                onLeaveSelf={
+                  onLeaveRole ? () => onLeaveRole(roleDef.addRole) : undefined
                 }
               />
             );

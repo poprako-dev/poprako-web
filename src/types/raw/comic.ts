@@ -4,6 +4,7 @@ import type {
   CreateComicResult,
   UpdateComicArgs,
 } from "../comic";
+import { toWorksetInfo } from "../workset";
 import type { RawUserInfo } from "./user";
 import type { RawWorksetInfo } from "./workset";
 import { ensureHttpsUrl } from "@/utils/url";
@@ -34,9 +35,12 @@ export type RawComicInfo = {
 export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
   return {
     id: raw.id,
+    worksetId: raw.workset_id,
+    workset: toWorksetInfo(raw.workset),
     title: raw.title,
     author: raw.author,
     description: raw.description,
+    isCoverUploaded: !!raw.is_cover_uploaded,
     creatorId: raw.creator_id,
     index: raw.index,
     chapterCount: raw.chapter_count,

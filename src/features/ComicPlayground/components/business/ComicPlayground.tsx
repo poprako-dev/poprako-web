@@ -64,7 +64,7 @@ function getUniformFileExtension(files: File[]): string | null {
 }
 
 export default function ComicPlayground() {
-  const { activeTeamId: teamId } = useActiveTeam();
+  const { activeTeamId: teamId, activeMember } = useActiveTeam();
   const currentUserId = useAppStore((s) => s.loginState?.userInfo.id ?? null);
   const { showToast } = useToastStore();
   const navigate = useNavigate();
@@ -608,6 +608,10 @@ export default function ComicPlayground() {
 
   const activeWorkset = worksets.find((w) => w.id === activeWorksetId);
 
+  const resolveActiveMember = useCallback(() => {
+    return activeMember;
+  }, [activeMember]);
+
   return (
     <>
       <ComicList
@@ -661,6 +665,7 @@ export default function ComicPlayground() {
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
           onDeleteComic={handleDeleteComic}
+          onResolveActiveMember={resolveActiveMember}
           onClose={() => {
             userClosedRef.current = true;
             setSelectedComic(null);
