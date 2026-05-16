@@ -14,9 +14,10 @@
 - [ ] add assignment card.
 - [x] fallback of comic cover.
 - [x] comic cover upload.
-- [ ] team load in workspace(assignment card & comic detail modal)
+- [x] team load in workspace(assignment card & comic detail modal)
 - [x] sys mail box.
-- [ ] exit chapter button.
-- [ ] base translator RO mode.
-- [ ] preview bubble disable.
+- [x] exit chapter button.
+- [x] base translator RO mode.
+- [x] preview bubble disable.
 - [ ] comic subscription.
+- [ ] page selector in base translator.

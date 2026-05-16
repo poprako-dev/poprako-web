@@ -22,6 +22,7 @@ import {
   deleteChapter,
   updateChapter,
   exportChapter,
+  exportChapterLp,
   importChapter,
   joinChapter,
 } from "@/features/ComicPlayground/api/chapter";
@@ -316,9 +317,19 @@ export default function Workspace() {
     [],
   );
 
-  const handleExportChapter = useCallback(async (chapterId: string) => {
-    return exportChapter(chapterId);
-  }, []);
+  const handleExportChapter = useCallback(
+    async (chapterId: string, options?: { signal?: AbortSignal }) => {
+      return exportChapter(chapterId, options);
+    },
+    [],
+  );
+
+  const handleExportChapterLp = useCallback(
+    async (chapterId: string, options?: { signal?: AbortSignal }) => {
+      return exportChapterLp(chapterId, options);
+    },
+    [],
+  );
 
   const handleImportChapter = useCallback(
     async (args: { chapterId: string; content: string; format: "json" | "lp" }) => {
@@ -496,6 +507,7 @@ export default function Workspace() {
           onJoinChapterRole={handleJoinChapterRole}
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
+          onExportChapterLp={handleExportChapterLp}
           onDeleteComic={handleDeleteComic}
           onResolveActiveMember={resolveActiveMember}
           onClose={() => {

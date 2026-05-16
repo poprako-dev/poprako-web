@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { NavId, TeamConfig } from "../../types/types";
 import { mainNavConfigs, footerNavConfig } from "../../config/config";
 import { useAppStore } from "@/store/app";
-import { listMyMembers } from "@/api/member";
+import { useTeamConfigs } from "../../hook/useTeamConfigs";
 import AppSidebarLayout from "../../layouts/AppSidebarLayout";
 import TitleHeader from "./TitleHeader";
 import TeamOption from "./TeamOption";
@@ -22,7 +22,6 @@ const pathNavMap: Record<string, NavId> = Object.fromEntries(
 export default function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const loginState = useAppStore((s) => s.loginState);
   const selectedTeamId = useAppStore((s) => s.selectedTeamId);
   const setSelectedTeamId = useAppStore((s) => s.setSelectedTeamId);
 
@@ -31,16 +30,7 @@ export default function AppSidebar() {
 
   const isExpanded = isHovered || isSelectingTeam;
 
-  const teamConfigs = useMemo<TeamConfig[]>(() => {
-    if (!loginState?.memberInfos) return [];
-    return loginState.memberInfos
-      .filter((m) => m.team)
-      .map((m) => {
-        const team = m.team!;
-        const short = team.name[0].toUpperCase();
-        return { id: team.id, name: team.name, short, desc: team.description };
-      });
-  }, [loginState]);
+  const { teamConfigs, refreshTeams } = useTeamConfigs();
 
   const resolvedActiveTeam =
     teamConfigs.find((team) => team.id === selectedTeamId) ??
@@ -55,17 +45,6 @@ export default function AppSidebar() {
   const handleTeamSelect = (team: TeamConfig) => {
     setSelectedTeamId(team.id);
     setIsSelectingTeam(false);
-  };
-
-  const handleJoinTeam = async () => {
-    const state = loginState;
-    if (!state) return;
-    try {
-      const memberInfos = await listMyMembers();
-      setLoginState({ userInfo: state.userInfo, memberInfos });
-    } catch {
-      // toast already shown in TeamOption
-    }
   };
 
   const handleMouseLeave = () => {
@@ -86,7 +65,7 @@ export default function AppSidebar() {
           isListOpen={isSelectingTeam}
           onToggleList={() => setIsSelectingTeam((v) => !v)}
           onSelectTeam={handleTeamSelect}
-          onJoinTeam={handleJoinTeam}
+          onJoinTeam={refreshTeams}
         />
       }
       nav={

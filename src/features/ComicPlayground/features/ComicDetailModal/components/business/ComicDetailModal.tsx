@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
+import JSZip from "jszip";
 import {
   X,
   BookOpen,
@@ -49,8 +50,21 @@ import PageList from "@/features/PageList/components/business/PageList";
 import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import MemberSelectorModal from "./MemberSelectorModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import ExportProgressDialog from "./ExportProgressDialog";
 import type { MemberInfo } from "@/types/member";
 import { hasRole, matchesAssignmentRole, type Role } from "@/types/role";
+
+type ExportProgressState = {
+  title: string;
+  description: string;
+  progress: number;
+};
+
+const DEFAULT_EXPORT_PROGRESS: ExportProgressState = {
+  title: "正在准备下载",
+  description: "正在收集导出内容，请稍候。",
+  progress: 0,
+};
 
 const ROLE_TITLE_LABEL: Record<Role, string> = {
   rawProvider: "图源",
@@ -120,7 +134,14 @@ type Props = {
     content: string;
     format: ImportChapterFormat;
   }) => Promise<Result<ImportChapterResult>>;
-  onExportChapter?: (chapterId: string) => Promise<Result<ChapterExport>>;
+  onExportChapter?: (
+    chapterId: string,
+    options?: { signal?: AbortSignal },
+  ) => Promise<Result<ChapterExport>>;
+  onExportChapterLp?: (
+    chapterId: string,
+    options?: { signal?: AbortSignal },
+  ) => Promise<Result<string>>;
   onDeleteComic?: (comicId: string) => Promise<Result<void>>;
   onResolveActiveMember: () => MemberInfo | null | Promise<MemberInfo | null>;
   onClose: () => void;
@@ -210,6 +231,7 @@ export default function ComicDetailModal({
   onJoinChapterRole,
   onImportChapter,
   onExportChapter,
+  onExportChapterLp,
   onDeleteComic,
   onResolveActiveMember,
   onClose,
@@ -233,6 +255,9 @@ export default function ComicDetailModal({
   const [isExportingData, setIsExportingData] = useState(false);
   const [isDeletingChapterPages, setIsDeletingChapterPages] = useState(false);
   const [isDeletingComic, setIsDeletingComic] = useState(false);
+  const [exportProgress, setExportProgress] = useState<ExportProgressState>(
+    DEFAULT_EXPORT_PROGRESS,
+  );
   const [reuploadingPageIds, setReuploadingPageIds] = useState<
     Record<string, boolean>
   >({});
@@ -253,6 +278,7 @@ export default function ComicDetailModal({
   >(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const exportAbortControllerRef = useRef<AbortController | null>(null);
   const CHAPTERS_LIMIT = 20;
 
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -1099,30 +1125,80 @@ export default function ComicDetailModal({
       .trim()
       .slice(0, 120) || "chapter-export";
 
+  const buildExportBaseName = () => {
+    const comicIndex = (comicInfo.index ?? 0) + 1;
+    const chapterIndex = (selectedChapter?.index ?? 0) + 1;
+    const author = comicInfo.author || "未知作者";
+    const title = comicInfo.title || "未命名漫画";
+    const subtitle = selectedChapter?.subtitle || "";
+
+    return sanitizeFileName(
+      `【#${comicIndex}-${chapterIndex}】[${author}]${title}（${subtitle}）`,
+    );
+  };
+
   const wait = (ms: number) =>
     new Promise<void>((resolve) => {
       setTimeout(resolve, ms);
     });
 
-  const blobToDataUrl = (blob: Blob) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          resolve(reader.result);
-          return;
-        }
-        reject(new Error("无法读取图片数据"));
-      };
-      reader.onerror = () => reject(new Error("读取图片失败"));
-      reader.readAsDataURL(blob);
+  const setExportProgressStep = (
+    title: string,
+    description: string,
+    progress: number,
+  ) => {
+    setExportProgress({
+      title,
+      description,
+      progress: Math.max(0, Math.min(progress, 100)),
     });
+  };
 
-  const fetchImageAsDataUrlWithRetry = async (
+  const assertExportNotAborted = () => {
+    if (exportAbortControllerRef.current?.signal.aborted) {
+      throw new DOMException("下载已取消", "AbortError");
+    }
+  };
+
+  const getFileExtensionFromContentType = (contentType: string | null) => {
+    switch (contentType?.split(";")[0].trim().toLowerCase()) {
+      case "image/jpeg":
+        return "jpg";
+      case "image/png":
+        return "png";
+      case "image/webp":
+        return "webp";
+      case "image/gif":
+        return "gif";
+      case "image/avif":
+        return "avif";
+      case "image/bmp":
+        return "bmp";
+      case "image/tiff":
+        return "tiff";
+      default:
+        return null;
+    }
+  };
+
+  const getFileExtensionFromUrl = (imageUrl: string) => {
+    try {
+      const pathname = new URL(imageUrl).pathname;
+      const match = pathname.match(/\.([a-zA-Z0-9]+)$/);
+      return match?.[1]?.toLowerCase() ?? null;
+    } catch {
+      const normalized = imageUrl.split("?")[0]?.split("#")[0] ?? "";
+      const match = normalized.match(/\.([a-zA-Z0-9]+)$/);
+      return match?.[1]?.toLowerCase() ?? null;
+    }
+  };
+
+  const fetchImageFileWithRetry = async (
     imageUrl: string,
     maxAttempts = 3,
-  ): Promise<string | null> => {
+  ): Promise<{ blob: Blob; extension: string } | null> => {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      assertExportNotAborted();
       try {
         const response = await fetch(imageUrl, {
           headers: accessToken
@@ -1130,13 +1206,22 @@ export default function ComicDetailModal({
                 Authorization: `Bearer ${accessToken}`,
               }
             : undefined,
+          signal: exportAbortControllerRef.current?.signal,
         });
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
         const blob = await response.blob();
-        return await blobToDataUrl(blob);
+        const extension =
+          getFileExtensionFromContentType(response.headers.get("content-type")) ??
+          getFileExtensionFromUrl(imageUrl) ??
+          "png";
+
+        return { blob, extension };
       } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          throw err;
+        }
         if (attempt >= maxAttempts) {
           console.error(
             "[ComicDetailModal] 下载图片失败，已跳过:",
@@ -1151,78 +1236,192 @@ export default function ComicDetailModal({
     return null;
   };
 
-  const handleExportData = async () => {
-    if (!selectedChapterId || !onExportChapter) return;
+  const toAssignmentText = () => {
+    const pickNames = (predicate: (item: AssignmentInfo) => boolean) => {
+      const uniqueNames = Array.from(
+        new Set(
+          assignments
+            .filter(predicate)
+            .map((item) => item.user?.name || item.userId)
+            .filter((name) => !!name),
+        ),
+      );
+      return uniqueNames.join("、");
+    };
 
+    const rows = [
+      `【图源】${pickNames((item) => hasRole(item, "rawProvider"))}`,
+      `【翻译】${pickNames((item) => hasRole(item, "translator"))}`,
+      `【校对】${pickNames((item) => hasRole(item, "proofreader"))}`,
+      `【嵌字】${pickNames((item) => hasRole(item, "typesetter") || hasRole(item, "redrawer"))}`,
+      `【监修】${pickNames((item) => hasRole(item, "reviewer"))}`,
+      `【上传】${pickNames((item) => hasRole(item, "publisher"))}`,
+    ];
+
+    return rows.join("\n");
+  };
+
+  const handleExportData = async () => {
+    if (!selectedChapterId || !onExportChapter || !onExportChapterLp) return;
+    if (isExportingData) return;
+
+    const abortController = new AbortController();
+    exportAbortControllerRef.current = abortController;
     setIsExportingData(true);
+    setExportProgress(DEFAULT_EXPORT_PROGRESS);
+
     try {
-      const exportResult = await onExportChapter(selectedChapterId);
-      if (!exportResult.success) {
-        showToast(exportResult.error, "error");
+      setExportProgressStep("正在读取翻校数据", "正在请求 PRK 与 LP 导出内容。", 5);
+
+      const [prkExportResult, lpExportResult] = await Promise.all([
+        onExportChapter(selectedChapterId, { signal: abortController.signal }),
+        onExportChapterLp(selectedChapterId, { signal: abortController.signal }),
+      ]);
+
+      assertExportNotAborted();
+
+      if (!prkExportResult.success) {
+        showToast(prkExportResult.error, "error");
         return;
       }
 
-      const pagesWithImages = await Promise.all(
-        exportResult.data.pages.map(async (page) => {
+      if (!lpExportResult.success) {
+        showToast(lpExportResult.error, "error");
+        return;
+      }
+
+      const zip = new JSZip();
+      const imageFolder = zip.folder("images");
+      const totalPages = prkExportResult.data.pages.length;
+      let completedPages = 0;
+
+      const pagesWithAssets = await Promise.all(
+        prkExportResult.data.pages.map(async (page) => {
+          assertExportNotAborted();
+
           if (!page.imageUrl) {
+            completedPages += 1;
+            setExportProgressStep(
+              "正在下载页面图片",
+              `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
+              20 + (completedPages / Math.max(totalPages, 1)) * 60,
+            );
             return {
               ...page,
-              imageDataUrl: null as string | null,
+              exportedImagePath: null as string | null,
             };
           }
 
-          const imageDataUrl = await fetchImageAsDataUrlWithRetry(
-            page.imageUrl,
-            3,
+          const imageFile = await fetchImageFileWithRetry(page.imageUrl, 3);
+          assertExportNotAborted();
+
+          if (imageFile && imageFolder) {
+            const imageFileName = `${String(page.pageIndex).padStart(3, "0")}.${
+              imageFile.extension
+            }`;
+            imageFolder.file(imageFileName, imageFile.blob);
+            completedPages += 1;
+            setExportProgressStep(
+              "正在下载页面图片",
+              `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
+              20 + (completedPages / Math.max(totalPages, 1)) * 60,
+            );
+
+            return {
+              ...page,
+              exportedImagePath: `images/${imageFileName}`,
+            };
+          }
+
+          completedPages += 1;
+          setExportProgressStep(
+            "正在下载页面图片",
+            `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
+            20 + (completedPages / Math.max(totalPages, 1)) * 60,
           );
+
           return {
             ...page,
-            imageDataUrl,
+            exportedImagePath: null,
           };
         }),
       );
 
-      const skippedImages = pagesWithImages.filter(
-        (page) => page.imageUrl && !page.imageDataUrl,
+      const skippedImages = pagesWithAssets.filter(
+        (page) => page.imageUrl && !page.exportedImagePath,
       ).length;
 
-      const payload = {
-        ...exportResult.data,
+      const payload: ChapterExport & {
+        exportedAt: string;
+        skippedImageCount: number;
+        pages: Array<
+          ChapterExport["pages"][number] & { exportedImagePath: string | null }
+        >;
+      } = {
+        ...prkExportResult.data,
         exportedAt: new Date().toISOString(),
         skippedImageCount: skippedImages,
-        pages: pagesWithImages,
+        pages: pagesWithAssets,
       };
 
-      const chapterLabel =
-        selectedChapter?.index !== undefined
-          ? `chapter-${selectedChapter.index}`
-          : `chapter-${selectedChapterId}`;
-      const fileName = sanitizeFileName(
-        `${comicInfo.title}-${chapterLabel}-export.json`,
-      );
+      const fileBaseName = buildExportBaseName();
 
-      const blob = new Blob([JSON.stringify(payload, null, 2)], {
-        type: "application/json;charset=utf-8",
+      zip.file("translation.prk.json", JSON.stringify(payload, null, 2));
+      zip.file("translation.lp.txt", lpExportResult.data);
+      zip.file("assignments.txt", toAssignmentText());
+
+      setExportProgressStep("正在压缩文件", "正在生成 ZIP 文件，请稍候。", 88);
+
+      const blob = await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        streamFiles: true,
+      }, (metadata) => {
+        assertExportNotAborted();
+        setExportProgressStep(
+          "正在压缩文件",
+          `正在生成 ZIP 文件，请稍候。`,
+          88 + metadata.percent * 0.1,
+        );
       });
+
+      assertExportNotAborted();
+
+      setExportProgressStep("正在保存文件", "正在触发浏览器下载。", 99);
+
       const downloadUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = fileName;
+      link.download = `${fileBaseName}.zip`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(downloadUrl);
 
+      setExportProgressStep("下载完成", "文件已开始下载。", 100);
+
       if (skippedImages > 0) {
-        showToast(`导出完成，${skippedImages} 张图片下载失败后已跳过`, "error");
+        showToast(
+          `导出完成，已打包图片、translation.prk.json、translation.lp.txt、assignments.txt，${skippedImages} 张图片下载失败后已跳过`,
+          "error",
+        );
         return;
       }
-      showToast("导出成功", "success");
+      showToast(
+        "导出成功，已打包图片、translation.prk.json、translation.lp.txt、assignments.txt",
+        "success",
+      );
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        showToast("下载已取消", "info");
+        return;
+      }
       console.error("[ComicDetailModal] 导出章节数据异常:", err);
       showToast("导出失败", "error");
     } finally {
+      exportAbortControllerRef.current = null;
       setIsExportingData(false);
+      setExportProgress(DEFAULT_EXPORT_PROGRESS);
     }
   };
 
@@ -1464,7 +1663,7 @@ export default function ComicDetailModal({
           <ActionButton
             icon={Download}
             title="下载数据"
-            onClick={onExportChapter ? handleExportData : undefined}
+            onClick={onExportChapter && onExportChapterLp ? handleExportData : undefined}
             disabled={isExportingData}
           />
           <input
@@ -1538,6 +1737,13 @@ export default function ComicDetailModal({
 
   return (
     <>
+      <ExportProgressDialog
+        open={isExportingData}
+        title={exportProgress.title}
+        description={exportProgress.description}
+        progress={exportProgress.progress}
+        onCancel={() => exportAbortControllerRef.current?.abort()}
+      />
       <ComicDetailModalLayout
         header={header}
         sidebar={sidebar}

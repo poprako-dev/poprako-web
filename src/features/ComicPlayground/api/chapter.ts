@@ -1,4 +1,6 @@
 import { api } from "@/api/util";
+import { appConfig } from "@/config/config";
+import { useAppStore } from "@/store/app";
 import { toChapterInfo } from "@/types/chapter";
 import type { ChapterInfo } from "@/types/chapter";
 import type { Result } from "@/types/utils/result";
@@ -18,6 +20,10 @@ import type {
   RawImportChapterResult,
 } from "../types/chapter";
 import { ensureHttpsUrl } from "@/utils/url";
+
+type ExportRequestOptions = {
+  signal?: AbortSignal;
+};
 
 export async function listChapters(
   args: ListChapterArgs,
@@ -129,10 +135,107 @@ function unwrapRawChapterExport(raw: RawChapterExport): ChapterExport {
 
 export async function exportChapter(
   chapterId: string,
+  options?: ExportRequestOptions,
 ): Promise<Result<ChapterExport>> {
-  const res = await api.get<RawChapterExport>(`/chapters/${chapterId}/export`);
-  if (!res.success) return res;
-  return { success: true, data: unwrapRawChapterExport(res.data) };
+  const token = useAppStore.getState().getAccessToken();
+
+  try {
+    const response = await fetch(
+      `${appConfig.apiBaseUrl}/chapters/${chapterId}/export`,
+      {
+        method: "GET",
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+        credentials: "include",
+        signal: options?.signal,
+      },
+    );
+
+    const rawText = await response.text();
+
+    if (!response.ok) {
+      try {
+        const body = JSON.parse(rawText) as { message?: string };
+        return {
+          success: false,
+          error: body.message || response.statusText || "导出 PRK 失败",
+        };
+      } catch {
+        return {
+          success: false,
+          error: rawText || response.statusText || "导出 PRK 失败",
+        };
+      }
+    }
+
+    const body = JSON.parse(rawText) as { data?: RawChapterExport };
+    if (!body.data) {
+      return { success: false, error: "导出 PRK 失败" };
+    }
+
+    return { success: true, data: unwrapRawChapterExport(body.data) };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "导出 PRK 失败",
+    };
+  }
+}
+
+export async function exportChapterLp(
+  chapterId: string,
+  options?: ExportRequestOptions,
+): Promise<Result<string>> {
+  const token = useAppStore.getState().getAccessToken();
+
+  try {
+    const response = await fetch(`${appConfig.apiBaseUrl}/chapters/${chapterId}/export/lp`, {
+      method: "GET",
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+        credentials: "include",
+        signal: options?.signal,
+      });
+
+    const rawText = await response.text();
+
+    if (!response.ok) {
+      try {
+        const body = JSON.parse(rawText) as { message?: string };
+        return {
+          success: false,
+          error: body.message || response.statusText || "导出 LP 失败",
+        };
+      } catch {
+        return {
+          success: false,
+          error: rawText || response.statusText || "导出 LP 失败",
+        };
+      }
+    }
+
+    try {
+      const body = JSON.parse(rawText) as { data?: string };
+      if (typeof body.data === "string") {
+        return { success: true, data: body.data };
+      }
+    } catch {
+      // ignore parse error and fallback to plain text payload
+    }
+
+    return { success: true, data: rawText };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "导出 LP 失败",
+    };
+  }
 }
 
 function unwrapRawImportChapterResult(
