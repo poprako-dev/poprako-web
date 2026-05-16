@@ -13,6 +13,8 @@ export default function SettingsPanel() {
   const loginState = useAppStore((s) => s.loginState);
   const selectedTeamId = useAppStore((s) => s.selectedTeamId);
   const setSelectedTeamId = useAppStore((s) => s.setSelectedTeamId);
+  const setAccessToken = useAppStore((s) => s.setAccessToken);
+  const setLoginState = useAppStore((s) => s.setLoginState);
 
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
@@ -33,13 +35,16 @@ export default function SettingsPanel() {
   const handleLogout = async () => {
     try {
       await logoutUser();
-      navigate("/login");
     } catch (error) {
       console.error("Logout error", error);
       showToast(
         error instanceof Error ? error.message : "Failed to logout",
         "error",
       );
+    } finally {
+      setAccessToken(null);
+      setLoginState(null);
+      navigate("/login");
     }
   };
 

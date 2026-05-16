@@ -19,6 +19,7 @@ export default function LoginCard() {
 
   const { showToast } = useToastStore();
   const setAccessToken = useAppStore((s) => s.setAccessToken);
+  const setLoginState = useAppStore((s) => s.setLoginState);
   const navigate = useNavigate();
 
   const switchMode = (next: Mode) => {
@@ -63,6 +64,7 @@ export default function LoginCard() {
       }
 
       setAccessToken(result.data.accessToken);
+      setLoginState(null);
       showToast(mode === "login" ? "登录成功！" : "注册成功！", "success");
       navigate("/comic-playground", { replace: true });
     } catch (err) {
