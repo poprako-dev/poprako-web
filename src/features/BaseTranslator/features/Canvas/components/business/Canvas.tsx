@@ -5,6 +5,7 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
+import clsx from "clsx";
 import type { UnitInfo } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 import {
@@ -124,6 +125,15 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  // Attach touchstart as non-passive so preventDefault() works
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onTouchStart = (e: TouchEvent) => handleCanvasTouchStart(e);
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
+    return () => el.removeEventListener("touchstart", onTouchStart);
+  });
 
   // Cleanup window event listeners on unmount
   useEffect(() => {
@@ -331,7 +341,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     startDrag("pan", e.clientX, e.clientY);
   }
 
-  function handleCanvasTouchStart(e: React.TouchEvent) {
+  function handleCanvasTouchStart(e: TouchEvent) {
     if ((e.target as HTMLElement).closest("[data-marker]")) return;
     const touch = e.touches[0];
     if (!touch) return;
@@ -439,11 +449,11 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full overflow-hidden bg-muted touch-none select-none ${
-        isPanning ? "cursor-grabbing" : "cursor-default"
-      }`}
+      className={clsx(
+        "relative w-full h-full overflow-hidden bg-stone-100 touch-none select-none",
+        isPanning ? "cursor-grabbing" : "cursor-default",
+      )}
       onMouseDown={handleCanvasMouseDown}
-      onTouchStart={handleCanvasTouchStart}
       onContextMenu={handleContextMenu}
       onWheel={handleWheel}
     >
@@ -501,7 +511,9 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     left: `${x * 100}%`,
                     top: `${y * 100}%`,
                     transformOrigin: "0 0",
-                    transform: `translate(-${CIRCLE_SIZE / 2 / transform.scale}px, -${PIN_OFFSET / transform.scale}px) scale(${1 / transform.scale})`,
+                    transform: `translate(-${CIRCLE_SIZE / 2 / transform.scale}px, `
+                      + `-${PIN_OFFSET / transform.scale}px) `
+                      + `scale(${1 / transform.scale})`,
                   }}
                   onMouseDown={(e) =>
                     handleMarkerMouseDown(

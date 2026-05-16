@@ -15,20 +15,23 @@ export default function ComicDetailModalLayout({
   footer,
 }: Props) {
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-sm">
+    <div className={clsx(
+      "fixed inset-0 z-[80] flex items-center justify-center p-4 backdrop-blur-sm",
+      "bg-stone-950/25",
+    )}>
       <div
         className={clsx(
           "relative w-full max-w-240 h-[85vh]",
-          "bg-white rounded-sm border border-slate-200",
-          "shadow-md",
+          "bg-stone-50 rounded-sm border border-stone-200",
+          "shadow-xl",
           "flex flex-col overflow-hidden transition-all duration-300",
         )}
       >
-        {/* Header – always fixed at top */}
+        {/* Header – warm anchor tier */}
         <div
           className={clsx(
-            "flex justify-between items-center px-5 py-2",
-            "border-b border-slate-100 shrink-0 bg-slate-50",
+            "flex justify-between items-center px-5 py-2.5",
+            "border-b border-stone-300 shrink-0 bg-stone-200",
           )}
         >
           {header}
@@ -43,24 +46,27 @@ export default function ComicDetailModalLayout({
               "sm:flex-row sm:overflow-hidden",
             )}
           >
+            {/* Sidebar – warm white */}
             <div
               className={clsx(
-                "shrink-0 border-slate-100 p-2",
-                "flex flex-col bg-white",
+                "shrink-0 border-stone-200 p-2",
+                "flex flex-col bg-stone-50",
                 "w-full border-b",
                 "sm:w-45 sm:border-b-0 sm:border-r sm:overflow-y-auto",
-                "sm:scrollbar-thin sm:scrollbar-thumb-slate-200",
+                "sm:scrollbar-thin sm:scrollbar-thumb-stone-200",
               )}
             >
               {sidebar}
             </div>
 
+            {/* Content – sunken canvas */}
             <div
               className={clsx(
-                "bg-white p-4",
+                "bg-stone-100 p-4",
+                "shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]",
                 "w-full",
                 "sm:flex-1 sm:overflow-y-auto",
-                "sm:scrollbar-thin sm:scrollbar-thumb-slate-200",
+                "sm:scrollbar-thin sm:scrollbar-thumb-stone-300",
               )}
             >
               {pageGrid}

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useState, useRef } from "react";
 import clsx from "clsx";
 import { Plus, UserMinus, UserPlus } from "lucide-react";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
@@ -7,6 +7,7 @@ import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 import type { Role } from "@/types/role";
 import UserTag from "./UserTag";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 type Props = {
   label: string;
@@ -89,6 +90,7 @@ export default function RoleTag({
 }: Props) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
   const transitioningRef = useRef(false);
+  const [pendingLeave, setPendingLeave] = useState(false);
 
   const handleClick = () => {
     if (!transition || transitioningRef.current) return;
@@ -187,7 +189,7 @@ export default function RoleTag({
         <button
           onClick={(event) => {
             event.stopPropagation();
-            onLeaveSelf();
+            setPendingLeave(true);
           }}
           disabled={isLeavingSelf}
           className={clsx(
@@ -206,6 +208,19 @@ export default function RoleTag({
       <div
         className={clsx("absolute top-0 bottom-0 left-0 w-0.75", cfg.bottomBar)}
       />
+
+      {pendingLeave && onLeaveSelf && (
+        <ConfirmDialog
+          title="确认退出分工"
+          description={`确定要退出「${label}」分工吗？`}
+          confirmLabel="退出"
+          onConfirm={() => {
+            setPendingLeave(false);
+            onLeaveSelf();
+          }}
+          onCancel={() => setPendingLeave(false)}
+        />
+      )}
     </div>
   );
 }

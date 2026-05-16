@@ -93,9 +93,9 @@ export default function BaseUnitItem({
       ref={containerRef}
       data-unit-id={dataUnitId}
       className={clsx(
-        "relative flex cursor-text items-stretch border-b border-gray-100",
+        "relative flex cursor-text items-stretch border-b border-stone-100",
         "last:border-b-0 transition-all duration-75",
-        isFocused ? "z-10 bg-gray-100/60" : "bg-white hover:bg-gray-50",
+        isFocused ? "z-10 bg-stone-200/50" : "bg-transparent hover:bg-stone-100/70",
       )}
     >
       <div
@@ -114,8 +114,8 @@ export default function BaseUnitItem({
         className={clsx(
           "w-8 shrink-0 flex items-center justify-center select-none touch-none",
           "text-xs font-bold font-mono tracking-tighter transition-colors duration-150",
-          "cursor-pointer hover:bg-gray-200/70",
-          isFocused ? "text-gray-500" : "text-gray-300 hover:text-gray-500",
+          "cursor-pointer hover:bg-stone-200/70",
+          isFocused ? "text-stone-500" : "text-stone-300 hover:text-stone-500",
         )}
       >
         {(unitIndex(unit) + 1).toString().padStart(2, "0")}

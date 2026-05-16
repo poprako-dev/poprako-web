@@ -21,15 +21,22 @@ export default function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        "h-6 w-full rounded-sm flex items-center justify-center",
+        "h-7 w-full rounded-sm flex items-center justify-center gap-1.5 px-2",
         "transition-all duration-200 active:scale-95",
         "border shrink-0",
-        !danger && "border-slate-200 bg-white text-slate-500 hover:border-slate-400 hover:text-slate-800",
-        danger && "border-rose-200 bg-white text-rose-400 hover:bg-rose-50 hover:border-rose-400 hover:text-rose-600",
+        !danger && [
+          "border-stone-200 bg-stone-50 text-stone-500",
+          "hover:bg-stone-100 hover:border-stone-300 hover:text-stone-800",
+        ],
+        danger && [
+          "border-rose-200 bg-stone-50 text-rose-400",
+          "hover:bg-rose-50 hover:border-rose-400 hover:text-rose-600",
+        ],
         "disabled:opacity-50 disabled:cursor-not-allowed",
       )}
     >
-      <Icon size={14} strokeWidth={2.5} />
+      <Icon size={13} strokeWidth={2.5} />
+      <span className="text-[10px] font-semibold">{title}</span>
     </button>
   );
 }

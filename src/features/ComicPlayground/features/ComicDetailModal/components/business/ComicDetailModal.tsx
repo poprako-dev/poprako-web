@@ -924,7 +924,7 @@ export default function ComicDetailModal({
 
   const resolveSelfRoleForRemoval = (role: Role): Role | null => {
     if (!currentAssignment) return null;
-    if (role !== "typesetter") return role;
+    if (role !== "typesetter") return hasRole(currentAssignment, role) ? role : null;
     if (hasRole(currentAssignment, "typesetter")) return "typesetter";
     if (hasRole(currentAssignment, "redrawer")) return "redrawer";
     return null;
@@ -1229,7 +1229,7 @@ export default function ComicDetailModal({
   const header = (
     <>
       <div className="flex items-center gap-2">
-        <h1 className="text-lg font-black tracking-tight text-slate-800">
+        <h1 className="text-lg font-black tracking-tight text-stone-700">
           {comicInfo.title}
         </h1>
         <ChapterOption
@@ -1295,7 +1295,7 @@ export default function ComicDetailModal({
       </div>
       <button
         onClick={onClose}
-        className="text-slate-300 hover:text-slate-600 transition-colors p-1"
+        className="text-stone-400 hover:text-stone-700 transition-colors p-1"
       >
         <X size={18} />
       </button>
@@ -1307,7 +1307,7 @@ export default function ComicDetailModal({
       {/* Cover */}
       <div
         className={clsx(
-          "relative w-28 mx-auto aspect-3/4 bg-slate-50 rounded-sm border border-slate-100",
+          "relative w-28 mx-auto aspect-3/4 bg-stone-100 rounded-sm border border-stone-200",
           "flex items-center justify-center text-slate-200 mb-4 mt-2",
           "overflow-hidden shrink-0",
           "hover:border-slate-300 transition-colors group",
@@ -1388,7 +1388,7 @@ export default function ComicDetailModal({
       </div>
 
       {/* Stats */}
-      <div className="space-y-0 mb-2 shrink-0">
+      <div className="bg-stone-100 rounded-sm border border-stone-200 px-2.5 py-0.5 mb-3 shrink-0">
         <StatItem
           icon={BookOpen}
           label="总页数"

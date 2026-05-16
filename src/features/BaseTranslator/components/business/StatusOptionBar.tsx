@@ -51,13 +51,18 @@ export default function StatusOptionBar({
     return `当前：${modeLabel[currMode]}，点击切换到${modeLabel[next]}`;
   })();
 
+  const btnBase = clsx(
+    "flex-1 flex items-center justify-center py-1.5 transition-colors",
+    "text-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
+  );
+
   return (
-    <div className="flex w-full">
+    <div className="flex w-full divide-x divide-stone-200">
       {canCycle && (
         <button
           title={modeCycleTooltip}
           onClick={onCycleMode}
-          className="flex-1 flex items-center justify-center py-1.5 transition-colors bg-green-50 text-green-500"
+          className={clsx(btnBase, "bg-green-50 hover:bg-green-100")}
         >
           {modeIcon[currMode]}
         </button>
@@ -66,10 +71,10 @@ export default function StatusOptionBar({
         title="切换重定位模式"
         onClick={onRelocationClick}
         className={clsx(
-          "flex-1 flex items-center justify-center py-1.5 transition-colors",
+          btnBase,
           isRelocationEnabled
-            ? "bg-green-50 text-green-500"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            ? "bg-green-50 hover:bg-green-100"
+            : "bg-white hover:bg-stone-100",
         )}
       >
         <MapPin size={14} />
@@ -80,10 +85,10 @@ export default function StatusOptionBar({
             title={isUnitCreationEnabled ? "禁用标记创建" : "启用标记创建"}
             onClick={onUnitCreationClick}
             className={clsx(
-              "flex-1 flex items-center justify-center py-1.5 transition-colors",
+              btnBase,
               !isUnitCreationEnabled
-                ? "bg-green-50 text-green-500"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? "bg-green-50 hover:bg-green-100"
+                : "bg-white hover:bg-stone-100",
             )}
           >
             <CircleSlash size={14} />
@@ -93,13 +98,16 @@ export default function StatusOptionBar({
             disabled={saving}
             onClick={onSaveClick}
             className={clsx(
-              "flex-1 flex items-center justify-center py-1.5 transition-colors",
+              btnBase,
+              "bg-white",
               saving
-                ? "text-muted-foreground/40 cursor-not-allowed"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? "opacity-40 cursor-not-allowed"
+                : "hover:bg-stone-100",
             )}
           >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {saving
+              ? <Loader2 size={14} className="animate-spin" />
+              : <Save size={14} />}
           </button>
         </>
       )}
@@ -111,10 +119,10 @@ export default function StatusOptionBar({
         }
         onClick={onToggleProofreadPreviewClick}
         className={clsx(
-          "flex-1 flex items-center justify-center py-1.5 transition-colors",
+          btnBase,
           proofreadPreviewVisibility === "visible"
-            ? "bg-green-50 text-green-500"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            ? "bg-green-50 hover:bg-green-100"
+            : "bg-white hover:bg-stone-100",
         )}
       >
         <Eye size={14} />

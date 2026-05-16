@@ -11,14 +11,14 @@ export default function StatItem({ icon: Icon, label, value }: Props) {
     <div
       className={clsx(
         "flex items-center justify-between py-1.5",
-        "border-b border-slate-50 last:border-none",
+        "border-b border-stone-200 last:border-none",
         "group shrink-0",
       )}
     >
       <div
         className={clsx(
-          "flex items-center gap-2 text-slate-400",
-          "group-hover:text-slate-600 transition-colors",
+          "flex items-center gap-2 text-stone-400",
+          "group-hover:text-stone-600 transition-colors",
         )}
       >
         <Icon size={11} />
@@ -26,7 +26,7 @@ export default function StatItem({ icon: Icon, label, value }: Props) {
           {label}
         </span>
       </div>
-      <span className="text-[11px] font-black text-slate-700 tracking-tight">
+      <span className="text-[11px] font-black text-stone-700 tracking-tight">
         {value}
       </span>
     </div>

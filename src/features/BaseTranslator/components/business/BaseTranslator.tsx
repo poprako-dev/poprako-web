@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import clsx from "clsx";
 import { SquareArrowRight, Command, CaseSensitive } from "lucide-react";
 import Paginator from "@/components/ui/Paginator";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -104,7 +105,10 @@ export default function BaseTranslator({
     let shortcuts = configurableShortcuts;
     if (readOnly) {
       shortcuts = shortcuts.filter((s) =>
-        ["nextMarker", "prevMarker", "pageUp", "pageDown", "toggleMode", "toggleProofreadPreview"].includes(s.action),
+        [
+          "nextMarker", "prevMarker", "pageUp", "pageDown",
+          "toggleMode", "toggleProofreadPreview",
+        ].includes(s.action),
       );
     }
     if (availableModes.length <= 1) {
@@ -525,7 +529,7 @@ export default function BaseTranslator({
   ];
 
   const canvas = (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full bg-stone-100">
       <Canvas
         ref={canvasRef}
         imageSrc={imageUrl}
@@ -558,7 +562,7 @@ export default function BaseTranslator({
 
   const sidebar = (
     <>
-      <div className="flex items-center border-b border-border shrink-0">
+      <div className="flex items-center border-b border-stone-200 shrink-0 bg-stone-50">
         <div className="flex-1 min-w-0">
           <StatusOptionBar
             currMode={mode}
@@ -579,7 +583,12 @@ export default function BaseTranslator({
           />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div
+        className={clsx(
+          "flex-1 overflow-y-auto bg-stone-100",
+          "shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]",
+        )}
+      >
         <UnitList
           units={unitBuf}
           focusedUnitId={focusedUnitId}

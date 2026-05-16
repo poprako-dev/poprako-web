@@ -11,7 +11,7 @@ export default function BaseTranslatorLayout({ canvas, sidebar }: Props) {
     <div className="flex w-full h-full overflow-hidden portrait:flex-col">
       <div
         className={clsx(
-          "flex-1 overflow-hidden",
+          "flex-1 overflow-hidden bg-stone-100",
           "portrait:min-h-0",
           "landscape:min-w-0",
         )}
@@ -20,9 +20,9 @@ export default function BaseTranslatorLayout({ canvas, sidebar }: Props) {
       </div>
       <div
         className={clsx(
-          "shrink-0 flex flex-col overflow-hidden",
-          "portrait:h-50 portrait:border-t portrait:border-border",
-          "landscape:w-95 landscape:border-l landscape:border-border",
+          "shrink-0 flex flex-col overflow-hidden bg-stone-50",
+          "portrait:h-50 portrait:border-t portrait:border-stone-200",
+          "landscape:w-95 landscape:border-l landscape:border-stone-200",
         )}
       >
         {sidebar}

@@ -47,7 +47,7 @@ export default function UnitList({
   };
 
   return (
-    <div ref={listRef} className="w-full h-full flex flex-col">
+    <div ref={listRef} className="w-full h-full flex flex-col bg-stone-50">
       <div className="flex-1">
         {units.map((unit) => (
           <ItemComponent
@@ -62,7 +62,7 @@ export default function UnitList({
         ))}
       </div>
       {mode === "proofread" && !enableReadOnly && (
-        <div className="flex justify-center px-0 py-1">
+        <div className="flex justify-center px-0 py-1 bg-stone-50">
           <button
             title="全部确认校对"
             onClick={proofreadAll}
