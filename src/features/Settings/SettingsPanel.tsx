@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Globe2, LogOut } from "lucide-react";
+import { Globe2, LogOut, Upload } from "lucide-react";
 import { logoutUser } from "@/api/auth";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import TeamSwitchModal from "./TeamSwitchModal";
+import UserAvatarUploadModal from "./UserAvatarUploadModal";
 import type { TeamConfig } from "@/features/AppSidebar/types/types";
 
 export default function SettingsPanel() {
@@ -17,6 +18,7 @@ export default function SettingsPanel() {
   const setLoginState = useAppStore((s) => s.setLoginState);
 
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   const teamConfigs = useMemo<TeamConfig[]>(() => {
     if (!loginState?.memberInfos) return [];
@@ -25,12 +27,21 @@ export default function SettingsPanel() {
       .map((m) => {
         const team = m.team!;
         const short = team.name[0].toUpperCase();
-        return { id: team.id, name: team.name, short, desc: team.description };
+        return {
+          id: team.id,
+          name: team.name,
+          short,
+          desc: team.description,
+          avatarUrl: team.avatarUrl,
+          isAvatarUploaded: team.isAvatarUploaded,
+        };
       });
   }, [loginState]);
 
   const activeTeam =
     teamConfigs.find((t) => t.id === selectedTeamId) ?? teamConfigs[0];
+
+  const currentUser = loginState?.userInfo ?? null;
 
   const handleLogout = async () => {
     try {
@@ -64,6 +75,17 @@ export default function SettingsPanel() {
       <div
         className={[
           "flex cursor-pointer items-center justify-between rounded-sm px-6 py-4 transition-colors",
+          "bg-white/80 ring-1 shadow-sm ring-black/5 hover:bg-slate-50/80 hover:ring-slate-200 hover:text-slate-700",
+        ].join(" ")}
+        onClick={() => setIsAvatarModalOpen(true)}
+      >
+        <span className="text-lg font-medium">上传头像</span>
+        <Upload className="h-5 w-5" />
+      </div>
+
+      <div
+        className={[
+          "flex cursor-pointer items-center justify-between rounded-sm px-6 py-4 transition-colors",
           "bg-white/80 ring-1 shadow-sm ring-black/5 hover:bg-red-50/80 hover:ring-red-200 hover:text-red-500",
         ].join(" ")}
         onClick={handleLogout}
@@ -81,6 +103,13 @@ export default function SettingsPanel() {
             setIsTeamModalOpen(false);
           }}
           onClose={() => setIsTeamModalOpen(false)}
+        />
+      )}
+
+      {isAvatarModalOpen && currentUser && (
+        <UserAvatarUploadModal
+          user={currentUser}
+          onClose={() => setIsAvatarModalOpen(false)}
         />
       )}
     </div>

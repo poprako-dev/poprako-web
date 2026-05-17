@@ -42,17 +42,23 @@ export const teamConfigs: TeamConfig[] = [
     name: "星空汉化组",
     short: "星",
     desc: "专注二次元翻译",
+    avatarUrl: "",
+    isAvatarUploaded: false,
   },
   {
     id: "mh",
     name: "迷幻汉化组",
     short: "迷",
     desc: "硬核动作游戏汉化",
+    avatarUrl: "",
+    isAvatarUploaded: false,
   },
   {
     id: "sy",
     name: "深渊汉化组",
     short: "深",
     desc: "独立游戏爱好者",
+    avatarUrl: "",
+    isAvatarUploaded: false,
   },
 ];

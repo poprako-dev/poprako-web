@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { NavId, TeamConfig } from "../../types/types";
 import { mainNavConfigs, footerNavConfig } from "../../config/config";
@@ -19,6 +19,15 @@ const pathNavMap: Record<string, NavId> = Object.fromEntries(
   Object.entries(navPathMap).map(([id, path]) => [path, id as NavId]),
 );
 
+const FALLBACK_TEAM: TeamConfig = {
+  id: "",
+  name: "",
+  short: "",
+  desc: "",
+  avatarUrl: "",
+  isAvatarUploaded: false,
+};
+
 export default function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,6 +36,7 @@ export default function AppSidebar() {
 
   const [isHovered, setIsHovered] = useState(false);
   const [isSelectingTeam, setIsSelectingTeam] = useState(false);
+  const [isAvatarUploading, setIsAvatarUploading] = useState(false);
 
   const isExpanded = isHovered || isSelectingTeam;
 
@@ -34,7 +44,7 @@ export default function AppSidebar() {
 
   const resolvedActiveTeam =
     teamConfigs.find((team) => team.id === selectedTeamId) ??
-    teamConfigs[0] ?? { id: "", name: "", short: "", desc: "" };
+    teamConfigs[0] ?? FALLBACK_TEAM;
 
   const activeNavId = pathNavMap[location.pathname] ?? "workspace";
 
@@ -49,8 +59,15 @@ export default function AppSidebar() {
 
   const handleMouseLeave = () => {
     setIsHovered(false);
+    if (isAvatarUploading) return;
     setIsSelectingTeam(false);
   };
+
+  useEffect(() => {
+    if (!isAvatarUploading && !isHovered && isSelectingTeam) {
+      setIsSelectingTeam(false);
+    }
+  }, [isAvatarUploading, isHovered, isSelectingTeam]);
 
   return (
     <AppSidebarLayout
@@ -63,9 +80,10 @@ export default function AppSidebar() {
           teams={teamConfigs}
           activeTeam={resolvedActiveTeam}
           isListOpen={isSelectingTeam}
-          onToggleList={() => setIsSelectingTeam((v) => !v)}
+          onToggleList={setIsSelectingTeam}
           onSelectTeam={handleTeamSelect}
           onJoinTeam={refreshTeams}
+          onAvatarUploadingChange={setIsAvatarUploading}
         />
       }
       nav={

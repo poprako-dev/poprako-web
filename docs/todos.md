@@ -20,4 +20,4 @@
 - [x] base translator RO mode.
 - [x] preview bubble disable.
 - [ ] comic subscription.
-- [ ] page selector in base translator.
+- [x] page selector in base translator.

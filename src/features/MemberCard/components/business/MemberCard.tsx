@@ -92,7 +92,7 @@ export default function MemberCard({ member, onClick }: Props) {
             "border border-slate-200",
           )}
         >
-          {user?.avatarUrl ? (
+          {user?.isAvatarUploaded && user.avatarUrl ? (
             <img
               src={user.avatarUrl}
               alt={user.name}

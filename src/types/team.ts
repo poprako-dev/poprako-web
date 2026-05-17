@@ -22,7 +22,7 @@ export function toTeamInfo(raw?: RawTeamInfo) {
     name: raw.name,
     description: raw.description,
     avatarUrl: ensureHttpsUrl(raw.avatar_url),
-    isAvatarUploaded: !!raw.avatar_url,
+    isAvatarUploaded: raw.avatar_uploaded,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   } as TeamInfo;

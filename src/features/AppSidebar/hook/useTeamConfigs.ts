@@ -16,6 +16,8 @@ function deriveTeamConfigs(
         name: team.name,
         short: team.name[0].toUpperCase(),
         desc: team.description,
+        avatarUrl: team.avatarUrl,
+        isAvatarUploaded: team.isAvatarUploaded,
       };
     });
 }
