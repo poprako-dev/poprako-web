@@ -27,12 +27,9 @@ import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
 import { useToastStore } from "@/components/ui/NotificationToast";
-import type { UnitDiff, UnitOp } from "../../types/type";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
-
-type PendingAction =
-  | { type: "navigate"; newIndex: number }
-  | { type: "exit" };
+import type { UnitDiff } from "../../types/type";
+import { useUnitPersistence } from "../../hook/useUnitPersistence";
 
 type Props = {
   project: Project;
@@ -87,13 +84,7 @@ export default function BaseTranslator({
   const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
   const [isSpecialCharPanelOpen, setIsSpecialCharPanelOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
-  const isNavigating = useRef(false);
-  const isSaving = useRef(false);
-  const [saving, setSaving] = useState(false);
-  const unitBufRef = useRef<UnitInfo[]>([]);
-  const baselineUnitsRef = useRef<UnitInfo[]>([]);
   const canvasRef = useRef<CanvasHandle>(null);
 
   const showToast = useToastStore((s) => s.showToast);
@@ -117,122 +108,24 @@ export default function BaseTranslator({
     return shortcuts;
   })();
 
-  function normalizedText(val?: string): string | null {
-    return val && val !== "" ? val : null;
-  }
-
-  function hasPersistedMutation(current: UnitInfo, baseline: UnitInfo): boolean {
-    if (current.xCoord !== baseline.xCoord || current.yCoord !== baseline.yCoord) {
-      return true;
-    }
-    if (current.isBubble !== baseline.isBubble) {
-      return true;
-    }
-    if (current.isProofread !== baseline.isProofread) {
-      return true;
-    }
-    if (normalizedText(current.translatedText) !== normalizedText(baseline.translatedText)) {
-      return true;
-    }
-    if (
-      normalizedText(current.translatorCommnet) !==
-      normalizedText(baseline.translatorCommnet)
-    ) {
-      return true;
-    }
-    if ((current.translatorId ?? null) !== (baseline.translatorId ?? null)) {
-      return true;
-    }
-    if (
-      normalizedText(current.proofreadText) !==
-      normalizedText(baseline.proofreadText)
-    ) {
-      return true;
-    }
-    if (
-      normalizedText(current.proofreaderComment) !==
-      normalizedText(baseline.proofreaderComment)
-    ) {
-      return true;
-    }
-
-    return (current.proofreaderId ?? null) !== (baseline.proofreaderId ?? null);
-  }
-
-  function buildCreateOp(unit: UnitInfo): UnitOp {
-    return buildUnitOp(unit, true);
-  }
-
-  function buildSaveOp(unit: UnitInfo): UnitOp {
-    return buildUnitOp(unit);
-  }
-
-  function buildUnitOp(unit: UnitInfo, local?: boolean): UnitOp {
-    const op: UnitOp = local
-      ? { localId: unitId(unit) }
-      : { id: unitId(unit) };
-
-    op.xCoord = unit.xCoord;
-    op.yCoord = unit.yCoord;
-    op.isBubble = unit.isBubble;
-    op.isProofread = unit.isProofread;
-
-    const t = normalizedText(unit.translatedText);
-    if (t) op.translatedText = t;
-    const tc = normalizedText(unit.translatorCommnet);
-    if (tc) op.translatorComment = tc;
-    if (unit.translatorId) op.lastTranslatorId = unit.translatorId;
-    const pt = normalizedText(unit.proofreadText);
-    if (pt) op.proofreadText = pt;
-    const pc = normalizedText(unit.proofreaderComment);
-    if (pc) op.proofreaderComment = pc;
-    if (unit.proofreaderId) op.lastProofreaderId = unit.proofreaderId;
-
-    return op;
-  }
-
-  function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDiff {
-    const baselineById = new Map(baseline.map((unit) => [unitId(unit), unit]));
-    const currentById = new Map(current.map((unit) => [unitId(unit), unit]));
-    const ops: UnitOp[] = [];
-
-    for (const unit of current) {
-      const baselineUnit = baselineById.get(unitId(unit));
-
-      if (baselineUnit === undefined) {
-        ops.push(buildCreateOp(unit));
-        continue;
-      }
-
-      if (!hasPersistedMutation(unit, baselineUnit)) {
-        continue;
-      }
-
-      ops.push(buildSaveOp(unit));
-    }
-
-    for (const unit of baseline) {
-      if (currentById.has(unitId(unit))) {
-        continue;
-      }
-
-      ops.push({ id: unitId(unit) });
-    }
-
-    return {
-      ops,
-      candOrder: current.map((unit) => unitId(unit)),
-    };
-  }
-
-  function isDiffEmpty(diff: UnitDiff): boolean {
-    return diff.ops.length === 0;
-  }
-
-  function commitUnits(nextUnits: UnitInfo[]) {
-    unitBufRef.current = nextUnits;
-    setUnitBuf(nextUnits);
-  }
+  const {
+    unitBufRef,
+    pendingAction,
+    saving,
+    commitUnits,
+    setLoadedUnits,
+    flushIfDirty,
+    handleNavigate,
+    handleExit,
+    handleRetryPendingAction,
+    handleDiscardPendingAction,
+  } = useUnitPersistence({
+    getPageId: () => project.pages[pageIndex].id,
+    onSaveUnits,
+    onExit,
+    showToast,
+    loadPage,
+  });
 
   async function loadPage(idx: number) {
     const page = project.pages[idx];
@@ -244,9 +137,7 @@ export default function BaseTranslator({
         onLoadUnits(page.id),
         onLoadPageImage(page.id),
       ]);
-      baselineUnitsRef.current = units;
-      unitBufRef.current = units;
-      setUnitBuf(units);
+      setLoadedUnits(units, setUnitBuf);
       setImageUrl(img);
       setFocusedUnitId(undefined);
     } finally {
@@ -276,97 +167,8 @@ export default function BaseTranslator({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function flushIfDirty() {
-    if (isSaving.current) return;
-    const diff = buildUnitDiff(unitBufRef.current, baselineUnitsRef.current);
-    if (isDiffEmpty(diff)) return;
-    isSaving.current = true;
-    setSaving(true);
-    try {
-      await onSaveUnits(project.pages[pageIndex].id, diff);
-      baselineUnitsRef.current = [...unitBufRef.current];
-      showToast("保存成功", "success");
-    } catch (err) {
-      const summary =
-        `ops:${diff.ops.length} ` +
-        `candOrder:${diff.candOrder.length}`;
-      console.error(
-        `[BaseTranslator] 保存失败 pageId=${
-          project.pages[pageIndex].id
-        } diff=${summary}`,
-        err,
-      );
-      showToast("保存失败，请重试", "error");
-      throw err;
-    } finally {
-      isSaving.current = false;
-      setSaving(false);
-    }
-  }
-
-  async function handleNavigate(newIndex: number) {
-    if (isNavigating.current) return;
-    isNavigating.current = true;
-    setPendingAction(null);
-    try {
-      await flushIfDirty();
-      await loadPage(newIndex);
-    } catch {
-      // 保存失败时阻止翻页，toast 已在 flushIfDirty 中显示
-      setPendingAction({ type: "navigate", newIndex });
-    } finally {
-      isNavigating.current = false;
-    }
-  }
-
   async function handleSave() {
     await flushIfDirty();
-  }
-
-  async function handleExit() {
-    setPendingAction(null);
-    try {
-      await flushIfDirty();
-      onExit();
-    } catch {
-      // 保存失败时阻止退出，toast 已在 flushIfDirty 中显示
-      setPendingAction({ type: "exit" });
-    }
-  }
-
-  async function handleRetryPendingAction() {
-    if (!pendingAction || isNavigating.current) return;
-    isNavigating.current = true;
-
-    try {
-      await flushIfDirty();
-
-      if (pendingAction.type === "navigate") {
-        await loadPage(pendingAction.newIndex);
-      } else {
-        onExit();
-      }
-
-      setPendingAction(null);
-    } catch {
-      // 保存失败时保持弹窗，toast 已在 flushIfDirty 中显示
-    } finally {
-      isNavigating.current = false;
-    }
-  }
-
-  function handleDiscardPendingAction() {
-    if (!pendingAction || isNavigating.current) return;
-
-    const action = pendingAction;
-    setPendingAction(null);
-
-    if (action.type === "navigate") {
-      void loadPage(action.newIndex);
-      return;
-    }
-
-    onExit();
   }
 
   function handleModifyUnit(targetUnitId: string, updates: UnitEdit) {
@@ -374,6 +176,7 @@ export default function BaseTranslator({
       unitBufRef.current.map((unit) =>
         unitId(unit) === targetUnitId ? applyUnitUpdates(unit, updates) : unit,
       ),
+      setUnitBuf,
     );
   }
 
@@ -388,6 +191,7 @@ export default function BaseTranslator({
           ? modifyUnitPosition(unit, xCoord, yCoord)
           : unit,
       ),
+      setUnitBuf,
     );
   }
 
@@ -399,7 +203,7 @@ export default function BaseTranslator({
       isBubble,
     );
 
-    commitUnits([...unitBufRef.current, newUnit]);
+    commitUnits([...unitBufRef.current, newUnit], setUnitBuf);
 
     setFocusedUnitId(unitId(newUnit));
   }
@@ -409,7 +213,7 @@ export default function BaseTranslator({
       .filter((unit) => unitId(unit) !== targetUnitId)
       .map((unit, index) => modifyUnitIndex(unit, index));
 
-    commitUnits(filteredUnits);
+    commitUnits(filteredUnits, setUnitBuf);
 
     if (focusedUnitId === targetUnitId) {
       setFocusedUnitId(undefined);

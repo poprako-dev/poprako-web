@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import type { ComicInfo, ChapterInfo, UploadProgressCallbacks } from "@/types";
+import { useState, useCallback, useMemo } from "react";
+import type { ChapterInfo, UploadProgressCallbacks } from "@/types";
 import type { Result } from "@/types/utils/result";
 import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
@@ -29,10 +28,7 @@ import {
 import {
   listPages,
   deleteChapterPages,
-  reserveChapterPages,
   reserveExistingPageUpload,
-  updatePage,
-  uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
 import {
   deleteAssignment,
@@ -43,21 +39,8 @@ import type { ListChapterArgs, WorkflowTransition } from "@/features/ComicPlaygr
 import { roleMask, type Role } from "@/types/role";
 import { listMembers } from "@/api/member";
 import clsx from "clsx";
-
-function getUniformFileExtension(files: File[]): string | null {
-  if (files.length === 0) return null;
-
-  const getExt = (file: File) => {
-    const dotIndex = file.name.lastIndexOf(".");
-    if (dotIndex < 0 || dotIndex === file.name.length - 1) return "";
-    return file.name.slice(dotIndex + 1).toLowerCase();
-  };
-
-  const first = getExt(files[0]);
-  const isUniform = files.every((file) => getExt(file) === first);
-
-  return isUniform ? first : null;
-}
+import { addChapterPages } from "@/features/ComicPlayground/features/ComicDetailModal/pageUpload";
+import { useComicDetailHost } from "@/features/ComicPlayground/features/ComicDetailModal/hook/useComicDetailHost";
 
 // 个人工作区组件，会直接放置在 WorkspacePage 中，展示个人工作区的相关内容
 // 所以自身不设定高度，而是适应父组件
@@ -65,38 +48,21 @@ export default function Workspace() {
   const loginState = useAppStore((s) => s.loginState);
   const currentUserId = loginState?.userInfo.id ?? null;
   const { showToast } = useToastStore();
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
-  const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
-    useState<ChapterInfo | null>(null);
   const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
-  const userClosedRef = useRef(false);
-
-  const urlComicId = searchParams.get("comicId");
-  const urlChapterId = searchParams.get("chapterId");
-
-  const setComicDetailSearchParams = useCallback(
-    (comicId: string | null, chapterId: string | null) => {
-      const next = new URLSearchParams(searchParams);
-
-      if (comicId) {
-        next.set("comicId", comicId);
-      } else {
-        next.delete("comicId");
-      }
-
-      if (comicId && chapterId) {
-        next.set("chapterId", chapterId);
-      } else {
-        next.delete("chapterId");
-      }
-
-      setSearchParams(next, { replace: true });
-    },
-    [searchParams, setSearchParams],
-  );
+  const {
+    selectedComic,
+    selectedComicPinnedChapter,
+    urlChapterId,
+    openComicDetail,
+    clearComicDetail,
+    navigateToTranslator,
+  } = useComicDetailHost({
+    returnTo: "/workspace",
+    logPrefix: "Workspace",
+    showToast,
+    restoreComic: getComic,
+    loadPinnedChapter: fetchLatestChapter,
+  });
 
   const userName = loginState?.userInfo.name ?? "用户";
   const selectedComicTeamId = selectedComic?.workset?.teamId ?? null;
@@ -109,68 +75,6 @@ export default function Workspace() {
   const resolveActiveMember = useCallback(() => {
     return selectedComicActiveMember;
   }, [selectedComicActiveMember]);
-
-  const handleOpenComicDetail = useCallback(
-    (comicInfo: ComicInfo, desiredChapterId?: string | null) => {
-      setSelectedComic(comicInfo);
-      setSelectedComicPinnedChapter(null);
-      setComicDetailSearchParams(comicInfo.id, desiredChapterId ?? null);
-
-      fetchLatestChapter(comicInfo).then((result) => {
-        if (!result.success) {
-          showToast(result.error, "error");
-          return;
-        }
-        setSelectedComicPinnedChapter(result.data);
-        if (!desiredChapterId) {
-          setComicDetailSearchParams(comicInfo.id, result.data?.id ?? null);
-        }
-      });
-    },
-    [setComicDetailSearchParams, showToast],
-  );
-
-  useEffect(() => {
-    if (!urlComicId || selectedComic?.id === urlComicId || userClosedRef.current) {
-      userClosedRef.current = false;
-      return;
-    }
-
-    let cancelled = false;
-
-    getComic(urlComicId)
-      .then((result) => {
-        if (!result.success) {
-          showToast(result.error, "error");
-          if (!cancelled) {
-            setComicDetailSearchParams(null, null);
-          }
-          return;
-        }
-
-        if (!cancelled) {
-          handleOpenComicDetail(result.data, urlChapterId);
-        }
-      })
-      .catch((err) => {
-        console.error("[Workspace] 恢复漫画详情失败:", err);
-        showToast("恢复漫画详情失败", "error");
-        if (!cancelled) {
-          setComicDetailSearchParams(null, null);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    handleOpenComicDetail,
-    selectedComic?.id,
-    setComicDetailSearchParams,
-    showToast,
-    urlChapterId,
-    urlComicId,
-  ]);
 
   const handleLoadDetailChapters = useCallback(
     async (args: ListChapterArgs): Promise<Result<ChapterInfo[]>> => {
@@ -344,58 +248,13 @@ export default function Workspace() {
       files: File[],
       callbacks?: UploadProgressCallbacks,
     ) => {
-      const fileExtension = getUniformFileExtension(files);
-      if (fileExtension === null) {
-        const errorMessage = "所选文件后缀必须一致";
-        console.error("[Workspace] 批量加页文件后缀不一致", {
-          chapterId,
-          files: files.map((file) => file.name),
-        });
-        showToast(errorMessage, "error");
-        throw new Error(errorMessage);
-      }
-
-      const reserveResult = await reserveChapterPages({
+      return addChapterPages({
         chapterId,
-        pageCount: files.length,
-        fileExtension,
+        files,
+        callbacks,
+        showToast,
+        logPrefix: "Workspace",
       });
-      if (!reserveResult.success) {
-        console.error("[Workspace] 预留页面失败:", reserveResult.error);
-        throw new Error(reserveResult.error);
-      }
-
-      const creations = reserveResult.data.creations;
-      if (creations.length !== files.length) {
-        throw new Error("预留页面数量与选择文件数量不一致");
-      }
-
-      callbacks?.onPagesReserved(
-        creations.map((c, i) => ({ pageId: c.pageId, index: i })),
-      );
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const creation = creations[i];
-
-        const uploadResult = await uploadToPresignedUrl(
-          creation.putUrl,
-          file,
-          (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
-        );
-        if (!uploadResult.success) {
-          console.error("[Workspace] 上传页面失败:", uploadResult.error);
-          throw new Error(uploadResult.error);
-        }
-
-        const markResult = await updatePage(creation.pageId, { isUploaded: true });
-        if (!markResult.success) {
-          console.error("[Workspace] 标记页面上传状态失败:", markResult.error);
-          throw new Error(markResult.error);
-        }
-
-        callbacks?.onPageUploaded(creation.pageId, file);
-      }
     },
     [showToast],
   );
@@ -415,39 +274,12 @@ export default function Workspace() {
         return result;
       }
 
-      setSelectedComic(null);
-      setSelectedComicPinnedChapter(null);
-      setComicDetailSearchParams(null, null);
+      clearComicDetail();
       setComicListRefreshKey((prev) => prev + 1);
 
       return result;
     },
-    [setComicDetailSearchParams],
-  );
-
-  const handleNavigateToTranslator = useCallback(
-    (chapterId: string, pageId: string, readOnly?: boolean) => {
-      if (!selectedComic?.id) {
-        navigate(`/translator/${chapterId}/${pageId}`);
-        return;
-      }
-
-      const nextSearchParams = new URLSearchParams({
-        returnTo: "/workspace",
-        comicId: selectedComic.id,
-        chapterId,
-      });
-
-      if (readOnly) {
-        nextSearchParams.set("readOnly", "true");
-      }
-
-      navigate({
-        pathname: `/translator/${chapterId}/${pageId}`,
-        search: `?${nextSearchParams.toString()}`,
-      });
-    },
-    [navigate, selectedComic?.id],
+    [clearComicDetail],
   );
 
   const workspaceBody = (
@@ -475,7 +307,7 @@ export default function Workspace() {
           onLoadComics={fetchMyComics}
           onLoadLatestChapter={fetchLatestChapter}
           onLoadAssignments={fetchComicAssignments}
-          onComicClick={handleOpenComicDetail}
+          onComicClick={openComicDetail}
         />
       </div>
     </div>
@@ -499,7 +331,7 @@ export default function Workspace() {
           onAddAssignment={handleAddAssignment}
           onCreateChapter={handleCreateChapter}
           onDeleteChapter={handleDeleteChapter}
-          onNavigateToTranslator={handleNavigateToTranslator}
+          onNavigateToTranslator={navigateToTranslator}
           currentUserId={currentUserId}
           onAddPages={handleAddPages}
           onDeleteChapterPages={handleDeleteChapterPages}
@@ -510,12 +342,7 @@ export default function Workspace() {
           onExportChapterLp={handleExportChapterLp}
           onDeleteComic={handleDeleteComic}
           onResolveActiveMember={resolveActiveMember}
-          onClose={() => {
-            userClosedRef.current = true;
-            setSelectedComic(null);
-            setSelectedComicPinnedChapter(null);
-            setComicDetailSearchParams(null, null);
-          }}
+          onClose={() => clearComicDetail(true)}
         />
       )}
     </>
