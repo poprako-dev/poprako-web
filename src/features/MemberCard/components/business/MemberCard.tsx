@@ -69,7 +69,7 @@ function RoleTag({ label, isActive, colorClass }: RoleTagProps) {
 }
 
 export default function MemberCard({ member, onClick }: Props) {
-  const { user, updatedAt, createdAt } = member;
+  const { user } = member;
   const isAdmin = user?.isSuperAdmin || !!member.assignedAdminAt;
 
   return (
@@ -138,7 +138,7 @@ export default function MemberCard({ member, onClick }: Props) {
           <div className="flex items-center gap-1 truncate">
             <Clock size={12} className="text-slate-400 shrink-0" />
             <span className="text-slate-500 truncate tracking-tighter font-semibold">
-              {formatDate(updatedAt || createdAt)}
+              {formatDate(user?.lastActiveAt)}
             </span>
           </div>
         </div>

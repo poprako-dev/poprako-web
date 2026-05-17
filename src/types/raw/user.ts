@@ -8,6 +8,7 @@ export type RawUserInfo = {
   avatar_url: string;
   avatar_uploaded: boolean;
   is_super_admin: boolean;
+  last_active_at: number;
   created_at: number;
   updated_at: number;
 };
@@ -20,6 +21,7 @@ export function unwrapRawUserInfo(raw: RawUserInfo): UserInfo {
     avatarUrl: ensureHttpsUrl(raw.avatar_url),
     isAvatarUploaded: raw.avatar_uploaded,
     isSuperAdmin: raw.is_super_admin,
+    lastActiveAt: raw.last_active_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   } as UserInfo;

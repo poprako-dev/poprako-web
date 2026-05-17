@@ -9,6 +9,7 @@ export type UserInfo = {
 
   isSuperAdmin: boolean;
 
+  lastActiveAt: number;
   createdAt: number;
   updatedAt: number;
 };
