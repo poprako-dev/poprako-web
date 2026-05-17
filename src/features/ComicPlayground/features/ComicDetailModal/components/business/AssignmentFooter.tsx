@@ -175,7 +175,7 @@ export default function AssignmentFooter({
         {isExpanded ? (
           <ChevronDown className="w-4 h-4" strokeWidth={2} />
         ) : (
-          <ChevronUp className="w-4 h-4" strokeWidth={2} />
+          <ChevronUp className="w-4 h-4 stone-800" strokeWidth={2} />
         )}
       </button>
 

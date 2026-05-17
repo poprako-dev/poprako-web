@@ -555,6 +555,11 @@ export default function BaseTranslator({
           onPageIndexChange={handleNavigate}
           onPageUp={() => handleNavigate(pageIndex - 1)}
           onPageDown={() => handleNavigate(pageIndex + 1)}
+          pageStats={project.pages.map((p) => ({
+            totalUnits: p.totalUnitCount,
+            translatedUnits: p.translatedUnitCount,
+            proofreadUnits: p.proofreadUnitCount,
+          }))}
         />
       </div>
     </div>
