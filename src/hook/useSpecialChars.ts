@@ -9,14 +9,16 @@ export type CharItem = {
 const STORAGE_KEY = "specialChars_v2";
 
 const DEFAULT_CHARS: CharItem[] = [
-  { id: "1", text: "『』", isFavorite: true },
-  { id: "2", text: "❤", isFavorite: true },
-  { id: "3", text: "●", isFavorite: true },
-  { id: "4", text: "★", isFavorite: true },
-  { id: "5", text: "☆", isFavorite: true },
-  { id: "6", text: "♡", isFavorite: true },
-  { id: "7", text: "○", isFavorite: true },
-  { id: "8", text: "※", isFavorite: true },
+  { id: "1", text: "♪", isFavorite: true },
+  { id: "2", text: "「」", isFavorite: true },
+  { id: "3", text: "『』", isFavorite: true },
+  { id: "4", text: "❤", isFavorite: true },
+  { id: "5", text: "●", isFavorite: true },
+  { id: "6", text: "★", isFavorite: true },
+  { id: "7", text: "☆", isFavorite: true },
+  { id: "8", text: "♡", isFavorite: true },
+  { id: "9", text: "○", isFavorite: true },
+  { id: "10", text: "※", isFavorite: true },
 ];
 
 function loadFromStorage(): CharItem[] {
