@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
-import { hasRole, matchesAssignmentRole, type Role } from "@/types/role";
+import { hasRole, type Role } from "@/types/role";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type { ComicDetailModalProps } from "../types";
 
@@ -14,7 +14,6 @@ type Args = {
   activeMember: MemberInfo | null;
   pinnedChapterId?: string | null;
   onLoadAssignments: ComicDetailModalProps["onLoadAssignments"];
-  onLoadAssignableMembers?: ComicDetailModalProps["onLoadAssignableMembers"];
   onAddAssignment?: ComicDetailModalProps["onAddAssignment"];
   onRemoveAssignment?: ComicDetailModalProps["onRemoveAssignment"];
   onJoinChapterRole?: ComicDetailModalProps["onJoinChapterRole"];
@@ -28,14 +27,12 @@ export function useComicDetailAssignments({
   activeMember,
   pinnedChapterId,
   onLoadAssignments,
-  onLoadAssignableMembers,
   onAddAssignment,
   onRemoveAssignment,
   onJoinChapterRole,
   showToast,
 }: Args) {
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
-  const [assignableMembers, setAssignableMembers] = useState<MemberInfo[]>([]);
   const [isMemberSelectorLoading, setIsMemberSelectorLoading] = useState(false);
   const [memberSelectorRole, setMemberSelectorRole] = useState<Role | null>(null);
   const [isAddingAssignment, setIsAddingAssignment] = useState(false);
@@ -137,7 +134,13 @@ export function useComicDetailAssignments({
     memberSelectorRole === null
       ? []
       : assignments
-          .filter((assignment) => matchesAssignmentRole(assignment, memberSelectorRole))
+          .filter((assignment) => {
+            if (memberSelectorRole !== "typesetter") {
+              return hasRole(assignment, memberSelectorRole);
+            }
+
+            return hasRole(assignment, "typesetter") || hasRole(assignment, "redrawer");
+          })
           .map((assignment) => assignment.userId);
 
   const handleRemoveAssignment = useCallback(
@@ -162,24 +165,10 @@ export function useComicDetailAssignments({
 
   const handleOpenMemberSelector = useCallback(
     (role: Role) => {
-      if (!selectedChapterId || !onLoadAssignableMembers) return;
+      if (!selectedChapterId) return;
       setMemberSelectorRole(role);
-      setIsMemberSelectorLoading(true);
-      onLoadAssignableMembers(selectedChapterId)
-        .then((result) => {
-          if (!result.success) {
-            showToast(result.error, "error");
-            return;
-          }
-          setAssignableMembers(result.data);
-        })
-        .catch((err) => {
-          console.error("[ComicDetailModal] 加载可分配成员异常:", err);
-          showToast("加载成员失败", "error");
-        })
-        .finally(() => setIsMemberSelectorLoading(false));
     },
-    [onLoadAssignableMembers, selectedChapterId, showToast],
+    [selectedChapterId],
   );
 
   const handleAddAssignment = useCallback(
@@ -308,10 +297,10 @@ export function useComicDetailAssignments({
   return {
     assignments,
     setAssignments,
-    assignableMembers,
     memberSelectorRole,
     setMemberSelectorRole,
     isMemberSelectorLoading,
+    setIsMemberSelectorLoading,
     isAddingAssignment,
     joiningRoles,
     leavingRoles,

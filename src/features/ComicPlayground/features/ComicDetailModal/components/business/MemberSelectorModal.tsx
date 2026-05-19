@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { Search, X, Loader2, Plus } from "lucide-react";
 import type { MemberInfo } from "@/types/member";
+import type { Result } from "@/types/utils/result";
 import {
-  matchesAssignmentRole,
   type Role,
   unmaskRoles,
 } from "@/types/role";
@@ -21,9 +21,19 @@ const ROLE_LABEL: Record<string, string> = {
 
 type Props = {
   title: string;
+  chapterId: string | null;
   role: Role;
-  members: MemberInfo[];
   assignedUserIds: string[];
+  onLoadMembers?: (
+    chapterId: string,
+    args: {
+      role: Role;
+      keyword?: string;
+      offset: number;
+      limit: number;
+    },
+  ) => Promise<Result<MemberInfo[]>>;
+  setIsLoading: (value: boolean) => void;
   isSubmitting?: boolean;
   onSelectUser: (userId: string) => void;
   onClose: () => void;
@@ -31,14 +41,19 @@ type Props = {
 
 export default function MemberSelectorModal({
   title,
+  chapterId,
   role,
-  members,
   assignedUserIds,
+  onLoadMembers,
+  setIsLoading,
   isSubmitting,
   onSelectUser,
   onClose,
 }: Props) {
   const [keyword, setKeyword] = useState("");
+  const [members, setMembers] = useState<MemberInfo[]>([]);
+  const [isFetching, setIsFetching] = useState(false);
+  const latestRequestIdRef = useRef(0);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -51,18 +66,55 @@ export default function MemberSelectorModal({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  const filteredMembers = useMemo(() => {
-    const normalized = keyword.trim().toLowerCase();
-    return members.filter((member) => {
-      if (assignedUserIds.includes(member.userId)) return false;
-      if (!matchesAssignmentRole(member, role)) return false;
-      if (!normalized) return true;
+  useEffect(() => {
+    if (!chapterId || !onLoadMembers) {
+      setMembers([]);
+      setIsLoading(false);
+      return;
+    }
 
-      const name = member.user?.name?.toLowerCase() ?? "";
-      const qq = member.user?.qq?.toLowerCase() ?? "";
-      return name.includes(normalized) || qq.includes(normalized);
-    });
-  }, [assignedUserIds, keyword, members, role]);
+    const requestId = latestRequestIdRef.current + 1;
+    latestRequestIdRef.current = requestId;
+    const timer = window.setTimeout(() => {
+      setIsFetching(true);
+      setIsLoading(true);
+      onLoadMembers(chapterId, {
+        role,
+        keyword: keyword.trim() || undefined,
+        offset: 0,
+        limit: 50,
+      })
+        .then((result) => {
+          if (latestRequestIdRef.current !== requestId) return;
+          if (!result.success) {
+            console.error("[MemberSelectorModal] 加载成员失败:", result.error);
+            setMembers([]);
+            return;
+          }
+
+          setMembers(result.data);
+        })
+        .catch((err) => {
+          if (latestRequestIdRef.current !== requestId) return;
+          console.error("[MemberSelectorModal] 加载成员异常:", err);
+          setMembers([]);
+        })
+        .finally(() => {
+          if (latestRequestIdRef.current !== requestId) return;
+          setIsFetching(false);
+          setIsLoading(false);
+        });
+    }, 250);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [chapterId, keyword, onLoadMembers, role, setIsLoading]);
+
+  const filteredMembers = useMemo(
+    () => members.filter((member) => !assignedUserIds.includes(member.userId)),
+    [assignedUserIds, members],
+  );
 
   return (
     <div
@@ -194,7 +246,13 @@ export default function MemberSelectorModal({
               </button>
             ))}
 
-            {filteredMembers.length === 0 && (
+            {isFetching && (
+              <div className="flex h-24 items-center justify-center text-sm text-slate-400">
+                <Loader2 size={16} className="animate-spin" />
+              </div>
+            )}
+
+            {!isFetching && filteredMembers.length === 0 && (
               <div className="flex h-24 items-center justify-center text-sm text-slate-400">
                 没有可添加的成员
               </div>

@@ -23,14 +23,19 @@ export default function ActionButton({
       className={clsx(
         "h-7 w-full rounded-sm flex items-center justify-center gap-1.5 px-2",
         "transition-all duration-200 active:scale-95",
-        "border shrink-0",
+        "shrink-0 relative",
+        "after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2",
+        "after:h-[2px] after:w-[60%] after:transition-all after:duration-200",
+        "hover:after:w-[80%]",
         !danger && [
-          "border-stone-200 bg-stone-50 text-stone-500",
-          "hover:bg-stone-100 hover:border-stone-300 hover:text-stone-800",
+          "bg-stone-50 text-stone-500",
+          // "hover:bg-stone-100 hover:text-stone-800",
+          "after:bg-stone-300",
         ],
         danger && [
-          "border-rose-200 bg-stone-50 text-rose-400",
-          "hover:bg-rose-50 hover:border-rose-400 hover:text-rose-600",
+          "bg-stone-50 text-rose-400",
+          // "hover:bg-rose-50 hover:text-rose-600",
+          "after:bg-rose-300",
         ],
         "disabled:opacity-50 disabled:cursor-not-allowed",
       )}

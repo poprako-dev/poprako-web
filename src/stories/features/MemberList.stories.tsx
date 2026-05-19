@@ -70,15 +70,15 @@ type Story = StoryObj<typeof MemberList>;
 
 function MemberListDemo() {
   const [fuzzyName, setFuzzyName] = useState("");
-  const [activeRoles, setActiveRoles] = useState<RoleFilter[]>([]);
+  const [activeRole, setActiveRole] = useState<RoleFilter | null>(null);
 
   return (
     <div className="h-screen p-6 bg-slate-50">
       <MemberList
         fuzzyName={fuzzyName}
         onChangeFuzzyName={setFuzzyName}
-        activeRoles={activeRoles}
-        onChangeRoles={setActiveRoles}
+        activeRole={activeRole}
+        onChangeRole={setActiveRole}
         onCreateMember={() => alert("创建成员")}
         onLoadMembers={mockLoadMembers}
       />
@@ -105,14 +105,14 @@ export const Embedded: StoryObj<typeof EmbeddedMemberList> = {
 export const FilterHeader: StoryObj<typeof MemberListFilterHeader> = {
   render: () => {
     const [fuzzyName, setFuzzyName] = useState("");
-    const [activeRoles, setActiveRoles] = useState<RoleFilter[]>([]);
+    const [activeRole, setActiveRole] = useState<RoleFilter | null>(null);
     return (
       <div className="p-6 bg-slate-50 max-w-xl">
         <MemberListFilterHeader
           activeFuzzyName={fuzzyName}
           onChangeFuzzyName={setFuzzyName}
-          activeRoles={activeRoles}
-          onChangeRoles={setActiveRoles}
+          activeRole={activeRole}
+          onChangeRole={setActiveRole}
           onCreateMember={() => alert("创建成员")}
         />
       </div>

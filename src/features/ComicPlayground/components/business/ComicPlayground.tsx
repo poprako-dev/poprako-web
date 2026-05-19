@@ -220,7 +220,10 @@ export default function ComicPlayground() {
   }, []);
 
   const handleLoadAssignableMembers = useCallback(
-    async (chapterId: string): Promise<Result<MemberInfo[]>> => {
+    async (
+      chapterId: string,
+      args: { role: Role; keyword?: string; offset: number; limit: number },
+    ): Promise<Result<MemberInfo[]>> => {
       void chapterId;
       if (!teamId) {
         return { success: true, data: [] };
@@ -228,9 +231,11 @@ export default function ComicPlayground() {
 
       return listMembers({
         teamId,
-        offset: 0,
-        limit: 200,
+        offset: args.offset,
+        limit: args.limit,
         includes: ["user"],
+        userNicknameKeyword: args.keyword,
+        role: roleMask([args.role]),
       });
     },
     [teamId],

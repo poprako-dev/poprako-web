@@ -1,8 +1,3 @@
-export type RoleFilter =
-  | "rawProvider"
-  | "translator"
-  | "proofreader"
-  | "typesetter"
-  | "redrawer"
-  | "reviewer"
-  | "publisher";
+import type { Role } from "@/types/role";
+
+export type RoleFilter = Exclude<Role, "admin">;

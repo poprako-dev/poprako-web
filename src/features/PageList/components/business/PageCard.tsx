@@ -114,6 +114,9 @@ export default function PageCard({
         </div>
       )}
 
+      {/* Hover dim overlay */}
+      <div className="absolute inset-0 z-[3] bg-black/0 group-hover:bg-black/[0.07] transition-colors duration-200 pointer-events-none" />
+
       {clampedUploadProgress !== null && clampedUploadProgress < 100 && (
         <div className="absolute inset-0 z-20 flex items-center justify-center">
           <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">

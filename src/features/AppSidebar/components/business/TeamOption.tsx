@@ -59,7 +59,7 @@ function TeamAvatar({
         <img
           src={resolvedAvatarUrl}
           alt={team.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover [box-shadow:inset_0_0_0_1px_rgba(0,0,0,0.12)]"
         />
       ) : (
         <Globe2
@@ -149,7 +149,7 @@ function TeamList({
     >
       <div
         className={clsx(
-          "w-64 bg-[#F8F5F0]",
+          "w-64 bg-white",
           "border border-gray-100 rounded-sm",
           "shadow-[0_20px_50px_rgba(0,0,0,0.1)]",
           "flex flex-col",

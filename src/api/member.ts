@@ -18,6 +18,8 @@ type ListMembersArgs = {
   offset: number;
   limit: number;
   includes?: string[];
+  userNicknameKeyword?: string;
+  role?: number;
 };
 
 type UpdateMemberRoleArgs = {
@@ -56,6 +58,14 @@ export async function listMembers(
 
   if (args.includes) {
     query.includes = args.includes;
+  }
+
+  if (args.userNicknameKeyword) {
+    query.user_nickname_keyword = args.userNicknameKeyword;
+  }
+
+  if (args.role !== undefined) {
+    query.role = args.role;
   }
 
   const result = await api.get<RawMemberInfo[] | null>("/members", query);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { listMembers, updateMemberRole } from "@/api/member";
 import {
@@ -11,31 +11,17 @@ import type { MemberInfo } from "@/types/member";
 import type { CreateInvitationArgs, InvitationInfo } from "@/types/invitation";
 import type { Result } from "@/types/utils/result";
 import { hasRole } from "@/types/role";
+import { roleMask } from "@/types/role";
 import type { RoleFilter } from "../../types/types";
 import MemberList from "./MemberList";
 import MemberInvitorModal from "./MemberInvitorModal";
 import MemberDetailModal from "./MemberDetailModal";
 
-function matchesName(member: MemberInfo, fuzzyName: string) {
-  const keyword = fuzzyName.trim().toLowerCase();
-  if (!keyword) return true;
-
-  const name = member.user?.name?.toLowerCase() ?? "";
-  const qq = member.user?.qq?.toLowerCase() ?? "";
-  return name.includes(keyword) || qq.includes(keyword);
-}
-
-function matchesRoles(member: MemberInfo, activeRoles: RoleFilter[]) {
-  if (activeRoles.length === 0) return true;
-  return activeRoles.every((role) => hasRole(member, role));
-}
-
 export default function MemberGlance() {
   const { activeTeamId, activeMember } = useActiveTeam();
   const { showToast } = useToastStore();
   const [fuzzyName, setFuzzyName] = useState("");
-  const [activeRoles, setActiveRoles] = useState<RoleFilter[]>([]);
-  const [members, setMembers] = useState<MemberInfo[]>([]);
+  const [activeRole, setActiveRole] = useState<RoleFilter | null>(null);
   const [isInvitorOpen, setIsInvitorOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberInfo | null>(
     null,
@@ -44,57 +30,29 @@ export default function MemberGlance() {
   const isAdmin =
     activeMember !== null && hasRole(activeMember, "admin");
 
-  const loadMembers = useCallback(async () => {
-    if (!activeTeamId) {
-      setMembers([]);
-      return;
-    }
-
-    const result = await listMembers({
-      teamId: activeTeamId,
-      offset: 0,
-      limit: 200,
-      includes: ["user"],
-    });
-
-    if (!result.success) {
-      setMembers([]);
-      showToast(result.error, "error");
-      return;
-    }
-
-    setMembers(result.data);
-  }, [activeTeamId, showToast]);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    const reloadMembers = async () => {
-      if (isCancelled) return;
-      await loadMembers();
-    };
-
-    reloadMembers();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [loadMembers]);
-
-  const filteredMembers = useMemo(
-    () =>
-      members.filter(
-        (member) =>
-          matchesName(member, fuzzyName) && matchesRoles(member, activeRoles),
-      ),
-    [activeRoles, fuzzyName, members],
-  );
-
   const handleLoadMembers = useCallback(
     async (offset: number, limit: number): Promise<MemberInfo[] | string> => {
-      return filteredMembers.slice(offset, offset + limit);
+      if (!activeTeamId) {
+        return [];
+      }
+
+      const result = await listMembers({
+        teamId: activeTeamId,
+        offset,
+        limit,
+        includes: ["user"],
+        userNicknameKeyword: fuzzyName.trim() || undefined,
+        role: activeRole ? roleMask([activeRole]) : undefined,
+      });
+
+      if (!result.success) {
+        showToast(result.error, "error");
+        return result.error;
+      }
+
+      return result.data;
     },
-    [filteredMembers],
+    [activeRole, activeTeamId, fuzzyName, showToast],
   );
 
   const handleLoadInvitations = useCallback(
@@ -121,13 +79,9 @@ export default function MemberGlance() {
 
   const handleUpdateRole = useCallback(
     async (id: string, roles: number): Promise<Result<void>> => {
-      const result = await updateMemberRole({ id, role_mask: roles });
-      if (result.success) {
-        await loadMembers();
-      }
-      return result;
+      return updateMemberRole({ id, role_mask: roles });
     },
-    [loadMembers],
+    [],
   );
 
   return (
@@ -135,8 +89,8 @@ export default function MemberGlance() {
       <MemberList
         fuzzyName={fuzzyName}
         onChangeFuzzyName={setFuzzyName}
-        activeRoles={activeRoles}
-        onChangeRoles={setActiveRoles}
+        activeRole={activeRole}
+        onChangeRole={setActiveRole}
         onCreateMember={() => setIsInvitorOpen(true)}
         onLoadMembers={handleLoadMembers}
         onMemberClick={isAdmin ? setSelectedMember : undefined}

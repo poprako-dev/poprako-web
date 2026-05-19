@@ -58,6 +58,12 @@ export type ComicDetailModalProps = {
   ) => Promise<Result<void>>;
   onLoadAssignableMembers?: (
     chapterId: string,
+    args: {
+      role: Role;
+      keyword?: string;
+      offset: number;
+      limit: number;
+    },
   ) => Promise<Result<MemberInfo[]>>;
   onAddAssignment?: (
     chapterId: string,

@@ -106,10 +106,10 @@ export default function ComicDetailModal({
 
   const {
     assignments,
-    assignableMembers,
     memberSelectorRole,
     setMemberSelectorRole,
     isMemberSelectorLoading,
+    setIsMemberSelectorLoading,
     isAddingAssignment,
     joiningRoles,
     leavingRoles,
@@ -134,7 +134,6 @@ export default function ComicDetailModal({
     activeMember,
     pinnedChapterId: pinnedChapter?.id,
     onLoadAssignments,
-    onLoadAssignableMembers,
     onAddAssignment,
     onRemoveAssignment,
     onJoinChapterRole,
@@ -376,9 +375,11 @@ export default function ComicDetailModal({
       {memberSelectorRole && (
         <MemberSelectorModal
           title={`添加${ROLE_TITLE_LABEL[memberSelectorRole]}成员`}
+          chapterId={selectedChapterId}
           role={memberSelectorRole}
-          members={assignableMembers}
           assignedUserIds={assignedUserIdsForSelectedRole}
+          onLoadMembers={onLoadAssignableMembers}
+          setIsLoading={setIsMemberSelectorLoading}
           isSubmitting={isMemberSelectorLoading || isAddingAssignment}
           onSelectUser={handleAddAssignment}
           onClose={() => setMemberSelectorRole(null)}

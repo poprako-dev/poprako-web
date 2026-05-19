@@ -7,8 +7,8 @@ import type { RoleFilter } from "../../types/types";
 type Props = {
   activeFuzzyName: string;
   onChangeFuzzyName: (name: string) => void;
-  activeRoles: RoleFilter[];
-  onChangeRoles: (roles: RoleFilter[]) => void;
+  activeRole: RoleFilter | null;
+  onChangeRole: (role: RoleFilter | null) => void;
   onCreateMember: () => void;
 };
 
@@ -59,8 +59,8 @@ const ROLE_BUTTONS: RoleButton[] = [
 export default function MemberListFilterHeader({
   activeFuzzyName,
   onChangeFuzzyName,
-  activeRoles,
-  onChangeRoles,
+  activeRole,
+  onChangeRole,
   onCreateMember,
 }: Props) {
   const [inputValue, setInputValue] = useState(activeFuzzyName);
@@ -75,11 +75,7 @@ export default function MemberListFilterHeader({
   };
 
   const toggleRole = (key: RoleFilter) => {
-    if (activeRoles.includes(key)) {
-      onChangeRoles(activeRoles.filter((r) => r !== key));
-    } else {
-      onChangeRoles([...activeRoles, key]);
-    }
+    onChangeRole(activeRole === key ? null : key);
   };
 
   return (
@@ -111,7 +107,7 @@ export default function MemberListFilterHeader({
       {/* 第二行：职位切换按钮 */}
       <div className="flex gap-1.5">
         {ROLE_BUTTONS.map(({ key, label, activeClass }) => {
-          const isActive = activeRoles.includes(key);
+          const isActive = activeRole === key;
           return (
             <button
               key={key}

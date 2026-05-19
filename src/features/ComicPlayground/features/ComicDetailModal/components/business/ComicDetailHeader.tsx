@@ -39,9 +39,17 @@ export default function ComicDetailHeader({
   return (
     <>
       <div className="flex items-center gap-2">
+        <div
+          className="px-2 py-0.5 rounded-xs text-md font-black text-white leading-none"
+          style={{ backgroundColor: "var(--color-green-500)" }}
+        >
+          #{comicInfo.index + 1}
+        </div>
         <h1 className="text-lg font-black tracking-tight text-stone-700">
           {comicInfo.title}
         </h1>
+      </div>
+      <div className="flex items-center gap-2">
         <ChapterOption
           comicInfo={comicInfo}
           chapters={chapters}
@@ -51,17 +59,19 @@ export default function ComicDetailHeader({
           onLoadMore={onLoadMore}
           onSelect={onSelect}
           onCreateChapter={
-            onCreateChapter && canCreateChapter ? async (subtitle) => onCreate(subtitle) : undefined
+            onCreateChapter && canCreateChapter
+              ? async (subtitle) => onCreate(subtitle)
+              : undefined
           }
           onDelete={onDeleteChapter ? async (id) => onDelete(id) : undefined}
         />
+        <button
+          onClick={onClose}
+          className="text-stone-400 hover:text-stone-700 transition-colors p-1"
+        >
+          <X size={18} />
+        </button>
       </div>
-      <button
-        onClick={onClose}
-        className="text-stone-400 hover:text-stone-700 transition-colors p-1"
-      >
-        <X size={18} />
-      </button>
     </>
   );
 }

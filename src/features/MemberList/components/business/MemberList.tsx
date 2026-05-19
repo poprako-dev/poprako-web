@@ -6,8 +6,8 @@ import EmbeddedMemberList from "./EmbeddedMemberList";
 type Props = {
   fuzzyName: string;
   onChangeFuzzyName: (name: string) => void;
-  activeRoles: RoleFilter[];
-  onChangeRoles: (roles: RoleFilter[]) => void;
+  activeRole: RoleFilter | null;
+  onChangeRole: (role: RoleFilter | null) => void;
   onCreateMember: () => void;
   onLoadMembers: (
     offset: number,
@@ -19,8 +19,8 @@ type Props = {
 export default function MemberList({
   fuzzyName,
   onChangeFuzzyName,
-  activeRoles,
-  onChangeRoles,
+  activeRole,
+  onChangeRole,
   onCreateMember,
   onLoadMembers,
   onMemberClick,
@@ -30,8 +30,8 @@ export default function MemberList({
       <MemberListFilterHeader
         activeFuzzyName={fuzzyName}
         onChangeFuzzyName={onChangeFuzzyName}
-        activeRoles={activeRoles}
-        onChangeRoles={onChangeRoles}
+        activeRole={activeRole}
+        onChangeRole={onChangeRole}
         onCreateMember={onCreateMember}
       />
       <div className="min-h-0 flex-1">
