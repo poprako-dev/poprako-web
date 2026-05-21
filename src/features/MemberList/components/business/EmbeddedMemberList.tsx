@@ -47,10 +47,12 @@ export default function EmbeddedMemberList({ onLoadMembers, onMemberClick }: Pro
   }, [isLoading, hasMore, offset, onLoadMembers, showToast]);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     setMembers([]);
     setHasMore(true);
     setOffset(0);
     setIsLoading(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [onLoadMembers]);
 
   useEffect(() => {

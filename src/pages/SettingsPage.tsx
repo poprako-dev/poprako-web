@@ -1,8 +1,8 @@
 import { SettingsPanel } from "@/features/Settings";
 
-type Props = {};
+type Props = Record<string, never>;
 
-export default function SettingsPage({}: Props) {
+export default function SettingsPage(_: Props) {
   return (
     <div className="min-h-screen flex items-start justify-center pt-32 bg-[#FEFDF9]">
       <div

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import clsx from "clsx";
 import {
-  X,
   User as UserIcon,
   ShieldCheck,
   Clock,
@@ -23,42 +22,42 @@ type RoleConfig = {
 
 const ROLE_CONFIG: RoleConfig[] = [
   {
-    label: "图源",
+    label: "图",
     value: 1,
     activeClass: "bg-amber-50 text-amber-500 border-amber-200",
   },
   {
-    label: "翻译",
+    label: "翻",
     value: 2,
     activeClass: "bg-sky-50 text-sky-500 border-sky-200",
   },
   {
-    label: "校对",
+    label: "校",
     value: 4,
     activeClass: "bg-emerald-50 text-emerald-500 border-emerald-200",
   },
   {
-    label: "嵌字",
+    label: "嵌",
     value: 8,
     activeClass: "bg-violet-50 text-violet-500 border-violet-200",
   },
   {
-    label: "美工",
+    label: "美",
     value: 16,
     activeClass: "bg-pink-50 text-pink-500 border-pink-200",
   },
   {
-    label: "监修",
+    label: "监",
     value: 32,
     activeClass: "bg-indigo-50 text-indigo-400 border-indigo-200",
   },
   {
-    label: "上传",
+    label: "传",
     value: 64,
     activeClass: "bg-rose-50 text-rose-400 border-rose-200",
   },
   {
-    label: "管理",
+    label: "管",
     value: 128,
     activeClass: "bg-stone-100 text-stone-500 border-stone-200",
   },
@@ -93,7 +92,7 @@ export default function MemberDetailModal({
 
   const { user } = member;
   const isAdmin = user?.isSuperAdmin || !!member.assignedAdminAt;
-  const lastActive = formatDate(member.updatedAt || member.createdAt);
+  const lastActive = formatDate(user?.lastActiveAt);
   const isDirty = selectedBits !== member.roles;
 
   const toggleBit = (value: number) =>
@@ -128,39 +127,32 @@ export default function MemberDetailModal({
       <div
         className={clsx(
           "relative w-full max-w-sm overflow-hidden",
-          "bg-white border border-slate-100 rounded-md",
-          "shadow-[0_8px_40px_rgb(0,0,0,0.06)]",
+          "bg-white border border-slate-200 rounded-xl",
+          "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
       >
-        {/* ── Close ─────────────────────────────────────────────────────── */}
-        <button
-          type="button"
-          onClick={onClose}
-          className={clsx(
-            "absolute right-3 top-3 z-10 rounded-full p-1.5",
-            "text-slate-300 transition-colors",
-            "hover:bg-slate-50 hover:text-slate-500",
-          )}
-        >
-          <X className="h-4 w-4" />
-        </button>
+        {/* ── Top accent bar ────────────────────────────────────────────── */}
+        <div
+          className="absolute top-0 left-0 right-0 h-1 opacity-20 z-1"
+          style={{ background: "var(--color-green-500)" }}
+        />
 
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div
           className={clsx(
             "flex items-center justify-between",
-            "bg-gray-50/50 border-b border-slate-100",
-            "px-5 py-4 pr-10",
+            "bg-slate-50/60 border-b border-slate-200/60",
+            "px-6 py-2 pr-10",
           )}
         >
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-sm font-bold text-slate-700 truncate">
+          <div className="flex flex-col min-w-0">
+            <span className="text-md font-bold text-slate-700 truncate">
               {user?.name ?? "未知成员"}
             </span>
             {user?.qq && (
-              <span className="text-xs text-slate-400 font-mono shrink-0">
-                ({user.qq})
+              <span className="text-xs font-semibold text-slate-400 font-mono leading-none mt-0.5">
+                {user.qq}
               </span>
             )}
           </div>
@@ -178,7 +170,7 @@ export default function MemberDetailModal({
           <div className="relative shrink-0">
             <div
               className={clsx(
-                "w-20 h-20 rounded-full bg-slate-100 overflow-hidden",
+                "w-16 h-16 rounded-full bg-slate-100 overflow-hidden",
                 "border border-slate-200",
               )}
             >
@@ -216,7 +208,7 @@ export default function MemberDetailModal({
           </div>
 
           {/* Role grid: 2 rows × 4 cols */}
-          <div className="flex-1 grid grid-cols-4 gap-1.5">
+          <div className="flex-1 grid grid-cols-4 gap-1">
             {ROLE_CONFIG.map((role) => {
               const isActive = (selectedBits & role.value) !== 0;
               return (
@@ -225,22 +217,21 @@ export default function MemberDetailModal({
                   type="button"
                   onClick={() => toggleBit(role.value)}
                   className={clsx(
-                    "flex flex-col items-center justify-center gap-0.5",
-                    "rounded-lg border py-2 text-[11px] font-bold",
+                    "flex flex-row items-center justify-center gap-1.5",
+                    "rounded-sm border px-2 py-1 text-[11px] font-bold",
                     "transition-all active:scale-95",
                     isActive
                       ? role.activeClass
                       : clsx(
-                          "border-slate-100 bg-gray-50 text-slate-300",
-                          "hover:bg-white hover:text-slate-400",
-                          "hover:border-slate-200",
+                          "border-slate-200 bg-white text-slate-400",
+                          "hover:border-slate-300 hover:text-slate-500",
                         ),
                   )}
                 >
                   {isActive ? (
                     <CheckCircle2 className="h-3 w-3 shrink-0" />
                   ) : (
-                    <Circle className="h-3 w-3 shrink-0 opacity-40" />
+                    <Circle className="h-3 w-3 shrink-0 opacity-30" />
                   )}
                   <span>{role.label}</span>
                 </button>
@@ -252,17 +243,17 @@ export default function MemberDetailModal({
         {/* ── Footer ────────────────────────────────────────────────────── */}
         <div
           className={clsx(
-            "flex items-center justify-end gap-2",
-            "border-t border-slate-100 px-5 py-3",
+            "grid grid-cols-2 gap-2",
+            "px-5 py-2",
           )}
         >
           <button
             type="button"
             onClick={onClose}
             className={clsx(
-              "rounded-lg px-4 py-1.5 text-xs font-bold",
-              "bg-gray-50 text-slate-400 transition-all",
-              "hover:bg-gray-100 active:scale-95",
+              "rounded-sm px-4 py-1.5 text-xs font-semibold w-full",
+              "bg-slate-50 text-slate-400 border border-slate-100",
+              "transition-all hover:bg-slate-100 active:scale-[0.98]",
             )}
           >
             收起
@@ -272,15 +263,15 @@ export default function MemberDetailModal({
             disabled={!isDirty || isSubmitting}
             onClick={handleConfirm}
             className={clsx(
-              "flex items-center gap-1 rounded-lg px-4 py-1.5",
-              "text-xs font-bold transition-all active:scale-95",
+              "flex items-center justify-center gap-1 rounded-sm px-4 py-1.5 w-full",
+              "text-xs font-semibold transition-all active:scale-[0.98]",
               isDirty && !isSubmitting
-                ? clsx(
-                    "bg-gray-50 text-slate-600 border border-transparent",
+                ? [
+                    "bg-slate-50 text-slate-600 border border-slate-100",
                     "hover:bg-emerald-50 hover:text-emerald-600",
                     "hover:border-emerald-100",
-                  )
-                : "bg-gray-50 text-slate-300 cursor-not-allowed",
+                  ]
+                : "bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100",
             )}
           >
             {isSubmitting && <Loader2 className="h-3 w-3 animate-spin" />}

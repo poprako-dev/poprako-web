@@ -103,12 +103,6 @@ export default function HoverSelect({
 
   // 交互逻辑：选择处理
   const handleSelect = (option: Option) => {
-    // debug: 确认选中事件是否触发并携带正确 id
-    // eslint-disable-next-line no-console
-    console.log("HoverSelect: handleSelect", {
-      selectedId: option.id,
-      checkedOptionId,
-    });
     closeDropdown();
     onSelect(option.id);
   };

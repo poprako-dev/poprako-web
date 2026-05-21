@@ -70,6 +70,7 @@ export default function FilterHeader({
   const [inputValue, setInputValue] = useState(activeFuzzyTitle ?? "");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(activeFuzzyTitle ?? "");
   }, [activeFuzzyTitle]);
 
@@ -131,9 +132,6 @@ export default function FilterHeader({
           options={makeBinaryOptions("传")}
           checkedOptionId={activeUploadStatus}
           onSelect={(id) => {
-            // debug: log before delegating to parent
-            // eslint-disable-next-line no-console
-            console.log("FilterHeader: onChangeUploadStatus", id);
             onChangeUploadStatus(id as BinaryFilter);
           }}
           isActive={activeUploadStatus !== "unset"}
@@ -144,9 +142,6 @@ export default function FilterHeader({
           options={makeTripleOptions("翻")}
           checkedOptionId={activeTranslateStatus}
           onSelect={(id) => {
-            // debug: log before delegating to parent
-            // eslint-disable-next-line no-console
-            console.log("FilterHeader: onChangeTranslateStatus", id);
             onChangeTranslateStatus(id as TripleFilter);
           }}
           isActive={activeTranslateStatus !== "unset"}
@@ -157,9 +152,6 @@ export default function FilterHeader({
           options={makeTripleOptions("校")}
           checkedOptionId={activeProofreadStatus}
           onSelect={(id) => {
-            // debug: log before delegating to parent
-            // eslint-disable-next-line no-console
-            console.log("FilterHeader: onChangeProofreadStatus", id);
             onChangeProofreadStatus(id as TripleFilter);
           }}
           isActive={activeProofreadStatus !== "unset"}
@@ -170,9 +162,6 @@ export default function FilterHeader({
           options={makeTripleOptions("嵌")}
           checkedOptionId={activeTypesetStatus}
           onSelect={(id) => {
-            // debug: log before delegating to parent
-            // eslint-disable-next-line no-console
-            console.log("FilterHeader: onChangeTypesetStatus", id);
             onChangeTypesetStatus(id as TripleFilter);
           }}
           isActive={activeTypesetStatus !== "unset"}
@@ -183,9 +172,6 @@ export default function FilterHeader({
           options={makeBinaryOptions("监")}
           checkedOptionId={activeReviewStatus}
           onSelect={(id) => {
-            // debug: log before delegating to parent
-            // eslint-disable-next-line no-console
-            console.log("FilterHeader: onChangeReviewStatus", id);
             onChangeReviewStatus(id as BinaryFilter);
           }}
           isActive={activeReviewStatus !== "unset"}
@@ -196,9 +182,6 @@ export default function FilterHeader({
           options={makeBinaryOptions("发")}
           checkedOptionId={activePublishStatus}
           onSelect={(id) => {
-            // debug: log before delegating to parent
-            // eslint-disable-next-line no-console
-            console.log("FilterHeader: onChangePublishStatus", id);
             onChangePublishStatus(id as BinaryFilter);
           }}
           isActive={activePublishStatus !== "unset"}

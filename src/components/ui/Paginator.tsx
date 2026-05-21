@@ -38,6 +38,7 @@ export default function Paginator({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(displayPage.toString());
   }, [displayPage]);
 

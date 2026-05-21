@@ -29,6 +29,11 @@ export default defineConfig([
         "warn",
         { allowConstantExport: true },
       ],
+      // 允许以 _ 开头的未使用参数（常用于 mock 函数和 storybook）
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
   ...storybook.configs["flat/recommended"],

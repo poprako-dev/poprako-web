@@ -111,7 +111,9 @@ export default function ComicList({
           onLoadLatestChapter={onLoadLatestChapter}
           onLoadAssignments={onLoadAssignments}
           onComicClick={(comicInfo) => {
-            setIsSidebarOpen(false);
+            if (window.innerWidth < 768) {
+              setIsSidebarOpen(false);
+            }
             onComicClick?.(comicInfo);
           }}
         />

@@ -169,7 +169,7 @@ export function toChapterInfo(raw?: RawChapterInfo): ChapterInfo | undefined {
       : undefined,
     index: raw.index,
     subtitle: raw.subtitle,
-    isPinned: (raw as any).is_pinned ?? false,
+    isPinned: raw.is_pinned ?? false,
     pageCount: raw.page_count,
     totalUnitCount: raw.total_unit_count,
     translatedUnitCount: raw.translated_unit_count,

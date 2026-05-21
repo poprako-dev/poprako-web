@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { canApplyWorkflowTransition } from "@/types/chapter";
 import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
@@ -56,8 +56,9 @@ export default function ComicDetailModal({
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const resolveActiveMemberRef = useRef(onResolveActiveMember);
-
-  resolveActiveMemberRef.current = onResolveActiveMember;
+  useLayoutEffect(() => {
+    resolveActiveMemberRef.current = onResolveActiveMember;
+  });
 
   useEffect(() => {
     let cancelled = false;

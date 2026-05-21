@@ -1,5 +1,5 @@
 import type { RawComicInfo } from "./raw/comic";
-import { unwrapRawUserInfo } from "./raw/user";
+import { unwrapRawUserInfo, type RawUserInfo } from "./raw/user";
 import type { UserInfo } from "./user";
 import { toWorksetInfo, type WorksetInfo } from "./workset";
 import { ensureHttpsUrl } from "@/utils/url";
@@ -73,6 +73,6 @@ export type UpdateComicArgs = {
   author?: string;
   description?: string;
 };
-function toUserInfo(creator: any): UserInfo | undefined {
+function toUserInfo(creator: RawUserInfo | undefined): UserInfo | undefined {
   return creator ? unwrapRawUserInfo(creator) : undefined;
 }

@@ -65,6 +65,7 @@ export default function AppSidebar() {
 
   useEffect(() => {
     if (!isAvatarUploading && !isHovered && isSelectingTeam) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsSelectingTeam(false);
     }
   }, [isAvatarUploading, isHovered, isSelectingTeam]);

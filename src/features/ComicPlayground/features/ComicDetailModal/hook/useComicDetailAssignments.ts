@@ -42,6 +42,7 @@ export function useComicDetailAssignments({
 
   useEffect(() => {
     if (!selectedChapterId || !isSelectedChapterAvailable) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAssignments([]);
     onLoadAssignments(selectedChapterId)
       .then((res) => {
@@ -72,6 +73,7 @@ export function useComicDetailAssignments({
 
   useEffect(() => {
     if (activeMember && hasRole(activeMember, "admin")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCanCreateChapter(true);
       return;
     }

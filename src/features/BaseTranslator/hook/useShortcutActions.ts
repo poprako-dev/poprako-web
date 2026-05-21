@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import {
   type ConfigurableShortcut,
   type ShortcutAction,
@@ -13,7 +13,9 @@ export function useShortcutActions(
   disabled: boolean,
 ) {
   const actionsRef = useRef(actions);
-  actionsRef.current = actions;
+  useLayoutEffect(() => {
+    actionsRef.current = actions;
+  });
 
   useEffect(() => {
     if (disabled) return;

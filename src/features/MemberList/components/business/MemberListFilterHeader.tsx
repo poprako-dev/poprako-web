@@ -66,6 +66,7 @@ export default function MemberListFilterHeader({
   const [inputValue, setInputValue] = useState(activeFuzzyName);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(activeFuzzyName);
   }, [activeFuzzyName]);
 

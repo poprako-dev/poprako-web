@@ -23,11 +23,15 @@ export default function NavItem({
         isActive ? "text-[#166534]" : "text-[#3D3028]",
       )}
     >
+      {/* Left accent bar — expands from 0 height on hover, always visible when active */}
       <div
         className={clsx(
-          "absolute inset-y-0 left-2 right-2",
-          "rounded-lg transition-colors",
-          isActive ? "bg-[#FAF9F6] shadow-sm" : "group-hover/item:bg-white/40",
+          "absolute left-2 top-1/2 -translate-y-1/2",
+          "w-0.75 h-5 rounded-full",
+          "transition-all duration-200 ease-out",
+          isActive
+            ? "bg-green-600 scale-y-100"
+            : "bg-green-500/85 scale-y-0 group-hover/item:scale-y-100",
         )}
       />
 
@@ -39,8 +43,11 @@ export default function NavItem({
       >
         <Icon
           size={20}
-          className="transition-transform
-            group-hover/item:scale-110"
+          className={clsx(
+            "transition-all",
+            "group-hover/item:scale-110",
+            isActive && "scale-110",
+          )}
         />
       </span>
 

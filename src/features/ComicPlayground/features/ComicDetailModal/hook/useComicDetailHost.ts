@@ -127,6 +127,7 @@ export function useComicDetailHost({
     urlComicId,
   ]);
 
+  /* eslint-disable react-hooks/preserve-manual-memoization */
   const navigateToTranslator = useCallback(
     (chapterId: string, pageId: string, readOnly?: boolean) => {
       if (!selectedComic?.id) {
@@ -151,6 +152,7 @@ export function useComicDetailHost({
     },
     [navigate, returnTo, selectedComic?.id],
   );
+  /* eslint-enable react-hooks/preserve-manual-memoization */
 
   return {
     selectedComic,

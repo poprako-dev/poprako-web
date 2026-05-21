@@ -3,6 +3,7 @@ import type {
   CreateChapterArgs,
   CreateChapterResult,
   UpdateChapterArgs,
+  WorkflowTransition,
 } from "../chapter";
 import { unwrapRawComicInfo, type RawComicInfo } from "./comic";
 import { unwrapRawUserInfo, type RawUserInfo } from "./user";
@@ -97,6 +98,6 @@ export function unwrapRawUpdateChapterArgs(
   return {
     subtitle: raw.subtitle,
     isPinned: raw.is_pinned,
-    workflowTransition: raw.workflow_transition as any,
+    workflowTransition: raw.workflow_transition as WorkflowTransition | undefined,
   } as UpdateChapterArgs;
 }

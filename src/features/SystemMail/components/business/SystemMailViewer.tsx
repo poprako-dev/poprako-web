@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Check, Mail } from "lucide-react";
 import clsx from "clsx";
 import { listSysMails, markSysMailRead } from "@/api/sysMail";
@@ -87,7 +87,8 @@ export default function SystemMailViewer() {
     );
   };
 
-  const cutoff = Date.now() - THREE_DAYS_MS;
+  // eslint-disable-next-line react-hooks/purity
+  const cutoff = useMemo(() => Date.now() - THREE_DAYS_MS, []);
   const recentItems = items.filter((m) => m.createdAt >= cutoff);
   const olderItems = items.filter((m) => m.createdAt < cutoff);
 

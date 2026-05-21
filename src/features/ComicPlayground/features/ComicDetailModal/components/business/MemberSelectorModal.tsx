@@ -68,8 +68,10 @@ export default function MemberSelectorModal({
 
   useEffect(() => {
     if (!chapterId || !onLoadMembers) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setMembers([]);
       setIsLoading(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
       return;
     }
 

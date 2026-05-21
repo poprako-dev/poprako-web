@@ -85,7 +85,7 @@ export default function ComicDetailSidebar({
         )}
 
         {/* Hover dim overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.07] transition-colors duration-200 pointer-events-none z-[1]" />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.07] transition-colors duration-200 pointer-events-none z-1" />
 
         {coverUpload.isUploadingCover && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">

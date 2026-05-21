@@ -47,6 +47,7 @@ export default function TranslatorPage() {
   // Ensure user is authenticated before rendering translator
   useEffect(() => {
     if (loginState !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsAuthReady(true);
       return;
     }

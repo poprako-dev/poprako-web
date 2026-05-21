@@ -65,6 +65,7 @@ export function useCanvasInteraction({
   } | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTransform({ scale: 1, offsetX: 0, offsetY: 0 });
   }, [imageSrc]);
 

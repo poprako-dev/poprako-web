@@ -39,6 +39,7 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
   }, [showToast, teamId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadWorksets();
   }, [loadWorksets]);
 

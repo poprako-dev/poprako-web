@@ -21,3 +21,5 @@
 - [x] preview bubble disable.
 - [ ] comic subscription.
 - [x] page selector in base translator.
+- [ ] member detail modal style.
+- [ ] unified button style.

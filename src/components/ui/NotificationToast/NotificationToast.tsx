@@ -41,6 +41,7 @@ export default function NotificationToast() {
 
   useEffect(() => {
     if (!toast) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLeaving(false);
     const timer = setTimeout(handleClose, TOAST_DURATION);
     return () => clearTimeout(timer);

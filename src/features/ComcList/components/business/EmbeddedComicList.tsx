@@ -80,10 +80,12 @@ export default function EmbeddedComicList({
   }, [isLoading, hasMore, offset, onLoadComics, showToast]);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     setComics([]);
     setHasMore(true);
     setOffset(0);
     setIsLoading(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [onLoadComics]);
 
   useEffect(() => {
@@ -110,6 +112,7 @@ export default function EmbeddedComicList({
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentMode(mode);
   }, [mode]);
 

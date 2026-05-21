@@ -40,10 +40,13 @@ type Args = {
 };
 
 function sanitizeFileName(value: string) {
-  return (value || "")
-    .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
-    .trim()
-    .slice(0, 120) || "chapter-export";
+  return (
+    (value || "")
+      // eslint-disable-next-line no-control-regex
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+      .trim()
+      .slice(0, 120) || "chapter-export"
+  );
 }
 
 function wait(ms: number) {

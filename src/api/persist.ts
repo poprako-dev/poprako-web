@@ -12,10 +12,10 @@ export async function persistLogin() {
     throw new Error("没有找到访问令牌，跳转至登录");
   }
   // 调用获取我的用户信息的接口
-  let myUser = await getMyUser();
+  const myUser = await getMyUser();
 
   // 调用获取我的成员信息的接口
-  let myMembers = await listMyMembers();
+  const myMembers = await listMyMembers();
 
   // 如果没有抛出异常，说明登录信息有效，可以继续使用
   // 将所有数据载入 app store 中

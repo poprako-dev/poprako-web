@@ -84,7 +84,7 @@ const ROLE_CONFIG: RoleConfig[] = [
   },
   {
     roleKey: "admin",
-    label: "管理员",
+    label: "管理",
     value: 128,
     activeClass: "bg-stone-100 text-stone-500 border-stone-200",
     chipClass: "bg-stone-100 text-stone-500 border-stone-200",
@@ -148,7 +148,7 @@ export default function MemberInvitorModal({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // ── Load ─────────────────────────────────────────────────────────────────
-  const loadInvitations = useCallback(async () => {
+  const refreshInvitations = useCallback(async () => {
     const result = await onLoadInvitations(0, 100);
     if (!result.success) {
       showToast(result.error, "error");
@@ -158,8 +158,20 @@ export default function MemberInvitorModal({
   }, [onLoadInvitations, showToast]);
 
   useEffect(() => {
-    loadInvitations();
-  }, [loadInvitations]);
+    let alive = true;
+    onLoadInvitations(0, 100).then((result) => {
+      if (!alive) return;
+      if (!result.success) {
+        showToast(result.error, "error");
+        return;
+      }
+      setPendingInvitations(result.data.filter((inv) => inv.pending));
+    });
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const toggleBit = (value: number) =>
@@ -184,7 +196,7 @@ export default function MemberInvitorModal({
         return;
       }
       setGeneratedCode(result.data);
-      await loadInvitations();
+      await refreshInvitations();
     } finally {
       setIsSubmitting(false);
     }
@@ -215,12 +227,18 @@ export default function MemberInvitorModal({
       <div
         className={clsx(
           "relative flex w-full max-w-3xl flex-col overflow-hidden",
-          "bg-white border border-slate-100 rounded-md",
-          "shadow-[0_8px_40px_rgb(0,0,0,0.06)]",
+          "bg-stone-50/10 border border-slate-200 rounded-xl",
+          "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
           "md:flex-row",
         )}
       >
+        {/* ── Top accent bar ────────────────────────────────────────────── */}
+        <div
+          className="absolute top-0 left-0 right-0 h-1 opacity-20 z-1"
+          style={{ background: "var(--color-green-500)" }}
+        />
+
         {/* ── Close ─────────────────────────────────────────────────────── */}
         <button
           type="button"
@@ -241,9 +259,10 @@ export default function MemberInvitorModal({
             {/* QQ input */}
             <div
               className={clsx(
-                "flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2",
-                "border border-slate-100 transition-all",
-                "focus-within:bg-white focus-within:ring-1 focus-within:ring-gray-200",
+                "flex items-center gap-2 rounded-md bg-white px-3 py-2",
+                "border border-slate-200 shadow-sm shadow-slate-100",
+                "hover:border-slate-300",
+                "focus-within:border-slate-300 transition-all",
               )}
             >
               <MessageCircle className="h-3.5 w-3.5 shrink-0 text-slate-400" />
@@ -251,13 +270,16 @@ export default function MemberInvitorModal({
                 type="text"
                 value={qq}
                 onChange={(e) => setQq(e.target.value.replace(/\D/g, ""))}
-                className="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-300 outline-none"
+                className={clsx(
+                  "w-full bg-transparent text-sm text-slate-700",
+                  "placeholder:text-slate-400 outline-none",
+                )}
                 placeholder="QQ 号"
               />
             </div>
 
             {/* Role toggles */}
-            <div className="grid grid-cols-4 gap-1.5">
+            <div className="grid grid-cols-4 gap-1">
               {ROLE_CONFIG.map((role) => {
                 const isActive = selectedBits.includes(role.value);
                 return (
@@ -266,16 +288,20 @@ export default function MemberInvitorModal({
                     type="button"
                     onClick={() => toggleBit(role.value)}
                     className={clsx(
-                      "flex items-center justify-center gap-1 rounded-xl border py-2 text-[12px] font-bold transition-all active:scale-95",
+                      "flex items-center justify-center gap-1 rounded-md border",
+                      "py-2 text-[12px] font-bold transition-all active:scale-95",
                       isActive
                         ? role.activeClass
-                        : "border-slate-100 bg-gray-50 text-slate-300 hover:bg-white hover:text-slate-400 hover:border-slate-200",
+                        : [
+                            "border-slate-200 bg-white text-slate-400",
+                            "hover:border-slate-300 hover:text-slate-500",
+                          ],
                     )}
                   >
                     {isActive ? (
                       <CheckCircle2 className="h-3 w-3 shrink-0" />
                     ) : (
-                      <Circle className="h-3 w-3 shrink-0 opacity-40" />
+                      <Circle className="h-3 w-3 shrink-0 opacity-30" />
                     )}
                     <span className="truncate">{role.label}</span>
                   </button>
@@ -286,11 +312,11 @@ export default function MemberInvitorModal({
             {/* Generated code */}
             <div
               className={clsx(
-                "flex items-center justify-between rounded-xl border bg-gray-50 px-3 py-2.5",
+                "flex items-center justify-center rounded-md border px-3 py-2.5",
                 "transition-all duration-300",
                 generatedCode
-                  ? "border-slate-200 opacity-100"
-                  : "border-slate-100 opacity-50",
+                  ? "border-slate-200 bg-white shadow-sm shadow-slate-100 opacity-100"
+                  : "border-slate-100 bg-slate-50 opacity-60",
               )}
             >
               <div className="flex items-center gap-2">
@@ -298,23 +324,20 @@ export default function MemberInvitorModal({
                 <span className="font-mono text-sm font-bold tracking-widest text-slate-600">
                   {generatedCode || "— — — — — —"}
                 </span>
+                {generatedCode && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      copyToClipboard(generatedCode);
+                      showToast("已复制邀请码", "success");
+                    }}
+                    className="text-slate-400 transition-colors hover:text-slate-600"
+                    title="复制"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
-              {generatedCode && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    copyToClipboard(generatedCode);
-                    showToast("已复制邀请码", "success");
-                  }}
-                  className={clsx(
-                    "rounded-lg border border-slate-100 bg-white p-1.5",
-                    "text-slate-400 transition-colors hover:border-slate-200 hover:text-slate-600",
-                  )}
-                  title="复制"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                </button>
-              )}
             </div>
 
             {/* Actions */}
@@ -323,8 +346,8 @@ export default function MemberInvitorModal({
                 type="button"
                 onClick={onClose}
                 className={clsx(
-                  "flex-1 rounded-xl py-2 text-xs font-bold transition-all active:scale-95",
-                  "bg-gray-50 text-slate-400 hover:bg-gray-100",
+                  "flex-1 rounded-lg py-2 text-xs font-semibold transition-all active:scale-[0.98]",
+                  "bg-slate-50 text-slate-400 hover:bg-slate-100 border border-slate-100",
                 )}
               >
                 取消
@@ -334,20 +357,21 @@ export default function MemberInvitorModal({
                 disabled={!isFormValid || isSubmitting}
                 onClick={handleInvite}
                 className={clsx(
-                  "flex-[2] flex items-center justify-center gap-1 rounded-xl py-2 text-xs font-bold transition-all active:scale-95",
+                  "flex-1 flex items-center justify-center gap-1 rounded-lg py-2",
+                  "text-xs font-semibold transition-all active:scale-[0.98]",
                   isFormValid && !isSubmitting
                     ? [
-                        "bg-gray-50 text-slate-600",
+                        "bg-slate-50 text-slate-600 border border-slate-100",
                         "hover:bg-emerald-50 hover:text-emerald-600",
-                        "border border-transparent hover:border-emerald-100",
+                        "hover:border-emerald-100",
                       ]
-                    : "bg-gray-50 text-slate-300 cursor-not-allowed",
+                    : "bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100",
                 )}
               >
                 {isSubmitting ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
-                  "发送邀请"
+                  "邀请"
                 )}
               </button>
             </div>
@@ -355,12 +379,12 @@ export default function MemberInvitorModal({
         </div>
 
         {/* ── Right: pending list ────────────────────────────────────────── */}
-        <div className="flex-1 px-6 py-6">
-          <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-slate-300">
+        <div className="flex-1 bg-slate-50/60 px-6 py-6">
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
             Pending
           </p>
 
-          <div className="max-h-[420px] space-y-2 overflow-y-auto pr-0.5">
+          <div className="max-h-105 space-y-2 overflow-y-auto pr-0.5">
             {pendingInvitations.map((inv) => (
               <PendingInvitationCard
                 key={inv.id}
@@ -410,9 +434,9 @@ function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProp
   return (
     <div
       className={clsx(
-        "rounded-md border border-slate-100 bg-white p-3",
-        "shadow-[0_1px_4px_rgb(0,0,0,0.03)]",
-        "transition-all hover:border-slate-200 hover:shadow-[0_2px_8px_rgb(0,0,0,0.05)]",
+        "rounded-md border border-slate-200/80 bg-white p-3",
+        "shadow-[0_1px_3px_rgb(0,0,0,0.04)]",
+        "transition-all hover:border-slate-200 hover:shadow-[0_2px_6px_rgb(0,0,0,0.06)]",
       )}
     >
       {/* QQ + code */}
@@ -424,7 +448,7 @@ function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProp
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 rounded-lg border border-slate-100 bg-gray-50 px-2 py-1">
+        <div className="flex items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
           <code className="font-mono text-[11px] font-bold tracking-tight text-slate-400">
             {invitation.invitationCode}
           </code>
@@ -440,13 +464,13 @@ function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProp
       </div>
 
       {/* Role chips + delete */}
-      <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-slate-50 pt-2.5">
+      <div className="mt-1 flex items-center justify-between gap-2 border-t border-slate-50 pt-1">
         <div className="flex flex-wrap gap-1">
           {roleConfigs.map((rc) => (
             <span
               key={rc.roleKey}
               className={clsx(
-                "rounded border px-1.5 py-0.5 text-[10px] font-bold",
+                "rounded-xs border px-1 py-0.5 text-[10px] font-bold",
                 rc.chipClass,
               )}
             >

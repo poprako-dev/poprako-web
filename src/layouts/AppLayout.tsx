@@ -57,6 +57,7 @@ export default function AppLayout() {
 
   useEffect(() => {
     if (loginState !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsReady(true);
       return;
     }

@@ -43,14 +43,18 @@ export function useComicDetailPages({
 
   useEffect(() => {
     if (chapterId && isSelectedChapterAvailable) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
     setPages([]);
     setUploadProgressByPageId({});
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [chapterId, isSelectedChapterAvailable]);
 
   useEffect(() => {
     if (!chapterId || !isSelectedChapterAvailable) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
     setPages([]);
     setUploadProgressByPageId({});
+    /* eslint-enable react-hooks/set-state-in-effect */
     onLoadPages(chapterId)
       .then((res) => {
         if (!res.success) {
