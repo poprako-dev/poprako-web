@@ -3,12 +3,29 @@ import LoadingCircle from "@/components/ui/LoadingCircle";
 import { createBrowserRouter } from "react-router-dom";
 import RootGuard from "@/pages/RootGuard";
 
+// Full-screen centering container — inline styles, no CSS chunk dependency.
+// When a lazy route Suspense fires, no layout CSS is loaded yet,
+// so the fallback must position itself against the viewport.
+const fallbackWrapper = createElement(
+  "div",
+  {
+    style: {
+      position: "fixed",
+      inset: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  },
+  createElement(LoadingCircle),
+);
+
 function lazyElement(loader: () => Promise<{ default: ComponentType }>) {
   const Component = lazy(loader);
 
   return createElement(
     Suspense,
-    { fallback: createElement(LoadingCircle) },
+    { fallback: fallbackWrapper },
     createElement(Component),
   );
 }
