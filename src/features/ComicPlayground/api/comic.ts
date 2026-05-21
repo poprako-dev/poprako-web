@@ -56,6 +56,7 @@ export async function createComic(
     title: args.title,
     author: args.author,
     description: args.description,
+    first_chapter_title: args.firstChapterTitle,
   };
 
   const res = await api.post<{ id: string }, RawCreateComicArgs>(

@@ -143,6 +143,7 @@ export type CreateComicArgs = {
   title: string;
   author: string;
   description?: string;
+  firstChapterTitle?: string;
 };
 
 export type RawCreateComicArgs = {
@@ -150,6 +151,7 @@ export type RawCreateComicArgs = {
   title: string;
   author: string;
   description?: string;
+  first_chapter_title?: string;
 };
 
 export type UpdateComicArgs = {

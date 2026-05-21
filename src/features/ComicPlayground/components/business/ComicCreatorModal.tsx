@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Type, User, AlignLeft, Loader2, Layers } from "lucide-react";
+import { Type, User, AlignLeft, Loader2, Layers, BookOpen } from "lucide-react";
 import clsx from "clsx";
+import IconInputRow from "@/components/ui/IconInputRow";
 import type { CreateComicArgs } from "../../types/comic";
 import type { Result } from "@/types/utils/result";
 import type { WorksetInfo } from "@/types/workset";
@@ -20,6 +21,7 @@ export default function ComicCreatorModal({
     title: "",
     author: "",
     description: "",
+    firstChapterTitle: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,6 +37,7 @@ export default function ComicCreatorModal({
       title: formData.title.trim(),
       author: formData.author.trim(),
       description: formData.description.trim() || undefined,
+      firstChapterTitle: formData.firstChapterTitle.trim() || undefined,
     });
     setIsSubmitting(false);
     if (result.success) onClose();
@@ -44,96 +47,81 @@ export default function ComicCreatorModal({
     <div
       className={clsx(
         "fixed inset-0 z-50 flex items-center justify-center p-4",
-        "bg-white/40 backdrop-blur-sm",
+        "bg-white/60 backdrop-blur-sm",
         "animate-in fade-in duration-200",
-        "shadow-lg border border-slate-200",
       )}
     >
       <div
         className={clsx(
-          "w-full max-w-70 bg-white",
-          "border border-slate-100 rounded-md",
-          "shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
-          "overflow-hidden animate-in zoom-in-95 duration-200",
+          "w-full max-w-70 rounded-xl overflow-hidden",
+          "bg-stone-50/10",
+          "border border-(--color-border-green-200)",
+          "shadow-(--shadow-sm)",
+          "animate-in zoom-in-95 duration-200",
         )}
       >
-        <div className="pt-3 pb-2 text-center">
+        {/* 顶部品牌色条 */}
+        <div
+          className="h-1 w-full opacity-20"
+          style={{ background: "var(--color-green-500)" }}
+        />
+
+        <div className="pt-4 pb-2 text-center">
           <h3 className="text-lg font-bold text-slate-800">新建作品</h3>
-          <div className="mt-3 flex items-center justify-center gap-1.5 px-4">
-            <div className="flex items-center gap-1 px-2 py-0.5 bg-gray-50 rounded-md">
+          <div className="mt-2 flex items-center justify-center gap-1.5 px-4">
+            <div
+              className={clsx(
+                "flex items-center gap-1 px-2 py-0.5 rounded-md",
+                "bg-green-50 border border-(--color-border-green-200)",
+              )}
+            >
               <Layers className="w-2.5 h-2.5 text-slate-400" />
-              <span className="text-[12px] text-slate-500 truncate max-w-20">
+              <span className="text-[11px] text-slate-500 truncate max-w-20">
                 {currWorkset.name}
               </span>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5">
-          <div className="space-y-3">
-            <div
-              className={clsx(
-                "flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2",
-                "transition-all focus-within:bg-white",
-                "focus-within:ring-1 focus-within:ring-gray-200",
-                "border border-slate-100",
-              )}
-            >
-              <Type className="w-3.5 h-3.5 text-slate-400" />
-              <input
-                type="text"
-                required
-                placeholder="标题"
-                className={clsx(
-                  "w-full bg-transparent text-sm text-slate-700",
-                  "placeholder:text-slate-300 outline-none",
-                )}
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="px-5 pb-5 pt-3">
+          <div className="space-y-2.5">
+            <IconInputRow
+              icon={<Type size={14} />}
+              placeholder="标题"
+              value={formData.title}
+              onChange={(v) => setFormData({ ...formData, title: v })}
+            />
 
-            <div
-              className={clsx(
-                "flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2",
-                "transition-all focus-within:bg-white",
-                "focus-within:ring-1 focus-within:ring-gray-200",
-                "border border-slate-100",
-              )}
-            >
-              <User className="w-3.5 h-3.5 text-slate-400" />
-              <input
-                type="text"
-                required
-                placeholder="作者"
-                className={clsx(
-                  "w-full bg-transparent text-sm text-slate-700",
-                  "placeholder:text-slate-300 outline-none",
-                )}
-                value={formData.author}
-                onChange={(e) =>
-                  setFormData({ ...formData, author: e.target.value })
-                }
-              />
-            </div>
+            <IconInputRow
+              icon={<User size={14} />}
+              placeholder="作者"
+              value={formData.author}
+              onChange={(v) => setFormData({ ...formData, author: v })}
+            />
 
+            <IconInputRow
+              icon={<BookOpen size={14} />}
+              placeholder="第一章标题（选填）"
+              value={formData.firstChapterTitle}
+              onChange={(v) => setFormData({ ...formData, firstChapterTitle: v })}
+            />
+
+            {/* 描述 textarea — 与 IconInputRow 风格对齐 */}
             <div
               className={clsx(
-                "flex items-start gap-2 rounded-xl bg-gray-50 px-3 py-2",
-                "transition-all focus-within:bg-white",
-                "focus-within:ring-1 focus-within:ring-gray-200",
-                "border border-slate-100",
+                "flex items-start gap-2.5 rounded-md px-3 py-2",
+                "border border-slate-200 bg-white shadow-sm shadow-slate-100",
+                "hover:border-slate-300",
+                "focus-within:border-slate-300 transition-all",
               )}
             >
-              <AlignLeft className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+              <AlignLeft className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
               <textarea
                 placeholder="描述（选填）"
                 rows={2}
                 className={clsx(
                   "w-full bg-transparent text-sm text-slate-700",
-                  "placeholder:text-slate-300 outline-none resize-none",
+                  "placeholder:text-slate-400 outline-none resize-none",
                 )}
                 value={formData.description}
                 onChange={(e) =>
@@ -143,13 +131,15 @@ export default function ComicCreatorModal({
             </div>
           </div>
 
-          <div className="mt-6 flex items-center gap-2">
+          <div className="mt-4 flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
               className={clsx(
-                "flex-1 py-2 text-xs font-bold rounded-xl transition-all active:scale-95",
-                "text-slate-400 bg-gray-50 hover:bg-gray-100",
+                "flex-1 py-2 text-xs font-semibold rounded-lg",
+                "transition-all duration-200 active:scale-[0.98]",
+                "text-slate-400 bg-slate-50 hover:bg-slate-100",
+                "border border-slate-100",
               )}
             >
               取消
@@ -158,15 +148,16 @@ export default function ComicCreatorModal({
               type="submit"
               disabled={isSubmitting || !isValid}
               className={clsx(
-                "flex-1 py-2 text-xs font-bold rounded-xl transition-all active:scale-95",
+                "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "flex items-center justify-center gap-1",
+                "transition-all duration-200 active:scale-[0.98]",
                 isValid
                   ? [
-                      "bg-gray-50 text-slate-600",
-                      "hover:bg-emerald-50 hover:text-emerald-600",
-                      "border border-transparent hover:border-emerald-100",
+                      "bg-green-50 text-green-500",
+                      "border border-(--color-border-green-200)",
+                      "hover:bg-green-100",
                     ]
-                  : "bg-gray-50 text-slate-300 cursor-not-allowed",
+                  : "bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100",
               )}
             >
               {isSubmitting ? (

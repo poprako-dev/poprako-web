@@ -45,7 +45,7 @@ function TeamAvatar({
       onClick={onUploadClick}
       title={canUpload ? "上传团队头像" : undefined}
       className={clsx(
-        "relative z-10 w-11 h-11 rounded-xl overflow-hidden shrink-0",
+        "relative z-10 w-11 h-11 rounded-md overflow-hidden shrink-0",
         "flex items-center justify-center",
         "transition-all duration-300",
         canUpload && "group/avatar",
@@ -403,7 +403,7 @@ export default function TeamOption({
         >
           <div
             className={clsx(
-              "px-2 py-2 rounded-xl h-11",
+              "px-2 py-2 rounded-sm h-11",
               "flex flex-col justify-center",
               "transition-colors duration-300",
               isListOpen ? "bg-green-50" : "hover:bg-gray-50",

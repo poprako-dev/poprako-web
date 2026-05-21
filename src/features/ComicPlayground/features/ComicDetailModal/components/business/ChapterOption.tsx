@@ -107,7 +107,7 @@ export default function ChapterOption({
       {isOpen && (
         <div
           className={clsx(
-            "absolute top-full left-0 mt-1 w-48 z-15",
+            "absolute top-full right-0 mt-1 w-48 z-15",
             "bg-white rounded-md border border-slate-200 shadow-lg",
           )}
         >

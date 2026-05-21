@@ -72,7 +72,9 @@ export default function ComicList({
   onChangeReviewStatus,
   onChangePublishStatus,
 }: Props) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(
+    () => window.innerWidth >= 768,
+  );
 
   const handleToggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -108,7 +110,10 @@ export default function ComicList({
           onLoadComics={onLoadComics}
           onLoadLatestChapter={onLoadLatestChapter}
           onLoadAssignments={onLoadAssignments}
-          onComicClick={onComicClick}
+          onComicClick={(comicInfo) => {
+            setIsSidebarOpen(false);
+            onComicClick?.(comicInfo);
+          }}
         />
       }
       sidebar={
