@@ -28,13 +28,13 @@ export default function ActionButton({
         "after:h-[2px] after:w-[60%] after:transition-all after:duration-200",
         "hover:after:w-[80%]",
         !danger && [
-          "bg-stone-50 text-stone-500",
-          // "hover:bg-stone-100 hover:text-stone-800",
+          "bg-stone-50 text-stone-400",
+          "hover:text-stone-700",
           "after:bg-stone-300",
         ],
         danger && [
-          "bg-stone-50 text-rose-400",
-          // "hover:bg-rose-50 hover:text-rose-600",
+          "bg-stone-50 text-rose-300",
+          "hover:text-rose-500",
           "after:bg-rose-300",
         ],
         "disabled:opacity-50 disabled:cursor-not-allowed",

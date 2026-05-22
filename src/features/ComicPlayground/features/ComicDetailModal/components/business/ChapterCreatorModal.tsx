@@ -38,7 +38,7 @@ export default function ChapterCreatorModal({
       <div
         className={clsx(
           "w-full max-w-70 rounded-xl overflow-hidden",
-          "bg-stone-50/10",
+          "bg-white",
           "border border-(--color-border-green-200)",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",

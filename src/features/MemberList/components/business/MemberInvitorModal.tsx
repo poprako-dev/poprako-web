@@ -227,7 +227,7 @@ export default function MemberInvitorModal({
       <div
         className={clsx(
           "relative flex w-full max-w-3xl flex-col overflow-hidden",
-          "bg-stone-50/10 border border-slate-200 rounded-xl",
+          "bg-white border border-slate-200 rounded-xl",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
           "md:flex-row",

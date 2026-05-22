@@ -29,46 +29,36 @@ type Props = {
 };
 
 type StatusConfig = {
-  border: string;
-  hoverBorder: string;
-  bg: string;
-  hoverBg: string;
   labelText: string;
-  bottomBar: string;
+  hoverLabelText: string;
+  barColor: string;
+  hoverGradient: string;
 };
 
 const STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
   pending: {
-    border: "border-slate-100",
-    hoverBorder: "hover:border-slate-300",
-    bg: "bg-white",
-    hoverBg: "hover:bg-slate-50/60",
     labelText: "text-slate-300",
-    bottomBar: "bg-slate-100",
+    hoverLabelText: "group-hover:text-slate-500",
+    barColor: "bg-slate-300",
+    hoverGradient: "bg-gradient-to-r from-slate-100/40 to-transparent",
   },
   ongoing: {
-    border: "border-orange-100",
-    hoverBorder: "hover:border-orange-300",
-    bg: "bg-orange-50/40",
-    hoverBg: "hover:bg-orange-50/80",
     labelText: "text-orange-300",
-    bottomBar: "bg-orange-200",
+    hoverLabelText: "group-hover:text-orange-600",
+    barColor: "bg-orange-300",
+    hoverGradient: "bg-gradient-to-r from-orange-100/50 to-transparent",
   },
   completed: {
-    border: "border-emerald-100",
-    hoverBorder: "hover:border-emerald-300",
-    bg: "bg-emerald-50/50",
-    hoverBg: "hover:bg-emerald-50/80",
     labelText: "text-emerald-400",
-    bottomBar: "bg-emerald-200",
+    hoverLabelText: "group-hover:text-emerald-600",
+    barColor: "bg-emerald-400",
+    hoverGradient: "bg-gradient-to-r from-emerald-100/50 to-transparent",
   },
   unset: {
-    border: "border-slate-100",
-    hoverBorder: "hover:border-slate-300",
-    bg: "bg-white",
-    hoverBg: "hover:bg-slate-50/60",
     labelText: "text-slate-200",
-    bottomBar: "bg-slate-50",
+    hoverLabelText: "group-hover:text-slate-400",
+    barColor: "bg-slate-200",
+    hoverGradient: "bg-gradient-to-r from-slate-50/20 to-transparent",
   },
 };
 
@@ -108,22 +98,30 @@ export default function RoleTag({
     <div
       onClick={handleClick}
       className={clsx(
-        "relative flex items-center min-w-0 w-full",
-        "rounded-xs border pl-4 pr-2 py-1 gap-3",
-        "transition-all duration-200 overflow-hidden",
+        "relative flex items-center min-w-0 w-full group",
+        "pl-4 pr-2 py-1 gap-3",
+        "transition-all duration-200",
+        "bg-white",
         transition && "cursor-pointer",
-        cfg.border,
-        cfg.hoverBorder,
-        cfg.bg,
-        cfg.hoverBg,
       )}
     >
+      {/* Hover gradient overlay */}
+      <div
+        className={clsx(
+          "absolute inset-0 opacity-0 transition-opacity duration-300",
+          "group-hover:opacity-100 pointer-events-none",
+          cfg.hoverGradient,
+        )}
+      />
+
       {/* Label */}
       <span
         className={clsx(
-          "text-[10px] font-black tracking-widest uppercase",
-          "italic shrink-0 leading-none w-6 text-left",
+          "pl-1.5 text-sm font-black tracking-widest uppercase",
+          "shrink-0 leading-none w-6 text-left",
+          "transition-colors duration-300",
           cfg.labelText,
+          cfg.hoverLabelText,
         )}
       >
         {label}
@@ -157,7 +155,7 @@ export default function RoleTag({
           }}
           className={clsx(
             "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
-            "text-slate-300 hover:text-slate-600 hover:bg-slate-100/80",
+            "text-slate-300/70 hover:text-slate-700 hover:bg-slate-100/80",
             "border border-transparent hover:border-slate-200",
           )}
           title="添加成员"
@@ -175,7 +173,7 @@ export default function RoleTag({
           disabled={isJoiningSelf}
           className={clsx(
             "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
-            "text-slate-300 hover:text-slate-600 hover:bg-slate-100/80",
+            "text-slate-300/70 hover:text-slate-700 hover:bg-slate-100/80",
             "border border-transparent hover:border-slate-200",
             "disabled:opacity-60 disabled:cursor-not-allowed",
           )}
@@ -194,7 +192,7 @@ export default function RoleTag({
           disabled={isLeavingSelf}
           className={clsx(
             "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
-            "text-slate-300 hover:text-slate-600 hover:bg-slate-100/80",
+            "text-slate-300/70 hover:text-slate-700 hover:bg-slate-100/80",
             "border border-transparent hover:border-slate-200",
             "disabled:opacity-60 disabled:cursor-not-allowed",
           )}
@@ -204,9 +202,13 @@ export default function RoleTag({
         </button>
       )}
 
-      {/* Left progress bar indicator (vertical left border effect instead of bottom) */}
+      {/* Nav-style indicator pill */}
       <div
-        className={clsx("absolute top-0 bottom-0 left-0 w-0.75", cfg.bottomBar)}
+        className={clsx(
+          "absolute left-2 top-1/2 -translate-y-1/2",
+          "w-1 h-3.5 rounded-full shrink-0",
+          cfg.barColor,
+        )}
       />
 
       {pendingLeave && onLeaveSelf && (
