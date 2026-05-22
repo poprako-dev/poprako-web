@@ -40,7 +40,7 @@ export default function ComicDetailHeader({
     <>
       <div className="flex items-center gap-2">
         <div
-          className="px-2 py-0.5 rounded-xs text-md font-black text-white leading-none"
+          className="px-2 py-0.5 rounded-xs text-md opacity-80 font-black text-white leading-none"
           style={{ backgroundColor: "var(--color-green-500)" }}
         >
           #{comicInfo.index + 1}

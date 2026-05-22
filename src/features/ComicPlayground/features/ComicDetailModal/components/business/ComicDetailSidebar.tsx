@@ -5,10 +5,10 @@ import {
   CloudUpload,
   Download,
   Eraser,
-  Hash,
   Image as ImageIcon,
   Languages,
   Search,
+  Tag,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -76,7 +76,11 @@ export default function ComicDetailSidebar({
         )}
       >
         {coverUpload.localCoverUrl ? (
-          <LazyImage src={coverUpload.localCoverUrl} alt={comicInfo.title} className="w-full h-full" />
+          <LazyImage
+            src={coverUpload.localCoverUrl}
+            alt={comicInfo.title}
+            className="w-full h-full"
+          />
         ) : (
           <ImageIcon
             size={24}
@@ -89,37 +93,41 @@ export default function ComicDetailSidebar({
 
         {coverUpload.isUploadingCover && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
-            {coverUpload.coverUploadProgress !== null && coverUpload.coverUploadProgress < 100 && (
-              <>
-                <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
-                  <circle
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    fill="none"
-                    stroke="rgba(255,255,255,0.3)"
-                    strokeWidth="3"
-                  />
-                  <circle
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    fill="none"
-                    stroke="rgba(255,255,255,0.9)"
-                    strokeWidth="3"
-                    strokeDasharray={100.531}
-                    strokeDashoffset={100.531 * (1 - (coverUpload.coverUploadProgress ?? 0) / 100)}
-                    strokeLinecap="round"
-                    className="transition-all duration-300 ease-out"
-                  />
-                </svg>
-                <span className="absolute text-[11px] font-bold text-white/90">
-                  {coverUpload.coverUploadProgress}%
-                </span>
-              </>
-            )}
+            {coverUpload.coverUploadProgress !== null &&
+              coverUpload.coverUploadProgress < 100 && (
+                <>
+                  <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
+                    <circle
+                      cx="20"
+                      cy="20"
+                      r="16"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.3)"
+                      strokeWidth="3"
+                    />
+                    <circle
+                      cx="20"
+                      cy="20"
+                      r="16"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.9)"
+                      strokeWidth="3"
+                      strokeDasharray={100.531}
+                      strokeDashoffset={
+                        100.531 *
+                        (1 - (coverUpload.coverUploadProgress ?? 0) / 100)
+                      }
+                      strokeLinecap="round"
+                      className="transition-all duration-300 ease-out"
+                    />
+                  </svg>
+                  <span className="absolute text-[11px] font-bold text-white/90">
+                    {coverUpload.coverUploadProgress}%
+                  </span>
+                </>
+              )}
           </div>
-      )}
+        )}
 
         {!coverUpload.isUploadingCover && canUploadCover && (
           <>
@@ -151,10 +159,26 @@ export default function ComicDetailSidebar({
       </div>
 
       <div className="bg-stone-100 rounded-sm border border-stone-200 px-2.5 py-0.5 mb-3 shrink-0">
-        <StatItem icon={BookOpen} label="总页数" value={selectedChapter?.pageCount ?? "-"} />
-        <StatItem icon={Hash} label="总单元数" value={selectedChapter?.totalUnitCount ?? "-"} />
-        <StatItem icon={Languages} label="已翻译" value={selectedChapter?.translatedUnitCount ?? "-"} />
-        <StatItem icon={CheckSquare} label="已校对" value={selectedChapter?.proofreadUnitCount ?? "-"} />
+        <StatItem
+          icon={BookOpen}
+          label="总页数"
+          value={selectedChapter?.pageCount ?? "-"}
+        />
+        <StatItem
+          icon={Tag}
+          label="总单元数"
+          value={selectedChapter?.totalUnitCount ?? "-"}
+        />
+        <StatItem
+          icon={Languages}
+          label="已翻译"
+          value={selectedChapter?.translatedUnitCount ?? "-"}
+        />
+        <StatItem
+          icon={CheckSquare}
+          label="已校对"
+          value={selectedChapter?.proofreadUnitCount ?? "-"}
+        />
       </div>
 
       {!selectedChapter && (
@@ -172,7 +196,11 @@ export default function ComicDetailSidebar({
         {selectedChapter && (
           <>
             {canReadOnly && (
-              <ActionButton icon={Search} title="只读查看" onClick={onNavigateReadOnly} />
+              <ActionButton
+                icon={Search}
+                title="只读查看"
+                onClick={onNavigateReadOnly}
+              />
             )}
             {canDeleteChapterPages && (
               <ActionButton

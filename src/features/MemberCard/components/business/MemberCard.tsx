@@ -45,9 +45,7 @@ function RoleTag({ label, isActive, isFirst, isLast }: RoleTagProps) {
         "text-[11px] font-semibold transition-all duration-150",
         isFirst && "rounded-l-[2px]",
         isLast && "rounded-r-[2px]",
-        isActive
-          ? "bg-[#edf3ea] text-stone-500"
-          : "text-stone-200",
+        isActive ? "bg-[#edf3ea] text-stone-500" : "text-stone-200",
       )}
     >
       {label}
@@ -64,10 +62,10 @@ export default function MemberCard({ member, onClick }: Props) {
       onClick={onClick}
       className={clsx(
         "group flex w-full",
-        "bg-white border border-stone-200",
+        "bg-stone-50/10 border border-stone-200",
         "transition-all duration-200",
         "p-3 gap-4 rounded-lg shadow-xs",
-        "hover:-translate-y-0.5 hover:shadow-md",
+        "hover:-translate-y-0.5 hover:shadow-sm",
         onClick && "cursor-pointer",
       )}
     >

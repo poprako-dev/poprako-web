@@ -21,5 +21,6 @@
 - [x] preview bubble disable.
 - [ ] comic subscription.
 - [x] page selector in base translator.
-- [ ] member detail modal style.
+- [x] member detail modal style.
 - [ ] unified button style.
+- [ ] empty team option avatar.

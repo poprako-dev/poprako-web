@@ -397,7 +397,6 @@ export default function ComicPlayground() {
   return (
     <>
       <ComicList
-        mode="translator"
         worksets={worksets}
         activeWorksetId={activeWorksetId}
         onChangeWorkset={setActiveWorksetId}

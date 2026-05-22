@@ -137,7 +137,7 @@ function createStoryComponent(
   assignmentResult: Result<AssignmentInfo[]>,
 ) {
   return () => (
-    <div className="w-[460px]">
+    <div className="w-[720px] max-w-full">
       <ComicProgressItem
         comicInfo={comic}
         mode="translator"
@@ -174,8 +174,35 @@ export const Default: Story = {
   ),
 };
 
+export const ActiveWithin3Months: Story = {
+  name: "3个月内活跃（绿色指示点）",
+  render: createStoryComponent(
+    { ...baseComic, index: 6, title: "チェンソーマン", lastActiveAt: now - 1000 * 60 * 60 * 24 * 10 },
+    { success: true, data: makePinnedChapter() },
+    { success: true, data: makeAssignments() },
+  ),
+};
+
+export const ActiveWithin6Months: Story = {
+  name: "6个月内活跃（黄色指示点）",
+  render: createStoryComponent(
+    { ...baseComic, index: 7, title: "鬼滅の刃", lastActiveAt: now - 1000 * 60 * 60 * 24 * 120 },
+    { success: true, data: makePinnedChapter({ uploadedAt: now - 1000 * 60 * 60 * 24 * 30 }) },
+    { success: true, data: makeAssignments() },
+  ),
+};
+
+export const InactiveOver6Months: Story = {
+  name: "超过6个月未活跃（灰色指示点）",
+  render: createStoryComponent(
+    { ...baseComic, index: 8, title: "HUNTER×HUNTER", lastActiveAt: now - 1000 * 60 * 60 * 24 * 200 },
+    { success: true, data: null },
+    { success: true, data: [] },
+  ),
+};
+
 export const Published: Story = {
-  name: "已发布（绿色状态点）",
+  name: "已发布（全流程完成）",
   render: createStoryComponent(
     { ...baseComic, index: 1, title: "ONE PIECE" },
     { success: true, data: makePinnedChapter({ publishedAt: now - 1000 * 60 * 60 }) },
@@ -184,7 +211,7 @@ export const Published: Story = {
 };
 
 export const NoChapter: Story = {
-  name: "无顶置章节（等待中灰点）",
+  name: "无顶置章节（全灰 pending）",
   render: createStoryComponent(
     { ...baseComic, index: 2, title: "進撃の巨人", lastActiveAt: now - 1000 * 60 * 60 * 24 * 7 },
     { success: true, data: null },
@@ -284,5 +311,33 @@ export const LoadError: Story = {
     { ...baseComic, index: 5, title: "NARUTO" },
     { success: false, error: "Network error" },
     { success: false, error: "Network error" },
+  ),
+};
+
+// ── Hover tooltip 测试 ────────────────────────────
+
+const longNameMembers: AssignmentInfo[] = [
+  makeTranslatorAssignment("user-t1", "超级长的翻译昵称测试用户"),
+  makeTranslatorAssignment("user-t2", "李翻译二号机"),
+  makeTranslatorAssignment("user-t3", "第三位翻译菌"),
+  makeProofreaderAssignment("user-p1", "校对A"),
+  makeProofreaderAssignment("user-p2", "校对B"),
+];
+
+export const HoverTooltip: Story = {
+  name: "hover 分工浮层（多个成员，长短昵称）",
+  render: createStoryComponent(
+    { ...baseComic, index: 9, title: "ぼっち・ざ・ろっく！" },
+    { success: true, data: makePinnedChapter({ translatingAt: now - 1000 * 60 * 60 * 12 }) },
+    { success: true, data: longNameMembers },
+  ),
+};
+
+export const HoverTooltipSingle: Story = {
+  name: "hover 分工浮层（单个成员）",
+  render: createStoryComponent(
+    { ...baseComic, index: 10, title: "葬送のフリーレン" },
+    { success: true, data: makePinnedChapter({ translatingAt: now - 1000 * 60 * 60 * 24 }) },
+    { success: true, data: [makeTranslatorAssignment("user-sole", "唯一翻译者")] },
   ),
 };

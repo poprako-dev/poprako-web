@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
-import { PencilLine, Eye, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import type { ChapterInfo, ComicInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
@@ -26,8 +26,8 @@ type Props = {
   onComicClick?: (comicInfo: ComicInfo) => void;
 };
 
-// 内嵌式漫画列表，展示由父组件注入的 onLoadComics 所决定条件下的漫画卡片
-// 使用 IntersectionObserver 实现无限下滑加载，支持 translator / reviewer 两种模式切换
+// 内嵌式漫画列表（translator 模式），由父组件注入 onLoadComics 决定数据范围
+// 使用 IntersectionObserver 实现无限下滑加载
 export default function EmbeddedComicList({
   mode,
   onLoadComics,
@@ -35,7 +35,6 @@ export default function EmbeddedComicList({
   onLoadAssignments,
   onComicClick,
 }: Props) {
-  const [currentMode, setCurrentMode] = useState<ViewMode>(mode);
   const [comics, setComics] = useState<ComicInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -107,59 +106,10 @@ export default function EmbeddedComicList({
     };
   }, [loadComics]);
 
-  const handleModeChange = (m: ViewMode) => {
-    setCurrentMode(m);
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentMode(mode);
-  }, [mode]);
-
   return (
     <div
       className={clsx("w-full h-full min-h-0 flex flex-col overflow-hidden")}
     >
-      {/* 顶部 mode 切换栏 */}
-      <div className={clsx("flex items-center justify-between shrink-0 pb-4")}>
-        <div className={clsx("flex-1 mr-4")} aria-hidden="true">
-          <div
-            className={clsx("w-full h-0.5 rounded-sm")}
-            style={{
-              background:
-                "linear-gradient(90deg, rgba(148,163,184,1) 0%," +
-                " rgba(148,163,184,0) 60%)",
-            }}
-          />
-        </div>
-        <div className={clsx("flex bg-slate-100 p-1 rounded-md")}>
-          <button
-            type="button"
-            onClick={() => handleModeChange("translator")}
-            className={clsx(
-              "px-3 py-1.5 rounded-sm transition-colors flex items-center gap-2",
-              currentMode === "translator"
-                ? "bg-white shadow-sm text-slate-800 font-medium"
-                : "text-slate-500 hover:text-slate-700 hover:bg-slate-200",
-            )}
-          >
-            <PencilLine size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={() => handleModeChange("reviewer")}
-            className={clsx(
-              "px-3 py-1.5 rounded-sm transition-colors flex items-center gap-2",
-              currentMode === "reviewer"
-                ? "bg-white shadow-sm text-slate-800 font-medium"
-                : "text-slate-500 hover:text-slate-700 hover:bg-slate-200",
-            )}
-          >
-            <Eye size={16} />
-          </button>
-        </div>
-      </div>
-
       {/* 漫画卡片列表 */}
       <div
         ref={scrollContainerRef}
@@ -176,7 +126,7 @@ export default function EmbeddedComicList({
             <ComicCard
               key={comic.id}
               comicInfo={comic}
-              mode={currentMode}
+              mode={mode}
               onClick={() => onComicClick?.(comic)}
               onLoadPinnedChapter={onLoadLatestChapter}
               onLoadAssignments={loadAssignments}

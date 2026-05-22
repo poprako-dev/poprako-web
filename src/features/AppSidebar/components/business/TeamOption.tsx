@@ -406,7 +406,7 @@ export default function TeamOption({
               "px-2 py-2 rounded-sm h-11",
               "flex flex-col justify-center",
               "transition-colors duration-300",
-              isListOpen ? "bg-green-50" : "hover:bg-gray-50",
+              isListOpen ? "bg-gray-100/60" : "hover:bg-gray-100/80",
             )}
           >
             <div className="flex items-center gap-1.5">
