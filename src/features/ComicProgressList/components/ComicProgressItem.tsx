@@ -42,21 +42,33 @@ const WORKFLOW_STEPS = [
     field: "assignedTranslatorAt" as const,
     getStatus: translateWorkflowStatus,
     getTime: (ch: ChapterInfo, s: WorkflowStatus) =>
-      s === "ongoing" ? ch.translatingAt : s === "completed" ? ch.translatedAt : undefined,
+      s === "ongoing"
+        ? ch.translatingAt
+        : s === "completed"
+          ? ch.translatedAt
+          : undefined,
   },
   {
     label: "校",
     field: "assignedProofreaderAt" as const,
     getStatus: proofreadWorkflowStatus,
     getTime: (ch: ChapterInfo, s: WorkflowStatus) =>
-      s === "ongoing" ? ch.proofreadingAt : s === "completed" ? ch.proofreadAt : undefined,
+      s === "ongoing"
+        ? ch.proofreadingAt
+        : s === "completed"
+          ? ch.proofreadAt
+          : undefined,
   },
   {
     label: "嵌",
     field: "assignedTypesetterAt" as const,
     getStatus: typesetWorkflowStatus,
     getTime: (ch: ChapterInfo, s: WorkflowStatus) =>
-      s === "ongoing" ? ch.typesettingAt : s === "completed" ? ch.typesetAt : undefined,
+      s === "ongoing"
+        ? ch.typesettingAt
+        : s === "completed"
+          ? ch.typesetAt
+          : undefined,
   },
   {
     label: "监",
@@ -100,6 +112,22 @@ const STATUS_CONFIG: Record<
   },
 };
 
+const ROLE_NAMES: Record<string, string> = {
+  图: "图源",
+  翻: "翻译",
+  校: "校对",
+  嵌: "嵌字",
+  监: "监修",
+  传: "上传",
+};
+
+const STATUS_LABELS: Record<WorkflowStatus, string> = {
+  pending: "待开始",
+  ongoing: "进行中",
+  completed: "已完成",
+  unset: "未设置",
+};
+
 function getActivityStatusColor(lastActiveAt: number | undefined): string {
   if (!lastActiveAt) return "bg-stone-300";
   const diff = Date.now() - lastActiveAt;
@@ -128,6 +156,8 @@ export default function ComicProgressItem({
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
   const [hoveredStep, setHoveredStep] = useState<string | null>(null);
   const [showCover, setShowCover] = useState(false);
+  const [showTitleDropdown, setShowTitleDropdown] = useState(false);
+  const [showMobileProgress, setShowMobileProgress] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -187,14 +217,15 @@ export default function ComicProgressItem({
         }
       }}
       className={clsx(
-        "group relative w-full flex items-center gap-3 px-3 py-2",
+        "group relative w-full flex items-center gap-2 px-3 py-2",
         "bg-stone-50/10 hover:bg-stone-50/40",
         "border border-stone-200 hover:border-stone-200",
-        "rounded-md transition-all duration-150 cursor-pointer",
+        "rounded-sm transition-all duration-150 cursor-pointer",
         "hover:-translate-y-0.5 shadow-xs",
         "shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm",
         "py-2",
-        (showCover || hoveredStep) && "z-10",
+        (showCover || hoveredStep || showTitleDropdown || showMobileProgress) &&
+          "z-10",
       )}
     >
       {/* ===== 左对齐：indicator dot + 序号 + 标题 + 章节 ===== */}
@@ -222,7 +253,7 @@ export default function ComicProgressItem({
           {showCover && comicInfo.coverUrl && (
             <div
               className={clsx(
-                "absolute top-full left-1/2 -translate-x-1/2 mt-2 z-20",
+                "absolute top-full left-1/2 -translate-x-1/2 mt-3.5 z-20",
                 "w-20 h-28 rounded-sm overflow-hidden shadow-md",
                 "border border-stone-200 bg-stone-100",
               )}
@@ -237,23 +268,42 @@ export default function ComicProgressItem({
         </span>
 
         {/* 漫画标题 */}
-        <h3
-          className={clsx(
-            "text-sm font-bold text-slate-700",
-            "truncate shrink-0 max-w-[200px]",
-          )}
+        <div
+          className="relative min-w-0"
+          onMouseEnter={() => setShowTitleDropdown(true)}
+          onMouseLeave={() => setShowTitleDropdown(false)}
         >
-          {comicInfo.title || "未命名"}
-        </h3>
+          <h3
+            className={clsx(
+              "text-base font-bold text-slate-700",
+              "truncate min-w-0",
+            )}
+          >
+            {comicInfo.title || "未命名"}
+          </h3>
+          {showTitleDropdown && comicInfo.title && (
+            <div
+              className={clsx(
+                "absolute top-full left-0 mt-3.5 z-20",
+                "bg-white/95 border border-stone-200 rounded-sm shadow-sm",
+                "py-1.5 px-2.5 w-60",
+              )}
+            >
+              <p className="text-sm font-bold text-stone-500 break-words">
+                {comicInfo.title}
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* 章节信息 */}
-        <span className="text-[11px] text-slate-400 truncate shrink-0 max-w-[180px]">
+        <span className="text-[11px] text-slate-400 truncate shrink-0 max-w-[120px]">
           {chapter?.index ? `[#${chapter.index}]` : "—"}
         </span>
       </div>
 
-      {/* ===== 右对齐：六个进度槽 ===== */}
-      <div className="flex items-center gap-1 shrink-0">
+      {/* ===== 右对齐：六个进度槽 (桌面版) ===== */}
+      <div className="hidden sm:flex items-center gap-1 shrink-0">
         {WORKFLOW_STEPS.map((step) => {
           const matched = assignments.filter((a) => a[step.field] != null);
           const status = chapter
@@ -268,7 +318,7 @@ export default function ComicProgressItem({
             <div key={step.label} className="relative">
               <div
                 className={clsx(
-                  "w-10 h-7 rounded-xs flex items-center justify-center",
+                  "w-9 h-6 rounded-xs flex items-center justify-center",
                   "text-xs font-bold font-mono select-none",
                   "transition-colors duration-150",
                   cfg.bg,
@@ -296,6 +346,72 @@ export default function ComicProgressItem({
             </div>
           );
         })}
+      </div>
+
+      {/* ===== 移动版：紧凑 accent bar ===== */}
+      <div className="flex sm:hidden items-center shrink-0">
+        <div className="relative">
+          <div
+            className="flex rounded-xs overflow-hidden cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMobileProgress((prev) => !prev);
+            }}
+          >
+            {WORKFLOW_STEPS.map((step) => {
+              const status = chapter
+                ? step.getStatus(chapter)
+                : ("pending" as WorkflowStatus);
+              const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+              return (
+                <div
+                  key={step.label}
+                  className={clsx("h-2 w-3 shrink-0", cfg.dot)}
+                />
+              );
+            })}
+          </div>
+          {showMobileProgress && chapter && (
+            <div
+              className={clsx(
+                "absolute top-full right-0 mt-4.5 z-20",
+                "bg-white/95 border border-stone-200 rounded-sm shadow-sm",
+                "py-1.5 px-2.5",
+              )}
+            >
+              <div className="flex flex-col gap-1.5 text-xs whitespace-nowrap">
+                {WORKFLOW_STEPS.map((step) => {
+                  const status = step.getStatus(chapter);
+                  const time = step.getTime(chapter, status);
+                  const matched = assignments.filter(
+                    (a) => a[step.field] != null,
+                  );
+                  const names = matched
+                    .map((a) => a.user?.name ?? a.userId)
+                    .filter(Boolean);
+
+                  return (
+                    <div key={step.label}>
+                      <div className="text-stone-500">
+                        <span className="font-bold">
+                          {ROLE_NAMES[step.label]}：
+                        </span>
+                        <span className="italic">{STATUS_LABELS[status]}</span>
+                        <span className="font-bold"> 时间：</span>
+                        <span className="italic">
+                          {time ? formatDate(time) : "—"}
+                        </span>
+                      </div>
+                      <div className="text-stone-400 italic">
+                        {names.length > 0 ? names.join("、") : "—"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

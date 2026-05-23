@@ -119,9 +119,7 @@ function makeTypesetterAssignment(userId: string, userName: string) {
   } as AssignmentInfo;
 }
 
-function makeAssignments(
-  extras?: AssignmentInfo[],
-): AssignmentInfo[] {
+function makeAssignments(extras?: AssignmentInfo[]): AssignmentInfo[] {
   const base = [
     makeTranslatorAssignment("user-t1", "李翻译"),
     makeProofreaderAssignment("user-p1", "王校对"),
@@ -177,7 +175,12 @@ export const Default: Story = {
 export const ActiveWithin3Months: Story = {
   name: "3个月内活跃（绿色指示点）",
   render: createStoryComponent(
-    { ...baseComic, index: 6, title: "チェンソーマン", lastActiveAt: now - 1000 * 60 * 60 * 24 * 10 },
+    {
+      ...baseComic,
+      index: 6,
+      title: "チェンソーマン",
+      lastActiveAt: now - 1000 * 60 * 60 * 24 * 10,
+    },
     { success: true, data: makePinnedChapter() },
     { success: true, data: makeAssignments() },
   ),
@@ -186,8 +189,16 @@ export const ActiveWithin3Months: Story = {
 export const ActiveWithin6Months: Story = {
   name: "6个月内活跃（黄色指示点）",
   render: createStoryComponent(
-    { ...baseComic, index: 7, title: "鬼滅の刃", lastActiveAt: now - 1000 * 60 * 60 * 24 * 120 },
-    { success: true, data: makePinnedChapter({ uploadedAt: now - 1000 * 60 * 60 * 24 * 30 }) },
+    {
+      ...baseComic,
+      index: 7,
+      title: "鬼滅の刃",
+      lastActiveAt: now - 1000 * 60 * 60 * 24 * 120,
+    },
+    {
+      success: true,
+      data: makePinnedChapter({ uploadedAt: now - 1000 * 60 * 60 * 24 * 30 }),
+    },
     { success: true, data: makeAssignments() },
   ),
 };
@@ -195,7 +206,12 @@ export const ActiveWithin6Months: Story = {
 export const InactiveOver6Months: Story = {
   name: "超过6个月未活跃（灰色指示点）",
   render: createStoryComponent(
-    { ...baseComic, index: 8, title: "HUNTER×HUNTER", lastActiveAt: now - 1000 * 60 * 60 * 24 * 200 },
+    {
+      ...baseComic,
+      index: 8,
+      title: "HUNTER×HUNTER",
+      lastActiveAt: now - 1000 * 60 * 60 * 24 * 200,
+    },
     { success: true, data: null },
     { success: true, data: [] },
   ),
@@ -205,7 +221,10 @@ export const Published: Story = {
   name: "已发布（全流程完成）",
   render: createStoryComponent(
     { ...baseComic, index: 1, title: "ONE PIECE" },
-    { success: true, data: makePinnedChapter({ publishedAt: now - 1000 * 60 * 60 }) },
+    {
+      success: true,
+      data: makePinnedChapter({ publishedAt: now - 1000 * 60 * 60 }),
+    },
     { success: true, data: makeAssignments() },
   ),
 };
@@ -213,7 +232,12 @@ export const Published: Story = {
 export const NoChapter: Story = {
   name: "无顶置章节（全灰 pending）",
   render: createStoryComponent(
-    { ...baseComic, index: 2, title: "進撃の巨人", lastActiveAt: now - 1000 * 60 * 60 * 24 * 7 },
+    {
+      ...baseComic,
+      index: 2,
+      title: "進撃の巨人",
+      lastActiveAt: now - 1000 * 60 * 60 * 24 * 7,
+    },
     { success: true, data: null },
     { success: true, data: [] },
   ),
@@ -223,11 +247,14 @@ export const AllRolesFilled: Story = {
   name: "所有流程岗位已分配",
   render: createStoryComponent(
     { ...baseComic, index: 3, title: "SPY×FAMILY" },
-    { success: true, data: makePinnedChapter({
-      translatedAt: now - 1000 * 60 * 60 * 12,
-      proofreadAt: now - 1000 * 60 * 60 * 8,
-      typesetAt: now - 1000 * 60 * 60 * 4,
-    }) },
+    {
+      success: true,
+      data: makePinnedChapter({
+        translatedAt: now - 1000 * 60 * 60 * 12,
+        proofreadAt: now - 1000 * 60 * 60 * 8,
+        typesetAt: now - 1000 * 60 * 60 * 4,
+      }),
+    },
     {
       success: true,
       data: [
@@ -299,8 +326,19 @@ export const AllRolesFilled: Story = {
 export const NoAssignments: Story = {
   name: "无人分配（空徽章）",
   render: createStoryComponent(
-    { ...baseComic, index: 4, title: "ドラゴンボール", lastActiveAt: now - 1000 * 60 * 60 * 24 * 3 },
-    { success: true, data: makePinnedChapter({ uploadedAt: now - 1000 * 60 * 60 * 24 * 2, translatingAt: now - 1000 * 60 * 60 * 12 }) },
+    {
+      ...baseComic,
+      index: 4,
+      title: "ドラゴンボール",
+      lastActiveAt: now - 1000 * 60 * 60 * 24 * 3,
+    },
+    {
+      success: true,
+      data: makePinnedChapter({
+        uploadedAt: now - 1000 * 60 * 60 * 24 * 2,
+        translatingAt: now - 1000 * 60 * 60 * 12,
+      }),
+    },
     { success: true, data: [] },
   ),
 };
@@ -328,7 +366,10 @@ export const HoverTooltip: Story = {
   name: "hover 分工浮层（多个成员，长短昵称）",
   render: createStoryComponent(
     { ...baseComic, index: 9, title: "ぼっち・ざ・ろっく！" },
-    { success: true, data: makePinnedChapter({ translatingAt: now - 1000 * 60 * 60 * 12 }) },
+    {
+      success: true,
+      data: makePinnedChapter({ translatingAt: now - 1000 * 60 * 60 * 12 }),
+    },
     { success: true, data: longNameMembers },
   ),
 };
@@ -337,7 +378,13 @@ export const HoverTooltipSingle: Story = {
   name: "hover 分工浮层（单个成员）",
   render: createStoryComponent(
     { ...baseComic, index: 10, title: "葬送のフリーレン" },
-    { success: true, data: makePinnedChapter({ translatingAt: now - 1000 * 60 * 60 * 24 }) },
-    { success: true, data: [makeTranslatorAssignment("user-sole", "唯一翻译者")] },
+    {
+      success: true,
+      data: makePinnedChapter({ translatingAt: now - 1000 * 60 * 60 * 24 }),
+    },
+    {
+      success: true,
+      data: [makeTranslatorAssignment("user-sole", "唯一翻译者")],
+    },
   ),
 };

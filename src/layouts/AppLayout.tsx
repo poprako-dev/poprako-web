@@ -10,7 +10,7 @@ import LoadingCircle from "@/components/ui/LoadingCircle";
 
 const mobileNavItems = [
   { path: "/workspace", icon: LayoutDashboard, label: "工作区" },
-  { path: "/comic-playground", icon: BookOpen, label: "漫画广场" },
+  { path: "/comic-playground", icon: BookOpen, label: "漫画" },
   { path: "/member-list", icon: Users, label: "成员" },
   { path: "/system-mail", icon: Mail, label: "消息" },
   { path: "/settings", icon: Settings, label: "设置" },

@@ -42,10 +42,10 @@ export default function ComicCard({
       className={clsx(
         "w-full flex flex-col",
         "bg-stone-50/10 rounded-sm overflow-hidden shadow-xs",
-        "border border-slate-200",
+        "border border-stone-200",
         "transition-all cursor-pointer duration-300",
         "hover:-translate-y-0.5 hover:shadow-sm",
-        "h-36",
+        "h-26",
       )}
     >
       {mode === "translator" && (

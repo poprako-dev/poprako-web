@@ -1,7 +1,14 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { FileText, Languages, CheckSquare, Clock, Tag } from "lucide-react";
+import {
+  FileText,
+  Languages,
+  CheckSquare,
+  Clock,
+  Tag,
+  Hash,
+} from "lucide-react";
 import type { ChapterInfo, ComicInfo } from "@/types";
 import MultiProgressBar from "@/components/ui/MultiProgressBar";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
@@ -16,6 +23,16 @@ type Props = {
   ) => Promise<Result<ChapterInfo | null>>;
 };
 
+function getActivityStatusColor(lastActiveAt: number | undefined): string {
+  if (!lastActiveAt) return "bg-stone-300";
+  const diff = Date.now() - lastActiveAt;
+  const threeMonths = 1000 * 60 * 60 * 24 * 90;
+  const sixMonths = 1000 * 60 * 60 * 24 * 180;
+  if (diff <= threeMonths) return "bg-[#2e5c33]";
+  if (diff <= sixMonths) return "bg-amber-200";
+  return "bg-stone-300";
+}
+
 function formatDate(ts: number | undefined): string {
   if (!ts) return "";
   const d = new Date(ts);
@@ -24,13 +41,16 @@ function formatDate(ts: number | undefined): string {
 
 function DataTag({ icon, value }: { icon: React.ReactNode; value: number }) {
   return (
-    <div className="flex items-center text-slate-500 bg-gray-100/80 px-1.5 py-1 rounded-sm min-w-0">
-      <span className="text-slate-400 ml-1 w-5 shrink-0 flex items-center justify-center">
+    <div
+      className={clsx(
+        "flex flex-1 items-center justify-center gap-1 py-0.5",
+        "text-[11px] font-semibold text-stone-500",
+      )}
+    >
+      <span className="text-stone-400 flex items-center justify-center">
         {icon}
       </span>
-      <span className="text-sm font-medium leading-none flex-1 text-center min-w-0">
-        {value}
-      </span>
+      <span className="leading-none">{value}</span>
     </div>
   );
 }
@@ -77,85 +97,88 @@ export default function TranslatorComicCard({
   const pageCount = chapter?.pageCount ?? 0;
 
   return (
-    <div className="flex flex-col w-full h-full">
-      {/* Header：标题 + 话号 */}
-      <div className="px-3 py-2 shrink-0 bg-slate-50">
-        <div className="flex items-center gap-3">
+    <div className="flex w-full h-full px-2 pt-1 pb-1.5">
+      {/* 左侧封面 */}
+      <div className="w-16 h-full shrink-0 overflow-hidden bg-stone-100">
+        {comicInfo.coverUrl ? (
+          <img
+            src={comicInfo.coverUrl}
+            alt={comicInfo.title}
+            className="w-full h-full rounded-sm object-cover grayscale-[0.3]"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <FileText size={20} className="text-stone-300" />
+          </div>
+        )}
+      </div>
+
+      {/* 右侧数据 */}
+      <div className="flex-1 flex flex-col justify-between min-w-0 px-2 py-1">
+        {/* 第一行：标题 + 状态指示线 */}
+        <div className="flex items-center justify-between gap-1.5">
           <h3
             className={clsx(
-              "text-base font-bold text-slate-700",
-              "truncate flex-1 leading-none",
+              "text-base font-bold text-stone-700",
+              "truncate leading-tight",
             )}
           >
             {comicInfo.title || "未命名"}
           </h3>
-          <span
+          <div
             className={clsx(
-              "text-xs font-mono text-slate-400",
-              "bg-slate-100 px-1.5 py-0.5 rounded shrink-0",
+              "h-3 w-1 rounded-full shrink-0",
+              getActivityStatusColor(comicInfo.lastActiveAt),
             )}
-          >
-            #{comicInfo.index + 1}
-          </span>
-        </div>
-      </div>
-
-      {/* 主体区域：左封面 + 右侧三行统计 */}
-      <div className="flex flex-1 px-3 pb-2 pt-1 gap-2 items-stretch min-h-0">
-        <div className="w-16 h-full shrink-0 rounded overflow-hidden bg-slate-100">
-          {comicInfo.coverUrl && (
-            <img
-              src={comicInfo.coverUrl}
-              alt={comicInfo.title}
-              className="w-full h-full object-cover"
-            />
-          )}
+          />
         </div>
 
-        <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
-          <div className="flex items-center gap-1.5 text-sm text-slate-400">
-            <div className="flex items-center gap-1 shrink-0">
-              <Clock size={14} strokeWidth={2.5} />
-              <span className="font-medium">
-                {formatDate(comicInfo.lastActiveAt)}
-              </span>
-            </div>
-            <span className="text-slate-300">·</span>
-            <div className="flex items-center gap-1 shrink-0">
-              <FileText size={14} strokeWidth={2.5} />
-              <span className="font-medium">{pageCount}P</span>
-            </div>
+        {/* 第二行：序号 + 日期 + 页数 */}
+        <div className="flex items-center gap-1 text-[11px] text-stone-400/80 font-mono">
+          <Hash size={11} strokeWidth={2.5} />
+          <span>{comicInfo.index + 1}</span>
+          <span className="text-stone-200">|</span>
+          <div className="flex items-center gap-1 shrink-0">
+            <Clock size={11} strokeWidth={2.5} />
+            <span className="tracking-tighter">
+              {formatDate(comicInfo.lastActiveAt)}
+            </span>
           </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <DataTag icon={<Tag size={18} strokeWidth={2.5} />} value={total} />
-            <DataTag
-              icon={<Languages size={18} strokeWidth={2.5} />}
-              value={translated}
-            />
-            <DataTag
-              icon={<CheckSquare size={18} strokeWidth={2.5} />}
-              value={proofread}
-            />
-          </div>
-
-          <div className="pt-1">
-            <MultiProgressBar
-              fullWidth
-              height={0.5}
-              bars={[
-                {
-                  progressPercent: translationPct,
-                  barColorClass: "bg-orange-200",
-                },
-                {
-                  progressPercent: proofreadPct,
-                  barColorClass: "bg-pink-200",
-                },
-              ]}
-            />
+          <span className="text-stone-200">|</span>
+          <div className="flex items-center gap-1 shrink-0">
+            <FileText size={11} strokeWidth={2.5} />
+            <span>{pageCount}P</span>
           </div>
         </div>
+
+        {/* 第三行：统计标签 — 内陷式槽 */}
+        <div className="flex rounded-[3px] bg-stone-200/30 p-0.5">
+          <DataTag icon={<Tag size={12} strokeWidth={2.5} />} value={total} />
+          <DataTag
+            icon={<Languages size={12} strokeWidth={2.5} />}
+            value={translated}
+          />
+          <DataTag
+            icon={<CheckSquare size={12} strokeWidth={2.5} />}
+            value={proofread}
+          />
+        </div>
+
+        {/* 第四行：进度条 */}
+        <MultiProgressBar
+          fullWidth
+          height={0.5}
+          bars={[
+            {
+              progressPercent: translationPct,
+              barColorClass: "bg-stone-400",
+            },
+            {
+              progressPercent: proofreadPct,
+              barColorClass: "bg-amber-200",
+            },
+          ]}
+        />
       </div>
     </div>
   );

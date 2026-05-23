@@ -1,19 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import EmbeddedComicList from "../../features/ComcList/components/business/EmbeddedComicList";
+import ComicTranslationList from "../../features/ComcList/components/business/EmbeddedComicList";
 import type { ComicInfo } from "@/types/comic";
 import type { ChapterInfo } from "@/types/chapter";
 import type { AssignmentInfo } from "@/types/assignment";
 
-const meta: Meta<typeof EmbeddedComicList> = {
+const meta: Meta<typeof ComicTranslationList> = {
   title: "features/EmbeddedComicList",
-  component: EmbeddedComicList,
+  component: ComicTranslationList,
   parameters: {
     layout: "padded",
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof EmbeddedComicList>;
+type Story = StoryObj<typeof ComicTranslationList>;
 
 const now = Date.now();
 

@@ -126,6 +126,12 @@ export default function HoverSelect({
       {/* 触发器按钮 */}
       <button
         type="button"
+        onClick={() => {
+          // 点击直接切换展开/收起（无需等待 hover 计时器）
+          clearOpenTimer();
+          clearCloseTimer();
+          setIsOpen((prev) => !prev);
+        }}
         className={clsx(
           "flex h-full w-full items-center justify-between px-4 py-1",
           "rounded-sm font-medium outline-none",

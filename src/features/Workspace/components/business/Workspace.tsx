@@ -4,9 +4,8 @@ import type { Result } from "@/types/utils/result";
 import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
-import EmbeddedComicList from "@/features/ComcList/components/business/EmbeddedComicList";
-import ComicDetailModal from
-  "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
+import ComicTranslationList from "@/features/ComcList/components/business/EmbeddedComicList";
+import ComicDetailModal from "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import {
@@ -35,7 +34,10 @@ import {
   listAssignmentsByChapter,
   upsertAssignment,
 } from "@/api/assignment";
-import type { ListChapterArgs, WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
+import type {
+  ListChapterArgs,
+  WorkflowTransition,
+} from "@/features/ComicPlayground/types/chapter";
 import { roleMask, type Role } from "@/types/role";
 import { listMembers } from "@/api/member";
 import clsx from "clsx";
@@ -69,7 +71,9 @@ export default function Workspace() {
   const selectedComicActiveMember = useMemo(() => {
     const teamId = selectedComicTeamId;
     if (!teamId) return null;
-    return loginState?.memberInfos.find((member) => member.teamId === teamId) ?? null;
+    return (
+      loginState?.memberInfos.find((member) => member.teamId === teamId) ?? null
+    );
   }, [loginState?.memberInfos, selectedComicTeamId]);
 
   const resolveActiveMember = useCallback(() => {
@@ -173,7 +177,11 @@ export default function Workspace() {
   );
 
   const handleRemoveRole = useCallback(
-    async (chapterId: string, userId: string, role: Role): Promise<Result<void>> => {
+    async (
+      chapterId: string,
+      userId: string,
+      role: Role,
+    ): Promise<Result<void>> => {
       const assignmentResult = await handleLoadAssignmentsForChapter(chapterId);
       if (!assignmentResult.success) {
         return assignmentResult;
@@ -206,7 +214,10 @@ export default function Workspace() {
   );
 
   const handleCreateChapter = useCallback(
-    async (args: { comicId: string; subtitle?: string }): Promise<Result<string>> => {
+    async (args: {
+      comicId: string;
+      subtitle?: string;
+    }): Promise<Result<string>> => {
       return createChapter(args);
     },
     [],
@@ -241,7 +252,11 @@ export default function Workspace() {
   );
 
   const handleImportChapter = useCallback(
-    async (args: { chapterId: string; content: string; format: "json" | "lp" }) => {
+    async (args: {
+      chapterId: string;
+      content: string;
+      format: "json" | "lp";
+    }) => {
       return importChapter(args);
     },
     [],
@@ -306,7 +321,7 @@ export default function Workspace() {
       </div>
 
       <div className={clsx("flex-1 min-h-0 min-w-0 overflow-x-hidden")}>
-        <EmbeddedComicList
+        <ComicTranslationList
           key={comicListRefreshKey}
           mode="translator"
           onLoadComics={fetchMyComics}

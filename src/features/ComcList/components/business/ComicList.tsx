@@ -9,7 +9,7 @@ import type { ViewMode } from "@/features/ComicCard/types/types";
 import type { BinaryFilter, TripleFilter } from "../../types/types";
 import ComicListLayout from "../../layouts/ComicListLayout";
 import FilterHeader from "./FilterHeader";
-import EmbeddedComicList from "./EmbeddedComicList";
+import ComicTranslationList from "./EmbeddedComicList";
 import WorksetSidebar from "./WorksetSidebar";
 import ComicProgressList from "@/features/ComicProgressList";
 
@@ -155,11 +155,9 @@ export default function ComicList({
           </div>
 
           {activeMode === "translator" && (
-            <EmbeddedComicList
-              mode="translator"
+            <ComicTranslationList
               onLoadComics={onLoadComics}
               onLoadLatestChapter={onLoadLatestChapter}
-              onLoadAssignments={onLoadAssignments}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
                 onComicClick?.(comicInfo);

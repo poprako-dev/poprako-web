@@ -24,3 +24,4 @@
 - [x] member detail modal style.
 - [ ] unified button style.
 - [ ] empty team option avatar.
+- [ ] mailbox style.

@@ -2,37 +2,27 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
 import type { ChapterInfo, ComicInfo } from "@/types";
-import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
-import type { ViewMode } from "@/features/ComicCard/types/types";
-import ComicCard from "@/features/ComicCard/components/business/ComicCard";
+import ComicTranslationCard from "@/features/ComicCard/components/business/ComicTranslationCard";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 
 type Props = {
-  mode: ViewMode;
   // 分页加载漫画列表，错误时返回字符串
   onLoadComics: (
     offset: number,
     limit: number,
   ) => Promise<ComicInfo[] | string>;
-  // 加载指定漫画的最新章节，供 ComicCard 展示进度信息
   onLoadLatestChapter: (
     comicInfo: ComicInfo,
   ) => Promise<Result<ChapterInfo | null>>;
-  // 加载指定漫画的分工列表，reviewer 模式下使用
-  onLoadAssignments?: (
-    comicInfo: ComicInfo,
-  ) => Promise<Result<AssignmentInfo[]>>;
   onComicClick?: (comicInfo: ComicInfo) => void;
 };
 
 // 内嵌式漫画列表（translator 模式），由父组件注入 onLoadComics 决定数据范围
 // 使用 IntersectionObserver 实现无限下滑加载
-export default function EmbeddedComicList({
-  mode,
+export default function ComicTranslationList({
   onLoadComics,
   onLoadLatestChapter,
-  onLoadAssignments,
   onComicClick,
 }: Props) {
   const [comics, setComics] = useState<ComicInfo[]>([]);
@@ -43,16 +33,6 @@ export default function EmbeddedComicList({
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const { showToast } = useToastStore();
-
-  const loadAssignments = useCallback(
-    async (comicInfo: ComicInfo): Promise<Result<AssignmentInfo[]>> => {
-      if (!onLoadAssignments) {
-        return { success: true, data: [] };
-      }
-      return onLoadAssignments(comicInfo);
-    },
-    [onLoadAssignments],
-  );
 
   const loadComics = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -123,13 +103,11 @@ export default function EmbeddedComicList({
           )}
         >
           {comics.map((comic) => (
-            <ComicCard
+            <ComicTranslationCard
               key={comic.id}
               comicInfo={comic}
-              mode={mode}
               onClick={() => onComicClick?.(comic)}
               onLoadPinnedChapter={onLoadLatestChapter}
-              onLoadAssignments={loadAssignments}
             />
           ))}
         </div>

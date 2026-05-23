@@ -36,42 +36,45 @@ export default function ComicDetailHeader({
   onDelete,
   onClose,
 }: Props) {
+  const chapterOption = (
+    <ChapterOption
+      comicInfo={comicInfo}
+      chapters={chapters}
+      selectedChapter={selectedChapter}
+      hasMore={hasMore}
+      isLoading={isLoading}
+      onLoadMore={onLoadMore}
+      onSelect={onSelect}
+      onCreateChapter={
+        onCreateChapter && canCreateChapter
+          ? async (subtitle) => onCreate(subtitle)
+          : undefined
+      }
+      onDelete={onDeleteChapter ? async (id) => onDelete(id) : undefined}
+    />
+  );
+
   return (
-    <>
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-1.5 w-full min-w-0">
+      <div className="flex items-center gap-2 min-w-0">
         <div
-          className="px-2 py-0.5 rounded-xs text-md opacity-80 font-black text-white leading-none"
+          className="px-2 py-0.5 rounded-xs text-md opacity-80 font-black text-white leading-none shrink-0"
           style={{ backgroundColor: "var(--color-green-500)" }}
         >
           #{comicInfo.index + 1}
         </div>
-        <h1 className="text-lg font-black tracking-tight text-stone-700">
+        <h1 className="text-lg font-black tracking-tight text-stone-700 min-w-0 flex-1">
           {comicInfo.title}
         </h1>
-      </div>
-      <div className="flex items-center gap-2">
-        <ChapterOption
-          comicInfo={comicInfo}
-          chapters={chapters}
-          selectedChapter={selectedChapter}
-          hasMore={hasMore}
-          isLoading={isLoading}
-          onLoadMore={onLoadMore}
-          onSelect={onSelect}
-          onCreateChapter={
-            onCreateChapter && canCreateChapter
-              ? async (subtitle) => onCreate(subtitle)
-              : undefined
-          }
-          onDelete={onDeleteChapter ? async (id) => onDelete(id) : undefined}
-        />
+        <div className="hidden sm:block shrink-0">{chapterOption}</div>
         <button
           onClick={onClose}
-          className="text-stone-400 hover:text-stone-700 transition-colors p-1"
+          className="text-stone-400 hover:text-stone-700 transition-colors p-1 shrink-0"
         >
           <X size={18} />
         </button>
       </div>
-    </>
+      <div className="sm:hidden">{chapterOption}</div>
+    </div>
   );
 }
