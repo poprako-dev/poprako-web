@@ -4,14 +4,14 @@ import type { Result } from "@/types/utils/result";
 import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
-import ComicTranslationList from "@/features/ComcList/components/business/EmbeddedComicList";
-import ComicDetailModal from "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
+import ComicTranslationList from "@/features/ComcList/components/business/ComicTranslationList";
+import ComicDetailModal from
+  "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import {
   fetchMyComics,
   fetchLatestChapter,
-  fetchComicAssignments,
 } from "../../api/workspace";
 import { deleteComic, getComic } from "@/features/ComicPlayground/api/comic";
 import {
@@ -41,8 +41,12 @@ import type {
 import { roleMask, type Role } from "@/types/role";
 import { listMembers } from "@/api/member";
 import clsx from "clsx";
-import { addChapterPages } from "@/features/ComicPlayground/features/ComicDetailModal/pageUpload";
-import { useComicDetailHost } from "@/features/ComicPlayground/features/ComicDetailModal/hook/useComicDetailHost";
+import {
+  addChapterPages,
+} from "@/features/ComicPlayground/features/ComicDetailModal/pageUpload";
+import {
+  useComicDetailHost,
+} from "@/features/ComicPlayground/features/ComicDetailModal/hook/useComicDetailHost";
 
 // 个人工作区组件，会直接放置在 WorkspacePage 中，展示个人工作区的相关内容
 // 所以自身不设定高度，而是适应父组件
@@ -323,10 +327,8 @@ export default function Workspace() {
       <div className={clsx("flex-1 min-h-0 min-w-0 overflow-x-hidden")}>
         <ComicTranslationList
           key={comicListRefreshKey}
-          mode="translator"
           onLoadComics={fetchMyComics}
           onLoadLatestChapter={fetchLatestChapter}
-          onLoadAssignments={fetchComicAssignments}
           onComicClick={openComicDetail}
         />
       </div>

@@ -238,7 +238,6 @@ function InteractiveComicList() {
   return (
     <div className="h-screen w-full">
       <ComicList
-        mode="translator"
         worksets={worksets}
         activeWorksetId={activeWsId}
         onChangeWorkset={(id) => setActiveWsId(id)}
@@ -297,7 +296,7 @@ function ReviewerComicList() {
   return (
     <div className="h-screen w-full">
       <ComicList
-        mode="reviewer"
+        initialMode="reviewer"
         worksets={mockWorksets}
         activeWorksetId={activeWsId}
         onChangeWorkset={(id) => setActiveWsId(id)}
@@ -357,7 +356,6 @@ export const EmptyState: Story = {
     return (
       <div className="h-screen w-full">
         <ComicList
-          mode="translator"
           worksets={mockWorksets}
           activeWorksetId="ws-1"
           onChangeWorkset={() => {}}
@@ -408,7 +406,6 @@ export const SingleWorkset: Story = {
     return (
       <div className="h-screen w-full">
         <ComicList
-          mode="translator"
           worksets={[mockWorksets[0]]}
           activeWorksetId="ws-1"
           onChangeWorkset={() => {}}

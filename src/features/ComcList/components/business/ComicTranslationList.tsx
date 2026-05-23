@@ -1,31 +1,28 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
-import type { ComicInfo, ChapterInfo } from "@/types";
-import type { AssignmentInfo } from "@/types/assignment";
+import type { ChapterInfo, ComicInfo } from "@/types";
 import type { Result } from "@/types/utils/result";
+import ComicTranslationCard from "@/features/ComicCard/components/business/ComicTranslationCard";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
-import ComicProgressItem from "./ComicProgressItem";
 
 type Props = {
-  onLoadComics: (offset: number, limit: number) => Promise<ComicInfo[] | string>;
-  onLoadPinnedChapter: (
+  onLoadComics: (
+    offset: number,
+    limit: number,
+  ) => Promise<ComicInfo[] | string>;
+  onLoadLatestChapter: (
     comicInfo: ComicInfo,
   ) => Promise<Result<ChapterInfo | null>>;
-  onLoadAssignments: (
-    comicInfo: ComicInfo,
-  ) => Promise<Result<AssignmentInfo[]>>;
-  onComicClick: (comicInfo: ComicInfo) => void;
+  onComicClick?: (comicInfo: ComicInfo) => void;
 };
 
-export default function ComicProgressList({
+export default function ComicTranslationList({
   onLoadComics,
-  onLoadPinnedChapter,
-  onLoadAssignments,
+  onLoadLatestChapter,
   onComicClick,
 }: Props) {
-  const pageSize = 20;
-  const { showToast } = useToastStore();
+  const pageSize = 12;
   const [comics, setComics] = useState<ComicInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -35,6 +32,7 @@ export default function ComicProgressList({
   const isLoadingRef = useRef(false);
   const hasMoreRef = useRef(true);
   const offsetRef = useRef(0);
+  const { showToast } = useToastStore();
 
   const loadComics = useCallback(async (reset = false) => {
     if (isLoadingRef.current) return;
@@ -55,7 +53,7 @@ export default function ComicProgressList({
     try {
       const result = await onLoadComics(requestOffset, pageSize);
       if (typeof result === "string") {
-        console.error("[ComicProgressList] 加载漫画列表失败:", result);
+        console.error("[ComicTranslationList] 加载漫画列表失败:", result);
         showToast(result, "error");
         hasMoreRef.current = false;
         setHasMore(false);
@@ -70,7 +68,7 @@ export default function ComicProgressList({
       setHasMore(nextHasMore);
       setComics((prev) => (reset ? result : [...prev, ...result]));
     } catch (err) {
-      console.error("[ComicProgressList] 加载漫画列表异常:", err);
+      console.error("[ComicTranslationList] 加载漫画列表异常:", err);
       showToast("发生未知错误", "error");
     } finally {
       isLoadingRef.current = false;
@@ -80,13 +78,7 @@ export default function ComicProgressList({
 
   useEffect(() => {
     isLoadingRef.current = false;
-    const timerId = window.setTimeout(() => {
-      void loadComics(true);
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
+    void loadComics(true);
   }, [loadComics]);
 
   useEffect(() => {
@@ -102,46 +94,54 @@ export default function ComicProgressList({
       { root: scrollContainerRef.current },
     );
     observerRef.current.observe(loadMoreRef.current);
+
     return () => {
-      if (observerRef.current) observerRef.current.disconnect();
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
     };
   }, [loadComics]);
 
   return (
     <div
-      ref={scrollContainerRef}
-      className="w-full h-full min-h-0 overflow-y-auto overflow-x-hidden"
+      className={clsx("w-full h-full min-h-0 flex flex-col overflow-hidden")}
     >
       <div
-        className={clsx(
-          "flex w-full flex-col gap-1.5 px-2 py-1",
-        )}
+        ref={scrollContainerRef}
+        className={clsx("flex-1 min-h-0 overflow-y-auto overflow-x-hidden")}
       >
-        {comics.map((comic) => (
-          <ComicProgressItem
-            key={comic.id}
-            comicInfo={comic}
-            mode="reviewer"
-            onLoadPinnedChapter={onLoadPinnedChapter}
-            onLoadAssignments={onLoadAssignments}
-            onClick={() => onComicClick(comic)}
-          />
-        ))}
-      </div>
+        <div
+          className={clsx(
+            "grid w-full grid-cols-1 items-start justify-start gap-4",
+            "px-2 py-1 md:grid-cols-2 xl:grid-cols-3",
+          )}
+        >
+          {comics.map((comic) => (
+            <ComicTranslationCard
+              key={comic.id}
+              comicInfo={comic}
+              onClick={() => onComicClick?.(comic)}
+              onLoadPinnedChapter={onLoadLatestChapter}
+            />
+          ))}
+        </div>
 
-      <div
-        ref={loadMoreRef}
-        className="w-full flex justify-center py-4 h-16 items-center"
-      >
-        {isLoading && (
-          <LoaderCircle className="h-5 w-5 text-stone-300 animate-spin" />
-        )}
-        {!hasMore && comics.length > 0 && (
-          <span className="text-slate-400 text-sm">没有更多漫画了 O^O</span>
-        )}
-        {!hasMore && comics.length === 0 && !isLoading && (
-          <span className="text-slate-400 text-sm">暂无漫画</span>
-        )}
+        <div
+          ref={loadMoreRef}
+          className={clsx("flex h-16 w-full items-center justify-center py-4")}
+        >
+          {isLoading && (
+            <LoaderCircle className={clsx("h-5 w-5 animate-spin text-stone-300")} />
+          )}
+          {!hasMore && comics.length > 0 && (
+            <span className={clsx("text-slate-400 text-sm")}>
+              没有更多漫画了 O^O
+            </span>
+          )}
+          {!hasMore && comics.length === 0 && !isLoading && (
+            <span className={clsx("text-slate-400 text-sm")}>暂无漫画 o.O</span>
+          )}
+        </div>
       </div>
     </div>
   );

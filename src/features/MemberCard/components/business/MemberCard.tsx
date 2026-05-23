@@ -120,17 +120,15 @@ export default function MemberCard({ member, onClick }: Props) {
         </div>
 
         {/* QQ + 最后登录 */}
-        <div className="flex items-center gap-2 text-[11px] text-stone-400 font-mono py-2">
+        <div className="flex items-center gap-2 text-[11px] text-stone-400/80 font-mono py-2">
           <div className="flex items-center gap-1 shrink-0">
-            <UserIcon size={12} className="text-stone-400" />
-            <span className="tracking-tight text-stone-500 font-semibold">
-              {user?.qq ?? "—"}
-            </span>
+            <UserIcon size={12} strokeWidth={3.5} />
+            <span className="tracking-tight ">{user?.qq ?? "—"}</span>
           </div>
           <span className="text-stone-200">|</span>
           <div className="flex items-center gap-1 truncate">
-            <Clock size={12} className="text-stone-400 shrink-0" />
-            <span className="text-stone-500 truncate tracking-tighter font-semibold">
+            <Clock size={12} strokeWidth={3.5} />
+            <span className="truncate tracking-tighter">
               {formatDate(user?.lastActiveAt)}
             </span>
           </div>

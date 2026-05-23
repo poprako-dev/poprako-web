@@ -31,7 +31,7 @@ export default function ConfirmDialog({
     <div
       className={clsx(
         "fixed inset-0 z-[9999] flex items-center justify-center",
-        "bg-black/15 backdrop-blur-[1px]",
+        "bg-white/60 backdrop-blur-sm",
       )}
       onClick={(e) => {
         if (e.target === e.currentTarget) onCancel();
@@ -39,24 +39,33 @@ export default function ConfirmDialog({
     >
       <div
         className={clsx(
-          "bg-white rounded-sm border border-slate-200",
-          "shadow-md shadow-slate-200/80",
-          "px-5 py-4 w-72 flex flex-col gap-4",
+          "w-full max-w-70 rounded-xl overflow-hidden",
+          "bg-white",
+          "border border-(--color-border-green-200)",
+          "shadow-(--shadow-sm)",
         )}
       >
-        <div className="flex flex-col gap-1">
-          <h3 className="text-sm font-semibold text-slate-600">{title}</h3>
-          <p className="text-xs text-slate-400 leading-relaxed">{description}</p>
+        {/* 顶部品牌色条 */}
+        <div
+          className="h-2 w-full opacity-20"
+          style={{ background: "var(--color-yellow-500)" }}
+        />
+
+        <div className="px-5 pt-4 pb-2 text-center">
+          <h3 className="text-base font-bold text-slate-800">{title}</h3>
+          <p className="mt-1 text-sm text-slate-500 leading-relaxed">
+            {description}
+          </p>
         </div>
-        <div className="flex gap-2 justify-end">
+
+        <div className="flex items-center gap-2 px-5 pb-5 pt-3">
           <button
             onClick={onCancel}
             className={clsx(
-              "px-3 py-1.5 text-xs font-medium rounded-xs",
-              "text-slate-400 hover:text-slate-600",
-              "border border-slate-200 hover:border-slate-300",
-              "bg-white hover:bg-slate-50",
-              "transition-colors",
+              "flex-1 py-2 text-xs font-semibold rounded-lg",
+              "transition-all duration-200 active:scale-[0.98]",
+              "text-slate-400 bg-slate-50 hover:bg-slate-100",
+              "border border-slate-100",
             )}
           >
             {cancelLabel}
@@ -64,11 +73,12 @@ export default function ConfirmDialog({
           <button
             onClick={onConfirm}
             className={clsx(
-              "px-3 py-1.5 text-xs font-medium rounded-xs",
-              "text-slate-600 hover:text-slate-800",
-              "border border-slate-300 hover:border-slate-400",
-              "bg-slate-50 hover:bg-slate-100",
-              "transition-colors",
+              "flex-1 py-2 text-xs font-semibold rounded-lg",
+              "flex items-center justify-center gap-1",
+              "transition-all duration-200 active:scale-[0.98]",
+              "bg-red-50 text-red-500",
+              "border border-(--color-border-red-200)",
+              "hover:bg-red-100",
             )}
           >
             {confirmLabel}

@@ -9,7 +9,7 @@ import type { ViewMode } from "@/features/ComicCard/types/types";
 import type { BinaryFilter, TripleFilter } from "../../types/types";
 import ComicListLayout from "../../layouts/ComicListLayout";
 import FilterHeader from "./FilterHeader";
-import ComicTranslationList from "./EmbeddedComicList";
+import ComicTranslationList from "./ComicTranslationList";
 import WorksetSidebar from "./WorksetSidebar";
 import ComicProgressList from "@/features/ComicProgressList";
 
@@ -122,17 +122,18 @@ export default function ComicList({
                 }}
               />
             </div>
-            <div className="flex bg-slate-100 p-1 rounded-md">
+            <div className="flex rounded-lg bg-stone-200/80 p-0.5">
               <button
                 type="button"
                 onClick={() => setActiveMode("translator")}
                 title="翻译模式"
                 className={clsx(
-                  "px-3 py-1.5 rounded-sm transition-colors",
+                  "rounded-md px-3 py-1.5",
                   "flex items-center gap-2",
+                  "transition-all duration-200 focus:outline-none",
                   activeMode === "translator"
-                    ? "bg-white shadow-sm text-slate-800 font-medium"
-                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-200",
+                    ? "bg-green-50 text-slate-800 shadow-(--shadow-sm)"
+                    : "text-slate-400 hover:text-slate-600",
                 )}
               >
                 <PencilLine size={16} />
@@ -140,13 +141,14 @@ export default function ComicList({
               <button
                 type="button"
                 onClick={() => setActiveMode("reviewer")}
-                title="审核模式"
+                title="监修模式"
                 className={clsx(
-                  "px-3 py-1.5 rounded-sm transition-colors",
+                  "rounded-md px-3 py-1.5",
                   "flex items-center gap-2",
+                  "transition-all duration-200 focus:outline-none",
                   activeMode === "reviewer"
-                    ? "bg-white shadow-sm text-slate-800 font-medium"
-                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-200",
+                    ? "bg-emerald-50 text-slate-800 shadow-(--shadow-sm)"
+                    : "text-slate-400 hover:text-slate-600",
                 )}
               >
                 <Eye size={16} />

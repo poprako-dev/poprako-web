@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus, BookText } from "lucide-react";
 import type { WorksetInfo } from "@/types/workset";
 
 type Props = {
@@ -27,7 +27,7 @@ export default function WorksetSidebar({
   onChangeWorkset,
 }: Props) {
   return (
-    <div className="flex flex-col h-full bg-[#FAF9F4] border-l border-stone-200 w-56">
+    <div className="flex flex-col h-full bg-stone-100/40 border-l border-stone-200 w-56">
       {/* 头部 */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
         <h2 className="text-md font-bold text-slate-600">作品集</h2>
@@ -50,17 +50,29 @@ export default function WorksetSidebar({
                 "px-3 py-2 rounded-md transition-colors text-left",
                 "pr-7",
                 activeWorksetId === ws.id
-                  ? "bg-slate-100 text-slate-700"
+                  ? "text-[#166534]"
                   : "text-slate-500 hover:bg-slate-50",
               )}
             >
-              <span className="text-[13px] truncate pr-2">
-                【 {ws.index + 1} 】{ws.name}
+              <span className="text-[12px] font-bold truncate pr-2">
+                #{ws.index + 1} {ws.name}
               </span>
-              <span className="text-[11px] text-slate-400 shrink-0">
+              <span className="text-[11px] font-semibold text-slate-400 shrink-0 flex items-center gap-0.5">
+                <BookText className="w-3 h-3" strokeWidth={2.5} />
                 {ws.comicCount}
               </span>
             </button>
+            {/* 右侧 accent bar */}
+            <div
+              className={clsx(
+                "absolute right-2 top-1/2 -translate-y-1/2",
+                "w-0.75 h-5 rounded-full",
+                "transition-all duration-200 ease-out",
+                activeWorksetId === ws.id
+                  ? "bg-green-600 scale-y-100"
+                  : "bg-green-500/85 scale-y-0 group-hover:scale-y-100",
+              )}
+            />
             {/* TODO: 悬浮删除按钮 */}
             {/* <button
               onClick={() => onDeleteWorkset(ws.id)}

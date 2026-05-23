@@ -4,7 +4,6 @@ import type { ComicInfo } from "@/types/comic";
 import type { ChapterInfo } from "@/types/chapter";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
-import type { ViewMode } from "@/features/ComicCard/types/types";
 
 const now = Date.now();
 
@@ -135,7 +134,7 @@ function createStoryComponent(
   assignmentResult: Result<AssignmentInfo[]>,
 ) {
   return () => (
-    <div className="w-[720px] max-w-full">
+    <div className="w-180 max-w-full">
       <ComicProgressItem
         comicInfo={comic}
         mode="translator"

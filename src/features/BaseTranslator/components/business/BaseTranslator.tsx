@@ -11,6 +11,8 @@ import {
   modifyUnitPosition,
   unitPosition,
   unitId,
+  unitTranslatedText,
+  unitProofreadText,
   type UnitInfo,
   type UnitEdit,
 } from "@/types/unit";
@@ -84,6 +86,9 @@ export default function BaseTranslator({
   const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
   const [isSpecialCharPanelOpen, setIsSpecialCharPanelOpen] = useState(false);
+  const [deleteConfirmUnitId, setDeleteConfirmUnitId] = useState<
+    string | undefined
+  >(undefined);
 
   const canvasRef = useRef<CanvasHandle>(null);
 
@@ -208,7 +213,7 @@ export default function BaseTranslator({
     setFocusedUnitId(unitId(newUnit));
   }
 
-  function handleDeleteUnit(targetUnitId: string) {
+  function doDeleteUnit(targetUnitId: string) {
     const filteredUnits = unitBufRef.current
       .filter((unit) => unitId(unit) !== targetUnitId)
       .map((unit, index) => modifyUnitIndex(unit, index));
@@ -218,6 +223,18 @@ export default function BaseTranslator({
     if (focusedUnitId === targetUnitId) {
       setFocusedUnitId(undefined);
     }
+  }
+
+  function handleDeleteUnit(targetUnitId: string) {
+    const unit = unitBufRef.current.find((u) => unitId(u) === targetUnitId);
+    if (
+      unit &&
+      (unitTranslatedText(unit) != null || unitProofreadText(unit) != null)
+    ) {
+      setDeleteConfirmUnitId(targetUnitId);
+      return;
+    }
+    doDeleteUnit(targetUnitId);
   }
 
   // Relocation: when focused unit changes and relocation is on, center canvas on it
@@ -432,6 +449,19 @@ export default function BaseTranslator({
           cancelLabel="放弃并继续"
           onConfirm={handleRetryPendingAction}
           onCancel={handleDiscardPendingAction}
+        />
+      )}
+      {deleteConfirmUnitId != null && (
+        <ConfirmDialog
+          title="确认删除"
+          description="该文本块包含已翻译或已校对内容，删除后不可恢复。确定要删除吗？"
+          confirmLabel="删除"
+          cancelLabel="取消"
+          onConfirm={() => {
+            doDeleteUnit(deleteConfirmUnitId);
+            setDeleteConfirmUnitId(undefined);
+          }}
+          onCancel={() => setDeleteConfirmUnitId(undefined)}
         />
       )}
     </>

@@ -104,11 +104,11 @@ export default function ComicTranslationCard({
       }}
       className={clsx(
         "w-full h-26 flex",
-        "bg-stone-50/10 rounded-lg overflow-hidden shadow-xs",
+        "bg-stone-50/10 rounded-sm overflow-hidden shadow-xs",
         "border border-stone-200",
         "transition-all cursor-pointer duration-300",
         "hover:-translate-y-0.5 hover:shadow-sm",
-        "px-2 pt-1 pb-1.5",
+        "p-2",
       )}
     >
       {/* 左侧封面 */}

@@ -46,8 +46,8 @@ export default function ChapterCreatorModal({
       >
         {/* 顶部品牌色条 */}
         <div
-          className="h-1 w-full opacity-20"
-          style={{ background: "var(--color-green-500)" }}
+          className="h-2 w-full opacity-20"
+          style={{ background: "var(--color-yellow-500)" }}
         />
 
         <div className="pt-4 pb-2 text-center">
@@ -95,9 +95,9 @@ export default function ChapterCreatorModal({
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "flex items-center justify-center gap-1",
                 "transition-all duration-200 active:scale-[0.98]",
-                "bg-green-50 text-green-500",
-                "border border-(--color-border-green-200)",
-                "hover:bg-green-100",
+                "bg-red-50 text-red-500",
+                "border border-(--color-border-red-200)",
+                "hover:bg-red-100",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >

@@ -83,6 +83,12 @@
   --color-green-50: #f0f4e8;
   --color-green-100: #edf7f2;
   --color-border-green-200: #e8f0e8;
+  --color-yellow-500: #e8b428;
+  /* Reusable red color tokens */
+  --color-red-500: #c46868;
+  --color-red-50: #fdf2f2;
+  --color-red-100: #fbe5e5;
+  --color-border-red-200: #fce8e8;
   --shadow-green-lg: 0 10px 25px rgba(136, 176, 75, 0.4);
   --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.04);
   --shadow-green-hover: 0 8px 20px rgba(136, 176, 75, 0.15);
