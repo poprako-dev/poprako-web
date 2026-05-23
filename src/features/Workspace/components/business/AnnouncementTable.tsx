@@ -75,11 +75,12 @@ export default function AnnouncementTable({
       {/* Header */}
       <div className={clsx("flex items-center justify-between", "mb-2 px-0.5")}>
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
           <span className="text-sm font-semibold text-slate-500 tracking-tight">
             当前公告
           </span>
         </div>
+        <div className="flex-1 mx-2 h-0.5 bg-slate-200" />
         {isAdmin && (
           <button
             onClick={() => setShowCreate(true)}
@@ -87,7 +88,7 @@ export default function AnnouncementTable({
               "inline-flex items-center gap-1 px-2 py-1",
               "hover:text-slate-700 bg-slate-50 hover:bg-green-100",
               "transition-colors duration-150 focus:outline-none",
-              "rounded-md",
+              "rounded-sm",
             )}
           >
             <Plus className="w-4 h-4" strokeWidth={2} />
@@ -122,11 +123,12 @@ export default function AnnouncementTable({
             "divide-y sm:divide-y-0 sm:divide-x divide-slate-100",
           )}
         >
-          {announcements.map((ann) => (
+          {announcements.map((ann, i) => (
             <button
               key={ann.id}
               onClick={() => setSelected(ann)}
               className={clsx(
+                i > 0 && "hidden sm:block",
                 "group w-full text-left px-3 py-2.5",
                 "flex flex-col justify-between",
                 "hover:bg-slate-50/60 transition-colors duration-150",
@@ -200,12 +202,12 @@ export default function AnnouncementTable({
             <div className="flex justify-between items-start mb-5">
               <span
                 className={clsx(
-                  "text-[10px] font-semibold text-slate-400",
-                  "tracking-wide bg-slate-50 border border-slate-200",
-                  "px-2 py-0.5 rounded",
+                  "text-[10px] font-semibold text-slate-300",
+                  "tracking-wide bg-slate-50",
+                  "px-0 py-1 rounded italic",
                 )}
               >
-                公告详情
+                ANNOUNCEMENT DETAIL
               </span>
               <button
                 onClick={() => setSelected(null)}

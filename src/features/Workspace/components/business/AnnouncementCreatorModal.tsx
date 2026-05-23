@@ -129,9 +129,9 @@ export default function AnnouncementCreatorModal({ teamName, onSubmit, onClose }
                 "transition-all duration-200 active:scale-[0.98]",
                 isValid
                   ? [
-                      "bg-red-50 text-red-500",
-                      "border border-(--color-border-red-200)",
-                      "hover:bg-red-100",
+                      "bg-green-50 text-green-500",
+                      "border border-(--color-border-green-200)",
+                      "hover:bg-green-100",
                     ]
                   : "bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100",
               )}

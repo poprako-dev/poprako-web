@@ -10,3 +10,4 @@ export * from "./assignmentInvitation";
 export * from "./auth";
 export * from "./sysMail";
 export * from "./workflow";
+export * from "./comment";
