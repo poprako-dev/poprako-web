@@ -46,8 +46,8 @@ export default function ChapterCreatorModal({
       >
         {/* 顶部品牌色条 */}
         <div
-          className="h-2 w-full opacity-20"
-          style={{ background: "var(--color-yellow-500)" }}
+          className="h-1 w-full opacity-20"
+          style={{ background: "var(--color-green-500)" }}
         />
 
         <div className="pt-4 pb-2 text-center">

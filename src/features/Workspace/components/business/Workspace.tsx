@@ -7,12 +7,10 @@ import WorkspaceLayout from "../../layouts/WorkspaceLayout";
 import ComicTranslationList from "@/features/ComcList/components/business/ComicTranslationList";
 import ComicDetailModal from
   "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
+import AnnouncementTable from "./AnnouncementTable";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
-import {
-  fetchMyComics,
-  fetchLatestChapter,
-} from "../../api/workspace";
+import { fetchMyComics, fetchLatestChapter } from "../../api/workspace";
 import { deleteComic, getComic } from "@/features/ComicPlayground/api/comic";
 import {
   listChapters,
@@ -41,12 +39,10 @@ import type {
 import { roleMask, type Role } from "@/types/role";
 import { listMembers } from "@/api/member";
 import clsx from "clsx";
-import {
-  addChapterPages,
-} from "@/features/ComicPlayground/features/ComicDetailModal/pageUpload";
-import {
-  useComicDetailHost,
-} from "@/features/ComicPlayground/features/ComicDetailModal/hook/useComicDetailHost";
+import { addChapterPages } from
+  "@/features/ComicPlayground/features/ComicDetailModal/pageUpload";
+import { useComicDetailHost } from
+  "@/features/ComicPlayground/features/ComicDetailModal/hook/useComicDetailHost";
 
 // 个人工作区组件，会直接放置在 WorkspacePage 中，展示个人工作区的相关内容
 // 所以自身不设定高度，而是适应父组件
@@ -71,7 +67,20 @@ export default function Workspace() {
   });
 
   const userName = loginState?.userInfo.name ?? "用户";
+  const selectedTeamId = useAppStore((s) => s.selectedTeamId);
   const selectedComicTeamId = selectedComic?.workset?.teamId ?? null;
+
+  const activeMember = useMemo(() => {
+    if (!selectedTeamId) return null;
+    return (
+      loginState?.memberInfos.find((m) => m.teamId === selectedTeamId) ?? null
+    );
+  }, [loginState?.memberInfos, selectedTeamId]);
+
+  const isAdmin = useMemo(() => {
+    return activeMember ? !!activeMember.assignedAdminAt : false;
+  }, [activeMember]);
+
   const selectedComicActiveMember = useMemo(() => {
     const teamId = selectedComicTeamId;
     if (!teamId) return null;
@@ -323,6 +332,16 @@ export default function Workspace() {
           </h1>
         </div>
       </div>
+
+      {selectedTeamId && (
+        <AnnouncementTable
+          teamId={selectedTeamId}
+          teamName={activeMember?.team?.name ?? ""}
+          isAdmin={isAdmin}
+        />
+      )}
+
+      <div className="mx-auto mb-3 w-[90%] h-0.5 bg-slate-200" />
 
       <div className={clsx("flex-1 min-h-0 min-w-0 overflow-x-hidden")}>
         <ComicTranslationList
