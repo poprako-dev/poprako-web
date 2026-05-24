@@ -50,8 +50,8 @@ function TeamAvatar({
         "transition-all duration-300",
         canUpload && "group/avatar",
         isListOpen ? "shadow-md scale-105" : "",
-        !resolvedAvatarUrl && isListOpen && "bg-green-500",
-        !resolvedAvatarUrl && !isListOpen && "bg-[#2e5c33]",
+        !resolvedAvatarUrl && isListOpen && "bg-[var(--color-green-500)]",
+        !resolvedAvatarUrl && !isListOpen && "bg-[var(--color-green-500)]/80",
         canUpload ? "cursor-pointer" : "cursor-default",
       )}
     >
@@ -187,7 +187,7 @@ function TeamList({
                     "items-center justify-center overflow-hidden",
                     "font-black text-sm relative",
                     isSelected
-                      ? "bg-green-500 text-white"
+                      ? "bg-[var(--color-green-500)] text-white"
                       : "bg-gray-100 text-gray-400",
                   )}
                 >

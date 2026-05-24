@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type { ChapterInfo, UploadProgressCallbacks } from "@/types";
 import type { Result } from "@/types/utils/result";
 import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
@@ -53,6 +53,26 @@ export default function Workspace() {
   const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
   const [comments, setComments] = useState<CommentInfo[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
+  const [mobileTab, setMobileTab] = useState(0);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      const dy = e.changedTouches[0].clientY - touchStartY.current;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
+        if (dx < 0) setMobileTab((t) => Math.min(t + 1, 1));
+        else setMobileTab((t) => Math.max(t - 1, 0));
+      }
+    },
+    [],
+  );
   const {
     selectedComic,
     selectedComicPinnedChapter,
@@ -374,7 +394,13 @@ export default function Workspace() {
         />
       )}
 
-      <div className={clsx("flex-1 min-h-0 min-w-0 flex flex-row gap-4")}>
+      {/* Desktop: side-by-side */}
+      <div
+        className={clsx(
+          "hidden md:flex",
+          "flex-1 min-h-0 min-w-0 flex-row gap-4",
+        )}
+      >
         {/* 任务列表区域 */}
         <div
           className={clsx(
@@ -437,6 +463,102 @@ export default function Workspace() {
           </div>
         )}
       </div>
+
+      {/* Mobile: swipeable tabs */}
+      {selectedTeamId && (
+        <div className="md:hidden flex-1 min-h-0 min-w-0 flex flex-col">
+          {/* tab bar */}
+          <div
+            className={clsx(
+              "flex items-center gap-4 px-1 mb-2 shrink-0",
+            )}
+          >
+            <button
+              type="button"
+              onClick={() => setMobileTab(0)}
+              className="flex items-center gap-2"
+            >
+              <span
+                className={clsx(
+                  "w-1.5 h-1.5 rounded-full shrink-0",
+                  mobileTab === 0 ? "bg-slate-500" : "bg-slate-300",
+                )}
+              />
+              <span
+                className={clsx(
+                  "text-sm font-semibold tracking-tight",
+                  mobileTab === 0
+                    ? "text-slate-600"
+                    : "text-slate-400",
+                )}
+              >
+                任务列表
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileTab(1)}
+              className="flex items-center gap-2"
+            >
+              <span
+                className={clsx(
+                  "w-1.5 h-1.5 rounded-full shrink-0",
+                  mobileTab === 1 ? "bg-slate-500" : "bg-slate-300",
+                )}
+              />
+              <span
+                className={clsx(
+                  "text-sm font-semibold tracking-tight",
+                  mobileTab === 1
+                    ? "text-slate-600"
+                    : "text-slate-400",
+                )}
+              >
+                留言板
+              </span>
+            </button>
+            <div className="flex-1 h-0.5 bg-stone-200" />
+          </div>
+
+          {/* swipeable content */}
+          <div
+            className="flex-1 min-h-0 overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div
+              className="flex h-full transition-transform duration-300 ease-out"
+              style={{ transform: `translateX(-${mobileTab * 100}%)` }}
+            >
+              {/* panel 0: comic list */}
+              <div className="w-full shrink-0 h-full overflow-y-auto">
+                <ComicTranslationList
+                  key={comicListRefreshKey}
+                  onLoadComics={fetchMyComics}
+                  onLoadLatestChapter={fetchLatestChapter}
+                  onComicClick={openComicDetail}
+                />
+              </div>
+              {/* panel 1: chatbox */}
+              <div className="w-full shrink-0 h-full">
+                <div
+                  className={clsx(
+                    "h-full",
+                    "rounded-md border border-border/50",
+                    "overflow-hidden",
+                  )}
+                >
+                  <CommentChatBox
+                    comments={comments}
+                    loading={commentsLoading}
+                    onSend={handleSendComment}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

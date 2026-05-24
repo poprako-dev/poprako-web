@@ -10,7 +10,7 @@ export default function TitleHeader() {
           "items-center justify-center",
         )}
       >
-        <Trees className="h-7 w-7 text-green-500" />
+        <Trees className="h-7 w-7 text-green-700" />
       </div>
 
       <span
