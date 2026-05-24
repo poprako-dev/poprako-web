@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 
 type Props = {
   title: string;
@@ -9,6 +10,7 @@ type Props = {
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
+  loading?: boolean;
 };
 
 export default function ConfirmDialog({
@@ -18,6 +20,7 @@ export default function ConfirmDialog({
   cancelLabel = "取消",
   onConfirm,
   onCancel,
+  loading = false,
 }: Props) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -72,6 +75,7 @@ export default function ConfirmDialog({
           </button>
           <button
             onClick={onConfirm}
+            disabled={loading}
             className={clsx(
               "flex-1 py-2 text-xs font-semibold rounded-lg",
               "flex items-center justify-center gap-1",
@@ -79,9 +83,10 @@ export default function ConfirmDialog({
               "bg-red-50 text-red-500",
               "border border-(--color-border-red-200)",
               "hover:bg-red-100",
+              loading && "opacity-60 cursor-not-allowed",
             )}
           >
-            {confirmLabel}
+            {loading ? <LoadingCircle /> : confirmLabel}
           </button>
         </div>
       </div>

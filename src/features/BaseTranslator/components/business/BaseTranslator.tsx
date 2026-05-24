@@ -447,6 +447,7 @@ export default function BaseTranslator({
           description="可以选择再次重试保存；或放弃本页未保存修改并继续操作。"
           confirmLabel="再次重试"
           cancelLabel="放弃并继续"
+          loading={saving}
           onConfirm={handleRetryPendingAction}
           onCancel={handleDiscardPendingAction}
         />
