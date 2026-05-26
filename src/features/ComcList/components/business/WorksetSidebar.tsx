@@ -69,8 +69,8 @@ export default function WorksetSidebar({
                 "w-0.75 h-5 rounded-full",
                 "transition-all duration-200 ease-out",
                 activeWorksetId === ws.id
-                  ? "bg-green-600 scale-y-100"
-                  : "bg-green-500/85 scale-y-0 group-hover:scale-y-100",
+                  ? "bg-green-500/60 scale-y-100"
+                  : "bg-green-500/35 scale-y-0 group-hover:scale-y-100",
               )}
             />
             {/* TODO: 悬浮删除按钮 */}

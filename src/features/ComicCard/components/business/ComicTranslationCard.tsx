@@ -182,8 +182,8 @@ export default function ComicTranslationCard({
           fullWidth
           height={0.5}
           bars={[
-            { progressPercent: translationPct, barColorClass: "bg-stone-400" },
-            { progressPercent: proofreadPct, barColorClass: "bg-amber-200" },
+            { progressPercent: translationPct, barColor: "#a8a29e" },
+            { progressPercent: proofreadPct, barColor: "#fde68a" },
           ]}
         />
       </div>

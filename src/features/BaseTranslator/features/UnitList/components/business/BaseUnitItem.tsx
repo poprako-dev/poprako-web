@@ -27,12 +27,7 @@ export default function BaseUnitItem({
   const longPressHandled = useRef(false);
   const currentPointerId = useRef<number | null>(null);
 
-  const leftBorderColor = unitIsBubble(unit)
-    ? "border-pink-300"
-    : "border-amber-300";
-  const rightIndicatorColor = isCompleted
-    ? "bg-[var(--color-green-500)]"
-    : "bg-transparent";
+  const isBubble = unitIsBubble(unit);
 
   useEffect(() => {
     if (isFocused && containerRef.current) {
@@ -99,9 +94,12 @@ export default function BaseUnitItem({
       )}
     >
       <div
-        className={`transition-all duration-150 shrink-0 ${leftBorderColor} border-l-[3px] ${
-          isFocused ? "border-l-4" : ""
-        }`}
+        className={clsx(
+          "transition-all duration-150 shrink-0",
+          "border-l-[3px]",
+          isFocused && "border-l-4",
+          isBubble ? "border-pink-300" : "border-amber-300",
+        )}
       />
 
       <div
@@ -125,7 +123,12 @@ export default function BaseUnitItem({
         {children}
       </div>
 
-      <div className={`w-1 shrink-0 ${rightIndicatorColor}`} />
+      <div
+        className={clsx(
+          "w-1 shrink-0",
+          isCompleted ? "bg-[var(--color-green-500)]" : "bg-transparent",
+        )}
+      />
     </div>
   );
 }

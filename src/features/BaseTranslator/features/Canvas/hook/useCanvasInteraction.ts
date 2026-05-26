@@ -331,7 +331,7 @@ export function useCanvasInteraction({
     [enableReadOnly, onDeleteUnit, tryAddUnit],
   );
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  const handleWheel = useCallback((e: WheelEvent) => {
     const img = imgRef.current;
     const container = containerRef.current;
     if (!img || !container) return;

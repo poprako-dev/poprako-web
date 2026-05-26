@@ -96,6 +96,14 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     [],
   );
 
+  // 用 ref-based listener 替代 React onWheel，因为需要 { passive: false } 来支持 preventDefault
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, [handleWheel]);
+
   return (
     <div
       ref={containerRef}
@@ -105,7 +113,6 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
       )}
       onMouseDown={handleCanvasMouseDown}
       onContextMenu={handleContextMenu}
-      onWheel={handleWheel}
     >
       {isLoading ? (
         <div className="flex items-center justify-center w-full h-full">

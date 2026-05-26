@@ -8,6 +8,7 @@ import WorksetCreatorModal from "./WorksetCreatorModal";
 import ComicDetailModal from "../../features/ComicDetailModal/components/business/ComicDetailModal";
 import { listComics, createComic, deleteComic, getComic } from "../../api/comic";
 import {
+  getPinnedChapter,
   listChapters,
   createChapter,
   deleteChapter,
@@ -120,13 +121,9 @@ export default function ComicPlayground() {
 
   const handleLoadLatestChapter = useCallback(
     async (comicInfo: ComicInfo): Promise<Result<ChapterInfo | null>> => {
-      const result = await listChapters({
-        comicId: comicInfo.id,
-        offset: 0,
-        limit: 1,
-      });
-      if (!result.success) return result;
-      return { success: true, data: result.data[0] ?? null };
+      const result = await getPinnedChapter(comicInfo.id);
+      if (!result.success) return { success: true, data: null };
+      return { success: true, data: result.data };
     },
     [],
   );

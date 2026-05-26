@@ -132,8 +132,8 @@ export default function ComicList({
                   "flex items-center gap-2",
                   "transition-all duration-200 focus:outline-none",
                   activeMode === "translator"
-                    ? "bg-green-50 text-slate-800 shadow-(--shadow-sm)"
-                    : "text-slate-400 hover:text-slate-600",
+                    ? "bg-gray-300 text-gray-800 shadow-(--shadow-sm)"
+                    : "text-slate-100 hover:text-slate-600",
                 )}
               >
                 <PencilLine size={16} />

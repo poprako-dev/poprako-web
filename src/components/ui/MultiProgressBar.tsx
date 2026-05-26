@@ -3,6 +3,9 @@ import type React from "react";
 
 export type BarArgs = {
   progressPercent: number;
+  /** CSS 颜色值（hex、rgb 等），用于 inline style，避免 Tailwind class 被 purge */
+  barColor?: string;
+  /** @deprecated 用 barColor 代替，避免 production build 时 Tailwind class 被 purge */
   barColorClass?: string;
 };
 
@@ -41,7 +44,11 @@ export default function MultiProgressBar({
       {bars.map((bar, index) => {
         const width = Math.max(0, Math.min(100, bar.progressPercent));
 
-        const colorStyle = bar.barColorClass || "bg-blue-500";
+        const bgColor = bar.barColor || undefined;
+        // 优先用 barColor inline style，否则 fallback 到 barColorClass（兼容旧用法）
+        const legacyClass = !bgColor
+          ? bar.barColorClass || "bg-blue-500"
+          : undefined;
 
         return (
           <div
@@ -49,11 +56,12 @@ export default function MultiProgressBar({
             style={{
               width: `${width}%`,
               zIndex: index + 1,
+              ...(bgColor ? { backgroundColor: bgColor } : {}),
             }}
             className={clsx(
               "absolute top-0 left-0 h-full",
               "transition-all duration-500 ease-in-out",
-              colorStyle,
+              legacyClass,
             )}
           />
         );

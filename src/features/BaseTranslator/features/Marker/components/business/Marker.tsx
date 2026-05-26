@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import type { MarkerPreviewMode } from "@/features/BaseTranslator/types/preview";
 
 export const CIRCLE_SIZE = 32;
@@ -25,7 +26,6 @@ export default function Marker({
   previewMode,
   dimmed,
 }: Props) {
-  const bgClass = isBubble ? "bg-pink-100" : "bg-amber-100";
   const shouldRenderPreview =
     previewMode !== "hidden" && isSelected && previewText && !isDragging;
 
@@ -44,9 +44,12 @@ export default function Marker({
       }}
     >
       <div
-        className={`relative rounded-full flex items-center justify-center border-2 shadow-lg ${
-          bgClass
-        } ${isSelected ? "ring-4 ring-blue-500/10" : ""}`}
+        className={clsx(
+          "relative rounded-full flex items-center justify-center",
+          "border-2 shadow-lg",
+          isBubble ? "bg-pink-100" : "bg-amber-100",
+          isSelected && "ring-4 ring-blue-500/10",
+        )}
         style={{
           width: `${CIRCLE_SIZE}px`,
           height: `${CIRCLE_SIZE}px`,
@@ -72,7 +75,10 @@ export default function Marker({
         </span>
       </div>
       <div
-        className={`rounded-full -mt-px shadow-sm border-2 border-black/10 ${bgClass}`}
+        className={clsx(
+          "rounded-full -mt-px shadow-sm border-2 border-black/10",
+          isBubble ? "bg-pink-100" : "bg-amber-100",
+        )}
         style={{ width: `${DOT_SIZE}px`, height: `${DOT_SIZE}px` }}
       />
     </div>

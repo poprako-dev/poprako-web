@@ -25,3 +25,4 @@
 - [ ] unified button style.
 - [ ] empty team option avatar.
 - [ ] mailbox style.
+- [ ] get pinned chapter.

@@ -1,5 +1,5 @@
 import { listAssignmentsByChapter, listMyAssignments } from "@/api/assignment";
-import { listChapters } from "@/features/ComicPlayground/api/chapter";
+import { getPinnedChapter, listChapters } from "@/features/ComicPlayground/api/chapter";
 import type { ComicInfo, ChapterInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
@@ -29,14 +29,9 @@ export async function fetchMyComics(
 export async function fetchLatestChapter(
   comicInfo: ComicInfo,
 ): Promise<Result<ChapterInfo | null>> {
-  const result = await listChapters({
-    comicId: comicInfo.id,
-    offset: 0,
-    limit: 20,
-  });
-  if (!result.success) return result;
-  const pinned = result.data.find((c) => c.isPinned) ?? result.data[0] ?? null;
-  return { success: true, data: pinned };
+  const result = await getPinnedChapter(comicInfo.id);
+  if (!result.success) return { success: true, data: null };
+  return { success: true, data: result.data };
 }
 
 export async function fetchComicAssignments(

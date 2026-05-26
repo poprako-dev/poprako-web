@@ -37,12 +37,8 @@ export default function PageCard({
   const proofread = page.proofreadUnitCount;
   const transPct = total > 0 ? Math.round((translated / total) * 100) : 0;
   const proofPct = total > 0 ? Math.round((proofread / total) * 100) : 0;
-  const circleColor =
-    total > 0 && proofread >= total
-      ? "bg-green-500"
-      : total > 0 && translated >= total
-        ? "bg-orange-400"
-        : "bg-gray-400";
+  const isCompleted = total > 0 && proofread >= total;
+  const isTranslated = total > 0 && translated >= total;
   const reuploadInputRef = useRef<HTMLInputElement>(null);
   const clampedUploadProgress =
     typeof uploadProgress === "number"
@@ -89,7 +85,16 @@ export default function PageCard({
             "bg-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded flex items-center justify-center",
           )}
         >
-          <div className={clsx("w-2.5 h-2.5 rounded-full shadow-sm", circleColor)} />
+          <div
+            className={clsx(
+              "w-2.5 h-2.5 rounded-full shadow-sm",
+              isCompleted
+                ? "bg-green-500"
+                : isTranslated
+                  ? "bg-orange-400"
+                  : "bg-gray-400",
+            )}
+          />
         </div>
       )}
 
@@ -118,7 +123,7 @@ export default function PageCard({
       <div className="absolute inset-0 z-[3] bg-black/0 group-hover:bg-black/[0.07] transition-colors duration-200 pointer-events-none" />
 
       {clampedUploadProgress !== null && clampedUploadProgress < 100 && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center">
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25">
           <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
             <circle
               cx="20" cy="20" r="16"
@@ -155,8 +160,8 @@ export default function PageCard({
             fullWidth
             height={0.35}
             bars={[
-              { progressPercent: transPct, barColorClass: "bg-orange-300" },
-              { progressPercent: proofPct, barColorClass: "bg-pink-300" },
+              { progressPercent: transPct, barColor: "#fdba74" },
+              { progressPercent: proofPct, barColor: "#f9a8d4" },
             ]}
           />
         </div>
