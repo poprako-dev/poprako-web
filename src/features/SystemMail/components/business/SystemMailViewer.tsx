@@ -5,6 +5,7 @@ import { listSysMails, markSysMailRead } from "@/api/sysMail";
 import type { SysMailInfo } from "@/types/sysMail";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import { useToastStore } from "@/components/ui/NotificationToast";
+import { useAppStore } from "@/store/app";
 
 const PAGE_SIZE = 15;
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
@@ -19,11 +20,19 @@ function formatMailDate(ts: number): string {
 }
 
 export default function SystemMailViewer() {
-  const [items, setItems] = useState<SysMailInfo[]>([]);
-  const [hasMore, setHasMore] = useState(true);
+  const sysMailCache = useAppStore((s) => s.sysMailCache);
+  const setSysMailCache = useAppStore((s) => s.setSysMailCache);
+  const markSysMailCacheRead = useAppStore((s) => s.markSysMailCacheRead);
+
+  const [items, setItems] = useState<SysMailInfo[]>(
+    () => sysMailCache?.mails ?? [],
+  );
+  const [hasMore, setHasMore] = useState<boolean>(
+    () => sysMailCache?.hasMore ?? true,
+  );
   const [isFetching, setIsFetching] = useState(false);
-  const [loadedOnce, setLoadedOnce] = useState(false);
-  const offsetRef = useRef(0);
+  const [loadedOnce, setLoadedOnce] = useState(() => sysMailCache !== null);
+  const offsetRef = useRef(sysMailCache?.mails.length ?? 0);
   const isFetchingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -50,16 +59,19 @@ export default function SystemMailViewer() {
 
     setItems((prev) => {
       const seen = new Set(prev.map((m) => m.id));
-      return [...prev, ...batch.filter((m) => !seen.has(m.id))];
+      const merged = [...prev, ...batch.filter((m) => !seen.has(m.id))];
+      setSysMailCache({ mails: merged, hasMore: nextHasMore });
+      return merged;
     });
     offsetRef.current += batch.length;
     setHasMore(nextHasMore);
     setLoadedOnce(true);
-  }, [showToast]);
+  }, [showToast, setSysMailCache]);
 
   useEffect(() => {
+    if (sysMailCache !== null) return;
     fetchMore();
-  }, [fetchMore]);
+  }, [fetchMore, sysMailCache]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -85,6 +97,7 @@ export default function SystemMailViewer() {
     setItems((prev) =>
       prev.map((m) => (m.id === sysMailId ? { ...m, read: true } : m)),
     );
+    markSysMailCacheRead(sysMailId);
   };
 
   // eslint-disable-next-line react-hooks/purity
@@ -167,9 +180,9 @@ function SectionLabel({ label, hasTopMargin }: SectionLabelProps) {
       )}
     >
       {/* dot — vertically centered with section text */}
-      <div className="absolute left-[-19px] top-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full border-2 border-stone-300 bg-[#FEFDF9] z-10" />
+      <div className="absolute -left-4.75 top-1/2 -translate-y-1/2 w-2.75 h-2.75 rounded-full border-2 border-stone-300 bg-[#FEFDF9] z-10" />
       {/* line from below-dot to bottom, connecting to next items */}
-      <div className="absolute left-[-14px] top-[calc(50%+6px)] bottom-0 w-px bg-stone-200" />
+      <div className="absolute -left-3.5 top-[calc(50%+6px)] bottom-0 w-px bg-stone-200" />
       <span className="block py-2 text-md font-semibold text-stone-500">
         {label}
       </span>
@@ -192,21 +205,21 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
       )}
     >
       {/* per-item timeline spine: gap → dot → gap → line */}
-      <div className="absolute left-[-19px] top-0 bottom-0 w-2.5 flex flex-col items-center">
+      <div className="absolute -left-4.75 top-0 bottom-0 w-2.5 flex flex-col items-center">
         {/* gap above dot — creates visual break from previous line */}
-        <div className="h-2 flex-shrink-0" />
+        <div className="h-2 shrink-0" />
         {/* dot */}
         <div
           className={clsx(
-            "w-2.5 h-2.5 rounded-full flex-shrink-0 z-10",
+            "w-2.5 h-2.5 rounded-full shrink-0 z-10",
             "transition-colors duration-300",
             !mail.read
-              ? "bg-[var(--color-green-500)]"
+              ? "bg-green-500"
               : "border-2 border-stone-300 bg-[#FEFDF9]",
           )}
         />
         {/* gap below dot — clean break before line */}
-        <div className="h-2 flex-shrink-0" />
+        <div className="h-2 shrink-0" />
         {/* line segment extending down through content */}
         {!isLast && <div className="w-px flex-1 bg-stone-200" />}
       </div>
@@ -243,13 +256,13 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
           onClick={() => onMarkRead(mail.id)}
           title={mail.read ? "已读" : "标记为已读"}
           className={clsx(
-            "flex-shrink-0 p-1.5 rounded-md mt-0.5",
+            "shrink-0 p-1.5 rounded-md mt-0.5",
             "transition-all duration-200",
             !mail.read
               ? [
                   "opacity-0 group-hover:opacity-100 max-sm:opacity-100",
-                  "text-stone-400 hover:text-[var(--color-green-500)]",
-                  "hover:bg-[var(--color-green-50)]",
+                  "text-stone-400 hover:text-green-500",
+                  "hover:bg-green-50",
                 ]
               : "text-stone-300 cursor-default",
           )}

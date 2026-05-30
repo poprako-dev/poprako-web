@@ -22,7 +22,8 @@
 - [ ] comic subscription.
 - [x] page selector in base translator.
 - [x] member detail modal style.
-- [ ] unified button style.
-- [ ] empty team option avatar.
-- [ ] mailbox style.
-- [ ] get pinned chapter.
+- [x] unified button style.
+- [x] empty team option avatar.
+- [x] mailbox style.
+- [x] get pinned chapter.
+- [ ] update comic, chapter, workset.

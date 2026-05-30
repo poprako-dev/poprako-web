@@ -33,6 +33,8 @@ export default function AppSidebar() {
   const location = useLocation();
   const selectedTeamId = useAppStore((s) => s.selectedTeamId);
   const setSelectedTeamId = useAppStore((s) => s.setSelectedTeamId);
+  const sysMailCache = useAppStore((s) => s.sysMailCache);
+  const hasUnread = sysMailCache?.mails.some((m) => !m.read) ?? false;
 
   const [isHovered, setIsHovered] = useState(false);
   const [isSelectingTeam, setIsSelectingTeam] = useState(false);
@@ -96,6 +98,7 @@ export default function AppSidebar() {
               label={item.label}
               isActive={activeNavId === item.id}
               onClick={() => handleNavSelect(item.id)}
+              hasBadge={item.id === "system-mail" && hasUnread}
             />
           ))}
         </>

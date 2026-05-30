@@ -6,6 +6,7 @@ type Props = {
   label: string;
   isActive: boolean;
   onClick: () => void;
+  hasBadge?: boolean;
 };
 
 export default function NavItem({
@@ -13,6 +14,7 @@ export default function NavItem({
   label,
   isActive,
   onClick,
+  hasBadge = false,
 }: Props) {
   return (
     <button
@@ -49,6 +51,14 @@ export default function NavItem({
             isActive && "scale-110",
           )}
         />
+        {hasBadge && (
+          <span
+            className={clsx(
+              "absolute top-0 right-2.5",
+              "w-1.5 h-1.5 rounded-full bg-red-400",
+            )}
+          />
+        )}
       </span>
 
       <span

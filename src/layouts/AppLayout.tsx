@@ -5,8 +5,11 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AppSidebar } from "@/features/AppSidebar";
 import { getMyUser } from "@/api/user";
 import { listMyMembers } from "@/api/member";
+import { listSysMails } from "@/api/sysMail";
 import { useAppStore } from "@/store/app";
 import LoadingCircle from "@/components/ui/LoadingCircle";
+
+const MAIL_PREFETCH_SIZE = 15;
 
 const mobileNavItems = [
   { path: "/workspace", icon: LayoutDashboard, label: "工作区" },
@@ -19,6 +22,8 @@ const mobileNavItems = [
 function MobileBottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const sysMailCache = useAppStore((s) => s.sysMailCache);
+  const hasUnread = sysMailCache?.mails.some((m) => !m.read) ?? false;
 
   return (
     <nav
@@ -30,6 +35,7 @@ function MobileBottomNav() {
     >
       {mobileNavItems.map((item) => {
         const isActive = location.pathname === item.path;
+        const showBadge = item.path === "/system-mail" && hasUnread;
         return (
           <button
             key={item.path}
@@ -40,7 +46,17 @@ function MobileBottomNav() {
               isActive ? "text-[#166534]" : "text-[#7A6D63]",
             )}
           >
-            <item.icon size={20} strokeWidth={isActive ? 2.4 : 2} />
+            <span className="relative">
+              <item.icon size={20} strokeWidth={isActive ? 2.4 : 2} />
+              {showBadge && (
+                <span
+                  className={clsx(
+                    "absolute -top-0.5 -right-0.5",
+                    "w-1.5 h-1.5 rounded-full bg-red-400",
+                  )}
+                />
+              )}
+            </span>
             <span className="text-[10px] font-medium">{item.label}</span>
           </button>
         );
@@ -53,6 +69,8 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const loginState = useAppStore((s) => s.loginState);
   const setLoginState = useAppStore((s) => s.setLoginState);
+  const sysMailCache = useAppStore((s) => s.sysMailCache);
+  const setSysMailCache = useAppStore((s) => s.setSysMailCache);
   const [isReady, setIsReady] = useState(loginState !== null);
 
   useEffect(() => {
@@ -69,6 +87,16 @@ export default function AppLayout() {
       })
       .catch(() => navigate("/login", { replace: true }));
   }, [loginState, navigate, setLoginState]);
+
+  useEffect(() => {
+    if (sysMailCache !== null) return;
+    listSysMails(0, MAIL_PREFETCH_SIZE + 1).then((result) => {
+      if (!result.success) return;
+      const batch = result.data.slice(0, MAIL_PREFETCH_SIZE);
+      const hasMore = result.data.length > MAIL_PREFETCH_SIZE;
+      setSysMailCache({ mails: batch, hasMore });
+    });
+  }, [sysMailCache, setSysMailCache]);
 
   if (!isReady) {
     return (
