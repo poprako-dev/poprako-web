@@ -22,6 +22,7 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 type Props = {
   selectedChapter?: ChapterInfo;
   assignments: AssignmentInfo[];
+  currentUserId?: string | null;
   onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
   onRemoveAssignment?: (userId: string, role: Role) => void;
   onAddAssignment?: (role: Role) => void;
@@ -125,6 +126,7 @@ type PendingConfirm = {
 export default function AssignmentFooter({
   selectedChapter,
   assignments,
+  currentUserId,
   onTransiteWorkflow,
   onRemoveAssignment,
   onAddAssignment,
@@ -189,6 +191,12 @@ export default function AssignmentFooter({
         <div className="px-4 pt-1 pb-3 flex flex-col gap-1 relative">
           {ROLE_DEFS.map((roleDef) => {
             const roleAssignments = assignments.filter(roleDef.matches);
+            const isCurrentUserAssigned = !!(
+              currentUserId &&
+              roleAssignments.some((a) => a.userId === currentUserId)
+            );
+            const canOperateThisRole =
+              canOperateWorkflow || isCurrentUserAssigned;
             const status = selectedChapter
               ? roleDef.getStatus(selectedChapter)
               : ("unset" as WorkflowStatus);
@@ -210,7 +218,7 @@ export default function AssignmentFooter({
                 role={roleDef.addRole}
                 assignments={roleAssignments}
                 status={status}
-                transition={canOperateWorkflow ? transition : null}
+                transition={canOperateThisRole ? transition : null}
                 onTransiteWorkflow={handleRequestTransition}
                 onRemoveUser={canManageAssignments ? onRemoveAssignment : undefined}
                 onAddUser={

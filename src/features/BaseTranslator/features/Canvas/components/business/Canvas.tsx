@@ -108,7 +108,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     <div
       ref={containerRef}
       className={clsx(
-        "relative w-full h-full overflow-hidden bg-stone-100 touch-none select-none",
+        "relative w-full h-full overflow-hidden bg-stone-600 touch-none select-none",
         isPanning ? "cursor-grabbing" : "cursor-default",
       )}
       onMouseDown={handleCanvasMouseDown}

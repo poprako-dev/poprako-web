@@ -37,6 +37,7 @@ export default function PageCard({
   const proofread = page.proofreadUnitCount;
   const transPct = total > 0 ? Math.round((translated / total) * 100) : 0;
   const proofPct = total > 0 ? Math.round((proofread / total) * 100) : 0;
+  const isEmpty = total === 0;
   const isCompleted = total > 0 && proofread >= total;
   const isTranslated = total > 0 && translated >= total;
   const reuploadInputRef = useRef<HTMLInputElement>(null);
@@ -92,7 +93,9 @@ export default function PageCard({
                 ? "bg-green-500"
                 : isTranslated
                   ? "bg-orange-400"
-                  : "bg-gray-400",
+                  : isEmpty
+                    ? "border-[3px] border-green-500 bg-transparent"
+                    : "bg-gray-400",
             )}
           />
         </div>

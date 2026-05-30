@@ -344,6 +344,7 @@ export default function ComicDetailModal({
     <AssignmentFooter
       selectedChapter={selectedChapter}
       assignments={assignments}
+      currentUserId={currentUserId}
       onTransiteWorkflow={handleTransition}
       onRemoveAssignment={onRemoveAssignment ? handleRemoveAssignment : undefined}
       onAddAssignment={onAddAssignment ? handleOpenMemberSelector : undefined}

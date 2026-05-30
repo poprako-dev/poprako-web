@@ -104,16 +104,20 @@ export default function SystemMailViewer() {
           <p className="text-sm text-slate-400">暂无系统消息</p>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
-          <div className="flex flex-col pt-32">
+        <div className="flex-1 overflow-y-auto px-4 pb-2">
+          <div className="relative pl-7">
             {recentItems.length > 0 && (
               <>
                 <SectionLabel label="近三天" hasTopMargin={false} />
-                {recentItems.map((mail) => (
+                {recentItems.map((mail, i) => (
                   <MailItem
                     key={mail.id}
                     mail={mail}
                     onMarkRead={handleMarkRead}
+                    isLast={
+                      i === recentItems.length - 1 &&
+                      olderItems.length === 0
+                    }
                   />
                 ))}
               </>
@@ -124,11 +128,12 @@ export default function SystemMailViewer() {
                   label="更久以前"
                   hasTopMargin={recentItems.length > 0}
                 />
-                {olderItems.map((mail) => (
+                {olderItems.map((mail, i) => (
                   <MailItem
                     key={mail.id}
                     mail={mail}
                     onMarkRead={handleMarkRead}
+                    isLast={i === olderItems.length - 1}
                   />
                 ))}
               </>
@@ -157,14 +162,17 @@ function SectionLabel({ label, hasTopMargin }: SectionLabelProps) {
   return (
     <div
       className={clsx(
-        "flex items-center gap-3 py-2 mb-1",
-        hasTopMargin && "mt-4",
+        "relative",
+        hasTopMargin && "mt-3",
       )}
     >
-      <span className="text-xs font-semibold text-slate-400 shrink-0">
+      {/* dot — vertically centered with section text */}
+      <div className="absolute left-[-19px] top-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full border-2 border-stone-300 bg-[#FEFDF9] z-10" />
+      {/* line from below-dot to bottom, connecting to next items */}
+      <div className="absolute left-[-14px] top-[calc(50%+6px)] bottom-0 w-px bg-stone-200" />
+      <span className="block py-2 text-md font-semibold text-stone-500">
         {label}
       </span>
-      <div className="flex-1 h-px bg-slate-100" />
     </div>
   );
 }
@@ -172,70 +180,83 @@ function SectionLabel({ label, hasTopMargin }: SectionLabelProps) {
 type MailItemProps = {
   mail: SysMailInfo;
   onMarkRead: (id: string) => void;
+  isLast: boolean;
 };
 
-function MailItem({ mail, onMarkRead }: MailItemProps) {
+function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
   return (
     <div
       className={clsx(
-        "flex items-start gap-3 rounded-sm px-3 py-3.5 border-l-2",
+        "relative pb-5 group",
         "transition-colors duration-200",
-        !mail.read
-          ? [
-              "bg-[var(--color-green-50)]",
-              "border-l-[var(--color-green-500)]",
-            ]
-          : "bg-transparent hover:bg-slate-50 border-l-transparent",
       )}
     >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          {!mail.read && (
-            <div
-              className={clsx(
-                "h-1.5 w-1.5 rounded-full shrink-0",
-                "bg-[var(--color-green-500)]",
-              )}
-            />
+      {/* per-item timeline spine: gap → dot → gap → line */}
+      <div className="absolute left-[-19px] top-0 bottom-0 w-2.5 flex flex-col items-center">
+        {/* gap above dot — creates visual break from previous line */}
+        <div className="h-2 flex-shrink-0" />
+        {/* dot */}
+        <div
+          className={clsx(
+            "w-2.5 h-2.5 rounded-full flex-shrink-0 z-10",
+            "transition-colors duration-300",
+            !mail.read
+              ? "bg-[var(--color-green-500)]"
+              : "border-2 border-stone-300 bg-[#FEFDF9]",
           )}
-          <h3
+        />
+        {/* gap below dot — clean break before line */}
+        <div className="h-2 flex-shrink-0" />
+        {/* line segment extending down through content */}
+        {!isLast && <div className="w-px flex-1 bg-stone-200" />}
+      </div>
+
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-2">
+            <h3
+              className={clsx(
+                "leading-snug",
+                !mail.read
+                  ? "text-base font-semibold text-stone-800"
+                  : "text-sm font-medium text-stone-500",
+              )}
+            >
+              {mail.title}
+            </h3>
+            <span className="text-xs text-stone-400 shrink-0">
+              {formatMailDate(mail.createdAt)}
+            </span>
+          </div>
+          <p
             className={clsx(
-              "text-sm truncate",
-              !mail.read
-                ? "font-semibold text-slate-800"
-                : "font-medium text-slate-500",
+              "text-sm leading-relaxed mt-0.5",
+              !mail.read ? "text-stone-600" : "text-stone-400",
             )}
           >
-            {mail.title}
-          </h3>
-          <span className="text-[10px] text-slate-400 ml-auto shrink-0">
-            {formatMailDate(mail.createdAt)}
-          </span>
+            {mail.content}
+          </p>
         </div>
-        <p
-          className={clsx(
-            "text-[13px] leading-relaxed line-clamp-2",
-            !mail.read ? "text-slate-600" : "text-slate-400",
-          )}
-        >
-          {mail.content}
-        </p>
-      </div>
-      {!mail.read && (
+
+        {/* mark-read button */}
         <button
           onClick={() => onMarkRead(mail.id)}
-          title="标记为已读"
+          title={mail.read ? "已读" : "标记为已读"}
           className={clsx(
-            "flex-shrink-0 p-2 rounded-lg",
+            "flex-shrink-0 p-1.5 rounded-md mt-0.5",
             "transition-all duration-200",
-            "text-slate-400 hover:text-[var(--color-green-500)]",
-            "hover:bg-green-50/80",
+            !mail.read
+              ? [
+                  "opacity-0 group-hover:opacity-100 max-sm:opacity-100",
+                  "text-stone-400 hover:text-[var(--color-green-500)]",
+                  "hover:bg-[var(--color-green-50)]",
+                ]
+              : "text-stone-300 cursor-default",
           )}
         >
-          <Check size={16} strokeWidth={2.5} />
+          <Check size={15} strokeWidth={2.5} />
         </button>
-      )}
+      </div>
     </div>
   );
 }
-

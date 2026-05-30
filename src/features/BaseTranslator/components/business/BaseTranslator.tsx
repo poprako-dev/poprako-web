@@ -350,7 +350,7 @@ export default function BaseTranslator({
   ];
 
   const canvas = (
-    <div className="relative w-full h-full bg-stone-100">
+    <div className="relative w-full h-full bg-stone-700">
       <Canvas
         ref={canvasRef}
         imageSrc={imageUrl}
