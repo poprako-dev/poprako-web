@@ -6,7 +6,7 @@ import ComicList from "@/features/ComcList/components/business/ComicList";
 import ComicCreatorModal from "./ComicCreatorModal";
 import WorksetCreatorModal from "./WorksetCreatorModal";
 import ComicDetailModal from "../../features/ComicDetailModal/components/business/ComicDetailModal";
-import { listComics, createComic, deleteComic, getComic } from "../../api/comic";
+import { listComics, createComic, deleteComic, getComic, updateComic } from "../../api/comic";
 import {
   getPinnedChapter,
   listChapters,
@@ -18,6 +18,7 @@ import {
   importChapter,
   joinChapter,
 } from "../../api/chapter";
+import { updateWorkset } from "../../api/workset";
 import {
   listPages,
   deleteChapterPages,
@@ -341,6 +342,54 @@ export default function ComicPlayground() {
     [],
   );
 
+  const handleUpdateComic = useCallback(
+    async (args: { title: string; author: string; description?: string }) => {
+      if (!selectedComic) {
+        return { success: false, error: "未选择漫画" } as Result<void>;
+      }
+      const result = await updateComic(selectedComic.id, args);
+      if (!result.success) {
+        console.error("[ComicPlayground] 更新漫画信息失败:", result.error);
+        showToast(result.error, "error");
+        return result;
+      }
+      showToast("漫画信息已更新", "success");
+      setComicListRefreshKey((k) => k + 1);
+      return result;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedComic, showToast],
+  );
+
+  const handleUpdateChapter = useCallback(
+    async (chapterId: string, subtitle?: string) => {
+      const result = await updateChapter(chapterId, { subtitle });
+      if (!result.success) {
+        console.error("[ComicPlayground] 更新章节信息失败:", result.error);
+        showToast(result.error, "error");
+        return result;
+      }
+      showToast("章节信息已更新", "success");
+      return result;
+    },
+    [showToast],
+  );
+
+  const handleUpdateWorkset = useCallback(
+    async (id: string, args: { name: string; description?: string }) => {
+      const result = await updateWorkset(id, args);
+      if (!result.success) {
+        console.error("[ComicPlayground] 更新作品集失败:", result.error);
+        showToast(result.error, "error");
+        return result;
+      }
+      showToast("作品集信息已更新", "success");
+      await loadWorksets();
+      return result;
+    },
+    [loadWorksets, showToast],
+  );
+
   const handleDeleteComic = useCallback(
     async (comicId: string): Promise<Result<void>> => {
       const result = await deleteComic(comicId);
@@ -399,6 +448,7 @@ export default function ComicPlayground() {
         onChangeWorkset={setActiveWorksetId}
         onCreateWorkset={() => setShowWorksetCreatorModal(true)}
         onDeleteWorkset={handleDeleteWorkset}
+        onUpdateWorkset={handleUpdateWorkset}
         onLoadComics={handleLoadComics}
         onLoadLatestChapter={handleLoadLatestChapter}
         onLoadAssignments={handleLoadAssignmentsForComic}
@@ -444,6 +494,8 @@ export default function ComicPlayground() {
           onExportChapter={handleExportChapter}
           onExportChapterLp={handleExportChapterLp}
           onDeleteComic={handleDeleteComic}
+          onUpdateComic={handleUpdateComic}
+          onUpdateChapter={handleUpdateChapter}
           onResolveActiveMember={resolveActiveMember}
           onClose={() => clearComicDetail(true)}
         />

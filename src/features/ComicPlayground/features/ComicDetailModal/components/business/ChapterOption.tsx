@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { ChevronDown, Trash2, Plus, Loader2 } from "lucide-react";
 import type { ChapterInfo, ComicInfo } from "@/types";
@@ -16,6 +16,7 @@ type Props = {
   onSelect: (id: string) => void;
   onCreateChapter?: (subtitle?: string) => Promise<Result<string>>;
   onDelete?: (id: string) => void;
+  onLongPress?: (chapter: ChapterInfo) => void;
 };
 
 export default function ChapterOption({
@@ -28,12 +29,67 @@ export default function ChapterOption({
   onSelect,
   onCreateChapter,
   onDelete,
+  onLongPress,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [showCreator, setShowCreator] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<HTMLDivElement>(null);
+  const longPressTimer = useRef<number | null>(null);
+  const longPressChapter = useRef<ChapterInfo | null>(null);
+  const longPressHandled = useRef(false);
+
+  const clearLongPress = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  const handleChapterPointerDown = useCallback(
+    (ch: ChapterInfo) => (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      longPressHandled.current = false;
+      longPressChapter.current = ch;
+      longPressTimer.current = window.setTimeout(() => {
+        longPressHandled.current = true;
+        onLongPress?.(ch);
+      }, 500);
+    },
+    [onLongPress],
+  );
+
+  const handleChapterPointerUp = useCallback(
+    () => (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearLongPress();
+      if (!longPressHandled.current) {
+        const ch = longPressChapter.current;
+        if (ch) {
+          onSelect(ch.id);
+          setIsOpen(false);
+        }
+      }
+    },
+    [clearLongPress, onSelect],
+  );
+
+  const handleChapterPointerCancel = useCallback(
+    () => () => {
+      clearLongPress();
+    },
+    [clearLongPress],
+  );
+
+  const handleChapterContextMenu = useCallback(
+    () => (e: React.MouseEvent) => {
+      e.preventDefault();
+    },
+    [],
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,6 +114,11 @@ export default function ChapterOption({
     ob.observe(observerRef.current);
     return () => ob.disconnect();
   }, [isOpen, hasMore, isLoading, onLoadMore]);
+
+  // Clean up long press timer on unmount
+  useEffect(() => {
+    return () => clearLongPress();
+  }, [clearLongPress]);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -142,26 +203,52 @@ export default function ChapterOption({
                 key={ch.id}
                 className="group relative flex items-center shrink-0"
               >
-                <button
-                  onClick={() => {
-                    onSelect(ch.id);
-                    setIsOpen(false);
-                  }}
-                  className={clsx(
-                    "flex-1 flex items-center gap-2 text-left",
-                    "px-2 py-1.5 rounded-sm transition-colors pr-6",
-                    selectedChapter?.id === ch.id
-                      ? "bg-slate-100 text-slate-700"
-                      : "text-slate-500 hover:bg-slate-50",
-                  )}
-                >
-                  <span className="text-[10px] font-black italic text-slate-400 w-4 shrink-0">
-                    #{ch.index + 1}
-                  </span>
-                  <span className="text-[11px] font-bold truncate">
-                    {ch.subtitle || "无标题"}
-                  </span>
-                </button>
+                {onLongPress ? (
+                  <div
+                    onPointerDown={handleChapterPointerDown(ch)}
+                    onPointerUp={handleChapterPointerUp()}
+                    onPointerCancel={handleChapterPointerCancel()}
+                    onPointerLeave={handleChapterPointerCancel()}
+                    onContextMenu={handleChapterContextMenu()}
+                    className={clsx(
+                      "flex-1 flex items-center gap-2 text-left",
+                      "px-2 py-1.5 rounded-sm transition-colors pr-6",
+                      "select-none touch-none cursor-pointer",
+                      selectedChapter?.id === ch.id
+                        ? "bg-slate-100 text-slate-700"
+                        : "text-slate-500 hover:bg-slate-50",
+                    )}
+                    title="长按修改章节信息"
+                  >
+                    <span className="text-[10px] font-black italic text-slate-400 w-4 shrink-0">
+                      #{ch.index + 1}
+                    </span>
+                    <span className="text-[11px] font-bold truncate">
+                      {ch.subtitle || "无标题"}
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      onSelect(ch.id);
+                      setIsOpen(false);
+                    }}
+                    className={clsx(
+                      "flex-1 flex items-center gap-2 text-left",
+                      "px-2 py-1.5 rounded-sm transition-colors pr-6",
+                      selectedChapter?.id === ch.id
+                        ? "bg-slate-100 text-slate-700"
+                        : "text-slate-500 hover:bg-slate-50",
+                    )}
+                  >
+                    <span className="text-[10px] font-black italic text-slate-400 w-4 shrink-0">
+                      #{ch.index + 1}
+                    </span>
+                    <span className="text-[11px] font-bold truncate">
+                      {ch.subtitle || "无标题"}
+                    </span>
+                  </button>
+                )}
                 {onDelete && (
                   <button
                     onClick={(e) => {

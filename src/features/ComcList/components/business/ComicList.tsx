@@ -20,6 +20,10 @@ type Props = {
   onChangeWorkset: (worksetId: string) => void;
   onCreateWorkset: () => void;
   onDeleteWorkset: (worksetId: string) => void;
+  onUpdateWorkset?: (
+    id: string,
+    args: { name: string; description?: string },
+  ) => Promise<Result<void>>;
   onLoadComics: (
     offset: number,
     limit: number,
@@ -60,6 +64,7 @@ export default function ComicList({
   onLoadAssignments,
   onComicClick,
   onCreateComic,
+  onUpdateWorkset,
   onChangeFuzzyTitle,
   activeFuzzyTitle,
   activeUploadStatus,
@@ -187,6 +192,7 @@ export default function ComicList({
           onCreateWorkset={onCreateWorkset}
           onDeleteWorkset={onDeleteWorkset}
           onChangeWorkset={onChangeWorkset}
+          onUpdateWorkset={onUpdateWorkset}
         />
       }
     />

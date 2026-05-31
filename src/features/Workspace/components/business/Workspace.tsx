@@ -11,7 +11,7 @@ import CommentChatBox from "./CommentChatBox";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { fetchMyComics, fetchLatestChapter } from "../../api/workspace";
-import { deleteComic, getComic } from "@/features/ComicPlayground/api/comic";
+import { deleteComic, getComic, updateComic } from "@/features/ComicPlayground/api/comic";
 import {
   listChapters,
   createChapter,
@@ -22,6 +22,7 @@ import {
   importChapter,
   joinChapter,
 } from "@/features/ComicPlayground/api/chapter";
+import { updateWorkset } from "@/features/ComicPlayground/api/workset";
 import {
   listPages,
   deleteChapterPages,
@@ -352,6 +353,38 @@ export default function Workspace() {
     [],
   );
 
+  const handleUpdateComic = useCallback(
+    async (args: { title: string; author: string; description?: string }) => {
+      if (!selectedComic) {
+        return { success: false, error: "未选择漫画" } as Result<void>;
+      }
+      const result = await updateComic(selectedComic.id, args);
+      if (!result.success) {
+        console.error("[Workspace] 更新漫画信息失败:", result.error);
+        showToast(result.error, "error");
+        return result;
+      }
+      showToast("漫画信息已更新", "success");
+      setComicListRefreshKey((prev) => prev + 1);
+      return result;
+    },
+    [selectedComic, showToast],
+  );
+
+  const handleUpdateChapter = useCallback(
+    async (chapterId: string, subtitle?: string) => {
+      const result = await updateChapter(chapterId, { subtitle });
+      if (!result.success) {
+        console.error("[Workspace] 更新章节信息失败:", result.error);
+        showToast(result.error, "error");
+        return result;
+      }
+      showToast("章节信息已更新", "success");
+      return result;
+    },
+    [showToast],
+  );
+
   const handleDeleteComic = useCallback(
     async (comicId: string): Promise<Result<void>> => {
       const result = await deleteComic(comicId);
@@ -590,6 +623,8 @@ export default function Workspace() {
           onExportChapter={handleExportChapter}
           onExportChapterLp={handleExportChapterLp}
           onDeleteComic={handleDeleteComic}
+          onUpdateComic={handleUpdateComic}
+          onUpdateChapter={handleUpdateChapter}
           onResolveActiveMember={resolveActiveMember}
           onClose={() => clearComicDetail(true)}
         />

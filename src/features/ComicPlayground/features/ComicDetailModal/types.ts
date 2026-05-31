@@ -106,6 +106,12 @@ export type ComicDetailModalProps = {
     options?: { signal?: AbortSignal },
   ) => Promise<Result<string>>;
   onDeleteComic?: (comicId: string) => Promise<Result<void>>;
+  onUpdateComic?: (args: {
+    title: string;
+    author: string;
+    description?: string;
+  }) => Promise<Result<void>>;
+  onUpdateChapter?: (chapterId: string, subtitle?: string) => Promise<Result<void>>;
   onResolveActiveMember: () => MemberInfo | null | Promise<MemberInfo | null>;
   onClose: () => void;
 };

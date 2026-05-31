@@ -1,4 +1,4 @@
-import { SettingsPanel } from "@/features/Settings";
+import { SettingsPanel, AcknowledgementsFooter } from "@/features/Settings";
 
 type Props = Record<string, never>;
 
@@ -13,8 +13,9 @@ export default function SettingsPage(_: Props) {
         }}
       />
 
-      <div className="relative w-full flex justify-center">
+      <div className="relative w-full flex flex-col items-center">
         <SettingsPanel />
+        <AcknowledgementsFooter />
       </div>
     </div>
   );

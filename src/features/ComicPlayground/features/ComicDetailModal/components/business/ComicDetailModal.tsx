@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { canApplyWorkflowTransition } from "@/types/chapter";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { canApplyWorkflowTransition, type ChapterInfo } from "@/types/chapter";
 import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
@@ -11,6 +11,8 @@ import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import AssignmentFooter from "./AssignmentFooter";
 import ComicDetailHeader from "./ComicDetailHeader";
 import ComicDetailSidebar from "./ComicDetailSidebar";
+import ComicModifierModal from "./ComicModifierModal";
+import ChapterModifierModal from "./ChapterModifierModal";
 import ExportProgressDialog from "./ExportProgressDialog";
 import MemberSelectorModal from "./MemberSelectorModal";
 import { useComicDetailAssignments } from "../../hook/useComicDetailAssignments";
@@ -43,6 +45,8 @@ export default function ComicDetailModal({
   onExportChapter,
   onExportChapterLp,
   onDeleteComic,
+  onUpdateComic,
+  onUpdateChapter,
   onResolveActiveMember,
   onClose,
 }: ComicDetailModalProps) {
@@ -53,6 +57,8 @@ export default function ComicDetailModal({
     "delete-pages" | "delete-comic" | null
   >(null);
   const [isDeletingComic, setIsDeletingComic] = useState(false);
+  const [showComicModifier, setShowComicModifier] = useState(false);
+  const [chapterToModify, setChapterToModify] = useState<ChapterInfo | null>(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const resolveActiveMemberRef = useRef(onResolveActiveMember);
@@ -253,6 +259,17 @@ export default function ComicDetailModal({
     showToast("漫画删除成功", "success");
   };
 
+  const handleUpdateChapterLocal = useCallback(
+    (chapterId: string, subtitle?: string) => {
+      setChapters((prev) =>
+        prev.map((ch) =>
+          ch.id === chapterId ? { ...ch, subtitle: subtitle ?? "" } : ch,
+        ),
+      );
+    },
+    [],
+  );
+
   const header = (
     <ComicDetailHeader
       comicInfo={comicInfo}
@@ -268,6 +285,8 @@ export default function ComicDetailModal({
       onCreate={(subtitle) => handleCreateChapter(subtitle, onCreateChapter)}
       onDeleteChapter={onDeleteChapter}
       onDelete={(chapterId) => handleDeleteChapter(chapterId, onDeleteChapter)}
+      onLongPressTitle={onUpdateComic ? () => setShowComicModifier(true) : undefined}
+      onLongPressChapter={onUpdateChapter ? (ch) => setChapterToModify(ch) : undefined}
       onClose={onClose}
     />
   );
@@ -409,6 +428,29 @@ export default function ComicDetailModal({
             void handleDeleteCurrentComic();
           }}
           onCancel={() => setPendingConfirmAction(null)}
+        />
+      )}
+      {showComicModifier && onUpdateComic && (
+        <ComicModifierModal
+          comicInfo={comicInfo}
+          onUpdate={async (args) => {
+            const res = await onUpdateComic(args);
+            return res;
+          }}
+          onClose={() => setShowComicModifier(false)}
+        />
+      )}
+      {chapterToModify && onUpdateChapter && (
+        <ChapterModifierModal
+          chapter={chapterToModify}
+          onUpdate={async (args) => {
+            const res = await onUpdateChapter(chapterToModify.id, args.subtitle);
+            if (res.success) {
+              handleUpdateChapterLocal(chapterToModify.id, args.subtitle);
+            }
+            return res;
+          }}
+          onClose={() => setChapterToModify(null)}
         />
       )}
     </>

@@ -71,3 +71,20 @@ export default defineConfig([
   },
 ])
 ```
+
+## Acknowledgments
+
+### People
+
+- [电容](https://github.com/influ3nza)
+- [Pkuism](https://github.com/pkuislm)
+- [星辰大海](https://github.com/SeaAndStars)
+- 秋叶声生
+
+### Tech Stack
+
+- [React](https://react.dev)
+- [TypeScript](https://www.typescriptlang.org)
+- [Vite](https://vite.dev)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Lucide Icons](https://lucide.dev)
