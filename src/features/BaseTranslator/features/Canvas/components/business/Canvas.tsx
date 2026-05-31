@@ -93,7 +93,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
         setTransform((prev) => ({ ...prev, offsetX, offsetY }));
       },
     }),
-    [],
+    [imgRef, setTransform],
   );
 
   // 用 ref-based listener 替代 React onWheel，因为需要 { passive: false } 来支持 preventDefault
@@ -102,7 +102,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     if (!el) return;
     el.addEventListener("wheel", handleWheel, { passive: false });
     return () => el.removeEventListener("wheel", handleWheel);
-  }, [handleWheel]);
+  }, [handleWheel, containerRef]);
 
   return (
     <div

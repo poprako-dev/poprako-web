@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { X, Check, Info, AlertCircle } from "lucide-react";
 import clsx from "clsx";
@@ -31,13 +31,13 @@ export default function NotificationToast() {
   const { toast, hideToast } = useToastStore();
   const [isLeaving, setIsLeaving] = useState(false);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsLeaving(true);
     setTimeout(() => {
       hideToast();
       setIsLeaving(false);
     }, EXIT_DURATION);
-  };
+  }, [hideToast]);
 
   useEffect(() => {
     if (!toast) return;
@@ -45,7 +45,7 @@ export default function NotificationToast() {
     setIsLeaving(false);
     const timer = setTimeout(handleClose, TOAST_DURATION);
     return () => clearTimeout(timer);
-  }, [toast]);
+  }, [toast, handleClose]);
 
   if (!toast) return null;
 

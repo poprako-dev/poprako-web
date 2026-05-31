@@ -37,7 +37,7 @@ import type { MemberInfo } from "@/types/member";
 import type { CreateComicArgs } from "../../types/comic";
 import type { ListChapterArgs, WorkflowTransition } from "../../types/chapter";
 import type { Role } from "@/types/role";
-import { roleMask } from "@/types/role";
+import { roleMask, hasRole } from "@/types/role";
 import { listMembers } from "@/api/member";
 import { addChapterPages } from "../../features/ComicDetailModal/pageUpload";
 import { useComicDetailHost } from "../../features/ComicDetailModal/hook/useComicDetailHost";
@@ -52,6 +52,7 @@ export default function ComicPlayground() {
   const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
   const [showComicCreatorModal, setShowComicCreatorModal] = useState(false);
   const [showWorksetCreatorModal, setShowWorksetCreatorModal] = useState(false);
+  const isAdmin = activeMember !== null && hasRole(activeMember, "admin");
   const {
     comicFilters,
     activeFuzzyTitle,
@@ -357,7 +358,6 @@ export default function ComicPlayground() {
       setComicListRefreshKey((k) => k + 1);
       return result;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedComic, showToast],
   );
 
@@ -448,7 +448,7 @@ export default function ComicPlayground() {
         onChangeWorkset={setActiveWorksetId}
         onCreateWorkset={() => setShowWorksetCreatorModal(true)}
         onDeleteWorkset={handleDeleteWorkset}
-        onUpdateWorkset={handleUpdateWorkset}
+        onUpdateWorkset={isAdmin ? handleUpdateWorkset : undefined}
         onLoadComics={handleLoadComics}
         onLoadLatestChapter={handleLoadLatestChapter}
         onLoadAssignments={handleLoadAssignmentsForComic}

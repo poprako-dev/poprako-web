@@ -267,7 +267,7 @@ export default function ComicDetailModal({
         ),
       );
     },
-    [],
+    [setChapters],
   );
 
   const header = (
@@ -285,8 +285,8 @@ export default function ComicDetailModal({
       onCreate={(subtitle) => handleCreateChapter(subtitle, onCreateChapter)}
       onDeleteChapter={onDeleteChapter}
       onDelete={(chapterId) => handleDeleteChapter(chapterId, onDeleteChapter)}
-      onLongPressTitle={onUpdateComic ? () => setShowComicModifier(true) : undefined}
-      onLongPressChapter={onUpdateChapter ? (ch) => setChapterToModify(ch) : undefined}
+      onLongPressTitle={onUpdateComic && isTeamAdmin ? () => setShowComicModifier(true) : undefined}
+      onLongPressChapter={onUpdateChapter && canManageChapterAssignments ? (ch) => setChapterToModify(ch) : undefined}
       onClose={onClose}
     />
   );

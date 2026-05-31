@@ -127,7 +127,7 @@ export default function ComicList({
                 }}
               />
             </div>
-            <div className="flex rounded-lg bg-stone-200/80 p-0.5">
+            <div className="flex rounded-lg bg-stone-100/80 p-0.5">
               <button
                 type="button"
                 onClick={() => setActiveMode("translator")}
@@ -137,8 +137,8 @@ export default function ComicList({
                   "flex items-center gap-2",
                   "transition-all duration-200 focus:outline-none",
                   activeMode === "translator"
-                    ? "bg-gray-300 text-gray-800 shadow-(--shadow-sm)"
-                    : "text-slate-100 hover:text-slate-600",
+                    ? "bg-gray-200 text-gray-800 shadow-(--shadow-sm)"
+                    : "text-slate-400 hover:text-slate-600",
                 )}
               >
                 <PencilLine size={16} />
@@ -152,7 +152,7 @@ export default function ComicList({
                   "flex items-center gap-2",
                   "transition-all duration-200 focus:outline-none",
                   activeMode === "reviewer"
-                    ? "bg-emerald-50 text-slate-800 shadow-(--shadow-sm)"
+                    ? "bg-gray-200 text-gray-800 shadow-(--shadow-sm)"
                     : "text-slate-400 hover:text-slate-600",
                 )}
               >

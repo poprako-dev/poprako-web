@@ -42,9 +42,10 @@ export default function ComicDetailHeader({
   onLongPressChapter,
   onClose,
 }: Props) {
-  const titleLongPress = onLongPressTitle
-    ? useLongPress({ onLongPress: onLongPressTitle })
-    : {};
+  const titleLongPress = useLongPress({
+    onLongPress: onLongPressTitle ?? (() => {}),
+    threshold: 500,
+  });
 
   const chapterOption = (
     <ChapterOption

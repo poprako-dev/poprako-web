@@ -49,6 +49,7 @@ export default function AnnouncementTable({
   }, [teamId, showToast]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 

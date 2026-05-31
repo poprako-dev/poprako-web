@@ -1,5 +1,5 @@
 import { Globe2, Check, Plus, Upload } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import clsx from "clsx";
 import type { TeamConfig } from "../../types/types";
 import { joinMember } from "@/api/member";
@@ -9,6 +9,8 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
 import { hasRole } from "@/types/role";
+import TeamModifierModal from "./TeamModifierModal";
+import type { Result } from "@/types/utils/result";
 
 type Props = {
   teams: TeamConfig[];
@@ -17,6 +19,7 @@ type Props = {
   onToggleList: (nextOpen: boolean) => void;
   onSelectTeam: (team: TeamConfig) => void;
   onJoinTeam: () => void | Promise<void>;
+  onUpdateTeam?: (id: string, args: { name: string; description?: string }) => Promise<Result<void>>;
   onAvatarUploadingChange: (isUploading: boolean) => void;
 };
 
@@ -110,15 +113,70 @@ function TeamList({
   activeId,
   onSelect,
   onJoin,
+  onLongPressTeam,
 }: {
   teams: TeamConfig[];
   activeId: string;
   onSelect: (team: TeamConfig) => void;
   onJoin: () => void;
+  onLongPressTeam?: (team: TeamConfig) => void;
 }) {
   const [inviteCode, setInviteCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
+  const longPressTimer = useRef<number | null>(null);
+  const longPressTeam = useRef<TeamConfig | null>(null);
+  const longPressHandled = useRef(false);
+
+  const clearLongPress = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  const handleTeamPointerDown = useCallback(
+    (t: TeamConfig) => (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      longPressHandled.current = false;
+      longPressTeam.current = t;
+      longPressTimer.current = window.setTimeout(() => {
+        longPressHandled.current = true;
+        onLongPressTeam?.(t);
+      }, 500);
+    },
+    [onLongPressTeam],
+  );
+
+  const handleTeamPointerUp = useCallback(
+    () => (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearLongPress();
+      if (!longPressHandled.current) {
+        const t = longPressTeam.current;
+        if (t) {
+          onSelect(t);
+        }
+      }
+    },
+    [clearLongPress, onSelect],
+  );
+
+  const handleTeamPointerCancel = useCallback(
+    () => () => {
+      clearLongPress();
+    },
+    [clearLongPress],
+  );
+
+  const handleTeamContextMenu = useCallback(
+    () => (e: React.MouseEvent) => {
+      e.preventDefault();
+    },
+    [],
+  );
 
   const handleJoin = async () => {
     const code = inviteCode.trim();
@@ -170,17 +228,8 @@ function TeamList({
         <div className="space-y-1 px-2 pb-2">
           {teams.map((t) => {
             const isSelected = t.id === activeId;
-            return (
-              <button
-                key={t.id}
-                onClick={() => onSelect(t)}
-                className={clsx(
-                  "w-full flex items-center gap-4",
-                  "px-4 py-3 rounded-sm transition-all",
-                  isSelected ? "bg-green-50" : "text-gray-500 hover:bg-gray-50",
-                  isSelected ? "text-green-800" : "hover:text-gray-900",
-                )}
-              >
+            const itemContent = (
+              <>
                 <div
                   className={clsx(
                     "w-10 h-10 rounded-lg flex shrink-0",
@@ -207,6 +256,36 @@ function TeamList({
                     className={clsx("ml-auto", "text-green-500")}
                   />
                 )}
+              </>
+            );
+
+            const baseClasses = clsx(
+              "w-full flex items-center gap-4",
+              "px-4 py-3 rounded-sm transition-all",
+              isSelected ? "bg-green-50" : "text-gray-500 hover:bg-gray-50",
+              isSelected ? "text-green-800" : "hover:text-gray-900",
+            );
+
+            return onLongPressTeam ? (
+              <div
+                key={t.id}
+                onPointerDown={handleTeamPointerDown(t)}
+                onPointerUp={handleTeamPointerUp()}
+                onPointerCancel={handleTeamPointerCancel()}
+                onPointerLeave={handleTeamPointerCancel()}
+                onContextMenu={handleTeamContextMenu()}
+                className={clsx(baseClasses, "select-none touch-none cursor-pointer")}
+                title="长按修改汉化组信息"
+              >
+                {itemContent}
+              </div>
+            ) : (
+              <button
+                key={t.id}
+                onClick={() => onSelect(t)}
+                className={baseClasses}
+              >
+                {itemContent}
               </button>
             );
           })}
@@ -248,6 +327,7 @@ export default function TeamOption({
   onToggleList,
   onSelectTeam,
   onJoinTeam,
+  onUpdateTeam,
   onAvatarUploadingChange,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -256,6 +336,7 @@ export default function TeamOption({
   const [avatarUploadProgress, setAvatarUploadProgress] = useState<number | null>(null);
   const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(null);
   const [showExitWarning, setShowExitWarning] = useState(false);
+  const [teamToModify, setTeamToModify] = useState<TeamConfig | null>(null);
 
   const showToast = useToastStore((s) => s.showToast);
 
@@ -429,6 +510,7 @@ export default function TeamOption({
           activeId={activeTeam.id}
           onSelect={onSelectTeam}
           onJoin={onJoinTeam}
+          onLongPressTeam={onUpdateTeam ? (t) => { setTeamToModify(t); onToggleList(false); } : undefined}
         />
       )}
 
@@ -443,6 +525,16 @@ export default function TeamOption({
             onToggleList(false);
           }}
           onCancel={() => setShowExitWarning(false)}
+        />
+      )}
+      {teamToModify && onUpdateTeam && (
+        <TeamModifierModal
+          team={teamToModify}
+          onUpdate={async (args) => {
+            const res = await onUpdateTeam(teamToModify.id, args);
+            return res;
+          }}
+          onClose={() => setTeamToModify(null)}
         />
       )}
     </div>

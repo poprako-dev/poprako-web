@@ -82,7 +82,7 @@ export default function ComicTranslationCard({
     return () => {
       active = false;
     };
-  }, [comicInfo.id]);
+  }, [comicInfo.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const total = chapter?.totalUnitCount ?? 0;
   const translated = chapter?.translatedUnitCount ?? 0;

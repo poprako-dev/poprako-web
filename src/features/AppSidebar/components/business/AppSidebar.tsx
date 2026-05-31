@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useCallback } from "react";
 import type { NavId, TeamConfig } from "../../types/types";
 import { mainNavConfigs, footerNavConfig } from "../../config/config";
 import { useAppStore } from "@/store/app";
+import { updateTeam } from "@/api/team";
+import { hasRole } from "@/types/role";
 import { useTeamConfigs } from "../../hook/useTeamConfigs";
 import AppSidebarLayout from "../../layouts/AppSidebarLayout";
 import TitleHeader from "./TitleHeader";
@@ -34,7 +37,13 @@ export default function AppSidebar() {
   const selectedTeamId = useAppStore((s) => s.selectedTeamId);
   const setSelectedTeamId = useAppStore((s) => s.setSelectedTeamId);
   const sysMailCache = useAppStore((s) => s.sysMailCache);
+  const loginState = useAppStore((s) => s.loginState);
   const hasUnread = sysMailCache?.mails.some((m) => !m.read) ?? false;
+
+  const isTeamAdmin = useMemo(() => {
+    const member = loginState?.memberInfos.find((m) => m.teamId === selectedTeamId);
+    return member !== undefined && hasRole(member, "admin");
+  }, [loginState?.memberInfos, selectedTeamId]);
 
   const [isHovered, setIsHovered] = useState(false);
   const [isSelectingTeam, setIsSelectingTeam] = useState(false);
@@ -59,6 +68,18 @@ export default function AppSidebar() {
     setIsSelectingTeam(false);
   };
 
+  const handleUpdateTeam = useCallback(
+    async (id: string, args: { name: string; description?: string }) => {
+      const result2 = await updateTeam({ id, ...args });
+      if (!result2.success) {
+        console.error("[AppSidebar] 更新汉化组信息失败:", result2.error);
+        return result2;
+      }
+      await refreshTeams();
+      return result2;
+    },
+    [refreshTeams],
+  );
   const handleMouseLeave = () => {
     setIsHovered(false);
     if (isAvatarUploading) return;
@@ -86,6 +107,7 @@ export default function AppSidebar() {
           onToggleList={setIsSelectingTeam}
           onSelectTeam={handleTeamSelect}
           onJoinTeam={refreshTeams}
+          onUpdateTeam={isTeamAdmin ? handleUpdateTeam : undefined}
           onAvatarUploadingChange={setIsAvatarUploading}
         />
       }

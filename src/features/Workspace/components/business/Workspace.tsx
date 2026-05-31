@@ -22,7 +22,6 @@ import {
   importChapter,
   joinChapter,
 } from "@/features/ComicPlayground/api/chapter";
-import { updateWorkset } from "@/features/ComicPlayground/api/workset";
 import {
   listPages,
   deleteChapterPages,
@@ -118,6 +117,7 @@ export default function Workspace() {
 
   useEffect(() => {
     if (!selectedTeamId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadComments(selectedTeamId);
   }, [selectedTeamId, loadComments]);
 

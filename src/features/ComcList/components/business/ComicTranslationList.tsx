@@ -78,6 +78,7 @@ export default function ComicTranslationList({
 
   useEffect(() => {
     isLoadingRef.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadComics(true);
   }, [loadComics]);
 

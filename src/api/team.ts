@@ -1,6 +1,6 @@
 import { api } from "./util";
 import type { Result } from "@/types/utils/result";
-import type { ReserveTeamAvatarResult } from "@/types/team";
+import type { ReserveTeamAvatarResult, UpdateTeamArgs } from "@/types/team";
 import {
   unwrapRawReserveTeamAvatarResult,
   type RawReserveTeamAvatarResult,
@@ -32,6 +32,17 @@ export async function confirmTeamAvatarUploaded(
   const res = await api.post<void, Record<string, never>>(
     `/teams/${teamId}/avatar/confirm`,
     {},
+  );
+  if (!res.success) return res;
+  return { success: true, data: undefined };
+}
+
+export async function updateTeam(
+  args: UpdateTeamArgs,
+): Promise<Result<void>> {
+  const res = await api.put<void, { name?: string; description?: string }>(
+    `/teams/${args.id}`,
+    { name: args.name, description: args.description },
   );
   if (!res.success) return res;
   return { success: true, data: undefined };
