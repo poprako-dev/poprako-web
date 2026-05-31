@@ -14,7 +14,15 @@ export type WorkflowTransition =
   | "typeset_start"
   | "typeset_complete"
   | "review_complete"
-  | "publish_complete";
+  | "publish_complete"
+  | "upload_revert"
+  | "translate_start_revert"
+  | "translate_revert"
+  | "proofread_start_revert"
+  | "proofread_revert"
+  | "typeset_start_revert"
+  | "typeset_revert"
+  | "review_revert";
 
 export type ListChapterArgs = {
   comicId: string;
@@ -44,6 +52,7 @@ export type UpdateChapterArgs = {
   subtitle?: string;
   isPinned?: boolean;
   workflowTransition?: WorkflowTransition;
+  revertTransition?: WorkflowTransition;
 };
 
 export type RawUpdateChapterArgs = {
@@ -51,6 +60,7 @@ export type RawUpdateChapterArgs = {
   subtitle?: string;
   is_pinned?: boolean;
   workflow_transition?: WorkflowTransition;
+  revert_transition?: WorkflowTransition;
 };
 
 export type ChapterExportUnit = {

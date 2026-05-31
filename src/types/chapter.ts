@@ -14,7 +14,15 @@ export type WorkflowTransition =
   | "typeset_start"
   | "typeset_complete"
   | "review_complete"
-  | "publish_complete";
+  | "publish_complete"
+  | "upload_revert"
+  | "translate_start_revert"
+  | "translate_revert"
+  | "proofread_start_revert"
+  | "proofread_revert"
+  | "typeset_start_revert"
+  | "typeset_revert"
+  | "review_revert";
 
 export type ChapterInfo = {
   id: string;
@@ -61,6 +69,7 @@ export type UpdateChapterArgs = {
   subtitle?: string;
   isPinned?: boolean;
   workflowTransition?: WorkflowTransition;
+  revertTransition?: WorkflowTransition;
 };
 
 export type WithWorkflow = {
@@ -149,6 +158,22 @@ export function canApplyWorkflowTransition(
       return !chapter.reviewedAt;
     case "publish_complete":
       return !chapter.publishedAt;
+    case "upload_revert":
+      return !!chapter.uploadedAt;
+    case "translate_start_revert":
+      return !!chapter.translatingAt && !chapter.translatedAt;
+    case "translate_revert":
+      return !!chapter.translatedAt;
+    case "proofread_start_revert":
+      return !!chapter.proofreadingAt && !chapter.proofreadAt;
+    case "proofread_revert":
+      return !!chapter.proofreadAt;
+    case "typeset_start_revert":
+      return !!chapter.typesettingAt && !chapter.typesetAt;
+    case "typeset_revert":
+      return !!chapter.typesetAt;
+    case "review_revert":
+      return !!chapter.reviewedAt;
     default:
       return false;
   }

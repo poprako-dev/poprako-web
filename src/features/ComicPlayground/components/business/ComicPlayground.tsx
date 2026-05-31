@@ -275,7 +275,13 @@ export default function ComicPlayground() {
       chapterId: string,
       transition: WorkflowTransition,
     ): Promise<Result<void>> => {
-      return updateChapter(chapterId, { workflowTransition: transition });
+      const isRevert = transition.includes("_revert");
+      return updateChapter(
+        chapterId,
+        isRevert
+          ? { revertTransition: transition }
+          : { workflowTransition: transition },
+      );
     },
     [],
   );

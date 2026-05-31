@@ -17,7 +17,6 @@ import type { WorkflowStatus } from "@/types/workflow";
 import type { Result } from "@/types/utils/result";
 import RoleTag from "./RoleTag";
 import type { Role } from "@/types/role";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 type Props = {
   selectedChapter?: ChapterInfo;
@@ -44,6 +43,7 @@ type RoleDef = {
   matches: (a: AssignmentInfo) => boolean;
   getStatus: (ch: ChapterInfo) => WorkflowStatus;
   nextTransition: (status: WorkflowStatus) => WorkflowTransition | null;
+  prevRevertTransition: (ch: ChapterInfo) => WorkflowTransition | null;
 };
 
 const ROLE_DEFS: RoleDef[] = [
@@ -53,6 +53,7 @@ const ROLE_DEFS: RoleDef[] = [
     matches: (a) => a.assignedRawProviderAt != null,
     getStatus: uploadWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "upload_complete"),
+    prevRevertTransition: (ch) => (ch.uploadedAt ? "upload_revert" : null),
   },
   {
     label: "翻",
@@ -64,6 +65,11 @@ const ROLE_DEFS: RoleDef[] = [
       if (s === "ongoing") return "translate_complete";
       return null;
     },
+    prevRevertTransition: (ch) => {
+      if (ch.translatedAt) return "translate_revert";
+      if (ch.translatingAt) return "translate_start_revert";
+      return null;
+    },
   },
   {
     label: "校",
@@ -73,6 +79,11 @@ const ROLE_DEFS: RoleDef[] = [
     nextTransition: (s) => {
       if (s === "pending") return "proofread_start";
       if (s === "ongoing") return "proofread_complete";
+      return null;
+    },
+    prevRevertTransition: (ch) => {
+      if (ch.proofreadAt) return "proofread_revert";
+      if (ch.proofreadingAt) return "proofread_start_revert";
       return null;
     },
   },
@@ -89,6 +100,11 @@ const ROLE_DEFS: RoleDef[] = [
       if (s === "ongoing") return "typeset_complete";
       return null;
     },
+    prevRevertTransition: (ch) => {
+      if (ch.typesetAt) return "typeset_revert";
+      if (ch.typesettingAt) return "typeset_start_revert";
+      return null;
+    },
   },
   {
     label: "监",
@@ -96,6 +112,7 @@ const ROLE_DEFS: RoleDef[] = [
     matches: (a) => a.assignedReviewerAt != null,
     getStatus: reviewWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "review_complete"),
+    prevRevertTransition: (ch) => (ch.reviewedAt ? "review_revert" : null),
   },
   {
     label: "传",
@@ -103,10 +120,11 @@ const ROLE_DEFS: RoleDef[] = [
     matches: (a) => a.assignedPublisherAt != null,
     getStatus: publishWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "publish_complete"),
+    prevRevertTransition: () => null,
   },
 ];
 
-const TRANSITION_LABELS: Record<WorkflowTransition, string> = {
+export const TRANSITION_LABELS: Record<WorkflowTransition, string> = {
   upload_complete: "标记图源上传完成",
   translate_start: "开始翻译",
   translate_complete: "标记翻译完成",
@@ -116,11 +134,14 @@ const TRANSITION_LABELS: Record<WorkflowTransition, string> = {
   typeset_complete: "标记嵌字完成",
   review_complete: "标记审核通过",
   publish_complete: "标记发布完成",
-};
-
-type PendingConfirm = {
-  transition: WorkflowTransition;
-  resolve: (result: Result<void>) => void;
+  upload_revert: "撤销上传完成",
+  translate_start_revert: "撤销开始翻译",
+  translate_revert: "撤销翻译完成",
+  proofread_start_revert: "撤销开始校对",
+  proofread_revert: "撤销校对完成",
+  typeset_start_revert: "撤销开始嵌字",
+  typeset_revert: "撤销嵌字完成",
+  review_revert: "撤销审核通过",
 };
 
 export default function AssignmentFooter({
@@ -140,28 +161,6 @@ export default function AssignmentFooter({
   canManageAssignments = false,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
-
-  const handleRequestTransition = (
-    transition: WorkflowTransition,
-  ): Promise<Result<void>> => {
-    return new Promise((resolve) => {
-      setPendingConfirm({ transition, resolve });
-    });
-  };
-
-  const handleConfirm = async () => {
-    if (!pendingConfirm) return;
-    const { transition, resolve } = pendingConfirm;
-    setPendingConfirm(null);
-    resolve(await onTransiteWorkflow(transition));
-  };
-
-  const handleCancelConfirm = () => {
-    if (!pendingConfirm) return;
-    pendingConfirm.resolve({ success: false, error: "用户取消" });
-    setPendingConfirm(null);
-  };
 
   return (
     <div className="flex flex-col border-t border-slate-200 bg-white shrink-0">
@@ -200,16 +199,35 @@ export default function AssignmentFooter({
             const status = selectedChapter
               ? roleDef.getStatus(selectedChapter)
               : ("unset" as WorkflowStatus);
-            const nextTransition =
+
+            // forward transition
+            const nextForward =
               selectedChapter && status !== "unset"
                 ? roleDef.nextTransition(status)
                 : null;
-            const transition =
+            const forwardTransition =
+              canOperateThisRole &&
               selectedChapter &&
-              nextTransition &&
-              canApplyWorkflowTransition(selectedChapter, nextTransition)
-                ? nextTransition
+              nextForward &&
+              canApplyWorkflowTransition(selectedChapter, nextForward)
+                ? nextForward
                 : null;
+
+            // revert transition
+            const nextRevert =
+              selectedChapter
+                ? roleDef.prevRevertTransition(selectedChapter)
+                : null;
+            const revertTransition =
+              canOperateThisRole &&
+              selectedChapter &&
+              nextRevert &&
+              canApplyWorkflowTransition(selectedChapter, nextRevert)
+                ? nextRevert
+                : null;
+
+            const hasAnyTransition =
+              forwardTransition != null || revertTransition != null;
 
             return (
               <RoleTag
@@ -218,8 +236,10 @@ export default function AssignmentFooter({
                 role={roleDef.addRole}
                 assignments={roleAssignments}
                 status={status}
-                transition={canOperateThisRole ? transition : null}
-                onTransiteWorkflow={handleRequestTransition}
+                forwardTransition={forwardTransition}
+                revertTransition={revertTransition}
+                onClickable={hasAnyTransition}
+                onTransiteWorkflow={onTransiteWorkflow}
                 onRemoveUser={canManageAssignments ? onRemoveAssignment : undefined}
                 onAddUser={
                   canManageAssignments && onAddAssignment
@@ -250,14 +270,6 @@ export default function AssignmentFooter({
         </div>
       </div>
 
-      {pendingConfirm && (
-        <ConfirmDialog
-          title="确认推进流程"
-          description={`即将执行：${TRANSITION_LABELS[pendingConfirm.transition]}，此操作不可撤销。`}
-          onConfirm={handleConfirm}
-          onCancel={handleCancelConfirm}
-        />
-      )}
     </div>
   );
 }

@@ -90,6 +90,7 @@ export type RawUpdateChapterArgs = {
   subtitle?: string;
   is_pinned?: boolean;
   workflow_transition?: string;
+  revert_transition?: string;
 };
 
 export function unwrapRawUpdateChapterArgs(
@@ -99,5 +100,6 @@ export function unwrapRawUpdateChapterArgs(
     subtitle: raw.subtitle,
     isPinned: raw.is_pinned,
     workflowTransition: raw.workflow_transition as WorkflowTransition | undefined,
+    revertTransition: raw.revert_transition as WorkflowTransition | undefined,
   } as UpdateChapterArgs;
 }

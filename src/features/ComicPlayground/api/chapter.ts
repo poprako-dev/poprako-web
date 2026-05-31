@@ -85,6 +85,7 @@ export async function updateChapter(
     subtitle: args.subtitle,
     is_pinned: args.isPinned,
     workflow_transition: args.workflowTransition,
+    revert_transition: args.revertTransition,
   };
 
   const res = await api.put<void, RawUpdateChapterArgs>(
