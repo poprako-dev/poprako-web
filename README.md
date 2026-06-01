@@ -81,6 +81,11 @@ export default defineConfig([
 - [星辰大海](https://github.com/SeaAndStars)
 - 秋叶声生
 
+### Repositories
+
+- [萌翻](https://github.com/moeflow-com/moeflow)
+- [LP](https://github.com/LabelPlus/LabelPlus)
+
 ### Tech Stack
 
 - [React](https://react.dev)

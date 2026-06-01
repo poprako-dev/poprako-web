@@ -114,8 +114,8 @@ export default function StatusOptionBar({
       <button
         title={
           proofreadPreviewVisibility === "visible"
-            ? "降低标记透明度"
-            : "恢复标记透明度"
+            ? "隐藏预览"
+            : "显示预览"
         }
         onClick={onToggleProofreadPreviewClick}
         className={clsx(

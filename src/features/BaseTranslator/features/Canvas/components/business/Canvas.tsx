@@ -201,7 +201,9 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     isDragging={isDraggingThis}
                     previewText={unitFinalText(unit)}
                     previewMode={
-                      mode === "proofread" ? "visible" : "hidden"
+                      mode === "proofread" && proofreadPreviewVisibility === "visible"
+                        ? "visible"
+                        : "hidden"
                     }
                     dimmed={proofreadPreviewVisibility === "dimmed"}
                   />

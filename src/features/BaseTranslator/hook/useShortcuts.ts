@@ -39,7 +39,7 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
   {
     action: "toggleProofreadPreview",
     label: "切换标记透明度",
-    keys: ["Control", "i"],
+    keys: ["Control", "x"],
   },
   {
     action: "nextMarker",

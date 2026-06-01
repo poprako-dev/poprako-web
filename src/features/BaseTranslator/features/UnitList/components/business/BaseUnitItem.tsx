@@ -1,6 +1,12 @@
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
-import { unitId, unitIndex, unitIsBubble, type UnitInfo, type UnitEdit } from "@/types/unit";
+import {
+  unitId,
+  unitIndex,
+  unitIsBubble,
+  type UnitInfo,
+  type UnitEdit,
+} from "@/types/unit";
 
 type Props = {
   unit: UnitInfo;
@@ -90,7 +96,9 @@ export default function BaseUnitItem({
       className={clsx(
         "relative flex cursor-text items-stretch border-b border-stone-100",
         "last:border-b-0 transition-all duration-75",
-        isFocused ? "z-10 bg-stone-200/50" : "bg-transparent hover:bg-stone-100/70",
+        isFocused
+          ? "z-10 bg-stone-300/50"
+          : "bg-transparent hover:bg-stone-100/70",
       )}
     >
       <div

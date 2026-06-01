@@ -11,12 +11,16 @@ type Props = {
 };
 
 export default function SpecialCharPanel({ onClose }: Props) {
-  const { allChars, addChar, deleteChar, toggleFavorite } = useSpecialChars();
+  const { allChars, addChar, deleteChar, toggleFavorite, reorderChars } =
+    useSpecialChars();
 
   const [mode, setMode] = useState<Mode>("select");
   const [isAdding, setIsAdding] = useState(false);
   const [newCharText, setNewCharText] = useState("");
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const didDragRef = useRef(false);
+  const lastDragOverIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isAdding && textareaRef.current) {
@@ -52,6 +56,8 @@ export default function SpecialCharPanel({ onClose }: Props) {
   };
 
   const handleCharClick = (id: string) => {
+    if (didDragRef.current) return;
+
     if (mode === "select") {
       toggleFavorite(id);
     } else {
@@ -62,6 +68,35 @@ export default function SpecialCharPanel({ onClose }: Props) {
   const handleModeChange = (next: Mode) => {
     setMode(next);
     setIsAdding(false);
+  };
+
+  const handleDragStart = (
+    e: React.DragEvent<HTMLButtonElement>,
+    id: string,
+  ) => {
+    didDragRef.current = false;
+    lastDragOverIdRef.current = null;
+    setDraggingId(id);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+  };
+
+  const handleDragEnter = (id: string) => {
+    if (!draggingId || draggingId === id || lastDragOverIdRef.current === id) {
+      return;
+    }
+
+    didDragRef.current = true;
+    reorderChars(draggingId, id);
+    lastDragOverIdRef.current = id;
+  };
+
+  const handleDragEnd = () => {
+    setDraggingId(null);
+    lastDragOverIdRef.current = null;
+    window.setTimeout(() => {
+      didDragRef.current = false;
+    }, 0);
   };
 
   return createPortal(
@@ -125,11 +160,18 @@ export default function SpecialCharPanel({ onClose }: Props) {
             {allChars.map((char) => (
               <button
                 key={char.id}
+                draggable
                 onClick={() => handleCharClick(char.id)}
+                onDragStart={(e) => handleDragStart(e, char.id)}
+                onDragEnter={() => handleDragEnter(char.id)}
+                onDragEnd={handleDragEnd}
+                onDragOver={(e) => e.preventDefault()}
                 className={clsx(
                   "group relative flex items-center justify-center",
                   "h-12 rounded-lg text-sm transition-all duration-200",
                   "outline-none active:scale-95 overflow-hidden",
+                  "cursor-grab active:cursor-grabbing",
+                  draggingId === char.id && "opacity-60 ring-2 ring-primary/30",
                   mode === "select"
                     ? char.isFavorite
                       ? [
@@ -193,8 +235,8 @@ export default function SpecialCharPanel({ onClose }: Props) {
           {/* Hint */}
           <p className="mt-4 text-xs text-muted-foreground/70 text-center">
             {mode === "select"
-              ? "点击切换是否出现在符号栏中"
-              : "点击符号将其删除"}
+              ? "点击切换是否出现在符号栏中，拖动可排序"
+              : "点击符号将其删除，拖动可排序"}
           </p>
         </div>
       </div>

@@ -76,7 +76,7 @@ export default function ProofreadModeUnitItem({
       isCompleted={unitIsProofread(unit)}
       dataUnitId={dataUnitId}
     >
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col">
         {/* 初翻文本（只读展示） */}
         <div className="flex items-start gap-1">
           <AutoResizeTextarea
@@ -86,7 +86,7 @@ export default function ProofreadModeUnitItem({
             onFocus={() => onSelect?.(unitId(unit))}
             placeholder="无翻译内容"
             className={clsx(
-              "flex-1 text-[15px] cursor-default leading-relaxed",
+              "flex-1 text-base cursor-default leading-relaxed",
               hasProofreadText
                 ? "text-gray-400"
                 : isFocused
@@ -106,22 +106,22 @@ export default function ProofreadModeUnitItem({
                 "shrink-0 mt-0.5 p-0.5 rounded",
                 "border border-gray-300",
                 unitIsProofread(unit)
-                  ? "text-gray-400 hover:text-gray-500 hover:border-gray-400"
-                  : "text-gray-400 hover:text-green-500 hover:border-green-300",
+                  ? "text-gray-400 hover:text-red-500 hover:border-red-300"
+                  : "text-gray-400 hover:text-green-600 hover:border-green-300",
                 "transition-colors",
               )}
             >
-              {unitIsProofread(unit) ? <X size={13} /> : <Check size={13} />}
+              {unitIsProofread(unit) ? <X size={18} /> : <Check size={18} />}
             </button>
           )}
         </div>
 
         {/* 校对框：仅在聚焦或已有校对内容时显示；只读模式下有校对内容就始终显示 */}
-        {(enableReadOnly ? hasProofreadText : isFocused || hasProofreadText) && (
+        {(enableReadOnly
+          ? hasProofreadText
+          : isFocused || hasProofreadText) && (
           <>
-            {unitTranslatedText(unit) && hasProofreadText && (
-              <div className="w-12 h-px bg-gray-200" />
-            )}
+            <div className="h-[2px] bg-gray-300 my-1 mr-10" />
             <div className="flex items-start gap-1">
               <AutoResizeTextarea
                 ref={proofRef}
@@ -136,7 +136,7 @@ export default function ProofreadModeUnitItem({
                 placeholder="输入校对..."
                 readOnly={enableReadOnly}
                 className={clsx(
-                  "flex-1 text-[15px] leading-relaxed",
+                  "flex-1 text-base leading-relaxed",
                   isFocused ? "text-gray-900 font-medium" : "text-gray-700",
                 )}
               />
@@ -155,11 +155,11 @@ export default function ProofreadModeUnitItem({
                   className={clsx(
                     "shrink-0 mt-0.5 p-0.5 rounded",
                     "border border-gray-300",
-                    "text-gray-400 hover:text-sky-400 hover:border-sky-300",
+                    "text-gray-400 hover:text-green-600 hover:border-green-300",
                     "transition-colors",
                   )}
                 >
-                  <Copy size={13} />
+                  <Copy size={18} />
                 </button>
               )}
               {!enableReadOnly && hasProofreadText && (
@@ -174,15 +174,20 @@ export default function ProofreadModeUnitItem({
                   className={clsx(
                     "shrink-0 mt-0.5 p-0.5 rounded",
                     "border border-gray-300",
-                    "text-gray-400 hover:text-rose-400 hover:border-rose-300",
+                    "text-gray-400 hover:text-red-500 hover:border-red-300",
                     "transition-colors",
                   )}
                 >
-                  <Eraser size={13} />
+                  <Eraser size={18} />
                 </button>
               )}
             </div>
-            {isFocused && !enableReadOnly && <SpecialCharsBar onInsert={insertChar} />}
+            {isFocused && !enableReadOnly && (
+              <>
+                <div className="h-px bg-gray-200 my-1 mr-10" />
+                <SpecialCharsBar onInsert={insertChar} />
+              </>
+            )}
           </>
         )}
       </div>

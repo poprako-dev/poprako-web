@@ -77,11 +77,16 @@ export default function TranslateModeUnitItem({
         onFocus={() => onSelect?.(unitId(unit))}
         placeholder="点击输入翻译..."
         readOnly={enableReadOnly}
-        className={`text-[15px] leading-relaxed ${
+        className={`text-base leading-relaxed ${
           isFocused ? "text-gray-900 font-medium" : "text-gray-700"
         }`}
       />
-      {isFocused && !enableReadOnly && <SpecialCharsBar onInsert={insertChar} />}
+      {isFocused && !enableReadOnly && (
+        <>
+          <div className="h-px bg-gray-200 my-1 mr-10" />
+          <SpecialCharsBar onInsert={insertChar} />
+        </>
+      )}
     </BaseUnitItem>
   );
 }

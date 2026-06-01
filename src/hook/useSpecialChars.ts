@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export type CharItem = {
   id: string;
@@ -7,6 +7,7 @@ export type CharItem = {
 };
 
 const STORAGE_KEY = "specialChars_v2";
+const CHANGE_EVENT = "specialChars:change";
 
 const DEFAULT_CHARS: CharItem[] = [
   { id: "1", text: "♪", isFavorite: true },
@@ -33,10 +34,31 @@ function loadFromStorage(): CharItem[] {
 
 function saveToStorage(chars: CharItem[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(chars));
+  window.setTimeout(() => {
+    window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: chars }));
+  }, 0);
 }
 
 export function useSpecialChars() {
   const [allChars, setAllChars] = useState<CharItem[]>(loadFromStorage);
+
+  useEffect(() => {
+    const handleChange = (e: Event) => {
+      const detail = (e as CustomEvent<CharItem[]>).detail;
+      if (Array.isArray(detail)) {
+        setAllChars(detail);
+      } else {
+        setAllChars(loadFromStorage());
+      }
+    };
+
+    window.addEventListener(CHANGE_EVENT, handleChange);
+    window.addEventListener("storage", handleChange);
+    return () => {
+      window.removeEventListener(CHANGE_EVENT, handleChange);
+      window.removeEventListener("storage", handleChange);
+    };
+  }, []);
 
   const favoriteChars = allChars
     .filter((c) => c.isFavorite)
@@ -67,11 +89,29 @@ export function useSpecialChars() {
     saveToStorage(next);
   };
 
+  const reorderChars = (activeId: string, overId: string) => {
+    if (activeId === overId) return;
+
+    setAllChars((current) => {
+      const activeIndex = current.findIndex((c) => c.id === activeId);
+      const overIndex = current.findIndex((c) => c.id === overId);
+
+      if (activeIndex === -1 || overIndex === -1) return current;
+
+      const next = [...current];
+      const [activeChar] = next.splice(activeIndex, 1);
+      next.splice(overIndex, 0, activeChar);
+      saveToStorage(next);
+      return next;
+    });
+  };
+
   return {
     allChars,
     favoriteChars,
     addChar,
     deleteChar,
     toggleFavorite,
+    reorderChars,
   };
 }
