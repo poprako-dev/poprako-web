@@ -47,7 +47,9 @@ export default function Marker({
         className={clsx(
           "relative rounded-full flex items-center justify-center",
           "border-2 shadow-lg",
-          isBubble ? "bg-pink-100" : "bg-amber-100",
+          isBubble
+            ? "bg-pink-300 border-pink-400/70"
+            : "bg-amber-300 border-amber-400/70",
           isSelected && "ring-4 ring-blue-500/10",
         )}
         style={{
@@ -57,7 +59,7 @@ export default function Marker({
             ? "#3b82f6"
             : isCompleted
               ? "var(--color-green-500)"
-              : "transparent",
+              : undefined,
           transition: "border-color 0.2s, box-shadow 0.2s",
         }}
       >
@@ -76,8 +78,8 @@ export default function Marker({
       </div>
       <div
         className={clsx(
-          "rounded-full -mt-px shadow-sm border-2 border-black/10",
-          isBubble ? "bg-pink-100" : "bg-amber-100",
+          "rounded-full -mt-px shadow-sm border-2 border-black/20",
+          isBubble ? "bg-pink-300" : "bg-amber-300",
         )}
         style={{ width: `${DOT_SIZE}px`, height: `${DOT_SIZE}px` }}
       />

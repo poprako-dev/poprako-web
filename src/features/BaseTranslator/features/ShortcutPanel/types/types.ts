@@ -10,7 +10,9 @@ export type ShortcutAction =
   | "nextMarker"
   | "prevMarker"
   | "pageUp"
-  | "pageDown";
+  | "pageDown"
+  | "quickSpecialChar"
+  | "save";
 
 export type ConfigurableShortcut = {
   action: ShortcutAction;

@@ -13,7 +13,6 @@ type Props = {
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
-  isCompleted: boolean;
   children: React.ReactNode;
   dataUnitId?: string;
 };
@@ -23,7 +22,6 @@ export default function BaseUnitItem({
   isFocused,
   onSelect,
   onModifyUnit,
-  isCompleted,
   children,
   dataUnitId,
 }: Props) {
@@ -94,8 +92,8 @@ export default function BaseUnitItem({
       ref={containerRef}
       data-unit-id={dataUnitId}
       className={clsx(
-        "relative flex cursor-text items-stretch border-b border-stone-100",
-        "last:border-b-0 transition-all duration-75",
+        "relative flex cursor-text items-stretch border-y border-stone-200",
+        "first:border-t-0 last:border-b-0 transition-all duration-75",
         isFocused
           ? "z-10 bg-stone-300/50"
           : "bg-transparent hover:bg-stone-100/70",
@@ -104,8 +102,8 @@ export default function BaseUnitItem({
       <div
         className={clsx(
           "transition-all duration-150 shrink-0",
-          "border-l-[3px]",
-          isFocused && "border-l-4",
+          "border-l-4",
+          isFocused && "border-l-[5px]",
           isBubble ? "border-pink-300" : "border-amber-300",
         )}
       />
@@ -121,6 +119,7 @@ export default function BaseUnitItem({
           "w-8 shrink-0 flex items-center justify-center select-none touch-none",
           "text-xs font-bold font-mono tracking-tighter transition-colors duration-150",
           "cursor-pointer hover:bg-stone-200/70",
+
           isFocused ? "text-stone-500" : "text-stone-300 hover:text-stone-500",
         )}
       >
@@ -131,12 +130,6 @@ export default function BaseUnitItem({
         {children}
       </div>
 
-      <div
-        className={clsx(
-          "w-1 shrink-0",
-          isCompleted ? "bg-[var(--color-green-500)]" : "bg-transparent",
-        )}
-      />
     </div>
   );
 }

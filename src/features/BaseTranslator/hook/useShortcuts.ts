@@ -61,6 +61,16 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
     label: "下一页",
     keys: ["Control", "d"],
   },
+  {
+    action: "quickSpecialChar",
+    label: "快速输入特殊符号",
+    keys: ["Control", "q"],
+  },
+  {
+    action: "save",
+    label: "保存",
+    keys: ["Control", "s"],
+  },
 ];
 
 function migrateStored(raw: unknown): ConfigurableShortcut[] | null {

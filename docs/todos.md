@@ -3,7 +3,7 @@
 - [x] make corresponding comic modal open when return from translator
       (a url param is probably needed).
 - [x] enable unit variation switch(hold)
-- [ ] modify workset info(hold maybe?).
+- [x] modify workset info(hold maybe?).
 - [x] add confirm for delete workset.
 - [x] role tag shaking prevention.
 - [x] refresh unit list after manual save.
@@ -26,4 +26,11 @@
 - [x] empty team option avatar.
 - [x] mailbox style.
 - [x] get pinned chapter.
-- [ ] update comic, chapter, workset.
+- [x] update comic, chapter, workset.
+- [x] double click to convert isBubble.
+- [x] unit item button at top.
+- [x] border line between unit items(make status bar border more obvious).
+- [x] more obvious color of marker.
+- [x] only proofreader mode for proofreader.
+- [x] assignment sidebar.
+- [ ] completed archive.

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { canApplyWorkflowTransition, type ChapterInfo } from "@/types/chapter";
 import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
+import type { Role } from "@/types/role";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useAppStore } from "@/store/app";
@@ -9,6 +10,7 @@ import PageList from "@/features/PageList/components/business/PageList";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import AssignmentFooter from "./AssignmentFooter";
+import AssignmentDrawer from "./AssignmentDrawer";
 import ComicDetailHeader from "./ComicDetailHeader";
 import ComicDetailSidebar from "./ComicDetailSidebar";
 import ComicModifierModal from "./ComicModifierModal";
@@ -285,8 +287,14 @@ export default function ComicDetailModal({
       onCreate={(subtitle) => handleCreateChapter(subtitle, onCreateChapter)}
       onDeleteChapter={onDeleteChapter}
       onDelete={(chapterId) => handleDeleteChapter(chapterId, onDeleteChapter)}
-      onLongPressTitle={onUpdateComic && isTeamAdmin ? () => setShowComicModifier(true) : undefined}
-      onLongPressChapter={onUpdateChapter && canManageChapterAssignments ? (ch) => setChapterToModify(ch) : undefined}
+      onLongPressTitle={
+        onUpdateComic && isTeamAdmin ? () => setShowComicModifier(true) : undefined
+      }
+      onLongPressChapter={
+        onUpdateChapter && canManageChapterAssignments
+          ? (ch) => setChapterToModify(ch)
+          : undefined
+      }
       onClose={onClose}
     />
   );
@@ -359,24 +367,26 @@ export default function ComicDetailModal({
     />
   );
 
-  const footer = (
-    <AssignmentFooter
-      selectedChapter={selectedChapter}
-      assignments={assignments}
-      currentUserId={currentUserId}
-      onTransiteWorkflow={handleTransition}
-      onRemoveAssignment={onRemoveAssignment ? handleRemoveAssignment : undefined}
-      onAddAssignment={onAddAssignment ? handleOpenMemberSelector : undefined}
-      onJoinRole={onJoinChapterRole ? handleJoinRole : undefined}
-      canJoinRole={onJoinChapterRole ? canJoinRole : undefined}
-      isRoleJoining={(role) => !!joiningRoles[role]}
-      onLeaveRole={onRemoveAssignment ? handleLeaveRole : undefined}
-      canLeaveRole={onRemoveAssignment ? canLeaveRole : undefined}
-      isRoleLeaving={(role) => !!leavingRoles[role]}
-      canOperateWorkflow={canManageChapterAssignments}
-      canManageAssignments={canManageChapterAssignments}
-    />
-  );
+  const sharedAssignmentProps = {
+    selectedChapter,
+    assignments,
+    currentUserId,
+    onTransiteWorkflow: handleTransition,
+    onRemoveAssignment: onRemoveAssignment ? handleRemoveAssignment : undefined,
+    onAddAssignment: onAddAssignment ? handleOpenMemberSelector : undefined,
+    onJoinRole: onJoinChapterRole ? handleJoinRole : undefined,
+    canJoinRole: onJoinChapterRole ? canJoinRole : undefined,
+    isRoleJoining: (role: Role) => !!joiningRoles[role],
+    onLeaveRole: onRemoveAssignment ? handleLeaveRole : undefined,
+    canLeaveRole: onRemoveAssignment ? canLeaveRole : undefined,
+    isRoleLeaving: (role: Role) => !!leavingRoles[role],
+    canOperateWorkflow: canManageChapterAssignments,
+    canManageAssignments: canManageChapterAssignments,
+  };
+
+  const footer = <AssignmentFooter {...sharedAssignmentProps} />;
+
+  const assignmentDrawer = <AssignmentDrawer {...sharedAssignmentProps} />;
 
   return (
     <>
@@ -392,6 +402,7 @@ export default function ComicDetailModal({
         sidebar={sidebar}
         pageGrid={pageGrid}
         footer={footer}
+        assignmentDrawer={assignmentDrawer}
       />
       {memberSelectorRole && (
         <MemberSelectorModal
@@ -409,7 +420,10 @@ export default function ComicDetailModal({
       {pendingConfirmAction === "delete-pages" && (
         <ConfirmDialog
           title="确认清空页面"
-          description={`即将删除当前章节下的 ${pages.length} 页，删除后才能重新上传页面，此操作不可撤销。`}
+          description={
+            `即将删除当前章节下的 ${pages.length} 页，` +
+            "删除后才能重新上传页面，此操作不可撤销。"
+          }
           confirmLabel="清空"
           onConfirm={() => {
             setPendingConfirmAction(null);
@@ -421,7 +435,10 @@ export default function ComicDetailModal({
       {pendingConfirmAction === "delete-comic" && (
         <ConfirmDialog
           title="确认删除漫画"
-          description={`即将删除《${comicInfo.title}》，其章节与页面数据也会一并删除，此操作不可撤销。`}
+          description={
+            `即将删除《${comicInfo.title}》，` +
+            "其章节与页面数据也会一并删除，此操作不可撤销。"
+          }
           confirmLabel="删除"
           onConfirm={() => {
             setPendingConfirmAction(null);

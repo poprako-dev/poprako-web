@@ -6,6 +6,7 @@ type Props = {
   sidebar: ReactNode;
   pageGrid: ReactNode;
   footer: ReactNode;
+  assignmentDrawer?: ReactNode;
 };
 
 export default function ComicDetailModalLayout({
@@ -13,6 +14,7 @@ export default function ComicDetailModalLayout({
   sidebar,
   pageGrid,
   footer,
+  assignmentDrawer,
 }: Props) {
   return (
     <div className={clsx(
@@ -59,22 +61,26 @@ export default function ComicDetailModalLayout({
               {sidebar}
             </div>
 
-            {/* Content – sunken canvas */}
-            <div
-              className={clsx(
-                "bg-stone-100 p-4",
-                "shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]",
-                "w-full",
-                "sm:flex-1 sm:overflow-y-auto",
-                "sm:scrollbar-thin sm:scrollbar-thumb-stone-300",
-              )}
-            >
-              {pageGrid}
+            {/* Content – sunken canvas, wrapped for drawer positioning on md+ */}
+            <div className="w-full sm:flex-1 sm:relative sm:overflow-hidden">
+              <div
+                className={clsx(
+                  "bg-stone-100 p-4",
+                  "shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]",
+                  "sm:absolute sm:inset-0 sm:right-6 sm:overflow-y-auto",
+                  "scrollbar-thin scrollbar-thumb-stone-300",
+                )}
+              >
+                {pageGrid}
+              </div>
+
+              {/* Assignment drawer (md+ only) */}
+              {assignmentDrawer}
             </div>
           </div>
 
-          {/* Footer – floats above content like a drawer */}
-          <div className="absolute bottom-0 left-0 right-0 z-10">{footer}</div>
+          {/* Footer – assignment footer for sm screens only */}
+          <div className="absolute bottom-0 left-0 right-0 z-10 md:hidden">{footer}</div>
         </div>
       </div>
     </div>

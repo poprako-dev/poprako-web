@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import {
   unitId,
-  unitIsTranslated,
   unitTranslatedText,
   type UnitInfo,
   type UnitEdit,
@@ -9,6 +8,7 @@ import {
 import BaseUnitItem from "./BaseUnitItem";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
+import type { SpecialCharInsertRequest } from "./UnitList";
 
 type Props = {
   unit: UnitInfo;
@@ -17,6 +17,8 @@ type Props = {
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
   dataUnitId?: string;
   enableReadOnly?: boolean;
+  specialCharInsertRequest?: SpecialCharInsertRequest;
+  onSpecialCharUse?: (char: string) => void;
 };
 
 export default function TranslateModeUnitItem({
@@ -26,6 +28,8 @@ export default function TranslateModeUnitItem({
   onModifyUnit,
   dataUnitId,
   enableReadOnly = false,
+  specialCharInsertRequest,
+  onSpecialCharUse,
 }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -59,13 +63,19 @@ export default function TranslateModeUnitItem({
     }, 0);
   }
 
+  useEffect(() => {
+    if (!isFocused || enableReadOnly || !specialCharInsertRequest) return;
+    insertChar(specialCharInsertRequest.char);
+    onSpecialCharUse?.(specialCharInsertRequest.char);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [specialCharInsertRequest?.id]);
+
   return (
     <BaseUnitItem
       unit={unit}
       isFocused={isFocused}
       onSelect={onSelect}
       onModifyUnit={onModifyUnit}
-      isCompleted={unitIsTranslated(unit)}
       dataUnitId={dataUnitId}
     >
       <AutoResizeTextarea
@@ -84,7 +94,7 @@ export default function TranslateModeUnitItem({
       {isFocused && !enableReadOnly && (
         <>
           <div className="h-px bg-gray-200 my-1 mr-10" />
-          <SpecialCharsBar onInsert={insertChar} />
+          <SpecialCharsBar onInsert={insertChar} onUseChar={onSpecialCharUse} />
         </>
       )}
     </BaseUnitItem>

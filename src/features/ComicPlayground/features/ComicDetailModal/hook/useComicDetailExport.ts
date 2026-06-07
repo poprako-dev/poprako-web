@@ -88,6 +88,22 @@ function getFileExtensionFromUrl(imageUrl: string) {
   }
 }
 
+function appendDownloadCacheBuster(imageUrl: string) {
+  const cacheBuster = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  try {
+    const url = new URL(imageUrl);
+    url.searchParams.set("_download_bust", cacheBuster);
+    return url.toString();
+  } catch {
+    const hashIndex = imageUrl.indexOf("#");
+    const base = hashIndex >= 0 ? imageUrl.slice(0, hashIndex) : imageUrl;
+    const hash = hashIndex >= 0 ? imageUrl.slice(hashIndex) : "";
+    const separator = base.includes("?") ? "&" : "?";
+    return `${base}${separator}_download_bust=${encodeURIComponent(cacheBuster)}${hash}`;
+  }
+}
+
 export function useComicDetailExport({
   accessToken,
   comicId,
@@ -153,7 +169,9 @@ export function useComicDetailExport({
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         assertExportNotAborted();
         try {
-          const response = await fetch(imageUrl, {
+          const downloadUrl = appendDownloadCacheBuster(imageUrl);
+          const response = await fetch(downloadUrl, {
+            cache: "no-store",
             headers: accessToken
               ? {
                   Authorization: `Bearer ${accessToken}`,

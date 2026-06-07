@@ -11,6 +11,7 @@ import {
   modifyUnitPosition,
   unitPosition,
   unitId,
+  unitIsBubble,
   unitTranslatedText,
   unitProofreadText,
   type UnitInfo,
@@ -29,7 +30,9 @@ import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
 import { useToastStore } from "@/components/ui/NotificationToast";
+import { useSpecialChars } from "@/hook/useSpecialChars";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
+import type { SpecialCharInsertRequest } from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
 import type { UnitDiff } from "../../types/type";
 import { useUnitPersistence } from "../../hook/useUnitPersistence";
 
@@ -78,7 +81,7 @@ export default function BaseTranslator({
   const displayMode = mode === "readOnly" ? "proofread" : mode;
   const readOnly = mode === "readOnly";
   const availableModes: TranslatorMode[] = isCurrUserProofreader
-    ? ["translate", "proofread", "readOnly"]
+    ? ["translate", "proofread"]
     : [startMode ?? "translate"];
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
@@ -86,13 +89,17 @@ export default function BaseTranslator({
   const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
   const [isSpecialCharPanelOpen, setIsSpecialCharPanelOpen] = useState(false);
+  const [specialCharInsertRequest, setSpecialCharInsertRequest] =
+    useState<SpecialCharInsertRequest | undefined>(undefined);
   const [deleteConfirmUnitId, setDeleteConfirmUnitId] = useState<
     string | undefined
   >(undefined);
 
   const canvasRef = useRef<CanvasHandle>(null);
+  const lastSpecialCharRef = useRef<string | null>(null);
 
   const showToast = useToastStore((s) => s.showToast);
+  const { allChars } = useSpecialChars();
 
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
     useShortcuts();
@@ -176,6 +183,20 @@ export default function BaseTranslator({
     await flushIfDirty();
   }
 
+  function handleQuickSpecialChar() {
+    const char = lastSpecialCharRef.current ?? allChars[0]?.text;
+    if (!char) return;
+
+    setSpecialCharInsertRequest((prev) => ({
+      id: (prev?.id ?? 0) + 1,
+      char,
+    }));
+  }
+
+  function handleSpecialCharUse(char: string) {
+    lastSpecialCharRef.current = char;
+  }
+
   function handleModifyUnit(targetUnitId: string, updates: UnitEdit) {
     commitUnits(
       unitBufRef.current.map((unit) =>
@@ -253,7 +274,6 @@ export default function BaseTranslator({
   ): TranslatorMode {
     if (isProofreader) {
       if (current === "translate") return "proofread";
-      if (current === "proofread") return "readOnly";
       return "translate";
     }
     if (current === "translate") return "readOnly";
@@ -262,26 +282,13 @@ export default function BaseTranslator({
 
   function handleCycleMode() {
     const next = getNextMode(mode, isCurrUserProofreader);
-    if (mode === "proofread" && next === "readOnly") {
-      flushIfDirty()
-        .then(() => setMode(next))
-        .catch(() => {});
-    } else {
-      setMode(next);
-    }
+    setMode(next);
   }
 
   useShortcutActions(
     {
       toggleMode: () => {
-        const next = getNextMode(mode, isCurrUserProofreader);
-        if (mode === "proofread" && next === "readOnly") {
-          flushIfDirty()
-            .then(() => setMode(next))
-            .catch(() => {});
-        } else {
-          setMode(next);
-        }
+        setMode(getNextMode(mode, isCurrUserProofreader));
       },
       toggleRelocation: () => {
         setIsRelocationEnabled((v) => !v);
@@ -311,9 +318,13 @@ export default function BaseTranslator({
           handleNavigate(pageIndex + 1);
         }
       },
+      quickSpecialChar: handleQuickSpecialChar,
+      save: () => {
+        void handleSave();
+      },
     },
     activeShortcuts,
-    isShortcutPanelOpen,
+    isShortcutPanelOpen || isSpecialCharPanelOpen,
   );
 
   useEffect(() => {
@@ -363,6 +374,10 @@ export default function BaseTranslator({
         onMoveUnit={readOnly ? undefined : handleMoveUnit}
         onAddUnit={readOnly ? undefined : handleAddUnit}
         onDeleteUnit={readOnly ? undefined : handleDeleteUnit}
+        onToggleBubble={
+          readOnly ? undefined : (targetId) =>
+            handleModifyUnit(targetId, { isBubble: !unitIsBubble(unitBufRef.current.find(u => unitId(u) === targetId)!) })
+        }
         enableReadOnly={readOnly}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
@@ -388,7 +403,7 @@ export default function BaseTranslator({
 
   const sidebar = (
     <>
-      <div className="flex items-center border-b border-stone-200 shrink-0 bg-stone-50">
+      <div className="flex items-center border-b-2 border-stone-200 shrink-0 bg-stone-50">
         <div className="flex-1 min-w-0">
           <StatusOptionBar
             currMode={mode}
@@ -422,6 +437,8 @@ export default function BaseTranslator({
           onFocusUnit={setFocusedUnitId}
           onModifyUnit={readOnly ? undefined : handleModifyUnit}
           enableReadOnly={readOnly}
+          specialCharInsertRequest={specialCharInsertRequest}
+          onSpecialCharUse={handleSpecialCharUse}
         />
       </div>
     </>

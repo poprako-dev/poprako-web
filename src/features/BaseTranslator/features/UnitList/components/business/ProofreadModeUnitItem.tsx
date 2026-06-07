@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import clsx from "clsx";
-import { Check, Copy, Eraser, X } from "lucide-react";
+import { Check, Copy, X } from "lucide-react";
 import {
   unitId,
   unitIsProofread,
@@ -12,6 +12,7 @@ import {
 import BaseUnitItem from "./BaseUnitItem";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
+import type { SpecialCharInsertRequest } from "./UnitList";
 
 type Props = {
   unit: UnitInfo;
@@ -20,6 +21,8 @@ type Props = {
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
   dataUnitId?: string;
   enableReadOnly?: boolean;
+  specialCharInsertRequest?: SpecialCharInsertRequest;
+  onSpecialCharUse?: (char: string) => void;
 };
 
 export default function ProofreadModeUnitItem({
@@ -29,6 +32,8 @@ export default function ProofreadModeUnitItem({
   onModifyUnit,
   dataUnitId,
   enableReadOnly = false,
+  specialCharInsertRequest,
+  onSpecialCharUse,
 }: Props) {
   const proofRef = useRef<HTMLTextAreaElement>(null);
   const hasProofreadText = !!unitProofreadText(unit);
@@ -67,18 +72,24 @@ export default function ProofreadModeUnitItem({
     }, 0);
   }
 
+  useEffect(() => {
+    if (!isFocused || enableReadOnly || !specialCharInsertRequest) return;
+    insertChar(specialCharInsertRequest.char);
+    onSpecialCharUse?.(specialCharInsertRequest.char);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [specialCharInsertRequest?.id]);
+
   return (
     <BaseUnitItem
       unit={unit}
       isFocused={isFocused}
       onSelect={onSelect}
       onModifyUnit={onModifyUnit}
-      isCompleted={unitIsProofread(unit)}
       dataUnitId={dataUnitId}
     >
       <div className="flex flex-col">
         {/* 初翻文本（只读展示） */}
-        <div className="flex items-start gap-1">
+        <div className="flex items-center gap-1">
           <AutoResizeTextarea
             value={unitTranslatedText(unit) ?? undefined}
             readOnly
@@ -94,26 +105,14 @@ export default function ProofreadModeUnitItem({
                   : "text-gray-700",
             )}
           />
-          {!enableReadOnly && (
-            <button
-              title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
-              onClick={() =>
-                onModifyUnit?.(unitId(unit), {
-                  isProofread: !unitIsProofread(unit),
-                })
-              }
+          <div className="shrink-0 w-7 h-7 p-1 rounded flex items-center justify-center">
+            <div
               className={clsx(
-                "shrink-0 mt-0.5 p-0.5 rounded",
-                "border border-gray-300",
-                unitIsProofread(unit)
-                  ? "text-gray-400 hover:text-red-500 hover:border-red-300"
-                  : "text-gray-400 hover:text-green-600 hover:border-green-300",
-                "transition-colors",
+                "w-2 h-2 rounded-full",
+                unitIsProofread(unit) ? "bg-[var(--color-green-500)]" : "bg-gray-300",
               )}
-            >
-              {unitIsProofread(unit) ? <X size={18} /> : <Check size={18} />}
-            </button>
-          )}
+            />
+          </div>
         </div>
 
         {/* 校对框：仅在聚焦或已有校对内容时显示；只读模式下有校对内容就始终显示 */}
@@ -121,7 +120,7 @@ export default function ProofreadModeUnitItem({
           ? hasProofreadText
           : isFocused || hasProofreadText) && (
           <>
-            <div className="h-[2px] bg-gray-300 my-1 mr-10" />
+            <div className="h-[1.5px] bg-gray-300 my-1 mr-10" />
             <div className="flex items-start gap-1">
               <AutoResizeTextarea
                 ref={proofRef}
@@ -153,39 +152,41 @@ export default function ProofreadModeUnitItem({
                     }
                   }}
                   className={clsx(
-                    "shrink-0 mt-0.5 p-0.5 rounded",
-                    "border border-gray-300",
-                    "text-gray-400 hover:text-green-600 hover:border-green-300",
+                    "shrink-0 p-1 rounded",
+                    "text-gray-400 hover:text-green-600",
                     "transition-colors",
                   )}
                 >
-                  <Copy size={18} />
+                  <Copy size={20} strokeWidth={2} />
                 </button>
               )}
-              {!enableReadOnly && hasProofreadText && (
+              {!enableReadOnly && isFocused && (
                 <button
-                  title="清空校对内容"
+                  title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
                   onClick={() =>
                     onModifyUnit?.(unitId(unit), {
-                      proofreadText: undefined,
-                      isProofread: false,
+                      isProofread: !unitIsProofread(unit),
                     })
                   }
                   className={clsx(
-                    "shrink-0 mt-0.5 p-0.5 rounded",
-                    "border border-gray-300",
-                    "text-gray-400 hover:text-red-500 hover:border-red-300",
+                    "shrink-0 p-1 rounded",
+                    unitIsProofread(unit)
+                      ? "text-gray-400 hover:text-red-500"
+                      : "text-gray-400 hover:text-green-600",
                     "transition-colors",
                   )}
                 >
-                  <Eraser size={18} />
+                  {unitIsProofread(unit) ? <X size={20} strokeWidth={2} /> : <Check size={20} strokeWidth={2} />}
                 </button>
               )}
             </div>
             {isFocused && !enableReadOnly && (
               <>
                 <div className="h-px bg-gray-200 my-1 mr-10" />
-                <SpecialCharsBar onInsert={insertChar} />
+                <SpecialCharsBar
+                  onInsert={insertChar}
+                  onUseChar={onSpecialCharUse}
+                />
               </>
             )}
           </>

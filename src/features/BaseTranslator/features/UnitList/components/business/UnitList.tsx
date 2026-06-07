@@ -6,6 +6,11 @@ import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
 import { useEffect, useRef } from "react";
 
+export type SpecialCharInsertRequest = {
+  id: number;
+  char: string;
+};
+
 type Props = {
   units: UnitInfo[];
   focusedUnitId?: string;
@@ -14,6 +19,8 @@ type Props = {
   // 在 units 长度为 0 时，不存在这个字段
   onModifyUnit?: (unitId: string, unit: UnitEdit) => void;
   enableReadOnly?: boolean;
+  specialCharInsertRequest?: SpecialCharInsertRequest;
+  onSpecialCharUse?: (char: string) => void;
 };
 
 export default function UnitList({
@@ -23,6 +30,8 @@ export default function UnitList({
   onFocusUnit,
   onModifyUnit,
   enableReadOnly = false,
+  specialCharInsertRequest,
+  onSpecialCharUse,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -58,6 +67,8 @@ export default function UnitList({
             onModifyUnit={onModifyUnit}
             dataUnitId={unitId(unit)}
             enableReadOnly={enableReadOnly}
+            specialCharInsertRequest={specialCharInsertRequest}
+            onSpecialCharUse={onSpecialCharUse}
           />
         ))}
       </div>

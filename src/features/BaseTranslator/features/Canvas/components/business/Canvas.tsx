@@ -31,6 +31,7 @@ type Props = {
   onMoveUnit?: (unitId: string, xCoord: number, yCoord: number) => void;
   onAddUnit?: (xCoord: number, yCoord: number, isBubble: boolean) => void;
   onDeleteUnit?: (unitId: string) => void;
+  onToggleBubble?: (unitId: string) => void;
   enableReadOnly?: boolean;
   proofreadPreviewVisibility?: ProofreadPreviewVisibility;
 };
@@ -47,6 +48,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     onMoveUnit,
     onAddUnit,
     onDeleteUnit,
+    onToggleBubble,
     enableReadOnly = false,
     proofreadPreviewVisibility = "visible",
   }: Props,
@@ -188,6 +190,10 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                       position.yCoord,
                     )
                   }
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    onToggleBubble?.(id);
+                  }}
                 >
                   <Marker
                     index={unitIndex(unit)}
