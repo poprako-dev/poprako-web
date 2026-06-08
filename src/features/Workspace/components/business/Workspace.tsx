@@ -135,17 +135,24 @@ export default function Workspace() {
     [selectedTeamId, loadComments, showToast],
   );
 
-  const selectedComicActiveMember = useMemo(() => {
-    const teamId = selectedComicTeamId;
-    if (!teamId) return null;
-    return (
-      loginState?.memberInfos.find((member) => member.teamId === teamId) ?? null
-    );
-  }, [loginState?.memberInfos, selectedComicTeamId]);
-
   const resolveActiveMember = useCallback(() => {
-    return selectedComicActiveMember;
-  }, [selectedComicActiveMember]);
+    // 1. 优先匹配漫画所属的作品集团队
+    if (selectedComicTeamId) {
+      const member = loginState?.memberInfos.find(
+        (m) => m.teamId === selectedComicTeamId,
+      );
+      if (member) return member;
+    }
+    // 2. fallback：全局选中的团队
+    if (selectedTeamId) {
+      const member = loginState?.memberInfos.find(
+        (m) => m.teamId === selectedTeamId,
+      );
+      if (member) return member;
+    }
+    // 3. 最终兜底：任一可用成员身份
+    return loginState?.memberInfos[0] ?? null;
+  }, [loginState?.memberInfos, selectedComicTeamId, selectedTeamId]);
 
   const handleLoadDetailChapters = useCallback(
     async (args: ListChapterArgs): Promise<Result<ChapterInfo[]>> => {

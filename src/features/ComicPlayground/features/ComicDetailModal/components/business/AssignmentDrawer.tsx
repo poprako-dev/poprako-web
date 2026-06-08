@@ -205,10 +205,11 @@ export default function AssignmentDrawer({
       className={clsx(
         "hidden md:flex",
         "absolute right-0 top-0 bottom-0 z-20",
+        "w-70",
         "transition-transform duration-300 ease-in-out",
         isOpen
           ? "translate-x-0 shadow-[-4px_0_12px_rgba(0,0,0,0.08)]"
-          : "translate-x-[calc(100%-24px)]",
+          : "translate-x-64",
       )}
     >
       {/* Trigger strip */}

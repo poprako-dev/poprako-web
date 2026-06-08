@@ -82,7 +82,7 @@ export default function BaseTranslator({
   const readOnly = mode === "readOnly";
   const availableModes: TranslatorMode[] = isCurrUserProofreader
     ? ["translate", "proofread"]
-    : [startMode ?? "translate"];
+    : ["translate", "readOnly"];
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);

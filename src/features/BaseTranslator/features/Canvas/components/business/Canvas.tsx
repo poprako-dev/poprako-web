@@ -205,17 +205,43 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     }
                     isSelected={focusedUnitId === id}
                     isDragging={isDraggingThis}
-                    previewText={unitFinalText(unit)}
-                    previewMode={
-                      mode === "proofread" && proofreadPreviewVisibility === "visible"
-                        ? "visible"
-                        : "hidden"
-                    }
                     dimmed={proofreadPreviewVisibility === "dimmed"}
                   />
                 </div>
               );
             })}
+
+            {/* Preview overlay — rendered outside markers to avoid z-index stacking issues */}
+            {(() => {
+              const focusedUnit = focusedUnitId
+                ? units.find((u) => unitId(u) === focusedUnitId)
+                : null;
+              if (
+                !focusedUnit ||
+                mode !== "proofread" ||
+                proofreadPreviewVisibility !== "visible" ||
+                !unitFinalText(focusedUnit) ||
+                dragMarker?.id === focusedUnitId
+              ) {
+                return null;
+              }
+              const pos = unitPosition(focusedUnit);
+              return (
+                <div
+                  className="absolute z-50 pointer-events-none"
+                  style={{
+                    left: `${pos.xCoord * 100}%`,
+                    top: `${pos.yCoord * 100}%`,
+                    transformOrigin: "0 0",
+                    transform: `translate(${(CIRCLE_SIZE / 2 + 12) / transform.scale}px, ${-PIN_OFFSET / transform.scale}px) scale(${1 / transform.scale})`,
+                  }}
+                >
+                  <div className="px-2 py-1 rounded-sm bg-slate-800/90 text-slate-50 text-xs backdrop-blur-md shadow-xl border border-white/10 whitespace-pre">
+                    {unitFinalText(focusedUnit)}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       ) : (

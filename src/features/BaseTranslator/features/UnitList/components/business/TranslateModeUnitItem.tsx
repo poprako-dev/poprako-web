@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import clsx from "clsx";
 import {
   unitId,
   unitTranslatedText,
@@ -78,19 +79,31 @@ export default function TranslateModeUnitItem({
       onModifyUnit={onModifyUnit}
       dataUnitId={dataUnitId}
     >
-      <AutoResizeTextarea
-        ref={inputRef}
-        value={unitTranslatedText(unit) ?? undefined}
-        onChange={(val) =>
-          onModifyUnit?.(unitId(unit), { translatedText: val })
-        }
-        onFocus={() => onSelect?.(unitId(unit))}
-        placeholder="点击输入翻译..."
-        readOnly={enableReadOnly}
-        className={`text-base leading-relaxed ${
-          isFocused ? "text-gray-900 font-medium" : "text-gray-700"
-        }`}
-      />
+      <div className="flex items-center gap-1">
+        <AutoResizeTextarea
+          ref={inputRef}
+          value={unitTranslatedText(unit) ?? undefined}
+          onChange={(val) =>
+            onModifyUnit?.(unitId(unit), { translatedText: val })
+          }
+          onFocus={() => onSelect?.(unitId(unit))}
+          placeholder="点击输入翻译..."
+          readOnly={enableReadOnly}
+          className={`flex-1 text-base leading-relaxed ${
+            isFocused ? "text-gray-900 font-medium" : "text-gray-700"
+          } placeholder:text-gray-300`}
+        />
+        <div className="shrink-0 w-7 h-7 p-1 rounded flex items-center justify-center">
+          <div
+            className={clsx(
+              "w-2 h-2 rounded-full",
+              unitTranslatedText(unit)
+                ? "bg-[var(--color-green-500)]"
+                : "bg-gray-200",
+            )}
+          />
+        </div>
+      </div>
       {isFocused && !enableReadOnly && (
         <>
           <div className="h-px bg-gray-200 my-1 mr-10" />

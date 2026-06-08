@@ -62,12 +62,12 @@ export default function ComicDetailModalLayout({
             </div>
 
             {/* Content – sunken canvas, wrapped for drawer positioning on md+ */}
-            <div className="w-full sm:flex-1 sm:relative sm:overflow-hidden">
+            <div className="w-full sm:min-w-0 sm:flex-1 sm:relative sm:overflow-hidden">
               <div
                 className={clsx(
                   "bg-stone-100 p-4",
                   "shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]",
-                  "sm:absolute sm:inset-0 sm:right-6 sm:overflow-y-auto",
+                  "sm:absolute sm:inset-y-0 sm:left-0 sm:right-6 sm:overflow-y-auto",
                   "scrollbar-thin scrollbar-thumb-stone-300",
                 )}
               >

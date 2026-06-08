@@ -4,6 +4,7 @@ import type { TranslatorMode } from "@/types/translatorMode";
 import { unitId, type UnitInfo, type UnitEdit } from "@/types/unit";
 import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
+import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useEffect, useRef } from "react";
 
 export type SpecialCharInsertRequest = {
@@ -49,10 +50,13 @@ export default function UnitList({
   const ItemComponent =
     mode === "translate" ? TranslateModeUnitItem : ProofreadModeUnitItem;
 
+  const { showToast } = useToastStore();
+
   const proofreadAll = () => {
     units.forEach((unit) =>
       onModifyUnit?.(unitId(unit), { isProofread: true }),
     );
+    showToast("全部校对已确认", "success");
   };
 
   return (

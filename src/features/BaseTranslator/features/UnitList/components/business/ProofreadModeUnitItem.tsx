@@ -97,7 +97,7 @@ export default function ProofreadModeUnitItem({
             onFocus={() => onSelect?.(unitId(unit))}
             placeholder="无翻译内容"
             className={clsx(
-              "flex-1 text-base cursor-default leading-relaxed",
+              "flex-1 text-base cursor-default leading-relaxed placeholder:text-gray-300",
               hasProofreadText
                 ? "text-gray-400"
                 : isFocused
@@ -109,7 +109,7 @@ export default function ProofreadModeUnitItem({
             <div
               className={clsx(
                 "w-2 h-2 rounded-full",
-                unitIsProofread(unit) ? "bg-[var(--color-green-500)]" : "bg-gray-300",
+                unitIsProofread(unit) ? "bg-[var(--color-green-500)]" : "bg-gray-200",
               )}
             />
           </div>
@@ -135,7 +135,7 @@ export default function ProofreadModeUnitItem({
                 placeholder="输入校对..."
                 readOnly={enableReadOnly}
                 className={clsx(
-                  "flex-1 text-base leading-relaxed",
+                  "flex-1 text-base leading-relaxed placeholder:text-gray-300",
                   isFocused ? "text-gray-900 font-medium" : "text-gray-700",
                 )}
               />
