@@ -1,0 +1,44 @@
+name: Rust Backend V3
+
+on:
+  pull_request:
+    paths:
+      - "backend-v3-rust/**"
+      - ".github/workflows/rust-v3.yml"
+  push:
+    branches:
+      - ss_dev
+      - dev
+      - master
+    paths:
+      - "backend-v3-rust/**"
+      - ".github/workflows/rust-v3.yml"
+
+jobs:
+  rust-v3:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-v3-rust
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend-v3-rust
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace

@@ -1,0 +1,12 @@
+[package]
+name = "poprako-repository"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+chrono.workspace = true
+sea-orm.workspace = true
+poprako-dto = { path = "../poprako-dto" }
+poprako-entity = { path = "../poprako-entity" }

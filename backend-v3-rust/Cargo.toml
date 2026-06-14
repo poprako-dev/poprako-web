@@ -1,0 +1,33 @@
+[workspace]
+members = [
+  "crates/poprako-core", "crates/poprako-dto", "crates/poprako-entity",
+  "crates/poprako-repository", "crates/poprako-service", "crates/poprako-signalr",
+  "crates/poprako-api", "crates/poprako-migration"
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.78"
+license = "MIT"
+
+[workspace.dependencies]
+anyhow = "1"
+async-trait = "0.1"
+bcrypt = "0.17"
+chrono = { version = "0.4", features = ["serde"] }
+dashmap = "6"
+futures-util = "0.3"
+jsonwebtoken = "9"
+redis = { version = "0.32", features = ["tokio-comp", "connection-manager", "aio"] }
+salvo = { version = "0.89", default-features = false, features = ["server", "server-handle", "http1", "websocket", "cors", "affix-state"] }
+sea-orm = { version = "1.1", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono", "with-json"] }
+sea-orm-migration = { version = "1.1", features = ["sqlx-postgres", "runtime-tokio-rustls", "cli"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "0.28"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+uuid = { version = "1", features = ["v4", "serde"] }

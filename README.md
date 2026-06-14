@@ -93,3 +93,14 @@ export default defineConfig([
 - [Vite](https://vite.dev)
 - [Tailwind CSS](https://tailwindcss.com)
 - [Lucide Icons](https://lucide.dev)
+
+## Rust 后端 V3
+
+`backend-v3-rust` 是 Poprako 后端的 Rust MVC 迁移目标。
+
+```bash
+cd backend-v3-rust
+cp .env.sample .env
+cargo run -p poprako-migration
+cargo run -p poprako-api
+```
