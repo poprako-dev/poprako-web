@@ -109,7 +109,7 @@ const ROLE_DEFS: RoleDef[] = [
     },
   },
   {
-    fullLabel: "审核",
+    fullLabel: "监修",
     shortLabel: "监",
     addRole: "reviewer",
     matches: (a) => a.assignedReviewerAt != null,

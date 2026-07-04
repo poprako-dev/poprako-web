@@ -99,7 +99,7 @@ export default function BaseTranslator({
   const lastSpecialCharRef = useRef<string | null>(null);
 
   const showToast = useToastStore((s) => s.showToast);
-  const { allChars } = useSpecialChars();
+  const { allChars, favoriteChars } = useSpecialChars();
 
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
     useShortcuts();
@@ -191,6 +191,18 @@ export default function BaseTranslator({
       id: (prev?.id ?? 0) + 1,
       char,
     }));
+  }
+
+  function handleQuickSpecialCharAt(index: number) {
+    return () => {
+      const char = favoriteChars[index];
+      if (!char) return;
+
+      setSpecialCharInsertRequest((prev) => ({
+        id: (prev?.id ?? 0) + 1,
+        char,
+      }));
+    };
   }
 
   function handleSpecialCharUse(char: string) {
@@ -319,6 +331,9 @@ export default function BaseTranslator({
         }
       },
       quickSpecialChar: handleQuickSpecialChar,
+      quickSpecialChar1: handleQuickSpecialCharAt(0),
+      quickSpecialChar2: handleQuickSpecialCharAt(1),
+      quickSpecialChar3: handleQuickSpecialCharAt(2),
       save: () => {
         void handleSave();
       },

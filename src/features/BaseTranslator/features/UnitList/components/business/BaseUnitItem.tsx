@@ -123,7 +123,7 @@ export default function BaseUnitItem({
           isFocused ? "text-stone-500" : "text-stone-300 hover:text-stone-500",
         )}
       >
-        {(unitIndex(unit) + 1).toString().padStart(2, "0")}
+        {unitIndex(unit) + 1}
       </div>
 
       <div className="flex-1 flex flex-col justify-center px-2 py-2">

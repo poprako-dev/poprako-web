@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const PAN_THRESHOLD = 8;
 const MARKER_DRAG_THRESHOLD = 3;
-const MAX_SCALE = 2;
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 5;
 const ZOOM_STEP = 0.08;
 
 type Transform = {
@@ -352,7 +353,7 @@ export function useCanvasInteraction({
     const factor = 1 + ZOOM_STEP * direction;
 
     setTransform((prev) => {
-      const newScale = Math.max(0.1, Math.min(MAX_SCALE, prev.scale * factor));
+      const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, prev.scale * factor));
       if (newScale === prev.scale) return prev;
 
       const actualFactor = newScale / prev.scale;

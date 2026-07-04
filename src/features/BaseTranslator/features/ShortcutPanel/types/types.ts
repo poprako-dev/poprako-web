@@ -12,6 +12,9 @@ export type ShortcutAction =
   | "pageUp"
   | "pageDown"
   | "quickSpecialChar"
+  | "quickSpecialChar1"
+  | "quickSpecialChar2"
+  | "quickSpecialChar3"
   | "save";
 
 export type ConfigurableShortcut = {

@@ -132,7 +132,7 @@ export const TRANSITION_LABELS: Record<WorkflowTransition, string> = {
   proofread_complete: "标记校对完成",
   typeset_start: "开始嵌字",
   typeset_complete: "标记嵌字完成",
-  review_complete: "标记审核通过",
+  review_complete: "标记监修通过",
   publish_complete: "标记发布完成",
   upload_revert: "撤销上传完成",
   translate_start_revert: "撤销开始翻译",
@@ -141,7 +141,7 @@ export const TRANSITION_LABELS: Record<WorkflowTransition, string> = {
   proofread_revert: "撤销校对完成",
   typeset_start_revert: "撤销开始嵌字",
   typeset_revert: "撤销嵌字完成",
-  review_revert: "撤销审核通过",
+  review_revert: "撤销监修通过",
 };
 
 export default function AssignmentFooter({

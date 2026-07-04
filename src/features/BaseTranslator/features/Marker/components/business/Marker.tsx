@@ -40,11 +40,11 @@ export default function Marker({
           "border-2 shadow-lg",
           isBubble
             ? dimmed
-              ? "bg-pink-300/20 border-pink-400/20"
-              : "bg-pink-300 border-pink-400/70"
+              ? "bg-pink-300/40 border-pink-400/40"
+              : "bg-pink-300/80 border-pink-400/70"
             : dimmed
-              ? "bg-amber-300/20 border-amber-400/20"
-              : "bg-amber-300 border-amber-400/70",
+              ? "bg-amber-300/40 border-amber-400/40"
+              : "bg-amber-300/80 border-amber-400/70",
           isSelected && "ring-4 ring-blue-500/10",
         )}
         style={{
@@ -58,8 +58,8 @@ export default function Marker({
           transition: "background-color 0.2s, border-color 0.2s, box-shadow 0.2s",
         }}
       >
-        <span className="text-[11px] font-bold text-black tabular-nums leading-none">
-          {(index + 1).toString().padStart(2, "0")}
+        <span className="text-[13px] font-black text-white tabular-nums leading-none">
+          {index + 1}
         </span>
       </div>
       <div
@@ -67,11 +67,11 @@ export default function Marker({
           "rounded-full -mt-px shadow-sm border-2 border-black/20",
           isBubble
             ? dimmed
-              ? "bg-pink-300/20"
-              : "bg-pink-300"
+              ? "bg-pink-300/40"
+              : "bg-pink-300/80"
             : dimmed
-              ? "bg-amber-300/20"
-              : "bg-amber-300",
+              ? "bg-amber-300/40"
+              : "bg-amber-300/80",
         )}
         style={{ width: `${DOT_SIZE}px`, height: `${DOT_SIZE}px` }}
       />

@@ -78,7 +78,7 @@ export default function Paginator({
           "inline-flex items-stretch",
           "h-8 w-24",
           "bg-white/95 backdrop-blur-md",
-          "rounded-sm shadow-2xl border border-black/5",
+          "rounded-sm shadow-2xl",
           "overflow-hidden",
         )}
       >
@@ -89,13 +89,15 @@ export default function Paginator({
           className={clsx(
             "flex items-center justify-center",
             "flex-1",
-            "hover:bg-gray-100/80",
+            "hover:bg-stone-400/40",
             "disabled:opacity-20 disabled:hover:bg-transparent",
             "transition-colors border-none outline-none",
-            "active:bg-gray-200/50",
+            "active:bg-stone-400/60",
+            "hover:[&>svg]:text-stone-950",
+            "hover:shadow-inner",
           )}
         >
-          <ChevronLeft size={14} className="text-gray-700" />
+          <ChevronLeft size={14} className="text-gray-600" />
         </button>
 
         <div
@@ -112,8 +114,10 @@ export default function Paginator({
               className={clsx(
                 "flex items-center justify-center gap-0.5",
                 "w-full h-full",
-                "hover:bg-gray-100/60 transition-colors",
+                "hover:bg-stone-400/30 transition-colors",
                 "border-none outline-none",
+                "active:bg-stone-400/50",
+                "hover:shadow-inner",
               )}
             >
               <span className="text-xs text-gray-900 font-bold">
@@ -172,13 +176,15 @@ export default function Paginator({
           className={clsx(
             "flex items-center justify-center",
             "flex-1",
-            "hover:bg-gray-100/80",
+            "hover:bg-stone-400/40",
             "disabled:opacity-20 disabled:hover:bg-transparent",
             "transition-colors border-none outline-none",
-            "active:bg-gray-200/50",
+            "active:bg-stone-400/60",
+            "hover:[&>svg]:text-stone-950",
+            "hover:shadow-inner",
           )}
         >
-          <ChevronRight size={14} className="text-gray-700" />
+          <ChevronRight size={14} className="text-gray-600" />
         </button>
       </div>
 
@@ -208,7 +214,7 @@ export default function Paginator({
               }}
               className={clsx(
                 "w-full flex items-center justify-between px-3 py-1.5",
-                "text-xs hover:bg-stone-50 transition-colors",
+                "text-xs hover:bg-stone-100 transition-colors active:bg-stone-200",
                 "border-none outline-none",
                 idx === currPageIndex && "bg-stone-100",
               )}

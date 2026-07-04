@@ -23,6 +23,10 @@ const fixedShortcuts: FixedShortcut[] = [
     label: "删除单元",
     keys: ["右键已有单元标记"],
   },
+  {
+    label: "切换框内外",
+    keys: ["双击已有单元标记"],
+  },
 ];
 
 const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
@@ -63,8 +67,23 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
   },
   {
     action: "quickSpecialChar",
-    label: "快速输入特殊符号",
+    label: "输入最近一次符号",
     keys: ["Control", "q"],
+  },
+  {
+    action: "quickSpecialChar1",
+    label: "输入优选符号#1",
+    keys: ["Control", "F1"],
+  },
+  {
+    action: "quickSpecialChar2",
+    label: "输入优选符号#2",
+    keys: ["Control", "F2"],
+  },
+  {
+    action: "quickSpecialChar3",
+    label: "输入优选符号#3",
+    keys: ["Control", "F3"],
   },
   {
     action: "save",
@@ -84,6 +103,7 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
 
   const migrated: ConfigurableShortcut[] = [];
   const migratedActions = new Set<ConfigurableShortcut["action"]>();
+  let hadStale = false;
 
   for (const item of raw) {
     if (!item || typeof item !== "object" || !("keys" in item)) {
@@ -104,7 +124,10 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
         : undefined;
 
     const fallback = fallbackByAction ?? fallbackByLabel;
-    if (!fallback) continue;
+    if (!fallback) {
+      hadStale = true;
+      continue;
+    }
     if (migratedActions.has(fallback.action)) continue;
 
     migrated.push({
@@ -126,11 +149,17 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
     defaultConfigurableShortcuts.map((s, idx) => [s.action, idx]),
   );
 
-  return migrated.sort(
+  const sorted = migrated.sort(
     (a, b) =>
       (orderByAction.get(a.action) ?? Number.MAX_SAFE_INTEGER) -
       (orderByAction.get(b.action) ?? Number.MAX_SAFE_INTEGER),
   );
+
+  if (hadStale) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
+  }
+
+  return sorted;
 }
 
 export function useShortcuts() {

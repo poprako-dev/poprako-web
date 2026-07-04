@@ -259,8 +259,8 @@ function makeManyAssignments(chapterId: string): AssignmentInfo[] {
     LONG_NAMES[8],
   ].forEach((n) => push(n, "assignedTypesetterAt"));
 
-  // 3x 审核
-  [LONG_NAMES[5], "ReviewerElite", "最终boss级审核官"].forEach((n) =>
+  // 3x 监修
+  [LONG_NAMES[5], "ReviewerElite", "最终boss级监修官"].forEach((n) =>
     push(n, "assignedReviewerAt"),
   );
 

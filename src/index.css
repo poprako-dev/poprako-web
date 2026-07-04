@@ -18,7 +18,6 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -43,6 +42,16 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  /* Emerald 主题色 Tailwind 映射 */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-muted: var(--primary-muted);
+  --color-primary-border: var(--primary-border);
+  --color-primary-text: var(--primary-text);
+  --color-on-primary: var(--on-primary);
+  --color-ring-primary: var(--ring-primary);
 }
 
 :root {
@@ -53,18 +62,18 @@
   --card-foreground: oklch(0.13 0.028 261.692);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.13 0.028 261.692);
-  --primary: oklch(0.21 0.034 264.665);
-  --primary-foreground: oklch(0.985 0.002 247.839);
-  --secondary: oklch(0.967 0.003 264.542);
-  --secondary-foreground: oklch(0.21 0.034 264.665);
-  --muted: oklch(0.967 0.003 264.542);
-  --muted-foreground: oklch(0.551 0.027 264.364);
-  --accent: oklch(0.967 0.003 264.542);
-  --accent-foreground: oklch(0.21 0.034 264.665);
+  --primary: #059669;              /* emerald-600 */
+  --primary-foreground: #ffffff;   /* on-primary */
+  --secondary: oklch(0.967 0 0);
+  --secondary-foreground: oklch(0.21 0 0);
+  --muted: oklch(0.967 0 0);
+  --muted-foreground: oklch(0.551 0 0);
+  --accent: #ecfdf5;               /* emerald-50  → primary-subtle */
+  --accent-foreground: #047857;    /* emerald-700 → primary-text */
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.928 0.006 264.531);
-  --input: oklch(0.928 0.006 264.531);
-  --ring: oklch(0.707 0.022 261.325);
+  --border: oklch(0.928 0 0);
+  --input: oklch(0.928 0 0);
+  --ring: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -72,12 +81,12 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0.002 247.839);
   --sidebar-foreground: oklch(0.13 0.028 261.692);
-  --sidebar-primary: oklch(0.21 0.034 264.665);
-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-accent: oklch(0.967 0.003 264.542);
-  --sidebar-accent-foreground: oklch(0.21 0.034 264.665);
-  --sidebar-border: oklch(0.928 0.006 264.531);
-  --sidebar-ring: oklch(0.707 0.022 261.325);
+  --sidebar-primary: #059669;              /* emerald-600 */
+  --sidebar-primary-foreground: #ffffff;   /* on-primary */
+  --sidebar-accent: #ecfdf5;               /* emerald-50  → primary-subtle */
+  --sidebar-accent-foreground: #047857;    /* emerald-700 → primary-text */
+  --sidebar-border: oklch(0.928 0 0);
+  --sidebar-ring: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% */
   /* Reusable green color tokens */
   --color-green-500: #88b04b;
   --color-green-50: #f0f4e8;
@@ -92,6 +101,18 @@
   --shadow-green-lg: 0 10px 25px rgba(136, 176, 75, 0.4);
   --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.04);
   --shadow-green-hover: 0 8px 20px rgba(136, 176, 75, 0.15);
+
+  /* ======================================== */
+  /* Emerald 主题色系统 (Primary Color System)  */
+  /* ======================================== */
+  --primary-hover: #047857;        /* emerald-700 */
+  --primary-active: #065f46;       /* emerald-800 */
+  --primary-subtle: #ecfdf5;       /* emerald-50  → 对应 --accent */
+  --primary-muted: #d1fae5;        /* emerald-100 */
+  --primary-border: #a7f3d0;       /* emerald-200 */
+  --primary-text: #047857;         /* emerald-700 → 对应 --accent-foreground */
+  --on-primary: #ffffff;           /* white       → 对应 --primary-foreground */
+  --ring-primary: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% → 对应 --ring */
 }
 
 .dark {
@@ -101,18 +122,18 @@
   --card-foreground: oklch(0.985 0.002 247.839);
   --popover: oklch(0.21 0.034 264.665);
   --popover-foreground: oklch(0.985 0.002 247.839);
-  --primary: oklch(0.928 0.006 264.531);
-  --primary-foreground: oklch(0.21 0.034 264.665);
-  --secondary: oklch(0.278 0.033 256.848);
-  --secondary-foreground: oklch(0.985 0.002 247.839);
-  --muted: oklch(0.278 0.033 256.848);
-  --muted-foreground: oklch(0.707 0.022 261.325);
-  --accent: oklch(0.278 0.033 256.848);
-  --accent-foreground: oklch(0.985 0.002 247.839);
+  --primary: #10b981;              /* emerald-500 */
+  --primary-foreground: #022c22;   /* emerald-950 */
+  --secondary: oklch(0.278 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.278 0 0);
+  --muted-foreground: oklch(0.707 0 0);
+  --accent: #064e3b;               /* emerald-900 */
+  --accent-foreground: #d1fae5;    /* emerald-100 */
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
+  --ring: #34d399;                 /* emerald-400 */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -120,12 +141,12 @@
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.21 0.034 264.665);
   --sidebar-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
-  --sidebar-accent: oklch(0.278 0.033 256.848);
-  --sidebar-accent-foreground: oklch(0.985 0.002 247.839);
+  --sidebar-primary: #10b981;              /* emerald-500 */
+  --sidebar-primary-foreground: #022c22;   /* emerald-950 */
+  --sidebar-accent: #064e3b;               /* emerald-900 */
+  --sidebar-accent-foreground: #d1fae5;    /* emerald-100 */
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --sidebar-ring: #34d399;                 /* emerald-400 */
 }
 
 @layer base {

@@ -10,7 +10,7 @@ const ROLE_LABEL: Record<Role, string> = {
   proofreader: "校对",
   typesetter: "嵌字",
   redrawer: "美工",
-  reviewer: "审核",
+  reviewer: "监修",
   publisher: "发布",
   admin: "管理员",
 };

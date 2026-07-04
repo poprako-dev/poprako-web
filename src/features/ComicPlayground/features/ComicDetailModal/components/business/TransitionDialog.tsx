@@ -17,7 +17,7 @@ const ROLE_LABEL_MAP: Record<string, string> = {
   翻: "翻译",
   校: "校对",
   嵌: "嵌字",
-  监: "审核",
+  监: "监修",
   传: "发布",
 };
 
