@@ -34,3 +34,5 @@
 - [x] only proofreader mode for proofreader.
 - [x] assignment sidebar.
 - [ ] completed archive.
+- [ ] reloc when open translator paginator to show current page item.
+- [ ] reload sysmails when entering sysmail page.
