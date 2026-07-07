@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
-import { unitId, type UnitInfo } from "@/types/unit";
+import { normalizeUnitIndexes, unitId, type UnitInfo } from "@/types/unit";
 import type { ToastType } from "@/components/ui/NotificationToast";
-import type { UnitDiff, UnitOp } from "../types/type";
+import type { UnitDiff, UnitOp, UnitSaveOp } from "../types/type";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -12,9 +12,11 @@ export type PendingAction =
 type Args = {
   getPageId: () => string;
   onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
+  onReloadUnits: (pageId: string) => Promise<UnitInfo[]>;
   onExit: () => void;
   showToast: ShowToast;
   loadPage: (index: number) => Promise<void>;
+  setUnitBuf: (units: UnitInfo[]) => void;
 };
 
 function normalizedText(val?: string): string | null {
@@ -34,12 +36,6 @@ function hasPersistedMutation(current: UnitInfo, baseline: UnitInfo): boolean {
   if (normalizedText(current.translatedText) !== normalizedText(baseline.translatedText)) {
     return true;
   }
-  if (
-    normalizedText(current.translatorCommnet) !==
-    normalizedText(baseline.translatorCommnet)
-  ) {
-    return true;
-  }
   if ((current.translatorId ?? null) !== (baseline.translatorId ?? null)) {
     return true;
   }
@@ -49,19 +45,17 @@ function hasPersistedMutation(current: UnitInfo, baseline: UnitInfo): boolean {
   ) {
     return true;
   }
-  if (
-    normalizedText(current.proofreaderComment) !==
-    normalizedText(baseline.proofreaderComment)
-  ) {
-    return true;
-  }
-
   return (current.proofreaderId ?? null) !== (baseline.proofreaderId ?? null);
 }
 
-function buildUnitOp(unit: UnitInfo, local?: boolean): UnitOp {
-  const op: UnitOp = local ? { localId: unitId(unit) } : { id: unitId(unit) };
+function buildUnitOp(
+  unit: UnitInfo,
+  local: boolean,
+  beforeId: string | undefined,
+): UnitSaveOp {
+  const op: UnitSaveOp = local ? { localId: unitId(unit) } : { id: unitId(unit) };
 
+  op.beforeId = beforeId;
   op.xCoord = unit.xCoord;
   op.yCoord = unit.yCoord;
   op.isBubble = unit.isBubble;
@@ -69,37 +63,52 @@ function buildUnitOp(unit: UnitInfo, local?: boolean): UnitOp {
 
   const translatedText = normalizedText(unit.translatedText);
   if (translatedText) op.translatedText = translatedText;
-  const translatorComment = normalizedText(unit.translatorCommnet);
-  if (translatorComment) op.translatorComment = translatorComment;
   if (unit.translatorId) op.lastTranslatorId = unit.translatorId;
   const proofreadText = normalizedText(unit.proofreadText);
   if (proofreadText) op.proofreadText = proofreadText;
-  const proofreaderComment = normalizedText(unit.proofreaderComment);
-  if (proofreaderComment) op.proofreaderComment = proofreaderComment;
   if (unit.proofreaderId) op.lastProofreaderId = unit.proofreaderId;
 
   return op;
 }
 
-function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDiff {
+function nextExistingId(
+  units: UnitInfo[],
+  startIndex: number,
+  baselineById: Map<string, UnitInfo>,
+): string | undefined {
+  for (let index = startIndex + 1; index < units.length; index++) {
+    const id = unitId(units[index]);
+    if (baselineById.has(id)) return id;
+  }
+
+  return undefined;
+}
+
+function existingOrderChanged(
+  current: UnitInfo[],
+  baseline: UnitInfo[],
+): boolean {
+  const currentById = new Set(current.map(unitId));
+  const baselineById = new Set(baseline.map(unitId));
+  const baselineSurvivors = baseline
+    .filter((unit) => currentById.has(unitId(unit)))
+    .map(unitId);
+  const currentExisting = current
+    .filter((unit) => baselineById.has(unitId(unit)))
+    .map(unitId);
+
+  if (baselineSurvivors.length !== currentExisting.length) return true;
+
+  return baselineSurvivors.some((id, index) => id !== currentExisting[index]);
+}
+
+export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDiff {
+  current = normalizeUnitIndexes(current);
+  baseline = normalizeUnitIndexes(baseline);
+
   const baselineById = new Map(baseline.map((unit) => [unitId(unit), unit]));
   const currentById = new Map(current.map((unit) => [unitId(unit), unit]));
   const ops: UnitOp[] = [];
-
-  for (const unit of current) {
-    const baselineUnit = baselineById.get(unitId(unit));
-
-    if (baselineUnit === undefined) {
-      ops.push(buildUnitOp(unit, true));
-      continue;
-    }
-
-    if (!hasPersistedMutation(unit, baselineUnit)) {
-      continue;
-    }
-
-    ops.push(buildUnitOp(unit));
-  }
 
   for (const unit of baseline) {
     if (currentById.has(unitId(unit))) {
@@ -109,18 +118,68 @@ function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDiff {
     ops.push({ id: unitId(unit) });
   }
 
+  const orderChanged = existingOrderChanged(current, baseline);
+
+  if (orderChanged) {
+    for (let index = current.length - 1; index >= 0; index--) {
+      const unit = current[index];
+      if (!baselineById.has(unitId(unit))) continue;
+
+      ops.push(buildUnitOp(unit, false, nextExistingId(current, index, baselineById)));
+    }
+  } else {
+    for (let index = 0; index < current.length; index++) {
+      const unit = current[index];
+      const baselineUnit = baselineById.get(unitId(unit));
+      if (!baselineUnit) continue;
+      if (!hasPersistedMutation(unit, baselineUnit)) continue;
+
+      ops.push(buildUnitOp(unit, false, nextExistingId(current, index, baselineById)));
+    }
+  }
+
+  for (let index = 0; index < current.length; index++) {
+    const unit = current[index];
+    if (baselineById.has(unitId(unit))) continue;
+
+    ops.push(buildUnitOp(unit, true, nextExistingId(current, index, baselineById)));
+  }
+
+  return { ops };
+}
+
+export async function persistDirtyUnits({
+  pageId,
+  currentUnits,
+  baselineUnits,
+  onSaveUnits,
+  onReloadUnits,
+}: {
+  pageId: string;
+  currentUnits: UnitInfo[];
+  baselineUnits: UnitInfo[];
+  onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
+  onReloadUnits: (pageId: string) => Promise<UnitInfo[]>;
+}): Promise<{ status: "clean" } | { status: "saved"; units: UnitInfo[] }> {
+  const diff = buildUnitDiff(currentUnits, baselineUnits);
+  if (diff.ops.length === 0) return { status: "clean" };
+
+  await onSaveUnits(pageId, diff);
+
   return {
-    ops,
-    candOrder: current.map((unit) => unitId(unit)),
+    status: "saved",
+    units: normalizeUnitIndexes(await onReloadUnits(pageId)),
   };
 }
 
 export function useUnitPersistence({
   getPageId,
   onSaveUnits,
+  onReloadUnits,
   onExit,
   showToast,
   loadPage,
+  setUnitBuf,
 }: Args) {
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [saving, setSaving] = useState(false);
@@ -130,14 +189,16 @@ export function useUnitPersistence({
   const isSaving = useRef(false);
 
   const commitUnits = useCallback((nextUnits: UnitInfo[], setUnitBuf: (units: UnitInfo[]) => void) => {
-    unitBufRef.current = nextUnits;
-    setUnitBuf(nextUnits);
+    const normalizedUnits = normalizeUnitIndexes(nextUnits);
+    unitBufRef.current = normalizedUnits;
+    setUnitBuf(normalizedUnits);
   }, []);
 
   const setLoadedUnits = useCallback((units: UnitInfo[], setUnitBuf: (units: UnitInfo[]) => void) => {
-    baselineUnitsRef.current = units;
-    unitBufRef.current = units;
-    setUnitBuf(units);
+    const normalizedUnits = normalizeUnitIndexes(units);
+    baselineUnitsRef.current = normalizedUnits;
+    unitBufRef.current = normalizedUnits;
+    setUnitBuf(normalizedUnits);
   }, []);
 
   const flushIfDirty = useCallback(async () => {
@@ -148,11 +209,21 @@ export function useUnitPersistence({
     isSaving.current = true;
     setSaving(true);
     try {
-      await onSaveUnits(getPageId(), diff);
-      baselineUnitsRef.current = [...unitBufRef.current];
+      const result = await persistDirtyUnits({
+        pageId: getPageId(),
+        currentUnits: unitBufRef.current,
+        baselineUnits: baselineUnitsRef.current,
+        onSaveUnits,
+        onReloadUnits,
+      });
+      if (result.status === "saved") {
+        baselineUnitsRef.current = result.units;
+        unitBufRef.current = result.units;
+        setUnitBuf(result.units);
+      }
       showToast("保存成功", "success");
     } catch (err) {
-      const summary = `ops:${diff.ops.length} candOrder:${diff.candOrder.length}`;
+      const summary = `ops:${diff.ops.length}`;
       console.error(`[BaseTranslator] 保存失败 pageId=${getPageId()} diff=${summary}`, err);
       showToast("保存失败，请重试", "error");
       throw err;
@@ -160,7 +231,7 @@ export function useUnitPersistence({
       isSaving.current = false;
       setSaving(false);
     }
-  }, [getPageId, onSaveUnits, showToast]);
+  }, [getPageId, onReloadUnits, onSaveUnits, setUnitBuf, showToast]);
 
   const handleNavigate = useCallback(
     async (newIndex: number) => {

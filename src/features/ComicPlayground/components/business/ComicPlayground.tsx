@@ -205,7 +205,7 @@ export default function ComicPlayground() {
       const result = await upsertAssignment({
         chapterId,
         userId,
-        roleMask: roleMask(remainingRoles),
+        roles: roleMask(remainingRoles),
       });
 
       if (!result.success) return result;
@@ -261,7 +261,7 @@ export default function ComicPlayground() {
       const result = await upsertAssignment({
         chapterId,
         userId,
-        roleMask: roleMask(mergedRoles),
+        roles: roleMask(mergedRoles),
       });
 
       if (!result.success) return result;

@@ -180,26 +180,6 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
         console.error("[WebTranslator] 保存单页单位失败", { pageId, diff, error: result.error });
         throw new Error(result.error);
       }
-
-      setState((prev) => {
-        if (prev.status !== "ready") return prev;
-
-        const nextPages = mergePageCounters(prev.project.pages, pageId, {
-          totalUnitCount: result.data.totalUnitCount,
-          translatedUnitCount: result.data.translatedUnitCount,
-          proofreadUnitCount: result.data.proofreadUnitCount,
-        });
-        const counters = aggregateProjectCounters(nextPages);
-
-        return {
-          ...prev,
-          project: {
-            ...prev.project,
-            pages: nextPages,
-            ...counters,
-          },
-        };
-      });
     },
     [],
   );

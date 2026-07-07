@@ -27,7 +27,11 @@ export type PageInfo = Page & {
   updatedAt: number;
 };
 
-export type PageCreationResult = { pageId: string; putUrl: string };
+export type PageCreationResult = {
+  pageId: string;
+  putUrl: string;
+  imageVersion: number;
+};
 
 export type ReserveChapterPagesArgs = {
   chapterId: string;
@@ -36,7 +40,11 @@ export type ReserveChapterPagesArgs = {
 };
 export type ReserveChapterPagesResult = { creations: PageCreationResult[] };
 
-export type UpdatePageArgs = { id: string; isUploaded?: boolean };
+export type UpdatePageArgs = {
+  id: string;
+  isUploaded?: boolean;
+  imageVersion?: number;
+};
 
 export type PendingPage = { pageId: string; index: number };
 

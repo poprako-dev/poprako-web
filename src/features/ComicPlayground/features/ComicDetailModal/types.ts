@@ -90,7 +90,7 @@ export type ComicDetailModalProps = {
   onReservePageUpload?: (args: {
     pageId: string;
     fileExtension: string;
-  }) => Promise<Result<{ pageId: string; putUrl: string }>>;
+  }) => Promise<Result<{ pageId: string; putUrl: string; imageVersion: number }>>;
   onJoinChapterRole?: (chapterId: string, role: Role) => Promise<Result<void>>;
   onImportChapter?: (args: {
     chapterId: string;

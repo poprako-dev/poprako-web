@@ -15,12 +15,14 @@ type ListAnnouncementsArgs = {
 export async function listAnnouncements(
   args: ListAnnouncementsArgs,
 ): Promise<Result<AnnouncementInfo[]>> {
-  const result = await api.get<RawAnnouncementInfo[]>("/announcements", {
-    team_id: args.teamId,
-    offset: args.offset,
-    limit: args.limit,
-    includes: ["user"],
-  });
+  const result = await api.get<RawAnnouncementInfo[]>(
+    `/teams/${args.teamId}/announcements`,
+    {
+      offset: args.offset,
+      limit: args.limit,
+      incl: ["user"],
+    },
+  );
   if (!result.success) return result;
   return {
     success: true,

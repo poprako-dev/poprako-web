@@ -101,7 +101,10 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
         return;
       }
 
-      const confirmRes = await confirmUserAvatarUploaded(user.id);
+      const confirmRes = await confirmUserAvatarUploaded(
+        user.id,
+        reserveRes.data.avatarVersion,
+      );
       if (!confirmRes.success) {
         showToast(confirmRes.error, "error");
         return;

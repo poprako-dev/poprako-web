@@ -7,7 +7,6 @@ import ToolboxDropdown from "@/features/ToolboxDropdown";
 import {
   applyUnitUpdates,
   createUnit,
-  modifyUnitIndex,
   modifyUnitPosition,
   unitPosition,
   unitId,
@@ -134,9 +133,11 @@ export default function BaseTranslator({
   } = useUnitPersistence({
     getPageId: () => project.pages[pageIndex].id,
     onSaveUnits,
+    onReloadUnits: onLoadUnits,
     onExit,
     showToast,
     loadPage,
+    setUnitBuf,
   });
 
   async function loadPage(idx: number) {
@@ -237,7 +238,6 @@ export default function BaseTranslator({
     const newUnit = createUnit(
       xCoord,
       yCoord,
-      unitBufRef.current.length,
       isBubble,
     );
 
@@ -248,8 +248,7 @@ export default function BaseTranslator({
 
   function doDeleteUnit(targetUnitId: string) {
     const filteredUnits = unitBufRef.current
-      .filter((unit) => unitId(unit) !== targetUnitId)
-      .map((unit, index) => modifyUnitIndex(unit, index));
+      .filter((unit) => unitId(unit) !== targetUnitId);
 
     commitUnits(filteredUnits, setUnitBuf);
 

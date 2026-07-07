@@ -65,7 +65,10 @@ export async function addChapterPages({
       throw new Error(uploadResult.error);
     }
 
-    const markResult = await updatePage(creation.pageId, { isUploaded: true });
+    const markResult = await updatePage(creation.pageId, {
+      isUploaded: true,
+      imageVersion: creation.imageVersion,
+    });
     if (!markResult.success) {
       console.error(`[${logPrefix}] 标记页面上传状态失败:`, markResult.error);
       throw new Error(markResult.error);

@@ -8,18 +8,20 @@ import {
 
 type ListCommentsArgs = {
   teamId: string;
-  offset?: number;
-  limit?: number;
+  offset: number;
+  limit: number;
 };
 
 export async function listComments(
   args: ListCommentsArgs,
 ): Promise<Result<CommentInfo[]>> {
-  const result = await api.get<RawCommentInfo[]>("/comments", {
-    team_id: args.teamId,
-    ...(args.offset !== undefined ? { offset: args.offset } : {}),
-    ...(args.limit !== undefined ? { limit: args.limit } : {}),
-  });
+  const result = await api.get<RawCommentInfo[]>(
+    `/teams/${args.teamId}/comments`,
+    {
+      offset: args.offset,
+      limit: args.limit,
+    },
+  );
   if (!result.success) return result;
   return {
     success: true,

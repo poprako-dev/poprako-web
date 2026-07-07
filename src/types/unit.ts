@@ -27,7 +27,6 @@ export type UnitInfo = {
 export type UnitEdit = {
   xCoord?: number;
   yCoord?: number;
-  index?: number;
   isBubble?: boolean;
   translatedText?: string;
   translatorId?: string;
@@ -100,7 +99,6 @@ export function unitProofreaderComment(unit: UnitInfo): string | null {
 export function createUnit(
   xCoord: number,
   yCoord: number,
-  index: number,
   isBubble: boolean,
 ): UnitInfo {
   return {
@@ -108,7 +106,7 @@ export function createUnit(
     id: self.crypto.randomUUID(),
     xCoord: xCoord,
     yCoord: yCoord,
-    index: index,
+    index: 0,
     isBubble: isBubble,
     isProofread: false,
   } as UnitInfo;
@@ -143,6 +141,12 @@ export function modifyUnitIndex(unit: UnitInfo, index: number) {
     ...unit,
     index: index,
   };
+}
+
+export function normalizeUnitIndexes(units: UnitInfo[]): UnitInfo[] {
+  return units.map((unit, index) =>
+    unit.index === index ? unit : modifyUnitIndex(unit, index),
+  );
 }
 
 export function modifyUnitIsBubble(unit: UnitInfo, isBubble: boolean) {
@@ -227,10 +231,6 @@ export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
     );
   }
 
-  if ("index" in updates) {
-    nextUnit = modifyUnitIndex(nextUnit, updates.index ?? unitIndex(nextUnit));
-  }
-
   if ("isBubble" in updates) {
     nextUnit = modifyUnitIsBubble(
       nextUnit,
@@ -303,9 +303,6 @@ export function createUnitPatch(
   if (currentPosition.yCoord !== baselinePosition.yCoord) {
     patch.yCoord = currentPosition.yCoord;
   }
-  if (unitIndex(current) !== unitIndex(baseline)) {
-    patch.index = unitIndex(current);
-  }
   if (unitIsBubble(current) !== unitIsBubble(baseline)) {
     patch.isBubble = unitIsBubble(current);
   }
@@ -339,9 +336,6 @@ export function isUnitSame(rhs: UnitInfo, lhs: UnitInfo): boolean {
     return false;
   }
   if (rhs.xCoord !== lhs.xCoord || rhs.yCoord !== lhs.yCoord) {
-    return false;
-  }
-  if (rhs.index !== lhs.index) {
     return false;
   }
   if (rhs.isBubble !== lhs.isBubble) {
@@ -378,8 +372,6 @@ export type UnitPatch = {
   xCoord?: number;
   yCoord?: number;
 
-  index?: number;
-
   isBubble?: boolean;
 
   translatedText?: string | null;
@@ -404,10 +396,6 @@ export function unitPatchId(patch: UnitPatch): string {
 
 export function unitPatchPosition(patch: UnitPatch) {
   return { xCoord: patch.xCoord, yCoord: patch.yCoord };
-}
-
-export function unitPatchIndex(patch: UnitPatch): number | undefined {
-  return patch.index;
 }
 
 export function unitPatchIsBubble(patch: UnitPatch): boolean | undefined {

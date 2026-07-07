@@ -16,8 +16,8 @@ export async function reserveTeamAvatarUpload(
 ): Promise<Result<ReserveTeamAvatarResult>> {
   const res = await api.post<
     RawReserveTeamAvatarResult,
-    { file_extension: string }
-  >(`/teams/${teamId}/avatar`, { file_extension: args.fileExtension });
+    { file_ext: string }
+  >(`/teams/${teamId}/avatar/reserve`, { file_ext: args.fileExtension });
   if (!res.success) return res;
 
   return {
@@ -28,10 +28,11 @@ export async function reserveTeamAvatarUpload(
 
 export async function confirmTeamAvatarUploaded(
   teamId: string,
+  avatarVersion: number,
 ): Promise<Result<void>> {
-  const res = await api.post<void, Record<string, never>>(
-    `/teams/${teamId}/avatar/confirm`,
-    {},
+  const res = await api.post<void, { avatar_version: number }>(
+    `/teams/${teamId}/avatar/mark-uploaded`,
+    { avatar_version: avatarVersion },
   );
   if (!res.success) return res;
   return { success: true, data: undefined };
@@ -40,9 +41,16 @@ export async function confirmTeamAvatarUploaded(
 export async function updateTeam(
   args: UpdateTeamArgs,
 ): Promise<Result<void>> {
-  const res = await api.put<void, { name?: string; description?: string }>(
+  const res = await api.put<
+    void,
+    { id: string; name?: string; description?: string }
+  >(
     `/teams/${args.id}`,
-    { name: args.name, description: args.description },
+    {
+      id: args.id,
+      name: args.name,
+      description: args.description,
+    },
   );
   if (!res.success) return res;
   return { success: true, data: undefined };

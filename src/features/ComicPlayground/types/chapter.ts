@@ -33,7 +33,7 @@ export type ListChapterArgs = {
 
 export type RawListChapterArgs = {
   comic_id: string;
-  includes?: ChapterInclude[];
+  incl?: ChapterInclude[];
   offset: number;
   limit: number;
 };
@@ -56,11 +56,15 @@ export type UpdateChapterArgs = {
 };
 
 export type RawUpdateChapterArgs = {
-  chapter_id: string;
+  id: string;
   subtitle?: string;
-  is_pinned?: boolean;
-  workflow_transition?: WorkflowTransition;
-  revert_transition?: WorkflowTransition;
+  pin?: boolean;
+};
+
+export type RawUpdateChapterStageArgs = {
+  id: string;
+  stage: "raw-provide" | "translate" | "proofread" | "typeset-redraw" | "review" | "publish";
+  oper: "advance" | "revert";
 };
 
 export type ChapterExportUnit = {

@@ -16,4 +16,5 @@ export type UserInfo = {
 
 export type ReserveUserAvatarResult = {
   putUrl: string;
+  avatarVersion: number;
 };

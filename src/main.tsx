@@ -20,3 +20,21 @@ createRoot(document.getElementById("root")!).render(
     <NotificationToast />
   </StrictMode>,
 );
+
+// Preload secondary routes after first paint so navigation feels instant.
+// requestIdleCallback avoids competing with the initial render + hydrate work;
+// fall back to a short setTimeout in environments that lack it.
+const schedulePreload = (fn: () => void) => {
+  if (typeof requestIdleCallback !== "undefined") {
+    requestIdleCallback(fn);
+  } else {
+    setTimeout(fn, 200);
+  }
+};
+
+schedulePreload(() => {
+  // fire-and-forget — failures are non-fatal (the lazy route Suspense
+  // will retry on navigation)
+  void import("@/pages/WorkspacePage");
+  void import("@/pages/ComicPlaygroundPage");
+});

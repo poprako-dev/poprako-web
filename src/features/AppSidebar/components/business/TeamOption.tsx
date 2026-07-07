@@ -404,7 +404,10 @@ export default function TeamOption({
         return;
       }
 
-      const confirmRes = await confirmTeamAvatarUploaded(activeTeam.id);
+      const confirmRes = await confirmTeamAvatarUploaded(
+        activeTeam.id,
+        reserveRes.data.avatarVersion,
+      );
       if (!confirmRes.success) {
         showToast(confirmRes.error, "error");
         return;

@@ -52,8 +52,9 @@ export default function TranslatorPage() {
       return;
     }
 
-    Promise.all([getMyUser(), listMyMembers()])
-      .then(([userInfo, memberInfos]) => {
+    getMyUser()
+      .then(async (userInfo) => {
+        const memberInfos = await listMyMembers({ ownerId: userInfo.id });
         setLoginState({ userInfo, memberInfos });
         setIsAuthReady(true);
       })

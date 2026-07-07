@@ -11,8 +11,9 @@ export type RawTeamInfo = {
   id: string;
   name: string;
   description: string;
-  avatar_url: string;
-  avatar_uploaded: boolean;
+  avatar_url: string | null;
+  avatar_uploaded?: boolean;
+  workset_next_index?: number;
   created_at: number;
   updated_at: number;
 };
@@ -23,7 +24,7 @@ export function unwrapRawTeamInfo(raw: RawTeamInfo): TeamInfo {
     name: raw.name,
     description: raw.description,
     avatarUrl: ensureHttpsUrl(raw.avatar_url),
-    isAvatarUploaded: raw.avatar_uploaded,
+    isAvatarUploaded: raw.avatar_uploaded ?? !!raw.avatar_url,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   } as TeamInfo;
@@ -55,11 +56,14 @@ export function unwrapRawUpdateTeamArgs(
 }
 
 export type RawReserveTeamAvatarResult = {
-  avatar_oss_key: string;
   put_url: string;
+  avatar_version: number;
 };
 export function unwrapRawReserveTeamAvatarResult(
   raw: RawReserveTeamAvatarResult,
 ): ReserveTeamAvatarResult {
-  return { avatarOssKey: raw.avatar_oss_key, putUrl: raw.put_url };
+  return {
+    putUrl: raw.put_url,
+    avatarVersion: raw.avatar_version,
+  };
 }

@@ -18,9 +18,8 @@ export async function listAssignmentInvitations(
   args: ListAssignmentInvitationsArgs,
 ): Promise<Result<AssignmentInvitationInfo[]>> {
   const result = await api.get<RawAssignmentInvitationInfo[]>(
-    "/assignment-invitations",
+    `/chapters/${args.chapterId}/assignment-invitations`,
     {
-      chapter_id: args.chapterId,
       pending: args.pending,
       offset: args.offset,
       limit: args.limit,
@@ -55,9 +54,9 @@ export async function createAssignmentInvitation(
 export async function joinAssignmentInvitation(
   invitationCode: string,
 ): Promise<Result<void>> {
-  const result = await api.post<void, { invitation_code: string }>(
+  const result = await api.post<void, { code: string }>(
     "/assignment-invitations/join",
-    { invitation_code: invitationCode },
+    { code: invitationCode },
   );
   if (!result.success) return result;
 

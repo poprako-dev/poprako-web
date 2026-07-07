@@ -22,11 +22,13 @@ export type ListPageArgs = {
 export async function listPages(
   args: ListPageArgs,
 ): Promise<Result<PageInfo[]>> {
-  const res = await api.get<RawPageInfo[]>("/pages", {
-    chapter_id: args.chapterId,
-    offset: args.offset,
-    limit: args.limit,
-  });
+  const res = await api.get<RawPageInfo[]>(
+    `/chapters/${args.chapterId}/pages`,
+    {
+      offset: args.offset,
+      limit: args.limit,
+    },
+  );
   if (!res.success) return res;
 
   const items = Array.isArray(res.data) ? res.data : [];
@@ -42,13 +44,13 @@ export async function reserveChapterPages(
   const rawArgs: RawReserveChapterPagesArgs = {
     chapter_id: args.chapterId,
     page_count: args.pageCount,
-    file_extension: args.fileExtension,
+    file_ext: args.fileExtension,
   };
 
   const res = await api.post<
     RawReserveChapterPagesResult,
     RawReserveChapterPagesArgs
-  >("/pages/reserve", rawArgs, { chapter_id: args.chapterId });
+  >(`/chapters/${args.chapterId}/pages/reserve`, rawArgs);
   if (!res.success) return res;
 
   return {
@@ -65,32 +67,32 @@ type ReserveExistingPageUploadArgs = {
 };
 
 type RawReserveExistingPageUploadArgs = {
-  page_id: string;
-  file_extension: string;
+  file_ext: string;
 };
 
 type ReserveExistingPageUploadResult = {
   pageId: string;
   putUrl: string;
+  imageVersion: number;
 };
 
 type RawReserveExistingPageUploadResult = {
   page_id: string;
   put_url: string;
+  image_version: number;
 };
 
 export async function reserveExistingPageUpload(
   args: ReserveExistingPageUploadArgs,
 ): Promise<Result<ReserveExistingPageUploadResult>> {
   const rawArgs: RawReserveExistingPageUploadArgs = {
-    page_id: args.pageId,
-    file_extension: args.fileExtension,
+    file_ext: args.fileExtension,
   };
 
   const res = await api.post<
     RawReserveExistingPageUploadResult,
     RawReserveExistingPageUploadArgs
-  >(`/pages/${args.pageId}/reserve`, rawArgs);
+  >(`/pages/${args.pageId}/image/reserve`, rawArgs);
 
   if (!res.success) return res;
 
@@ -99,32 +101,34 @@ export async function reserveExistingPageUpload(
     data: {
       pageId: res.data.page_id,
       putUrl: res.data.put_url,
+      imageVersion: res.data.image_version,
     },
   };
 }
 
-export async function deletePage(pageId: string): Promise<Result<void>> {
-  const res = await api.delete<void>(`/pages/${pageId}`);
-  if (!res.success) return res;
-  return { success: true, data: undefined };
+export async function deletePage(_pageId: string): Promise<Result<void>> {
+  return {
+    success: false,
+    error: "当前后端不支持删除单页",
+  };
 }
 
 export async function deleteChapterPages(chapterId: string): Promise<Result<void>> {
-  const res = await api.delete<void>("/pages", { chapter_id: chapterId });
+  const res = await api.delete<void>(`/chapters/${chapterId}/pages`);
   if (!res.success) return res;
   return { success: true, data: undefined };
 }
 
 export async function updatePage(
   pageId: string,
-  args: { isUploaded?: boolean },
+  args: { isUploaded?: boolean; imageVersion?: number },
 ): Promise<Result<void>> {
   if (!args.isUploaded) {
     return { success: true, data: undefined };
   }
-  const res = await api.post<void, Record<string, never>>(
-    `/pages/${pageId}/image/uploaded`,
-    {},
+  const res = await api.post<void, { image_version: number }>(
+    `/pages/${pageId}/image/mark-uploaded`,
+    { image_version: args.imageVersion ?? 0 },
   );
   if (!res.success) return res;
   return { success: true, data: undefined };

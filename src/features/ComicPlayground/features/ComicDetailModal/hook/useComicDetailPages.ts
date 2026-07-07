@@ -245,6 +245,7 @@ export function useComicDetailPages({
 
         const markResult = await updatePage(reserveResult.data.pageId, {
           isUploaded: true,
+          imageVersion: reserveResult.data.imageVersion,
         });
         if (!markResult.success) {
           console.error("[ComicDetailModal] 标记重上传状态失败:", markResult.error);

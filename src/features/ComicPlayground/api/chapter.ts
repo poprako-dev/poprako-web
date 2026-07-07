@@ -12,6 +12,7 @@ import type {
   RawCreateChapterArgs,
   UpdateChapterArgs,
   RawUpdateChapterArgs,
+  RawUpdateChapterStageArgs,
   ChapterExport,
   RawChapterExport,
   ImportChapterArgs,
@@ -25,17 +26,52 @@ type ExportRequestOptions = {
   signal?: AbortSignal;
 };
 
+function toStageUpdate(
+  transition: UpdateChapterArgs["workflowTransition"] | UpdateChapterArgs["revertTransition"],
+  oper: RawUpdateChapterStageArgs["oper"],
+): Omit<RawUpdateChapterStageArgs, "id"> | null {
+  if (!transition) return null;
+
+  if (transition.startsWith("upload_")) {
+    return { stage: "raw-provide", oper };
+  }
+  if (transition.startsWith("translate_")) {
+    return { stage: "translate", oper };
+  }
+  if (transition.startsWith("proofread_")) {
+    return { stage: "proofread", oper };
+  }
+  if (transition.startsWith("typeset_")) {
+    return { stage: "typeset-redraw", oper };
+  }
+  if (transition.startsWith("review_")) {
+    return { stage: "review", oper };
+  }
+  if (transition.startsWith("publish_")) {
+    return { stage: "publish", oper };
+  }
+
+  return null;
+}
+
 export async function listChapters(
   args: ListChapterArgs,
 ): Promise<Result<ChapterInfo[]>> {
   const rawArgs: RawListChapterArgs = {
     comic_id: args.comicId,
-    includes: args.includes,
+    incl: args.includes,
     offset: args.offset,
     limit: args.limit,
   };
 
-  const res = await api.get<RawChapterInfo[]>("/chapters", rawArgs);
+  const res = await api.get<RawChapterInfo[]>(
+    `/comics/${args.comicId}/chapters`,
+    {
+      incl: rawArgs.incl,
+      offset: rawArgs.offset,
+      limit: rawArgs.limit,
+    },
+  );
 
   if (!res.success) return res;
 
@@ -47,9 +83,9 @@ export async function listChapters(
 export async function getPinnedChapter(
   comicId: string,
 ): Promise<Result<ChapterInfo>> {
-  const res = await api.get<RawChapterInfo>("/chapters/pinned", {
-    comic_id: comicId,
-  });
+  const res = await api.get<RawChapterInfo>(
+    `/comics/${comicId}/chapters/pinned`,
+  );
   if (!res.success) return res;
 
   const chapter = toChapterInfo(res.data);
@@ -80,19 +116,31 @@ export async function updateChapter(
   id: string,
   args: UpdateChapterArgs,
 ): Promise<Result<void>> {
-  const rawArgs: RawUpdateChapterArgs = {
-    chapter_id: id,
-    subtitle: args.subtitle,
-    is_pinned: args.isPinned,
-    workflow_transition: args.workflowTransition,
-    revert_transition: args.revertTransition,
-  };
+  if (args.subtitle !== undefined || args.isPinned !== undefined) {
+    const rawArgs: RawUpdateChapterArgs = {
+      id,
+      subtitle: args.subtitle,
+      pin: args.isPinned,
+    };
 
-  const res = await api.put<void, RawUpdateChapterArgs>(
-    `/chapters/${id}`,
-    rawArgs,
-  );
-  if (!res.success) return res;
+    const res = await api.patch<void, RawUpdateChapterArgs>(
+      `/chapters/${id}`,
+      rawArgs,
+    );
+    if (!res.success) return res;
+  }
+
+  const stageUpdate =
+    toStageUpdate(args.workflowTransition, "advance") ??
+    toStageUpdate(args.revertTransition, "revert");
+  if (stageUpdate) {
+    const res = await api.post<void, RawUpdateChapterStageArgs>(
+      `/chapters/${id}/stage/advance`,
+      { id, ...stageUpdate },
+    );
+    if (!res.success) return res;
+  }
+
   return { success: true, data: undefined };
 }
 
@@ -142,7 +190,7 @@ export async function exportChapter(
 
   try {
     const response = await fetch(
-      `${appConfig.apiBaseUrl}/chapters/${chapterId}/export`,
+      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=poprako`,
       {
         method: "GET",
         headers: token
@@ -193,7 +241,9 @@ export async function exportChapterLp(
   const token = useAppStore.getState().getAccessToken();
 
   try {
-    const response = await fetch(`${appConfig.apiBaseUrl}/chapters/${chapterId}/export/lp`, {
+    const response = await fetch(
+      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=label_plus`,
+      {
       method: "GET",
         headers: token
           ? {
@@ -202,7 +252,8 @@ export async function exportChapterLp(
           : undefined,
         credentials: "include",
         signal: options?.signal,
-      });
+      },
+    );
 
     const rawText = await response.text();
 
@@ -258,7 +309,7 @@ export async function importChapter(
   };
 
   const res = await api.post<RawImportChapterResult, RawImportChapterArgs>(
-    `/chapters/${args.chapterId}/import`,
+    `/chapters/${args.chapterId}/translations/import`,
     rawArgs,
   );
   if (!res.success) return res;
@@ -273,11 +324,11 @@ export async function joinChapter(
   chapterId: string,
   roleMask: number,
 ): Promise<Result<void>> {
-  const res = await api.post<void, { chapter_id: string; role_mask: number }>(
-    `/chapters/${chapterId}/join`,
+  const res = await api.post<void, { chapter_id: string; roles: number }>(
+    "/assignments/join",
     {
       chapter_id: chapterId,
-      role_mask: roleMask,
+      roles: roleMask,
     },
   );
   if (!res.success) return res;

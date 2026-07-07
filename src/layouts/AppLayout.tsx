@@ -80,8 +80,9 @@ export default function AppLayout() {
       return;
     }
 
-    Promise.all([getMyUser(), listMyMembers()])
-      .then(([userInfo, memberInfos]) => {
+    getMyUser()
+      .then(async (userInfo) => {
+        const memberInfos = await listMyMembers({ ownerId: userInfo.id });
         setLoginState({ userInfo, memberInfos });
         setIsReady(true);
       })

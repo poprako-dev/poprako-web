@@ -3,11 +3,18 @@ import { api } from "./util";
 import type { Result } from "@/types/utils/result";
 import type { MemberInfo } from "@/types/member";
 
-export async function listMyMembers() {
-  const result = await api.get<RawMemberInfo[] | null>("/members/mine", {
-    includes: ["team"],
-    offset: 0,
-    limit: 100,
+type ListMyMembersArgs = {
+  ownerId: string;
+  offset?: number;
+  limit?: number;
+};
+
+export async function listMyMembers(args: ListMyMembersArgs) {
+  const result = await api.get<RawMemberInfo[] | null>("/members", {
+    owner_id: args.ownerId,
+    incl: ["team"],
+    offset: args.offset ?? 0,
+    limit: args.limit ?? 100,
   });
   if (!result.success) throw new Error(result.error);
   return (result.data ?? []).map(unwrapRawMemberInfo);
@@ -24,14 +31,14 @@ type ListMembersArgs = {
 
 type UpdateMemberRoleArgs = {
   id: string;
-  role_mask: number;
+  roles: number;
 };
 
 export async function updateMemberRole(
   args: UpdateMemberRoleArgs,
 ): Promise<Result<void>> {
   return api.put<void, UpdateMemberRoleArgs>(
-    `/members/${args.id}`,
+    `/members/${args.id}/roles`,
     args,
   );
 }
@@ -39,8 +46,8 @@ export async function updateMemberRole(
 export async function joinMember(
   invitationCode: string,
 ): Promise<Result<void>> {
-  return api.post<void, { invitation_code: string }>("/members/join", {
-    invitation_code: invitationCode,
+  return api.post<void, { code: string }>("/members/join", {
+    code: invitationCode,
   });
 }
 
@@ -57,11 +64,11 @@ export async function listMembers(
   };
 
   if (args.includes) {
-    query.includes = args.includes;
+    query.incl = args.includes;
   }
 
   if (args.userNicknameKeyword) {
-    query.user_nickname_keyword = args.userNicknameKeyword;
+    query.fuzzy_nickname = args.userNicknameKeyword;
   }
 
   if (args.role !== undefined) {

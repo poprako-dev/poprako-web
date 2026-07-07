@@ -21,8 +21,7 @@ export type RawComicInfo = {
   index: number;
   chapter_count: number;
 
-  cover_url: string;
-  is_cover_uploaded: boolean;
+  cover_url: string | null;
 
   creator_id: string;
   creator?: RawUserInfo;
@@ -40,7 +39,7 @@ export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
     title: raw.title,
     author: raw.author,
     description: raw.description,
-    isCoverUploaded: !!raw.is_cover_uploaded,
+    isCoverUploaded: !!raw.cover_url,
     creatorId: raw.creator_id,
     index: raw.index,
     chapterCount: raw.chapter_count,
@@ -54,17 +53,19 @@ export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
 export type RawCreateComicArgs = {
   author: string;
   description: string;
-  team_id: string;
+  workset_id: string;
   title: string;
+  first_chapter_subtitle?: string;
 };
 export function unwrapRawCreateComicArgs(
   raw: RawCreateComicArgs,
 ): CreateComicArgs {
   return {
-    teamId: raw.team_id,
+    worksetId: raw.workset_id,
     title: raw.title,
     author: raw.author,
     description: raw.description,
+    firstChapterTitle: raw.first_chapter_subtitle,
   } as CreateComicArgs;
 }
 

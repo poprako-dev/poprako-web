@@ -9,10 +9,8 @@ export function useRefreshLoginState() {
 
   return useCallback(async (): Promise<Result<void>> => {
     try {
-      const [userInfo, memberInfos] = await Promise.all([
-        getMyUser(),
-        listMyMembers(),
-      ]);
+      const userInfo = await getMyUser();
+      const memberInfos = await listMyMembers({ ownerId: userInfo.id });
 
       setLoginState({ userInfo, memberInfos });
       return { success: true, data: undefined };

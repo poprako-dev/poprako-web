@@ -7,11 +7,11 @@ import type {
 export type RawAssignmentInvitationInfo = {
   id: string;
   chapter_id: string;
-  invitation_code: string;
+  code: string;
   invitee_qid: string;
   inviter_id: string;
   pending: boolean;
-  role_mask: number;
+  roles: number;
   created_at: number;
   updated_at: number;
 };
@@ -19,12 +19,12 @@ export type RawAssignmentInvitationInfo = {
 export type RawCreateAssignmentInvitationArgs = {
   chapter_id: string;
   invitee_qid: string;
-  role_mask: number;
+  roles: number;
 };
 
 export type RawCreateAssignmentInvitationResult = {
   id: string;
-  invitation_code: string;
+  code: string;
 };
 
 export function unwrapRawAssignmentInvitationInfo(
@@ -33,11 +33,11 @@ export function unwrapRawAssignmentInvitationInfo(
   return {
     id: raw.id,
     chapterId: raw.chapter_id,
-    invitationCode: raw.invitation_code,
+    invitationCode: raw.code,
     inviteeQq: raw.invitee_qid,
     inviterId: raw.inviter_id,
     pending: raw.pending,
-    roles: raw.role_mask,
+    roles: raw.roles,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   };
@@ -49,7 +49,7 @@ export function wrapCreateAssignmentInvitationArgs(
   return {
     chapter_id: args.chapterId,
     invitee_qid: args.inviteeQq,
-    role_mask: args.roles,
+    roles: args.roles,
   };
 }
 
@@ -58,6 +58,6 @@ export function unwrapRawCreateAssignmentInvitationResult(
 ): CreateAssignmentInvitationResult {
   return {
     id: raw.id,
-    invitationCode: raw.invitation_code,
+    invitationCode: raw.code,
   };
 }

@@ -92,6 +92,11 @@ export default function ComicDetailModal({
     };
   }, []);
 
+  // Preload translator chunk so navigation to the translator page feels instant.
+  useEffect(() => {
+    void import("@/pages/TranslatorPage");
+  }, []);
+
   const {
     chapters,
     setChapters,

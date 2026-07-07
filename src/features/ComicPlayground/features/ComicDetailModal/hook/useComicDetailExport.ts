@@ -459,7 +459,10 @@ export function useComicDetailExport({
           return;
         }
 
-        const markRes = await markCoverUploaded(comicId);
+        const markRes = await markCoverUploaded(
+          comicId,
+          reserveRes.data.coverVersion,
+        );
         if (!markRes.success) {
           showToast(markRes.error, "error");
           return;

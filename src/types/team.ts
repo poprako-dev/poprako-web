@@ -38,8 +38,8 @@ export type UpdateTeamArgs = {
 };
 
 export type ReserveTeamAvatarResult = {
-  avatarOssKey: string;
   putUrl: string;
+  avatarVersion: number;
 };
 
 export function teamAvatarUrl(team: TeamInfo) {

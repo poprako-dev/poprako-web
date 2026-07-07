@@ -11,18 +11,18 @@ export function unwrapRawLoginUserArgs(raw: RawLoginUserArgs): LoginUserArgs {
   return { qq: raw.qid, password: raw.password };
 }
 
-export type RawLoginUserResult = { access_token: string; user_id: string };
+export type RawLoginUserResult = { token: string; user_id: string };
 export function unwrapRawLoginUserResult(
   raw: RawLoginUserResult,
 ): LoginUserResult {
-  return { accessToken: raw.access_token, userId: raw.user_id };
+  return { accessToken: raw.token, userId: raw.user_id };
 }
 
 export type RawRegisterUserArgs = {
   qid: string;
   password: string;
-  name: string;
-  invitation_code: string;
+  nickname: string;
+  code: string;
 };
 export function unwrapRawRegisterUserArgs(
   raw: RawRegisterUserArgs,
@@ -30,16 +30,16 @@ export function unwrapRawRegisterUserArgs(
   return {
     qq: raw.qid,
     password: raw.password,
-    name: raw.name,
-    invitationCode: raw.invitation_code,
+    name: raw.nickname,
+    invitationCode: raw.code,
   };
 }
 
-export type RawRegisterUserResult = { access_token: string; user_id: string };
+export type RawRegisterUserResult = { token: string; user_id: string };
 export function unwrapRawRegisterUserResult(
   raw: RawRegisterUserResult,
 ): RegisterUserResult {
-  return { accessToken: raw.access_token, userId: raw.user_id };
+  return { accessToken: raw.token, userId: raw.user_id };
 }
 
 export type RawUpdateUserArgs = {

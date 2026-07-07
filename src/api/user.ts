@@ -18,9 +18,9 @@ export async function reserveUserAvatarUpload(
   userId: string,
   fileExtension: string,
 ): Promise<Result<ReserveUserAvatarResult>> {
-  const res = await api.post<RawReserveUserAvatarResult, { file_extension: string }>(
-    `/users/${userId}/avatar`,
-    { file_extension: fileExtension },
+  const res = await api.post<RawReserveUserAvatarResult, { file_ext: string }>(
+    `/users/${userId}/avatar/reserve`,
+    { file_ext: fileExtension },
   );
   if (!res.success) return res;
 
@@ -32,10 +32,11 @@ export async function reserveUserAvatarUpload(
 
 export async function confirmUserAvatarUploaded(
   userId: string,
+  avatarVersion: number,
 ): Promise<Result<void>> {
-  const res = await api.post<void, Record<string, never>>(
-    `/users/${userId}/avatar/confirm`,
-    {},
+  const res = await api.post<void, { avatar_version: number }>(
+    `/users/${userId}/avatar/mark-uploaded`,
+    { avatar_version: avatarVersion },
   );
   if (!res.success) return res;
   return { success: true, data: undefined };

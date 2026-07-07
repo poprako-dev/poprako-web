@@ -342,15 +342,17 @@ const meta: Meta<typeof BaseTranslator> = {
 export default meta;
 type Story = StoryObj<typeof BaseTranslator>;
 
+async function mockSaveUnits(pageId: string, diff: UnitDiff) {
+  console.log("[mock] onSaveUnits", pageId, diff);
+}
+
 export const WithProofread: Story = {
   args: {
     project: mockProject,
     isCurrUserProofreader: true,
     onLoadUnits: async (_pageId: string) => mockUnits,
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
-    onSaveUnits: async (pageId: string, diff: UnitDiff) => {
-      console.log("[mock] onSaveUnits", pageId, diff);
-    },
+    onSaveUnits: mockSaveUnits,
     onExit: () => {
       console.log("[mock] onExit");
     },
@@ -363,9 +365,7 @@ export const TranslatorOnly: Story = {
     isCurrUserProofreader: false,
     onLoadUnits: async (_pageId: string) => mockUnits,
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
-    onSaveUnits: async (pageId: string, diff: UnitDiff) => {
-      console.log("[mock] onSaveUnits", pageId, diff);
-    },
+    onSaveUnits: mockSaveUnits,
     onExit: () => {
       console.log("[mock] onExit");
     },
@@ -378,9 +378,7 @@ export const EmptyUnits: Story = {
     isCurrUserProofreader: true,
     onLoadUnits: async (_pageId: string) => [],
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
-    onSaveUnits: async (pageId: string, diff: UnitDiff) => {
-      console.log("[mock] onSaveUnits", pageId, diff);
-    },
+    onSaveUnits: mockSaveUnits,
     onExit: () => {
       console.log("[mock] onExit");
     },

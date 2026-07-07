@@ -15,21 +15,18 @@ import type { ComicInfo } from "@/types";
 export async function listComics(
   args: ListComicArgs,
 ): Promise<Result<ComicInfo[]>> {
-  const rawArgs: RawListComicArgs = {
-    workset_id: args.worksetId,
-    includes: args.includes,
+  const rawArgs: Omit<RawListComicArgs, "workset_id"> = {
+    incl: args.includes,
     fuzzy_title: args.fuzzyTitle,
-    upload_phase: args.uploadPhase,
-    translate_phase: args.translatePhase,
-    proofread_phase: args.proofreadPhase,
-    typeset_phase: args.typesetPhase,
-    review_phase: args.reviewPhase,
-    publish_phase: args.publishPhase,
+    stages: undefined,
     offset: args.offset,
     limit: args.limit,
   };
 
-  const res = await api.get<RawComicInfo[]>("/comics", rawArgs);
+  const res = await api.get<RawComicInfo[]>(
+    `/worksets/${args.worksetId}/comics`,
+    rawArgs,
+  );
   if (!res.success) return res;
 
   const items = Array.isArray(res.data) ? res.data : [];
@@ -56,7 +53,7 @@ export async function createComic(
     title: args.title,
     author: args.author,
     description: args.description,
-    first_chapter_title: args.firstChapterTitle,
+    first_chapter_subtitle: args.firstChapterTitle,
   };
 
   const res = await api.post<{ id: string }, RawCreateComicArgs>(
@@ -92,21 +89,28 @@ export async function deleteComic(id: string): Promise<Result<void>> {
 export async function reserveCoverUpload(
   comicId: string,
   fileExtension: string,
-): Promise<Result<{ putUrl: string }>> {
+): Promise<Result<{ putUrl: string; coverVersion: number }>> {
   const res = await api.post<
-    { put_url: string },
-    { file_extension: string }
-  >(`/comics/${comicId}/cover/reserve`, { file_extension: fileExtension });
+    { put_url: string; cover_version: number },
+    { file_ext: string }
+  >(`/comics/${comicId}/cover/reserve`, { file_ext: fileExtension });
   if (!res.success) return res;
-  return { success: true, data: { putUrl: res.data.put_url } };
+  return {
+    success: true,
+    data: {
+      putUrl: res.data.put_url,
+      coverVersion: res.data.cover_version,
+    },
+  };
 }
 
 export async function markCoverUploaded(
   comicId: string,
+  coverVersion: number,
 ): Promise<Result<void>> {
-  const res = await api.post<void, Record<string, never>>(
-    `/comics/${comicId}/cover/uploaded`,
-    {},
+  const res = await api.post<void, { cover_version: number }>(
+    `/comics/${comicId}/cover/mark-uploaded`,
+    { cover_version: coverVersion },
   );
   if (!res.success) return res;
   return { success: true, data: undefined };

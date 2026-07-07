@@ -109,4 +109,4 @@ sudo nginx -t
 ```
 
 If you access a deep SPA route such as `/workspace/123`, nginx should return
-`index.html`, while `/api/...` should still be proxied to `127.0.0.1:8080`.
+`index.html`, while `/api/...` should still be proxied to `127.0.0.1:8888`.

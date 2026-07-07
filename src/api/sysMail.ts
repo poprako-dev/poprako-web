@@ -10,7 +10,7 @@ export async function listSysMails(
   offset: number = 0,
   limit: number = 10,
 ): Promise<Result<SysMailInfo[]>> {
-  const result = await api.get<RawSysMailVal[] | null>("/sys-mails", {
+  const result = await api.get<RawSysMailVal[] | null>("/system-mails", {
     offset,
     limit,
   });
@@ -27,8 +27,8 @@ export async function markSysMailRead(
   sysMailId: string,
 ): Promise<Result<void>> {
   const result = await api.post<void, object>(
-    `/sys-mails/${sysMailId}/read`,
-    {},
+    "/system-mails/mark-read",
+    { ids: [sysMailId] },
   );
 
   if (!result.success) return result;

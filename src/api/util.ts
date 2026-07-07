@@ -3,11 +3,8 @@ import { useAppStore } from "@/store/app";
 import type { Result } from "@/types/utils/result";
 
 type FormatResponse<T> = {
-  // 2xx 表示成功
   code: number;
-  // 失败时的错误描述，成功时可能是空字符串或是成功信息
-  message: string;
-  // 失败时可能为 null，成功时为响应数据
+  message?: string;
   data?: T;
 };
 
@@ -69,34 +66,46 @@ async function request<T>(
   const config: RequestInit = {
     ...options,
     headers,
-    credentials: "include", // 允许携带 cookie，适用于需要登录状态的请求
+    credentials: "omit",
   };
 
   try {
     const response = await fetch(`${BASE_URL}${url}`, config);
 
+    if (response.status === 204) {
+      if (response.ok) return { success: true, data: undefined as T };
+
+      return {
+        success: false,
+        error: response.statusText || `HTTP ${response.status}`,
+      };
+    }
+
     let body: FormatResponse<T> | null = null;
     try {
       body = (await response.json()) as FormatResponse<T>;
     } catch {
-      body = {
-        code: response.ok ? 200 : response.status,
-        message: response.statusText || "未知错误",
-      } as FormatResponse<T>;
+      return {
+        success: false,
+        error: response.statusText || `HTTP ${response.status}`,
+      };
     }
 
     if (!response.ok) {
       return {
         success: false,
-        error: body.message ?? response.statusText ?? "未知错误",
+        error: body.message ?? response.statusText ?? `HTTP ${response.status}`,
       };
     }
 
-    if (body.data !== undefined && body.data !== null) {
-      return { success: true, data: body.data as T };
+    if (body.code !== 0) {
+      return {
+        success: false,
+        error: body.message ?? `API code ${body.code}`,
+      };
     }
 
-    return { success: true, data: body.message as unknown as T };
+    return { success: true, data: body.data as T };
   } catch (err) {
     const message = err instanceof Error ? err.message : "未知错误";
     return {

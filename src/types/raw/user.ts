@@ -5,9 +5,9 @@ export type RawUserInfo = {
   id: string;
   qid: string;
   nickname: string;
-  avatar_url: string;
+  avatar_url: string | null;
   avatar_uploaded: boolean;
-  is_super_admin: boolean;
+  is_sadmin: boolean;
   last_active_at: number;
   created_at: number;
   updated_at: number;
@@ -20,7 +20,7 @@ export function unwrapRawUserInfo(raw: RawUserInfo): UserInfo {
     name: raw.nickname,
     avatarUrl: ensureHttpsUrl(raw.avatar_url),
     isAvatarUploaded: raw.avatar_uploaded,
-    isSuperAdmin: raw.is_super_admin,
+    isSuperAdmin: raw.is_sadmin,
     lastActiveAt: raw.last_active_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
@@ -28,11 +28,15 @@ export function unwrapRawUserInfo(raw: RawUserInfo): UserInfo {
 }
 
 export type RawReserveUserAvatarResult = {
-  put_url: string
+  put_url: string;
+  avatar_version: number;
 };
 
 export function unwrapRawReserveUserAvatarResult(
   raw: RawReserveUserAvatarResult,
 ): ReserveUserAvatarResult {
-  return { putUrl: raw.put_url };
+  return {
+    putUrl: raw.put_url,
+    avatarVersion: raw.avatar_version,
+  };
 }

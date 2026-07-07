@@ -11,21 +11,24 @@ export type RawMemberInfo = {
     id: string;
     qid: string;
     nickname: string;
-    avatar_url: string;
+    avatar_url: string | null;
     avatar_uploaded: boolean;
-    is_super_admin: boolean;
+    is_sadmin: boolean;
     last_active_at: number;
     created_at: number;
     updated_at: number;
   };
   team?: RawTeamInfo;
-  role_mask: number;
-  created_at: number;
-  updated_at: number;
+  nickname?: string;
+  last_active_at?: number;
+  roles: number;
+  created_at?: number;
+  updated_at?: number;
 };
 
 export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
-  const unmaskedRoles = unmaskRoles(raw.role_mask);
+  const unmaskedRoles = unmaskRoles(raw.roles);
+  const updatedAt = raw.updated_at ?? raw.last_active_at ?? 0;
 
   return {
     id: raw.id,
@@ -37,7 +40,7 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
           name: raw.user.nickname,
           avatarUrl: ensureHttpsUrl(raw.user.avatar_url),
           isAvatarUploaded: raw.user.avatar_uploaded,
-          isSuperAdmin: raw.user.is_super_admin,
+          isSuperAdmin: raw.user.is_sadmin,
           lastActiveAt: raw.user.last_active_at,
           createdAt: raw.user.created_at,
           updatedAt: raw.user.updated_at,
@@ -50,35 +53,35 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
           name: raw.team.name,
           description: raw.team.description,
           avatarUrl: ensureHttpsUrl(raw.team.avatar_url),
-          isAvatarUploaded: raw.team.avatar_uploaded,
+          isAvatarUploaded: raw.team.avatar_uploaded ?? !!raw.team.avatar_url,
           createdAt: raw.team.created_at,
           updatedAt: raw.team.updated_at,
         }
       : undefined,
-    roles: raw.role_mask,
+    roles: raw.roles,
     assignedRawProviderAt: unmaskedRoles.includes("rawProvider")
-      ? raw.updated_at
+      ? updatedAt
       : undefined,
     assignedTranslatorAt: unmaskedRoles.includes("translator")
-      ? raw.updated_at
+      ? updatedAt
       : undefined,
     assignedProofreaderAt: unmaskedRoles.includes("proofreader")
-      ? raw.updated_at
+      ? updatedAt
       : undefined,
     assignedTypesetterAt: unmaskedRoles.includes("typesetter")
-      ? raw.updated_at
+      ? updatedAt
       : undefined,
     assignedRedrawerAt: unmaskedRoles.includes("redrawer")
-      ? raw.updated_at
+      ? updatedAt
       : undefined,
     assignedReviewerAt: unmaskedRoles.includes("reviewer")
-      ? raw.updated_at
+      ? updatedAt
       : undefined,
     assignedPublisherAt: unmaskedRoles.includes("publisher")
-      ? raw.updated_at
+      ? updatedAt
       : undefined,
-    assignedAdminAt: unmaskedRoles.includes("admin") ? raw.updated_at : undefined,
-    createdAt: raw.created_at,
-    updatedAt: raw.updated_at,
+    assignedAdminAt: unmaskedRoles.includes("admin") ? updatedAt : undefined,
+    createdAt: raw.created_at ?? 0,
+    updatedAt,
   };
 }

@@ -15,7 +15,7 @@ export async function persistLogin() {
   const myUser = await getMyUser();
 
   // 调用获取我的成员信息的接口
-  const myMembers = await listMyMembers();
+  const myMembers = await listMyMembers({ ownerId: myUser.id });
 
   // 如果没有抛出异常，说明登录信息有效，可以继续使用
   // 将所有数据载入 app store 中

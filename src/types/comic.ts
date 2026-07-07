@@ -59,10 +59,11 @@ export function toComicInfo(raw?: RawComicInfo) {
 }
 
 export type CreateComicArgs = {
-  teamId: string;
+  worksetId: string;
   title: string;
   author: string;
   description?: string;
+  firstChapterTitle?: string;
 };
 
 export type CreateComicResult = { id: string };

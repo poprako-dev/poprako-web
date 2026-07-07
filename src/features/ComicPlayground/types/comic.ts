@@ -34,14 +34,10 @@ export type ListComicArgs = {
 
 export type RawListComicArgs = {
   workset_id: string;
-  includes?: ComicInclude[];
+  incl?: ComicInclude[];
   fuzzy_title?: string;
-  upload_phase?: number;
-  translate_phase?: number;
-  proofread_phase?: number;
-  typeset_phase?: number;
-  review_phase?: number;
-  publish_phase?: number;
+  is_completed?: boolean;
+  stages?: number;
 
   offset: number;
   limit: number;
@@ -151,7 +147,7 @@ export type RawCreateComicArgs = {
   title: string;
   author: string;
   description?: string;
-  first_chapter_title?: string;
+  first_chapter_subtitle?: string;
 };
 
 export type UpdateComicArgs = {

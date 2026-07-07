@@ -9,7 +9,7 @@ import { ensureHttpsUrl } from "@/utils/url";
 export type RawPageInfo = {
   id: string;
   chapter_id: string;
-  image_url: string;
+  image_url: string | null;
   image_uploaded?: boolean;
   creator_id?: string;
   index: number;
@@ -36,17 +36,25 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
   } as PageInfo;
 }
 
-export type RawPageCreationResult = { page_id: string; put_url: string };
+export type RawPageCreationResult = {
+  page_id: string;
+  put_url: string;
+  image_version: number;
+};
 export function unwrapRawPageCreationResult(
   raw: RawPageCreationResult,
 ): PageCreationResult {
-  return { pageId: raw.page_id, putUrl: raw.put_url };
+  return {
+    pageId: raw.page_id,
+    putUrl: raw.put_url,
+    imageVersion: raw.image_version,
+  };
 }
 
 export type RawReserveChapterPagesArgs = {
   chapter_id: string;
   page_count: number;
-  file_extension: string;
+  file_ext: string;
 };
 export function unwrapRawReserveChapterPagesArgs(
   raw: RawReserveChapterPagesArgs,
@@ -54,7 +62,7 @@ export function unwrapRawReserveChapterPagesArgs(
   return {
     chapterId: raw.chapter_id,
     pageCount: raw.page_count,
-    fileExtension: raw.file_extension,
+    fileExtension: raw.file_ext,
   };
 }
 

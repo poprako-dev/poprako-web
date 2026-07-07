@@ -18,13 +18,12 @@ export async function listInvitations(
   args: ListInvitationsArgs,
 ): Promise<Result<InvitationInfo[]>> {
   const result = await api.get<RawInvitationInfo[] | null>(
-    "/member-invitations",
+    `/teams/${args.teamId}/member-invitations`,
     {
-    team_id: args.teamId,
-    offset: args.offset,
-    limit: args.limit,
-    pending: args.pending,
-    includes: args.includes,
+      offset: args.offset,
+      limit: args.limit,
+      pending: args.pending,
+      incl: args.includes,
     },
   );
 
@@ -39,11 +38,11 @@ export async function listInvitations(
 type RawCreateInvitationBody = {
   team_id: string;
   invitee_qid: string;
-  role_mask: number;
+  roles: number;
 };
 
 type CreateInvitationRes = {
-  invitation_code: string;
+  code: string;
 };
 
 export async function deleteInvitation(
@@ -60,7 +59,7 @@ export async function createInvitation(
   const body: RawCreateInvitationBody = {
     team_id: args.teamId,
     invitee_qid: args.inviteeQq,
-    role_mask: args.roles,
+    roles: args.roles,
   };
 
   const result = await api.post<CreateInvitationRes, RawCreateInvitationBody>(
@@ -72,6 +71,6 @@ export async function createInvitation(
 
   return {
     success: true,
-    data: result.data.invitation_code,
+    data: result.data.code,
   };
 }

@@ -38,7 +38,7 @@ export function useTeamConfigs() {
   const refreshTeams = useCallback(async () => {
     const state = useAppStore.getState().loginState;
     if (!state) return;
-    const memberInfos = await listMyMembers();
+    const memberInfos = await listMyMembers({ ownerId: state.userInfo.id });
     const newLoginState = { userInfo: state.userInfo, memberInfos };
     setLoginState(newLoginState);
     setTeamConfigs(deriveTeamConfigs(newLoginState));

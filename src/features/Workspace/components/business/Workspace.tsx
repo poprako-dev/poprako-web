@@ -105,7 +105,7 @@ export default function Workspace() {
 
   const loadComments = useCallback(async (teamId: string) => {
     setCommentsLoading(true);
-    const result = await listComments({ teamId, limit: 50 });
+    const result = await listComments({ teamId, offset: 0, limit: 50 });
     setCommentsLoading(false);
     if (!result.success) {
       console.error("[Workspace] 加载留言失败:", result.error);
@@ -241,7 +241,7 @@ export default function Workspace() {
       const result = await upsertAssignment({
         chapterId,
         userId,
-        roleMask: roleMask(mergedRoles),
+        roles: roleMask(mergedRoles),
       });
 
       if (!result.success) return result;
@@ -278,7 +278,7 @@ export default function Workspace() {
       const result = await upsertAssignment({
         chapterId,
         userId,
-        roleMask: roleMask(remainingRoles),
+        roles: roleMask(remainingRoles),
       });
 
       if (!result.success) return result;

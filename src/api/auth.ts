@@ -1,5 +1,7 @@
-import type { LoginUserResult, LoginUserArgs } from "@/types";
+import type { LoginUserArgs } from "@/types";
 import { api } from "./util";
+import type { RawLoginUserResult } from "@/types/raw/auth";
+import { unwrapRawLoginUserResult } from "@/types/raw/auth";
 
 export async function loginUser(args: LoginUserArgs) {
   const body = {
@@ -7,7 +9,7 @@ export async function loginUser(args: LoginUserArgs) {
     password: args.password,
   };
 
-  const result = await api.post<LoginUserResult, typeof body>(
+  const result = await api.post<RawLoginUserResult, typeof body>(
     "/auth/login",
     body,
     false,
@@ -16,7 +18,7 @@ export async function loginUser(args: LoginUserArgs) {
   if (!result.success) {
     throw new Error(result.error);
   }
-  return result.data;
+  return unwrapRawLoginUserResult(result.data);
 }
 
 export async function logoutUser() {

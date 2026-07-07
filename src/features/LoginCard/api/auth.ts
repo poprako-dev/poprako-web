@@ -37,8 +37,8 @@ export async function registerUser(
   const rawArgs = {
     qid: args.qq,
     password: args.password,
-    name: args.name,
-    invitation_code: args.invitationCode,
+    nickname: args.name,
+    code: args.invitationCode,
   };
   const res = await api.post<RawRegisterUserResult, typeof rawArgs>(
     "/auth/register",

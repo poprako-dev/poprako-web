@@ -6,11 +6,8 @@ import type { RawPageInfo } from "@/types/raw/page";
 import { unwrapRawPageInfo } from "@/types/raw/page";
 import {
   unwrapRawListPageUnitsResult,
-  unwrapRawSavePageUnitsResult,
   wrapUnitDiff,
   type RawListPageUnitsResult,
-  type RawSavePageUnitsResult,
-  type SavePageUnitsResult,
 } from "@/types/raw/unit";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 
@@ -24,9 +21,10 @@ export type ListPageUnitsResult = {
 export async function listUnits(
   pageId: string,
 ): Promise<Result<ListPageUnitsResult>> {
-  const res = await api.get<RawListPageUnitsResult>("/units", {
-    page_id: pageId,
-  });
+  const res = await api.get<RawListPageUnitsResult>(
+    `/pages/${pageId}/units`,
+    { offset: 0, limit: 500 },
+  );
   if (!res.success) return res;
 
   const data = unwrapRawListPageUnitsResult(res.data);
@@ -44,30 +42,28 @@ export async function listUnits(
 export async function saveUnits(
   pageId: string,
   diff: UnitDiff,
-): Promise<Result<SavePageUnitsResult>> {
+): Promise<Result<void>> {
   const payload = {
     page_id: pageId,
-    difference: wrapUnitDiff(pageId, diff),
+    diff: wrapUnitDiff(pageId, diff),
   };
 
-  const res = await api.post<RawSavePageUnitsResult, typeof payload>(
-    "/units",
+  const res = await api.post<unknown, typeof payload>(
+    `/pages/${pageId}/units/save`,
     payload,
-    { page_id: pageId },
   );
   if (!res.success) return res;
 
-  return { success: true, data: unwrapRawSavePageUnitsResult(res.data) };
+  return { success: true, data: undefined };
 }
 
 export async function listPages(
   chapterId: string,
 ): Promise<Result<PageInfo[]>> {
-  const res = await api.get<RawPageInfo[]>("/pages", {
-    chapter_id: chapterId,
-    offset: 0,
-    limit: 500,
-  });
+  const res = await api.get<RawPageInfo[]>(
+    `/chapters/${chapterId}/pages`,
+    { offset: 0, limit: 500 },
+  );
   if (!res.success) return res;
 
   const items = Array.isArray(res.data) ? res.data : [];

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Command | What |
 |---------|------|
-| `pnpm dev` | Start Vite dev server (HMR, proxies `/api` → `localhost:8080`) |
+| `pnpm dev` | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
 | `pnpm build` | Type-check (`tsc -b`) then bundle (`vite build`) |
 | `pnpm lint` | Run ESLint |
 | `pnpm storybook` | Start Storybook on port 6006 |
