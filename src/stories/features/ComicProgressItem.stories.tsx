@@ -133,12 +133,15 @@ function createStoryComponent(
   chapterResult: Result<ChapterInfo | null>,
   assignmentResult: Result<AssignmentInfo[]>,
 ) {
+  const storyComic: ComicInfo = {
+    ...comic,
+    pinnedChapter: chapterResult.success ? chapterResult.data : undefined,
+  };
   return () => (
     <div className="w-180 max-w-full">
       <ComicProgressItem
-        comicInfo={comic}
+        comicInfo={storyComic}
         mode="translator"
-        onLoadPinnedChapter={async () => chapterResult}
         onLoadAssignments={async () => assignmentResult}
         onClick={() => console.log("clicked:", comic.title)}
       />

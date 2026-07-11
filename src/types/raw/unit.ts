@@ -1,5 +1,11 @@
 import type { UnitInfo } from "../unit";
-import type { UnitDiff, UnitOp } from "@/features/BaseTranslator/types/type";
+import type {
+  UnitCreateOp,
+  UnitDiff,
+  UnitOp,
+  UnitPayload,
+  UnitSaveOp,
+} from "@/features/BaseTranslator/types/type";
 
 export type RawUnitInfo = {
   id: string;
@@ -65,51 +71,106 @@ export function unwrapRawListPageUnitsResult(
   };
 }
 
-export type RawUnitOp = {
-  oper: "save" | "delete";
-  id?: string;
-  local_id?: string;
+export type RawUnitPayload = {
   before_id?: string;
-  x_coord?: number;
-  y_coord?: number;
-  is_bubble?: boolean;
-  is_proofread?: boolean;
-  translated_text?: string | null;
-  last_translator_id?: string | null;
-  proofread_text?: string | null;
-  last_proofreader_id?: string | null;
+  x_coord: number;
+  y_coord: number;
+  is_bubble: boolean;
+  is_proofread: boolean;
+  translated_text: string | null;
+  last_translator_id: string | null;
+  proofread_text: string | null;
+  last_proofreader_id: string | null;
 };
 
+export type RawUnitCreateOp = RawUnitPayload & {
+  oper: "create";
+  local_id: string;
+};
+
+export type RawUnitSaveOp = RawUnitPayload & {
+  oper: "save";
+  id: string;
+};
+
+export type RawUnitDeleteOp = {
+  oper: "delete";
+  id: string;
+};
+
+export type RawUnitOp = RawUnitCreateOp | RawUnitSaveOp | RawUnitDeleteOp;
+
+function wrapUnitPayload(payload: UnitPayload): RawUnitPayload {
+  return {
+    before_id: payload.beforeId,
+    x_coord: payload.xCoord,
+    y_coord: payload.yCoord,
+    is_bubble: payload.isBubble,
+    is_proofread: payload.isProofread,
+    translated_text: payload.translatedText,
+    last_translator_id: payload.lastTranslatorId,
+    proofread_text: payload.proofreadText,
+    last_proofreader_id: payload.lastProofreaderId,
+  };
+}
+
+function wrapCreateUnitOp(op: UnitCreateOp): RawUnitCreateOp {
+  return { oper: "create", local_id: op.localId, ...wrapUnitPayload(op) };
+}
+
+function wrapSaveUnitOp(op: UnitSaveOp): RawUnitSaveOp {
+  return { oper: "save", id: op.id, ...wrapUnitPayload(op) };
+}
+
 export function wrapUnitOp(op: UnitOp): RawUnitOp {
-  if (!("xCoord" in op) && !("localId" in op) && !("beforeId" in op)) {
-    return { oper: "delete", id: op.id };
+  switch (op.oper) {
+    case "create":
+      return wrapCreateUnitOp(op);
+    case "save":
+      return wrapSaveUnitOp(op);
+    case "delete":
+      return { oper: "delete", id: op.id };
   }
-
-  const raw: RawUnitOp = { oper: "save" };
-
-  if (op.id !== undefined) raw.id = op.id;
-  if (op.localId !== undefined) raw.local_id = op.localId;
-  if (op.beforeId !== undefined) raw.before_id = op.beforeId;
-  if (op.xCoord !== undefined) raw.x_coord = op.xCoord;
-  if (op.yCoord !== undefined) raw.y_coord = op.yCoord;
-  if (op.isBubble !== undefined) raw.is_bubble = op.isBubble;
-  if (op.isProofread !== undefined) raw.is_proofread = op.isProofread;
-  if (op.translatedText !== undefined) raw.translated_text = op.translatedText;
-  if (op.lastTranslatorId !== undefined) {
-    raw.last_translator_id = op.lastTranslatorId;
-  }
-  if (op.proofreadText !== undefined) raw.proofread_text = op.proofreadText;
-  if (op.lastProofreaderId !== undefined) {
-    raw.last_proofreader_id = op.lastProofreaderId;
-  }
-
-  return raw;
 }
 
 export type RawUnitDiff = {
   page_id: string;
   opers: RawUnitOp[];
 };
+
+export type RawSavePageUnitsResult = {
+  local_id_mappers: Array<{
+    local_id: string;
+    unit_id: string;
+  }>;
+  total_unit_count: number;
+  translated_unit_count: number;
+  proofread_unit_count: number;
+};
+
+export type SavePageUnitsResult = {
+  localIdMappers: Array<{
+    localId: string;
+    unitId: string;
+  }>;
+  totalUnitCount: number;
+  translatedUnitCount: number;
+  proofreadUnitCount: number;
+};
+
+export function unwrapRawSavePageUnitsResult(
+  raw: RawSavePageUnitsResult,
+): SavePageUnitsResult {
+  return {
+    localIdMappers: raw.local_id_mappers.map((mapper) => ({
+      localId: mapper.local_id,
+      unitId: mapper.unit_id,
+    })),
+    totalUnitCount: raw.total_unit_count,
+    translatedUnitCount: raw.translated_unit_count,
+    proofreadUnitCount: raw.proofread_unit_count,
+  };
+}
 
 export function wrapUnitDiff(pageId: string, diff: UnitDiff): RawUnitDiff {
   return {

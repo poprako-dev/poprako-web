@@ -8,7 +8,6 @@ import WorksetCreatorModal from "./WorksetCreatorModal";
 import ComicDetailModal from "../../features/ComicDetailModal/components/business/ComicDetailModal";
 import { listComics, createComic, deleteComic, getComic, updateComic } from "../../api/comic";
 import {
-  getPinnedChapter,
   listChapters,
   createChapter,
   deleteChapter,
@@ -85,35 +84,17 @@ export default function ComicPlayground() {
       if (!activeWorksetId) return [];
       const result = await listComics({
         worksetId: activeWorksetId,
+        withs: ["pinned_chapter"],
         offset: 0,
         limit: 200,
       });
       if (!result.success) return result.error;
 
-      const comicsWithChapter = await Promise.all(
-        result.data.map(async (comic) => {
-          const chapterResult = await listChapters({
-            comicId: comic.id,
-            offset: 0,
-            limit: 1,
-          });
-
-          if (!chapterResult.success) {
-            throw new Error(chapterResult.error);
-          }
-
-          return {
-            comic,
-            chapter: chapterResult.data[0] ?? null,
-          };
-        }),
-      );
-
-      const filtered = comicsWithChapter
-        .filter(({ comic, chapter }) =>
-          matchComicClientFilters(comic, chapter, comicFilters),
+      const filtered = result.data
+        .filter((comic) =>
+          matchComicClientFilters(comic, comic.pinnedChapter ?? null, comicFilters),
         )
-        .map(({ comic }) => comic);
+        .map((comic) => comic);
 
       return filtered.slice(offset, offset + limit);
     },
@@ -121,14 +102,6 @@ export default function ComicPlayground() {
     [activeWorksetId, comicFilters, comicListRefreshKey],
   );
 
-  const handleLoadLatestChapter = useCallback(
-    async (comicInfo: ComicInfo): Promise<Result<ChapterInfo | null>> => {
-      const result = await getPinnedChapter(comicInfo.id);
-      if (!result.success) return { success: true, data: null };
-      return { success: true, data: result.data };
-    },
-    [],
-  );
   const {
     selectedComic,
     selectedComicPinnedChapter,
@@ -141,7 +114,6 @@ export default function ComicPlayground() {
     logPrefix: "ComicPlayground",
     showToast,
     restoreComic: getComic,
-    loadPinnedChapter: handleLoadLatestChapter,
   });
 
   const handleLoadDetailChapters = useCallback(
@@ -165,19 +137,11 @@ export default function ComicPlayground() {
 
   const handleLoadAssignmentsForComic = useCallback(
     async (comicInfo: ComicInfo): Promise<Result<AssignmentInfo[]>> => {
-      const pinnedResult = await handleLoadLatestChapter(comicInfo);
-      if (!pinnedResult.success) {
-        return pinnedResult;
-      }
-
-      const chapter = pinnedResult.data;
-      if (!chapter) {
-        return { success: true, data: [] };
-      }
-
-      return handleLoadAssignments(chapter.id);
+      const chapterId = comicInfo.pinnedChapter?.id;
+      if (!chapterId) return { success: true, data: [] };
+      return handleLoadAssignments(chapterId);
     },
-    [handleLoadAssignments, handleLoadLatestChapter],
+    [handleLoadAssignments],
   );
 
   const handleRemoveRole = useCallback(
@@ -456,7 +420,6 @@ export default function ComicPlayground() {
         onDeleteWorkset={handleDeleteWorkset}
         onUpdateWorkset={isAdmin ? handleUpdateWorkset : undefined}
         onLoadComics={handleLoadComics}
-        onLoadLatestChapter={handleLoadLatestChapter}
         onLoadAssignments={handleLoadAssignmentsForComic}
         onComicClick={openComicDetail}
         onCreateComic={() => setShowComicCreatorModal(true)}

@@ -47,6 +47,7 @@ type Props = {
   // 懒加载的图片 URL 获取器，BaseTranslator 只负责在需要时调用它来获取图片 URL
   onLoadPageImage: (pageId: string) => Promise<string>;
   onExit: () => void;
+  currentUserId?: string;
   // 如果当前用户是校对，则允许切换到校对模式
   // 否则只能使用翻译模式
   isCurrUserProofreader: boolean;
@@ -63,6 +64,7 @@ export default function BaseTranslator({
   onSaveUnits,
   onLoadPageImage,
   onExit,
+  currentUserId,
   isCurrUserProofreader,
   startPageIndex,
   startPageId,
@@ -211,9 +213,19 @@ export default function BaseTranslator({
   }
 
   function handleModifyUnit(targetUnitId: string, updates: UnitEdit) {
+    const nextUpdates = { ...updates };
+
+    if (updates.translatedText?.trim()) {
+      nextUpdates.translatorId = currentUserId;
+    }
+
+    if (updates.proofreadText?.trim()) {
+      nextUpdates.proofreaderId = currentUserId;
+    }
+
     commitUnits(
       unitBufRef.current.map((unit) =>
-        unitId(unit) === targetUnitId ? applyUnitUpdates(unit, updates) : unit,
+        unitId(unit) === targetUnitId ? applyUnitUpdates(unit, nextUpdates) : unit,
       ),
       setUnitBuf,
     );

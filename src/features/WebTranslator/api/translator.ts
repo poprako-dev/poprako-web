@@ -6,8 +6,11 @@ import type { RawPageInfo } from "@/types/raw/page";
 import { unwrapRawPageInfo } from "@/types/raw/page";
 import {
   unwrapRawListPageUnitsResult,
+  unwrapRawSavePageUnitsResult,
   wrapUnitDiff,
   type RawListPageUnitsResult,
+  type RawSavePageUnitsResult,
+  type SavePageUnitsResult,
 } from "@/types/raw/unit";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 
@@ -42,19 +45,19 @@ export async function listUnits(
 export async function saveUnits(
   pageId: string,
   diff: UnitDiff,
-): Promise<Result<void>> {
+): Promise<Result<SavePageUnitsResult>> {
   const payload = {
     page_id: pageId,
     diff: wrapUnitDiff(pageId, diff),
   };
 
-  const res = await api.post<unknown, typeof payload>(
+  const res = await api.post<RawSavePageUnitsResult, typeof payload>(
     `/pages/${pageId}/units/save`,
     payload,
   );
   if (!res.success) return res;
 
-  return { success: true, data: undefined };
+  return { success: true, data: unwrapRawSavePageUnitsResult(res.data) };
 }
 
 export async function listPages(

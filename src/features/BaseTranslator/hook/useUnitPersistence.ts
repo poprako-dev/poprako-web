@@ -1,7 +1,13 @@
 import { useCallback, useRef, useState } from "react";
 import { normalizeUnitIndexes, unitId, type UnitInfo } from "@/types/unit";
 import type { ToastType } from "@/components/ui/NotificationToast";
-import type { UnitDiff, UnitOp, UnitSaveOp } from "../types/type";
+import type {
+  UnitCreateOp,
+  UnitDiff,
+  UnitOp,
+  UnitPayload,
+  UnitSaveOp,
+} from "../types/type";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -48,27 +54,43 @@ function hasPersistedMutation(current: UnitInfo, baseline: UnitInfo): boolean {
   return (current.proofreaderId ?? null) !== (baseline.proofreaderId ?? null);
 }
 
-function buildUnitOp(
+function buildUnitPayload(
   unit: UnitInfo,
-  local: boolean,
+  beforeId: string | undefined,
+): UnitPayload {
+  return {
+    beforeId,
+    xCoord: unit.xCoord,
+    yCoord: unit.yCoord,
+    isBubble: unit.isBubble,
+    isProofread: unit.isProofread,
+    translatedText: normalizedText(unit.translatedText),
+    lastTranslatorId: unit.translatorId ?? null,
+    proofreadText: normalizedText(unit.proofreadText),
+    lastProofreaderId: unit.proofreaderId ?? null,
+  };
+}
+
+function buildCreateUnitOp(
+  unit: UnitInfo,
+  beforeId: string | undefined,
+): UnitCreateOp {
+  return {
+    oper: "create",
+    localId: unitId(unit),
+    ...buildUnitPayload(unit, beforeId),
+  };
+}
+
+function buildSaveUnitOp(
+  unit: UnitInfo,
   beforeId: string | undefined,
 ): UnitSaveOp {
-  const op: UnitSaveOp = local ? { localId: unitId(unit) } : { id: unitId(unit) };
-
-  op.beforeId = beforeId;
-  op.xCoord = unit.xCoord;
-  op.yCoord = unit.yCoord;
-  op.isBubble = unit.isBubble;
-  op.isProofread = unit.isProofread;
-
-  const translatedText = normalizedText(unit.translatedText);
-  if (translatedText) op.translatedText = translatedText;
-  if (unit.translatorId) op.lastTranslatorId = unit.translatorId;
-  const proofreadText = normalizedText(unit.proofreadText);
-  if (proofreadText) op.proofreadText = proofreadText;
-  if (unit.proofreaderId) op.lastProofreaderId = unit.proofreaderId;
-
-  return op;
+  return {
+    oper: "save",
+    id: unitId(unit),
+    ...buildUnitPayload(unit, beforeId),
+  };
 }
 
 function nextExistingId(
@@ -115,7 +137,7 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
       continue;
     }
 
-    ops.push({ id: unitId(unit) });
+    ops.push({ oper: "delete", id: unitId(unit) });
   }
 
   const orderChanged = existingOrderChanged(current, baseline);
@@ -125,7 +147,10 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
       const unit = current[index];
       if (!baselineById.has(unitId(unit))) continue;
 
-      ops.push(buildUnitOp(unit, false, nextExistingId(current, index, baselineById)));
+      ops.push(buildSaveUnitOp(
+        unit,
+        nextExistingId(current, index, baselineById),
+      ));
     }
   } else {
     for (let index = 0; index < current.length; index++) {
@@ -134,7 +159,10 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
       if (!baselineUnit) continue;
       if (!hasPersistedMutation(unit, baselineUnit)) continue;
 
-      ops.push(buildUnitOp(unit, false, nextExistingId(current, index, baselineById)));
+      ops.push(buildSaveUnitOp(
+        unit,
+        nextExistingId(current, index, baselineById),
+      ));
     }
   }
 
@@ -142,7 +170,10 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
     const unit = current[index];
     if (baselineById.has(unitId(unit))) continue;
 
-    ops.push(buildUnitOp(unit, true, nextExistingId(current, index, baselineById)));
+    ops.push(buildCreateUnitOp(
+      unit,
+      nextExistingId(current, index, baselineById),
+    ));
   }
 
   return { ops };

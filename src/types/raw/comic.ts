@@ -7,6 +7,7 @@ import type {
 import { toWorksetInfo } from "../workset";
 import type { RawUserInfo } from "./user";
 import type { RawWorksetInfo } from "./workset";
+import type { RawChapterInfo } from "./chapter";
 import { ensureHttpsUrl } from "@/utils/url";
 
 export type RawComicInfo = {
@@ -25,6 +26,8 @@ export type RawComicInfo = {
 
   creator_id: string;
   creator?: RawUserInfo;
+
+  pinned_chapter?: RawChapterInfo;
 
   last_active_at: number;
   created_at: number;

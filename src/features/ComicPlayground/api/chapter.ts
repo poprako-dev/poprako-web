@@ -80,22 +80,6 @@ export async function listChapters(
   return { success: true, data: items.map((raw) => toChapterInfo(raw)!) };
 }
 
-export async function getPinnedChapter(
-  comicId: string,
-): Promise<Result<ChapterInfo>> {
-  const res = await api.get<RawChapterInfo>(
-    `/comics/${comicId}/chapters/pinned`,
-  );
-  if (!res.success) return res;
-
-  const chapter = toChapterInfo(res.data);
-  if (!chapter) {
-    return { success: false, error: "未找到置顶章节" };
-  }
-
-  return { success: true, data: chapter };
-}
-
 export async function createChapter(
   args: CreateChapterArgs,
 ): Promise<Result<string>> {

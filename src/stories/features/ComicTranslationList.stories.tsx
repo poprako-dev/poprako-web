@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import ComicTranslationList from "../../features/ComcList/components/business/ComicTranslationList";
 import type { ComicInfo } from "@/types/comic";
-import type { ChapterInfo } from "@/types/chapter";
 
 const meta: Meta<typeof ComicTranslationList> = {
   title: "features/ComicTranslationList",
@@ -34,25 +33,6 @@ function makeMockComic(idx: number): ComicInfo {
   };
 }
 
-function makeMockChapter(comicIdx: number): ChapterInfo {
-  return {
-    id: `chapter-${comicIdx}`,
-    comicId: `comic-${comicIdx}`,
-    index: comicIdx + 1,
-    subtitle: `第${comicIdx + 1}话`,
-    isPinned: false,
-    pageCount: 18 + comicIdx,
-    totalUnitCount: 120 + comicIdx * 10,
-    translatedUnitCount: 60 + comicIdx * 5,
-    proofreadUnitCount: 30 + comicIdx * 2,
-    uploadedAt: now - 1000 * 60 * 60 * 24 * 3,
-    translatingAt: now - 1000 * 60 * 60 * 12,
-    creatorId: "user-0",
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
 const fullComics = Array.from({ length: 20 }, (_, index) => makeMockComic(index));
 
 function makePagedLoader(allComics: ComicInfo[], delay = 800) {
@@ -68,13 +48,6 @@ function makePagedLoader(allComics: ComicInfo[], delay = 800) {
 export const TranslatorMode: Story = {
   args: {
     onLoadComics: makePagedLoader(fullComics),
-    onLoadLatestChapter: async (comic: ComicInfo) => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      return {
-        success: true as const,
-        data: makeMockChapter(Number(comic.id.replace("comic-", ""))),
-      };
-    },
   },
 };
 
@@ -84,7 +57,6 @@ export const EmptyState: Story = {
       await new Promise((resolve) => setTimeout(resolve, 600));
       return [];
     },
-    onLoadLatestChapter: async () => ({ success: true as const, data: null }),
   },
 };
 
@@ -94,7 +66,6 @@ export const ErrorState: Story = {
       await new Promise((resolve) => setTimeout(resolve, 600));
       return "服务器错误，请稍后重试";
     },
-    onLoadLatestChapter: async () => ({ success: true as const, data: null }),
   },
 };
 
@@ -102,12 +73,5 @@ export const SmallDataSet: Story = {
   name: "小数据集（3条）",
   args: {
     onLoadComics: makePagedLoader(fullComics.slice(0, 3), 400),
-    onLoadLatestChapter: async (comic: ComicInfo) => {
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      return {
-        success: true as const,
-        data: makeMockChapter(Number(comic.id.replace("comic-", ""))),
-      };
-    },
   },
 };

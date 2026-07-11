@@ -2,7 +2,6 @@ import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import ComicList from "@/features/ComcList/components/business/ComicList";
 import type { ComicInfo } from "@/types/comic";
-import type { ChapterInfo } from "@/types/chapter";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { WorksetInfo } from "@/types/workset";
 import type { Result } from "@/types/utils/result";
@@ -28,25 +27,6 @@ function makeMockComic(idx: number): ComicInfo {
     coverUrl: "",
     isCoverUploaded: false,
     lastActiveAt: now - 1000 * 60 * 60 * idx,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
-function makeMockChapter(comicIdx: number): ChapterInfo {
-  return {
-    id: `chapter-${comicIdx}`,
-    comicId: `comic-${comicIdx}`,
-    index: comicIdx + 1,
-    subtitle: `第${comicIdx + 1}话`,
-    isPinned: false,
-    pageCount: 18 + comicIdx,
-    totalUnitCount: 120 + comicIdx * 10,
-    translatedUnitCount: 60 + comicIdx * 5,
-    proofreadUnitCount: 30 + comicIdx * 2,
-    uploadedAt: now - 1000 * 60 * 60 * 24 * 3,
-    translatingAt: now - 1000 * 60 * 60 * 12,
-    creatorId: "user-0",
     createdAt: now,
     updatedAt: now,
   };
@@ -244,13 +224,6 @@ function InteractiveComicList() {
         onCreateWorkset={handleCreateWorkset}
         onDeleteWorkset={handleDeleteWorkset}
         onLoadComics={pagedLoaderWithFilters}
-        onLoadLatestChapter={async (
-          comic,
-        ): Promise<Result<ChapterInfo | null>> => {
-          await new Promise((r) => setTimeout(r, 300));
-          const idx = Number(comic.id.replace("comic-", ""));
-          return { success: true, data: makeMockChapter(idx) };
-        }}
         onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => {
           await new Promise((r) => setTimeout(r, 200));
           return { success: true, data: mockAssignments };
@@ -303,13 +276,6 @@ function ReviewerComicList() {
         onCreateWorkset={() => console.log("create workset")}
         onDeleteWorkset={(id) => console.log("delete:", id)}
         onLoadComics={makePagedLoader(FULL_COMICS)}
-        onLoadLatestChapter={async (
-          comic,
-        ): Promise<Result<ChapterInfo | null>> => {
-          await new Promise((r) => setTimeout(r, 300));
-          const idx = Number(comic.id.replace("comic-", ""));
-          return { success: true, data: makeMockChapter(idx) };
-        }}
         onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => {
           await new Promise((r) => setTimeout(r, 200));
           return { success: true, data: mockAssignments };
@@ -362,9 +328,6 @@ export const EmptyState: Story = {
           onCreateWorkset={() => {}}
           onDeleteWorkset={() => {}}
           onLoadComics={async () => []}
-          onLoadLatestChapter={async (): Promise<
-            Result<ChapterInfo | null>
-          > => ({ success: true, data: null })}
           onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => ({
             success: true as const,
             data: [],
@@ -412,13 +375,6 @@ export const SingleWorkset: Story = {
           onCreateWorkset={() => console.log("create workset")}
           onDeleteWorkset={() => {}}
           onLoadComics={makePagedLoader(FULL_COMICS.slice(0, 5), 400)}
-          onLoadLatestChapter={async (
-            comic,
-          ): Promise<Result<ChapterInfo | null>> => {
-            await new Promise((r) => setTimeout(r, 200));
-            const idx = Number(comic.id.replace("comic-", ""));
-            return { success: true, data: makeMockChapter(idx) };
-          }}
           onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => ({
             success: true as const,
             data: [],

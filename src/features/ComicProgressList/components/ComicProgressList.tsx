@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
-import type { ComicInfo, ChapterInfo } from "@/types";
+import type { ComicInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
@@ -9,9 +9,6 @@ import ComicProgressItem from "./ComicProgressItem";
 
 type Props = {
   onLoadComics: (offset: number, limit: number) => Promise<ComicInfo[] | string>;
-  onLoadPinnedChapter: (
-    comicInfo: ComicInfo,
-  ) => Promise<Result<ChapterInfo | null>>;
   onLoadAssignments: (
     comicInfo: ComicInfo,
   ) => Promise<Result<AssignmentInfo[]>>;
@@ -20,7 +17,6 @@ type Props = {
 
 export default function ComicProgressList({
   onLoadComics,
-  onLoadPinnedChapter,
   onLoadAssignments,
   onComicClick,
 }: Props) {
@@ -122,7 +118,6 @@ export default function ComicProgressList({
             key={comic.id}
             comicInfo={comic}
             mode="reviewer"
-            onLoadPinnedChapter={onLoadPinnedChapter}
             onLoadAssignments={onLoadAssignments}
             onClick={() => onComicClick(comic)}
           />

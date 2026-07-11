@@ -61,6 +61,7 @@ function mergePageCounters(
 export default function WebTranslator({ chapterId, startPageId, onExit, startMode }: Props) {
   const [state, setState] = useState<LoadingState>({ status: "loading" });
   const { showToast } = useToastStore();
+  const currentUserId = useAppStore((state) => state.loginState?.userInfo?.id);
 
   useEffect(() => {
     let cancelled = false;
@@ -180,6 +181,26 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
         console.error("[WebTranslator] 保存单页单位失败", { pageId, diff, error: result.error });
         throw new Error(result.error);
       }
+
+      setState((prev) => {
+        if (prev.status !== "ready") return prev;
+
+        const nextPages = mergePageCounters(prev.project.pages, pageId, {
+          totalUnitCount: result.data.totalUnitCount,
+          translatedUnitCount: result.data.translatedUnitCount,
+          proofreadUnitCount: result.data.proofreadUnitCount,
+        });
+        const counters = aggregateProjectCounters(nextPages);
+
+        return {
+          ...prev,
+          project: {
+            ...prev.project,
+            pages: nextPages,
+            ...counters,
+          },
+        };
+      });
     },
     [],
   );
@@ -241,6 +262,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       onSaveUnits={handleSaveUnits}
       onLoadPageImage={handleLoadPageImage}
       onExit={onExit}
+      currentUserId={currentUserId}
       isCurrUserProofreader={state.isCurrUserProofreader}
       startPageId={startPageId}
       startMode={startMode}

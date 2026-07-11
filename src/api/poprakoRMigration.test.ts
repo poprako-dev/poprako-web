@@ -203,7 +203,7 @@ describe("poprako-r API migration", () => {
     });
   });
 
-  test("saves units with poprako-r ordered oper schema and ignores save body", async () => {
+  test("saves units with the poprako-r create-save-delete schema", async () => {
     const fetchMock = installFetch(okJson({
       local_id_mappers: [{ local_id: "local_1", unit_id: "unit_99" }],
       total_unit_count: 2,
@@ -213,6 +213,7 @@ describe("poprako-r API migration", () => {
     const diff: UnitDiff = {
       ops: [
         {
+          oper: "create",
           localId: "local_1",
           beforeId: "unit_1",
           xCoord: 0.1,
@@ -220,17 +221,24 @@ describe("poprako-r API migration", () => {
           isBubble: true,
           isProofread: false,
           translatedText: "hello",
+          lastTranslatorId: "user_translator",
+          proofreadText: null,
+          lastProofreaderId: null,
         },
         {
+          oper: "save",
           id: "unit_1",
           beforeId: undefined,
           xCoord: 0.3,
           yCoord: 0.4,
           isBubble: false,
           isProofread: true,
+          translatedText: null,
+          lastTranslatorId: null,
           proofreadText: "done",
+          lastProofreaderId: "user_proofreader",
         },
-        { id: "unit_deleted" },
+        { oper: "delete", id: "unit_deleted" },
       ],
     };
 
@@ -238,7 +246,12 @@ describe("poprako-r API migration", () => {
 
     expect(result).toEqual({
       success: true,
-      data: undefined,
+      data: {
+        localIdMappers: [{ localId: "local_1", unitId: "unit_99" }],
+        totalUnitCount: 2,
+        translatedUnitCount: 1,
+        proofreadUnitCount: 0,
+      },
     });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/units/save");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
@@ -247,7 +260,7 @@ describe("poprako-r API migration", () => {
         page_id: "page_1",
         opers: [
           {
-            oper: "save",
+            oper: "create",
             local_id: "local_1",
             before_id: "unit_1",
             x_coord: 0.1,
@@ -255,6 +268,9 @@ describe("poprako-r API migration", () => {
             is_bubble: true,
             is_proofread: false,
             translated_text: "hello",
+            last_translator_id: "user_translator",
+            proofread_text: null,
+            last_proofreader_id: null,
           },
           {
             oper: "save",
@@ -263,7 +279,10 @@ describe("poprako-r API migration", () => {
             y_coord: 0.4,
             is_bubble: false,
             is_proofread: true,
+            translated_text: null,
+            last_translator_id: null,
             proofread_text: "done",
+            last_proofreader_id: "user_proofreader",
           },
           { oper: "delete", id: "unit_deleted" },
         ],

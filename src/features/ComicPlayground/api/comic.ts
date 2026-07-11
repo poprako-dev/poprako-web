@@ -9,14 +9,16 @@ import type {
 } from "../types/comic";
 import { api } from "@/api/util";
 import { toComicInfo } from "@/types";
-import type { Result } from "@/types/utils/result";
 import type { ComicInfo } from "@/types";
+import { toChapterInfo } from "@/types/chapter";
+import type { Result } from "@/types/utils/result";
 
 export async function listComics(
   args: ListComicArgs,
 ): Promise<Result<ComicInfo[]>> {
   const rawArgs: Omit<RawListComicArgs, "workset_id"> = {
     incl: args.includes,
+    with: args.withs,
     fuzzy_title: args.fuzzyTitle,
     stages: undefined,
     offset: args.offset,
@@ -30,7 +32,15 @@ export async function listComics(
   if (!res.success) return res;
 
   const items = Array.isArray(res.data) ? res.data : [];
-  return { success: true, data: items.map((raw) => toComicInfo(raw)!) };
+  return {
+    success: true,
+    data: items.map((raw) => ({
+      ...toComicInfo(raw)!,
+      pinnedChapter: raw.pinned_chapter
+        ? toChapterInfo(raw.pinned_chapter)
+        : undefined,
+    })),
+  };
 }
 
 export async function getComic(id: string): Promise<Result<ComicInfo>> {
@@ -42,7 +52,15 @@ export async function getComic(id: string): Promise<Result<ComicInfo>> {
     return { success: false, error: "漫画不存在" };
   }
 
-  return { success: true, data: comic };
+  return {
+    success: true,
+    data: {
+      ...comic,
+      pinnedChapter: res.data.pinned_chapter
+        ? toChapterInfo(res.data.pinned_chapter)
+        : undefined,
+    },
+  };
 }
 
 export async function createComic(

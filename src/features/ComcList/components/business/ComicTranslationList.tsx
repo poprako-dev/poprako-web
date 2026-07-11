@@ -1,8 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
-import type { ChapterInfo, ComicInfo } from "@/types";
-import type { Result } from "@/types/utils/result";
+import type { ComicInfo } from "@/types";
 import ComicTranslationCard from "@/features/ComicCard/components/business/ComicTranslationCard";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 
@@ -11,15 +10,11 @@ type Props = {
     offset: number,
     limit: number,
   ) => Promise<ComicInfo[] | string>;
-  onLoadLatestChapter: (
-    comicInfo: ComicInfo,
-  ) => Promise<Result<ChapterInfo | null>>;
   onComicClick?: (comicInfo: ComicInfo) => void;
 };
 
 export default function ComicTranslationList({
   onLoadComics,
-  onLoadLatestChapter,
   onComicClick,
 }: Props) {
   const pageSize = 12;
@@ -122,7 +117,6 @@ export default function ComicTranslationList({
               key={comic.id}
               comicInfo={comic}
               onClick={() => onComicClick?.(comic)}
-              onLoadPinnedChapter={onLoadLatestChapter}
             />
           ))}
         </div>

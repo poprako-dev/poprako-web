@@ -1,5 +1,4 @@
 import type React from "react";
-import { useEffect, useState } from "react";
 import clsx from "clsx";
 import {
   FileText,
@@ -9,16 +8,11 @@ import {
   Tag,
   Hash,
 } from "lucide-react";
-import type { ChapterInfo, ComicInfo } from "@/types";
+import type { ComicInfo } from "@/types";
 import MultiProgressBar from "@/components/ui/MultiProgressBar";
-import { useToastStore } from "@/components/ui/NotificationToast/hooks";
-import type { Result } from "@/types/utils/result";
 
 type Props = {
   comicInfo: ComicInfo;
-  onLoadPinnedChapter: (
-    comicInfo: ComicInfo,
-  ) => Promise<Result<ChapterInfo | null>>;
   onClick: () => void;
 };
 
@@ -56,33 +50,9 @@ function DataTag({ icon, value }: { icon: React.ReactNode; value: number }) {
 
 export default function ComicTranslationCard({
   comicInfo,
-  onLoadPinnedChapter,
   onClick,
 }: Props) {
-  const { showToast } = useToastStore();
-  const [chapter, setChapter] = useState<ChapterInfo | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    onLoadPinnedChapter(comicInfo)
-      .then((res) => {
-        if (!active) return;
-        if (!res.success) {
-          console.error("[ComicTranslationCard] 加载最新章节失败:", res);
-          showToast("加载章节失败", "error");
-          return;
-        }
-        setChapter(res.data);
-      })
-      .catch((err) => {
-        if (!active) return;
-        console.error("[ComicTranslationCard] 加载最新章节异常:", err);
-        showToast("加载章节失败", "error");
-      });
-    return () => {
-      active = false;
-    };
-  }, [comicInfo.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const chapter = comicInfo.pinnedChapter ?? null;
 
   const total = chapter?.totalUnitCount ?? 0;
   const translated = chapter?.translatedUnitCount ?? 0;

@@ -10,7 +10,7 @@ import AnnouncementTable from "./AnnouncementTable";
 import CommentChatBox from "./CommentChatBox";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
-import { fetchMyComics, fetchLatestChapter } from "../../api/workspace";
+import { fetchMyComics } from "../../api/workspace";
 import { deleteComic, getComic, updateComic } from "@/features/ComicPlayground/api/comic";
 import {
   listChapters,
@@ -85,7 +85,6 @@ export default function Workspace() {
     logPrefix: "Workspace",
     showToast,
     restoreComic: getComic,
-    loadPinnedChapter: fetchLatestChapter,
   });
 
   const userName = loginState?.userInfo.name ?? "用户";
@@ -463,7 +462,6 @@ export default function Workspace() {
             <ComicTranslationList
               key={comicListRefreshKey}
               onLoadComics={fetchMyComics}
-              onLoadLatestChapter={fetchLatestChapter}
               onComicClick={openComicDetail}
             />
           </div>
@@ -575,7 +573,6 @@ export default function Workspace() {
                 <ComicTranslationList
                   key={comicListRefreshKey}
                   onLoadComics={fetchMyComics}
-                  onLoadLatestChapter={fetchLatestChapter}
                   onComicClick={openComicDetail}
                 />
               </div>

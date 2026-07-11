@@ -1,7 +1,7 @@
 import { useState } from "react";
 import clsx from "clsx";
 import { PencilLine, Eye } from "lucide-react";
-import type { ComicInfo, ChapterInfo } from "@/types";
+import type { ComicInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 import type { WorksetInfo } from "@/types/workset";
@@ -28,9 +28,6 @@ type Props = {
     offset: number,
     limit: number,
   ) => Promise<ComicInfo[] | string>;
-  onLoadLatestChapter: (
-    comicInfo: ComicInfo,
-  ) => Promise<Result<ChapterInfo | null>>;
   onLoadAssignments?: (
     comicInfo: ComicInfo,
   ) => Promise<Result<AssignmentInfo[]>>;
@@ -60,7 +57,6 @@ export default function ComicList({
   onCreateWorkset,
   onDeleteWorkset,
   onLoadComics,
-  onLoadLatestChapter,
   onLoadAssignments,
   onComicClick,
   onCreateComic,
@@ -164,7 +160,6 @@ export default function ComicList({
           {activeMode === "translator" && (
             <ComicTranslationList
               onLoadComics={onLoadComics}
-              onLoadLatestChapter={onLoadLatestChapter}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
                 onComicClick?.(comicInfo);
@@ -174,7 +169,6 @@ export default function ComicList({
           {activeMode === "reviewer" && onLoadAssignments && (
             <ComicProgressList
               onLoadComics={onLoadComics}
-              onLoadPinnedChapter={onLoadLatestChapter}
               onLoadAssignments={onLoadAssignments}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);

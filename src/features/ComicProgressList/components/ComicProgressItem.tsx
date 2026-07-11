@@ -20,9 +20,6 @@ import WorkflowStepDropdown from "./WorkflowStepDropdown";
 type Props = {
   comicInfo: ComicInfo;
   mode: ViewMode;
-  onLoadPinnedChapter: (
-    comicInfo: ComicInfo,
-  ) => Promise<Result<ChapterInfo | null>>;
   onLoadAssignments: (
     comicInfo: ComicInfo,
   ) => Promise<Result<AssignmentInfo[]>>;
@@ -147,39 +144,16 @@ function formatDate(ts: number | undefined): string {
 export default function ComicProgressItem({
   comicInfo,
   // mode is reserved for future differentiated rendering
-  onLoadPinnedChapter,
   onLoadAssignments,
   onClick,
 }: Props) {
   const { showToast } = useToastStore();
-  const [chapter, setChapter] = useState<ChapterInfo | null>(null);
+  const chapter: ChapterInfo | null = comicInfo.pinnedChapter ?? null;
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
   const [hoveredStep, setHoveredStep] = useState<string | null>(null);
   const [showCover, setShowCover] = useState(false);
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
   const [showMobileProgress, setShowMobileProgress] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    onLoadPinnedChapter(comicInfo)
-      .then((res) => {
-        if (!active) return;
-        if (!res.success) {
-          console.error("[ComicProgressItem] 加载顶置章节失败:", res);
-          showToast("加载章节失败", "error");
-          return;
-        }
-        setChapter(res.data);
-      })
-      .catch((err) => {
-        if (!active) return;
-        console.error("[ComicProgressItem] 加载顶置章节异常:", err);
-        showToast("加载章节失败", "error");
-      });
-    return () => {
-      active = false;
-    };
-  }, [comicInfo, onLoadPinnedChapter, showToast]);
 
   useEffect(() => {
     let active = true;

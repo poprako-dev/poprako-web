@@ -11,7 +11,6 @@ type Args = {
   logPrefix: string;
   showToast: ShowToast;
   restoreComic: (comicId: string) => Promise<Result<ComicInfo>>;
-  loadPinnedChapter: (comicInfo: ComicInfo) => Promise<Result<ChapterInfo | null>>;
 };
 
 export function useComicDetailHost({
@@ -19,17 +18,17 @@ export function useComicDetailHost({
   logPrefix,
   showToast,
   restoreComic,
-  loadPinnedChapter,
 }: Args) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
-  const [selectedComicPinnedChapter, setSelectedComicPinnedChapter] =
-    useState<ChapterInfo | null>(null);
   const userClosedRef = useRef(false);
 
   const urlComicId = searchParams.get("comicId");
   const urlChapterId = searchParams.get("chapterId");
+
+  const selectedComicPinnedChapter: ChapterInfo | null =
+    selectedComic?.pinnedChapter ?? null;
 
   const setComicDetailSearchParams = useCallback(
     (comicId: string | null, chapterId: string | null) => {
@@ -55,29 +54,18 @@ export function useComicDetailHost({
   const openComicDetail = useCallback(
     (comicInfo: ComicInfo, desiredChapterId?: string | null) => {
       setSelectedComic(comicInfo);
-      setSelectedComicPinnedChapter(null);
-      setComicDetailSearchParams(comicInfo.id, desiredChapterId ?? null);
-
-      loadPinnedChapter(comicInfo).then((result) => {
-        if (!result.success) {
-          showToast(result.error, "error");
-          return;
-        }
-
-        setSelectedComicPinnedChapter(result.data);
-        if (!desiredChapterId) {
-          setComicDetailSearchParams(comicInfo.id, result.data?.id ?? null);
-        }
-      });
+      setComicDetailSearchParams(
+        comicInfo.id,
+        desiredChapterId ?? comicInfo.pinnedChapter?.id ?? null,
+      );
     },
-    [loadPinnedChapter, setComicDetailSearchParams, showToast],
+    [setComicDetailSearchParams],
   );
 
   const clearComicDetail = useCallback(
     (markUserClosed = false) => {
       userClosedRef.current = markUserClosed;
       setSelectedComic(null);
-      setSelectedComicPinnedChapter(null);
       setComicDetailSearchParams(null, null);
     },
     [setComicDetailSearchParams],

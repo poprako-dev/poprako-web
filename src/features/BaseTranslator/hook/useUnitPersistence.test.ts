@@ -54,12 +54,17 @@ describe("unit save persistence", () => {
     expect(calls).toEqual(["save", "reload"]);
     expect(onSaveUnits.mock.calls[0]?.[1]).toEqual({
       ops: [{
+        oper: "create",
         localId: "local_1",
         beforeId: undefined,
         xCoord: 0.1,
         yCoord: 0.2,
         isBubble: true,
         isProofread: false,
+        translatedText: null,
+        lastTranslatorId: null,
+        proofreadText: null,
+        lastProofreaderId: null,
       }],
     });
   });
@@ -96,30 +101,45 @@ describe("unit save persistence", () => {
     expect(current.map((unit) => unit.index)).toEqual([0, 1, 2]);
     expect(buildUnitDiff(current, baseline)).toEqual({
       ops: [
-        { id: "unit_c" },
+        { oper: "delete", id: "unit_c" },
         {
+          oper: "save",
           id: "unit_a",
           beforeId: undefined,
           xCoord: 0.1,
           yCoord: 0.2,
           isBubble: true,
           isProofread: false,
+          translatedText: null,
+          lastTranslatorId: null,
+          proofreadText: null,
+          lastProofreaderId: null,
         },
         {
+          oper: "save",
           id: "unit_b",
           beforeId: "unit_a",
           xCoord: 0.5,
           yCoord: 0.2,
           isBubble: true,
           isProofread: false,
+          translatedText: null,
+          lastTranslatorId: null,
+          proofreadText: null,
+          lastProofreaderId: null,
         },
         {
+          oper: "create",
           localId: "local_new",
           beforeId: "unit_a",
           xCoord: 0.1,
           yCoord: 0.2,
           isBubble: true,
           isProofread: false,
+          translatedText: null,
+          lastTranslatorId: null,
+          proofreadText: null,
+          lastProofreaderId: null,
         },
       ],
     });

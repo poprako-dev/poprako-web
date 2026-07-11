@@ -61,12 +61,7 @@ export default function CommentChatBox({ comments, loading, onSend }: Props) {
     >
       {/* message list — inner flex-col pushes content to bottom */}
       <div className="flex-1 overflow-y-auto min-h-0">
-        <div
-          className={clsx(
-            "flex flex-col",
-            "px-3 py-3 gap-3",
-          )}
-        >
+        <div className={clsx("flex flex-col", "px-3 py-3 gap-3")}>
           {loading && (
             <div className="flex justify-center py-8">
               <span className="text-sm text-muted-foreground">加载中…</span>
@@ -75,7 +70,7 @@ export default function CommentChatBox({ comments, loading, onSend }: Props) {
           {!loading && comments.length === 0 && (
             <div className="flex justify-center py-8">
               <span className="text-sm text-muted-foreground">
-                还没有留言，来发第一条吧
+                还没有留言，来打第一发吧
               </span>
             </div>
           )}
