@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
 import { SquareArrowRight, Command, CaseSensitive } from "lucide-react";
 import Paginator from "@/components/ui/Paginator";
@@ -34,6 +34,11 @@ import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types
 import type { SpecialCharInsertRequest } from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
 import type { UnitDiff } from "../../types/type";
 import { useUnitPersistence } from "../../hook/useUnitPersistence";
+import {
+  availableTranslatorModes,
+  initialTranslatorMode,
+  nextTranslatorMode,
+} from "../../types/access";
 
 type Props = {
   project: Project;
@@ -48,9 +53,8 @@ type Props = {
   onLoadPageImage: (pageId: string) => Promise<string>;
   onExit: () => void;
   currentUserId?: string;
-  // 如果当前用户是校对，则允许切换到校对模式
-  // 否则只能使用翻译模式
-  isCurrUserProofreader: boolean;
+  canTranslate: boolean;
+  canProofread: boolean;
   // 初始页码索引，默认为 0
   startPageIndex?: number;
   // 初始页 ID，优先级高于 startPageIndex
@@ -65,7 +69,8 @@ export default function BaseTranslator({
   onLoadPageImage,
   onExit,
   currentUserId,
-  isCurrUserProofreader,
+  canTranslate,
+  canProofread,
   startPageIndex,
   startPageId,
   startMode,
@@ -75,15 +80,18 @@ export default function BaseTranslator({
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>(
     undefined,
   );
-  const [mode, setMode] = useState<TranslatorMode>(startMode ?? "translate");
+  const availableModes = useMemo(
+    () => availableTranslatorModes({ canTranslate, canProofread }),
+    [canProofread, canTranslate],
+  );
+  const [mode, setMode] = useState<TranslatorMode>(() =>
+    initialTranslatorMode(availableModes, startMode),
+  );
   const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
     useState<ProofreadPreviewVisibility>("visible");
 
   const displayMode = mode === "readOnly" ? "proofread" : mode;
   const readOnly = mode === "readOnly";
-  const availableModes: TranslatorMode[] = isCurrUserProofreader
-    ? ["translate", "proofread"]
-    : ["translate", "readOnly"];
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
@@ -291,27 +299,14 @@ export default function BaseTranslator({
     canvasRef.current?.centerOn(position.xCoord, position.yCoord);
   }, [focusedUnitId, isRelocationEnabled, unitBuf]);
 
-  function getNextMode(
-    current: TranslatorMode,
-    isProofreader: boolean,
-  ): TranslatorMode {
-    if (isProofreader) {
-      if (current === "translate") return "proofread";
-      return "translate";
-    }
-    if (current === "translate") return "readOnly";
-    return "translate";
-  }
-
   function handleCycleMode() {
-    const next = getNextMode(mode, isCurrUserProofreader);
-    setMode(next);
+    setMode((current) => nextTranslatorMode(current, availableModes));
   }
 
   useShortcutActions(
     {
       toggleMode: () => {
-        setMode(getNextMode(mode, isCurrUserProofreader));
+        setMode((current) => nextTranslatorMode(current, availableModes));
       },
       toggleRelocation: () => {
         setIsRelocationEnabled((v) => !v);

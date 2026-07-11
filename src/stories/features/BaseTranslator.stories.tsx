@@ -349,7 +349,8 @@ async function mockSaveUnits(pageId: string, diff: UnitDiff) {
 export const WithProofread: Story = {
   args: {
     project: mockProject,
-    isCurrUserProofreader: true,
+    canTranslate: true,
+    canProofread: true,
     onLoadUnits: async (_pageId: string) => mockUnits,
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,
@@ -362,7 +363,8 @@ export const WithProofread: Story = {
 export const TranslatorOnly: Story = {
   args: {
     project: mockProject,
-    isCurrUserProofreader: false,
+    canTranslate: true,
+    canProofread: false,
     onLoadUnits: async (_pageId: string) => mockUnits,
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,
@@ -375,7 +377,8 @@ export const TranslatorOnly: Story = {
 export const EmptyUnits: Story = {
   args: {
     project: mockProject,
-    isCurrUserProofreader: true,
+    canTranslate: true,
+    canProofread: true,
     onLoadUnits: async (_pageId: string) => [],
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,

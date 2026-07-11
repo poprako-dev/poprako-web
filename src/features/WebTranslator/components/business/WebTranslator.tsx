@@ -25,7 +25,14 @@ type Props = {
 type LoadingState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; project: Project; isCurrUserProofreader: boolean };
+  | {
+      status: "ready";
+      project: Project;
+      canTranslate: boolean;
+      canProofread: boolean;
+    };
+
+const ASSIGNMENT_PAGE_SIZE = 100;
 
 function aggregateProjectCounters(pages: Page[]) {
   const totalUnitCount = pages.reduce((sum, page) => sum + page.totalUnitCount, 0);
@@ -85,21 +92,28 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
         return;
       }
 
-      // 2. Determine if current user is proofreader
+      // 2. Determine the current user's assignment permissions.
+      // An unavailable assignment lookup must fail closed to read-only.
       const userId = useAppStore.getState().loginState?.userInfo?.id;
-      let isCurrUserProofreader = false;
+      let canTranslate = false;
+      let canProofread = false;
 
       if (userId) {
-        const assignResult = await listAssignmentsByChapter({
-          chapterId,
-          offset: 0,
-          limit: 100,
-        });
-        if (assignResult.success) {
-          const assignments = assignResult.data;
-          isCurrUserProofreader = assignments.some(
-            (a) => a.userId === userId && a.assignedProofreaderAt != null,
-          );
+        for (let offset = 0; ; offset += ASSIGNMENT_PAGE_SIZE) {
+          const assignResult = await listAssignmentsByChapter({
+            chapterId,
+            offset,
+            limit: ASSIGNMENT_PAGE_SIZE,
+          });
+          if (!assignResult.success) break;
+
+          const assignment = assignResult.data.find((item) => item.userId === userId);
+          if (assignment) {
+            canTranslate = assignment.assignedTranslatorAt != null;
+            canProofread = assignment.assignedProofreaderAt != null;
+            break;
+          }
+          if (assignResult.data.length < ASSIGNMENT_PAGE_SIZE) break;
         }
       }
 
@@ -132,7 +146,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       };
 
       if (!cancelled) {
-        setState({ status: "ready", project, isCurrUserProofreader });
+        setState({ status: "ready", project, canTranslate, canProofread });
       }
     }
 
@@ -263,7 +277,8 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       onLoadPageImage={handleLoadPageImage}
       onExit={onExit}
       currentUserId={currentUserId}
-      isCurrUserProofreader={state.isCurrUserProofreader}
+      canTranslate={state.canTranslate}
+      canProofread={state.canProofread}
       startPageId={startPageId}
       startMode={startMode}
     />
