@@ -23,6 +23,7 @@ export type RawComicInfo = {
   chapter_count: number;
 
   cover_url: string | null;
+  cover_thumbnail_url?: string | null;
 
   creator_id: string;
   creator?: RawUserInfo;
@@ -47,6 +48,7 @@ export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
     index: raw.index,
     chapterCount: raw.chapter_count,
     coverUrl: ensureHttpsUrl(raw.cover_url),
+    coverThumbnailUrl: ensureHttpsUrl(raw.cover_thumbnail_url),
     lastActiveAt: raw.last_active_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,

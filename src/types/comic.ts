@@ -19,6 +19,7 @@ export type ComicInfo = {
   description: string;
 
   coverUrl: string;
+  coverThumbnailUrl?: string;
   isCoverUploaded: boolean;
 
   creatorId: string;
@@ -49,6 +50,7 @@ export function toComicInfo(raw?: RawComicInfo) {
     description: raw.description,
 
     coverUrl: ensureHttpsUrl(raw.cover_url),
+    coverThumbnailUrl: ensureHttpsUrl(raw.cover_thumbnail_url),
     isCoverUploaded: !!raw.cover_url,
 
     creatorId: raw.creator_id,

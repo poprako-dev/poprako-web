@@ -40,7 +40,11 @@ function TeamAvatar({
   canUpload: boolean;
   onUploadClick: () => void;
 }) {
-  const resolvedAvatarUrl = localAvatarUrl ?? (team.isAvatarUploaded ? team.avatarUrl : "");
+  const resolvedAvatarUrl =
+    localAvatarUrl ??
+    (team.isAvatarUploaded && team.avatarThumbnailUrl
+      ? team.avatarThumbnailUrl
+      : "");
 
   return (
     <button
@@ -240,8 +244,8 @@ function TeamList({
                       : "bg-gray-100 text-gray-400",
                   )}
                 >
-                  {t.isAvatarUploaded && t.avatarUrl ? (
-                    <img src={t.avatarUrl} alt={t.name} className="w-full h-full object-cover" />
+                  {t.isAvatarUploaded && t.avatarThumbnailUrl ? (
+                    <img src={t.avatarThumbnailUrl} alt={t.name} className="w-full h-full object-cover" />
                   ) : (
                     t.short
                   )}

@@ -33,6 +33,7 @@ export default function SettingsPanel() {
           short,
           desc: team.description,
           avatarUrl: team.avatarUrl,
+          avatarThumbnailUrl: team.avatarThumbnailUrl,
           isAvatarUploaded: team.isAvatarUploaded,
         };
       });

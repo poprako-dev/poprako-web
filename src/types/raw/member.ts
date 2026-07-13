@@ -12,6 +12,7 @@ export type RawMemberInfo = {
     qid: string;
     nickname: string;
     avatar_url: string | null;
+    avatar_thumbnail_url?: string | null;
     avatar_uploaded: boolean;
     is_sadmin: boolean;
     last_active_at: number;
@@ -39,6 +40,7 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
           qq: raw.user.qid,
           name: raw.user.nickname,
           avatarUrl: ensureHttpsUrl(raw.user.avatar_url),
+          avatarThumbnailUrl: ensureHttpsUrl(raw.user.avatar_thumbnail_url),
           isAvatarUploaded: raw.user.avatar_uploaded,
           isSuperAdmin: raw.user.is_sadmin,
           lastActiveAt: raw.user.last_active_at,
@@ -53,6 +55,7 @@ export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
           name: raw.team.name,
           description: raw.team.description,
           avatarUrl: ensureHttpsUrl(raw.team.avatar_url),
+          avatarThumbnailUrl: ensureHttpsUrl(raw.team.avatar_thumbnail_url),
           isAvatarUploaded: raw.team.avatar_uploaded ?? !!raw.team.avatar_url,
           createdAt: raw.team.created_at,
           updatedAt: raw.team.updated_at,

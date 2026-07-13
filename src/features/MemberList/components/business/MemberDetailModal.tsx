@@ -174,9 +174,9 @@ export default function MemberDetailModal({
                 "border border-slate-200",
               )}
             >
-              {user?.isAvatarUploaded && user.avatarUrl ? (
+              {user?.isAvatarUploaded && user.avatarThumbnailUrl ? (
                 <img
-                  src={user.avatarUrl}
+                  src={user.avatarThumbnailUrl}
                   alt={user.name}
                   className="w-full h-full object-cover"
                 />

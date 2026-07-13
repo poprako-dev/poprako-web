@@ -77,9 +77,9 @@ export default function MemberCard({ member, onClick }: Props) {
             "border border-stone-200",
           )}
         >
-          {user?.isAvatarUploaded && user.avatarUrl ? (
+          {user?.isAvatarUploaded && user.avatarThumbnailUrl ? (
             <img
-              src={user.avatarUrl}
+              src={user.avatarThumbnailUrl}
               alt={user.name}
               className={clsx(
                 "w-full h-full object-cover",

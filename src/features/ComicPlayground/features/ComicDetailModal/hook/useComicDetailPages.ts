@@ -162,7 +162,12 @@ export function useComicDetailPages({
           setPages((prev) =>
             prev.map((page) =>
               page.id === pageId
-                ? { ...page, imageUrl: blobUrl, isUploaded: true }
+                ? {
+                    ...page,
+                    imageUrl: blobUrl,
+                    imageThumbnailUrl: blobUrl,
+                    isUploaded: true,
+                  }
                 : page,
             ),
           );

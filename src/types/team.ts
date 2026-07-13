@@ -8,6 +8,7 @@ export type TeamInfo = {
   description: string;
 
   avatarUrl: string;
+  avatarThumbnailUrl?: string;
   isAvatarUploaded: boolean;
 
   createdAt: number;
@@ -22,6 +23,7 @@ export function toTeamInfo(raw?: RawTeamInfo) {
     name: raw.name,
     description: raw.description,
     avatarUrl: ensureHttpsUrl(raw.avatar_url),
+    avatarThumbnailUrl: ensureHttpsUrl(raw.avatar_thumbnail_url),
     isAvatarUploaded: raw.avatar_uploaded,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
@@ -43,6 +45,8 @@ export type ReserveTeamAvatarResult = {
 };
 
 export function teamAvatarUrl(team: TeamInfo) {
-  if (team.isAvatarUploaded && team.avatarUrl) return team.avatarUrl;
+  if (team.isAvatarUploaded && team.avatarThumbnailUrl) {
+    return team.avatarThumbnailUrl;
+  }
   return null;
 }

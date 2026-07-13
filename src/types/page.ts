@@ -7,6 +7,7 @@ export type Page = {
   index: number;
 
   imageUrl: string;
+  imageThumbnailUrl?: string;
   isUploaded: boolean;
 
   creatorId: string;

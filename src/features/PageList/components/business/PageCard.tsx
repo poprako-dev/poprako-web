@@ -102,9 +102,9 @@ export default function PageCard({
       )}
 
       {/* Image */}
-      {page.imageUrl ? (
+      {page.imageThumbnailUrl ? (
         <LazyImage
-          src={page.imageUrl}
+          src={page.imageThumbnailUrl}
           alt={`Page ${page.index}`}
           className="absolute inset-0 w-full h-full object-cover"
         />

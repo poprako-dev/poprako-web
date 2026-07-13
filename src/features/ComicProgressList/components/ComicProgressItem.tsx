@@ -224,7 +224,7 @@ export default function ComicProgressItem({
           onMouseLeave={() => setShowCover(false)}
         >
           #{comicInfo.index + 1}
-          {showCover && comicInfo.coverUrl && (
+          {showCover && comicInfo.coverThumbnailUrl && (
             <div
               className={clsx(
                 "absolute top-full left-1/2 -translate-x-1/2 mt-3.5 z-20",
@@ -233,7 +233,7 @@ export default function ComicProgressItem({
               )}
             >
               <img
-                src={comicInfo.coverUrl}
+                src={comicInfo.coverThumbnailUrl}
                 alt={comicInfo.title}
                 className="w-full h-full object-cover"
               />

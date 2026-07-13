@@ -12,6 +12,7 @@ export type RawTeamInfo = {
   name: string;
   description: string;
   avatar_url: string | null;
+  avatar_thumbnail_url?: string | null;
   avatar_uploaded?: boolean;
   workset_next_index?: number;
   created_at: number;
@@ -24,6 +25,7 @@ export function unwrapRawTeamInfo(raw: RawTeamInfo): TeamInfo {
     name: raw.name,
     description: raw.description,
     avatarUrl: ensureHttpsUrl(raw.avatar_url),
+    avatarThumbnailUrl: ensureHttpsUrl(raw.avatar_thumbnail_url),
     isAvatarUploaded: raw.avatar_uploaded ?? !!raw.avatar_url,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,

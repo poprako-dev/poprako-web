@@ -5,6 +5,7 @@ import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
 import { hasRole } from "@/types/role";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
+import type { PageInfo } from "@/types/page";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type {
   ComicDetailModalProps,
@@ -22,12 +23,13 @@ type Args = {
   comicTitle: string;
   comicAuthor?: string | null;
   comicIndex?: number | null;
-  comicCoverUrl?: string | null;
+  comicCoverThumbnailUrl?: string | null;
   selectedChapterId: string | null;
   selectedChapter?: {
     index: number;
     subtitle?: string;
   };
+  pages: PageInfo[];
   assignments: AssignmentInfo[];
   activeMember: MemberInfo | null;
   canUploadRawPages: boolean;
@@ -110,9 +112,10 @@ export function useComicDetailExport({
   comicTitle,
   comicAuthor,
   comicIndex,
-  comicCoverUrl,
+  comicCoverThumbnailUrl,
   selectedChapterId,
   selectedChapter,
+  pages,
   assignments,
   activeMember,
   canUploadRawPages,
@@ -262,23 +265,32 @@ export function useComicDetailExport({
       const zip = new JSZip();
       const imageFolder = zip.folder("images");
       const totalPages = prkExportResult.data.pages.length;
+      const imageUrlsByPageId = new Map(
+        pages.map((page) => [page.id, page.imageUrl]),
+      );
       let completedPages = 0;
 
       const pagesWithAssets = await Promise.all(
         prkExportResult.data.pages.map(async (page) => {
           assertExportNotAborted();
 
-          if (!page.imageUrl) {
+          const imageUrl = imageUrlsByPageId.get(page.pageId) ?? "";
+
+          if (!imageUrl) {
             completedPages += 1;
             setExportProgressStep(
               "正在下载页面图片",
               `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
               20 + (completedPages / Math.max(totalPages, 1)) * 60,
             );
-            return { ...page, exportedImagePath: null as string | null };
+            return {
+              ...page,
+              sourceImageUrl: imageUrl,
+              exportedImagePath: null as string | null,
+            };
           }
 
-          const imageFile = await fetchImageFileWithRetry(page.imageUrl, 3);
+          const imageFile = await fetchImageFileWithRetry(imageUrl, 3);
           assertExportNotAborted();
 
           if (imageFile && imageFolder) {
@@ -291,7 +303,11 @@ export function useComicDetailExport({
               20 + (completedPages / Math.max(totalPages, 1)) * 60,
             );
 
-            return { ...page, exportedImagePath: `images/${imageFileName}` };
+            return {
+              ...page,
+              sourceImageUrl: imageUrl,
+              exportedImagePath: `images/${imageFileName}`,
+            };
           }
 
           completedPages += 1;
@@ -301,19 +317,19 @@ export function useComicDetailExport({
             20 + (completedPages / Math.max(totalPages, 1)) * 60,
           );
 
-          return { ...page, exportedImagePath: null };
+          return { ...page, sourceImageUrl: imageUrl, exportedImagePath: null };
         }),
       );
 
       const skippedImages = pagesWithAssets.filter(
-        (page) => page.imageUrl && !page.exportedImagePath,
+        (page) => page.sourceImageUrl && !page.exportedImagePath,
       ).length;
 
       const payload = {
         ...prkExportResult.data,
         exportedAt: new Date().toISOString(),
         skippedImageCount: skippedImages,
-        pages: pagesWithAssets,
+        pages: pagesWithAssets.map(({ sourceImageUrl: _, ...page }) => page),
       };
 
       const fileBaseName = buildExportBaseName();
@@ -378,7 +394,7 @@ export function useComicDetailExport({
       setIsExportingData(false);
       setExportProgress(DEFAULT_EXPORT_PROGRESS);
     }
-  }, [assertExportNotAborted, buildExportBaseName, fetchImageFileWithRetry, isExportingData, onExportChapter, onExportChapterLp, selectedChapterId, setExportProgressStep, showToast, toAssignmentText]);
+  }, [assertExportNotAborted, buildExportBaseName, fetchImageFileWithRetry, isExportingData, onExportChapter, onExportChapterLp, pages, selectedChapterId, setExportProgressStep, showToast, toAssignmentText]);
 
   const detectImportFormat = useCallback((file: File) => {
     const name = file.name.toLowerCase();
@@ -504,7 +520,7 @@ export function useComicDetailExport({
     coverUpload: {
       isUploadingCover,
       coverUploadProgress,
-      localCoverUrl: localCoverUrl ?? comicCoverUrl ?? null,
+      localCoverUrl: localCoverUrl ?? comicCoverThumbnailUrl ?? null,
       handleCoverFileChange,
     } satisfies CoverUploadState,
     cancelExport: () => exportAbortControllerRef.current?.abort(),

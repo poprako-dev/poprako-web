@@ -20,5 +20,6 @@ export type TeamConfig = {
   short: string;
   desc: string;
   avatarUrl: string;
+  avatarThumbnailUrl?: string;
   isAvatarUploaded: boolean;
 };

@@ -87,8 +87,6 @@ export type ChapterExportUnit = {
 export type ChapterExportPage = {
   pageId: string;
   pageIndex: number;
-  imageUrl: string;
-  isUploaded: boolean;
   units: ChapterExportUnit[];
 };
 
@@ -121,8 +119,6 @@ export type RawChapterExportUnit = {
 export type RawChapterExportPage = {
   page_id: string;
   page_index: number;
-  image_url: string;
-  is_uploaded: boolean;
   units: RawChapterExportUnit[];
 };
 

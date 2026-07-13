@@ -41,7 +41,6 @@ export type RawListComicArgs = {
   incl?: ComicInclude[];
   with?: ComicWith[];
   fuzzy_title?: string;
-  is_completed?: boolean;
   stages?: number;
 
   offset: number;

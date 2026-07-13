@@ -196,9 +196,9 @@ export default function MemberSelectorModal({
                     "text-xs font-bold text-slate-500",
                   )}
                 >
-                  {member.user?.avatarUrl ? (
+                  {member.user?.avatarThumbnailUrl ? (
                     <img
-                      src={member.user.avatarUrl}
+                      src={member.user.avatarThumbnailUrl}
                       alt={member.user?.name ?? member.userId}
                       className="h-full w-full object-cover"
                     />

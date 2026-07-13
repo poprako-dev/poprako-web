@@ -35,7 +35,10 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
   const [showExitWarning, setShowExitWarning] = useState(false);
 
   const resolvedAvatarUrl =
-    localAvatarUrl ?? (user.isAvatarUploaded && user.avatarUrl ? user.avatarUrl : "");
+    localAvatarUrl ??
+    (user.isAvatarUploaded && user.avatarThumbnailUrl
+      ? user.avatarThumbnailUrl
+      : "");
 
   useEffect(() => {
     return () => {

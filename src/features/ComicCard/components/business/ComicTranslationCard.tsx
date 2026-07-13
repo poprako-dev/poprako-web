@@ -83,9 +83,9 @@ export default function ComicTranslationCard({
     >
       {/* 左侧封面 */}
       <div className="w-14 shrink-0 overflow-hidden bg-stone-100 rounded-sm">
-        {comicInfo.coverUrl ? (
+        {comicInfo.coverThumbnailUrl ? (
           <img
-            src={comicInfo.coverUrl}
+            src={comicInfo.coverThumbnailUrl}
             alt={comicInfo.title}
             className="w-full h-full object-cover grayscale-[0.3]"
           />
