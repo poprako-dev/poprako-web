@@ -3,7 +3,6 @@ import type {
   CreateChapterArgs,
   CreateChapterResult,
   UpdateChapterArgs,
-  WorkflowTransition,
 } from "../chapter";
 import { unwrapRawComicInfo, type RawComicInfo } from "./comic";
 import { unwrapRawUserInfo, type RawUserInfo } from "./user";
@@ -24,18 +23,8 @@ export type RawChapterInfo = {
   total_unit_count: number;
   translated_unit_count: number;
   proofread_unit_count: number;
-  is_pinned?: boolean;
-  stages?: number;
-
-  uploaded_at?: number;
-  translating_at?: number;
-  translated_at?: number;
-  typeset_at?: number;
-  typesetting_at?: number;
-  proofread_at?: number;
-  proofreading_at?: number;
-  reviewed_at?: number;
-  published_at?: number;
+  is_pinned: boolean;
+  stages: number;
 
   created_at: number;
   updated_at: number;
@@ -56,24 +45,14 @@ export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
     totalUnitCount: raw.total_unit_count,
     translatedUnitCount: raw.translated_unit_count,
     proofreadUnitCount: raw.proofread_unit_count,
-    uploadedAt: raw.uploaded_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-    translatingAt: raw.translating_at,
-    translatedAt: raw.translated_at,
-    typesetAt: raw.typeset_at,
-    typesettingAt: raw.typesetting_at,
-    proofreadAt: raw.proofread_at,
-    proofreadingAt: raw.proofreading_at,
-    reviewedAt: raw.reviewed_at,
-    publishedAt: raw.published_at,
   } as ChapterInfo;
 }
 
 export type RawCreateChapterArgs = {
   subtitle?: string;
   comic_id: string;
-  preset_assignment_roles?: number;
 };
 export function unwrapRawCreateChapterArgs(
   raw: RawCreateChapterArgs,
@@ -81,7 +60,6 @@ export function unwrapRawCreateChapterArgs(
   return {
     comicId: raw.comic_id,
     subtitle: raw.subtitle,
-    presetAssignmentRoles: raw.preset_assignment_roles,
   } as CreateChapterArgs;
 }
 
@@ -95,9 +73,7 @@ export function unwrapRawCreateChapterResult(
 export type RawUpdateChapterArgs = {
   chapter_id: string;
   subtitle?: string;
-  is_pinned?: boolean;
-  workflow_transition?: string;
-  revert_transition?: string;
+  pin?: boolean | null;
 };
 
 export function unwrapRawUpdateChapterArgs(
@@ -105,8 +81,6 @@ export function unwrapRawUpdateChapterArgs(
 ): UpdateChapterArgs {
   return {
     subtitle: raw.subtitle,
-    isPinned: raw.is_pinned,
-    workflowTransition: raw.workflow_transition as WorkflowTransition | undefined,
-    revertTransition: raw.revert_transition as WorkflowTransition | undefined,
+    isPinned: raw.pin,
   } as UpdateChapterArgs;
 }

@@ -61,7 +61,6 @@ export type ChapterInfo = {
 export type CreateChapterArgs = {
   comicId: string;
   subtitle?: string;
-  presetAssignmentRoles?: number;
 };
 
 export type CreateChapterResult = {
@@ -70,9 +69,7 @@ export type CreateChapterResult = {
 
 export type UpdateChapterArgs = {
   subtitle?: string;
-  isPinned?: boolean;
-  workflowTransition?: WorkflowTransition;
-  revertTransition?: WorkflowTransition;
+  isPinned?: boolean | null;
 };
 
 export type WithWorkflow = {
@@ -293,21 +290,12 @@ export function toChapterInfo(raw?: RawChapterInfo): ChapterInfo | undefined {
       : undefined,
     index: raw.index,
     subtitle: raw.subtitle,
-    isPinned: raw.is_pinned ?? false,
+    isPinned: raw.is_pinned,
     pageCount: raw.page_count,
     totalUnitCount: raw.total_unit_count,
     translatedUnitCount: raw.translated_unit_count,
     proofreadUnitCount: raw.proofread_unit_count,
     stages: raw.stages,
-    uploadedAt: raw.uploaded_at,
-    translatingAt: raw.translating_at,
-    translatedAt: raw.translated_at,
-    typesetAt: raw.typeset_at,
-    typesettingAt: raw.typesetting_at,
-    proofreadAt: raw.proofread_at,
-    proofreadingAt: raw.proofreading_at,
-    reviewedAt: raw.reviewed_at,
-    publishedAt: raw.published_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   } as ChapterInfo;

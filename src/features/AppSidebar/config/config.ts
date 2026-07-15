@@ -43,7 +43,6 @@ export const teamConfigs: TeamConfig[] = [
     short: "星",
     desc: "专注二次元翻译",
     avatarUrl: "",
-    isAvatarUploaded: false,
   },
   {
     id: "mh",
@@ -51,7 +50,6 @@ export const teamConfigs: TeamConfig[] = [
     short: "迷",
     desc: "硬核动作游戏汉化",
     avatarUrl: "",
-    isAvatarUploaded: false,
   },
   {
     id: "sy",
@@ -59,6 +57,5 @@ export const teamConfigs: TeamConfig[] = [
     short: "深",
     desc: "独立游戏爱好者",
     avatarUrl: "",
-    isAvatarUploaded: false,
   },
 ];

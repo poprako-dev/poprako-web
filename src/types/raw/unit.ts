@@ -1,4 +1,4 @@
-import type { UnitInfo } from "../unit";
+import { modifyUnitIndex, type UnitInfo } from "../unit";
 import type {
   UnitCreateOp,
   UnitDiff,
@@ -10,40 +10,40 @@ import type {
 export type RawUnitInfo = {
   id: string;
 
+  page_id: string;
+
   x_coord: number;
   y_coord: number;
-
-  index: number;
 
   is_bubble: boolean;
 
   translated_text?: string;
-  translator_id?: string;
   last_translator_id?: string;
-  translator_comment?: string;
 
   is_proofread: boolean;
   proofread_text?: string;
-  proofreader_id?: string;
   last_proofreader_id?: string;
-  proofreader_comment?: string;
+
+  created_at: number;
+  updated_at: number;
 };
 
 export function unwrapRawUnitInfo(raw: RawUnitInfo): UnitInfo {
   return {
     id: raw.id,
+    pageId: raw.page_id,
     xCoord: raw.x_coord,
     yCoord: raw.y_coord,
-    index: raw.index,
+    index: 0,
     isBubble: raw.is_bubble,
     translatedText: raw.translated_text,
-    translatorId: raw.last_translator_id ?? raw.translator_id,
-    translatorCommnet: raw.translator_comment,
+    translatorId: raw.last_translator_id,
     isProofread: raw.is_proofread,
     proofreadText: raw.proofread_text,
-    proofreaderId: raw.last_proofreader_id ?? raw.proofreader_id,
-    proofreaderComment: raw.proofreader_comment,
-  };
+    proofreaderId: raw.last_proofreader_id,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  } as UnitInfo;
 }
 
 export type ListPageUnitsResult = {
@@ -67,7 +67,9 @@ export function unwrapRawListPageUnitsResult(
     totalUnitCount: raw.total_unit_count,
     translatedUnitCount: raw.translated_unit_count,
     proofreadUnitCount: raw.proofread_unit_count,
-    units: (raw.unit_infos ?? []).map(unwrapRawUnitInfo),
+    units: (raw.unit_infos ?? []).map((u, i) =>
+      modifyUnitIndex(unwrapRawUnitInfo(u), i),
+    ),
   };
 }
 
@@ -178,17 +180,3 @@ export function wrapUnitDiff(pageId: string, diff: UnitDiff): RawUnitDiff {
     opers: diff.ops.map(wrapUnitOp),
   };
 }
-
-export type RawLegacyUnitPatch = {
-  id: string;
-  x_coord?: number;
-  y_coord?: number;
-  is_bubble?: boolean;
-  translated_text?: string | null;
-  translator_id?: string | null;
-  translator_comment?: string | null;
-  is_proofread?: boolean;
-  proofread_text?: string | null;
-  proofreader_id?: string | null;
-  proofreader_comment?: string | null;
-};

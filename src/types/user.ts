@@ -6,7 +6,6 @@ export type UserInfo = {
 
   avatarUrl: string;
   avatarThumbnailUrl?: string;
-  isAvatarUploaded: boolean;
 
   isSuperAdmin: boolean;
 

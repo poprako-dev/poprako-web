@@ -86,11 +86,20 @@ export default function CommentChatBox({ comments, loading, onSend }: Props) {
                         "shrink-0 w-7 h-7 rounded-full",
                         "flex items-center justify-center",
                         "text-xs font-medium select-none",
-                        "bg-stone-100",
-                        "text-[var(--color-green-500)]",
+                        "bg-stone-100 overflow-hidden",
                       )}
                     >
-                      {avatarChar(c.user?.name)}
+                      {c.user?.avatarThumbnailUrl || c.user?.avatarUrl ? (
+                        <img
+                          src={c.user.avatarThumbnailUrl || c.user.avatarUrl}
+                          alt={c.user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-[var(--color-green-500)]">
+                          {avatarChar(c.user?.name)}
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span

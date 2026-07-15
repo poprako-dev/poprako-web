@@ -16,7 +16,6 @@ function makeUser(id: string, name: string): UserInfo {
     name,
     qq: "",
     avatarUrl: "",
-    isAvatarUploaded: false,
     isSuperAdmin: false,
     lastActiveAt: now,
     createdAt: now,

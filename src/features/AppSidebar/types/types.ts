@@ -21,5 +21,4 @@ export type TeamConfig = {
   desc: string;
   avatarUrl: string;
   avatarThumbnailUrl?: string;
-  isAvatarUploaded: boolean;
 };

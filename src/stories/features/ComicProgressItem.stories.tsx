@@ -62,7 +62,6 @@ function makeTranslatorAssignment(userId: string, userName: string) {
       name: userName,
       qq: "",
       avatarUrl: "",
-      isAvatarUploaded: false,
       isSuperAdmin: false,
       lastActiveAt: now,
       createdAt: now,
@@ -84,7 +83,6 @@ function makeProofreaderAssignment(userId: string, userName: string) {
       name: userName,
       qq: "",
       avatarUrl: "",
-      isAvatarUploaded: false,
       isSuperAdmin: false,
       lastActiveAt: now,
       createdAt: now,
@@ -106,7 +104,6 @@ function makeTypesetterAssignment(userId: string, userName: string) {
       name: userName,
       qq: "",
       avatarUrl: "",
-      isAvatarUploaded: false,
       isSuperAdmin: false,
       lastActiveAt: now,
       createdAt: now,
@@ -135,7 +132,7 @@ function createStoryComponent(
 ) {
   const storyComic: ComicInfo = {
     ...comic,
-    pinnedChapter: chapterResult.success ? chapterResult.data : undefined,
+    pinnedChapter: chapterResult.success ? (chapterResult.data ?? undefined) : undefined,
   };
   return () => (
     <div className="w-180 max-w-full">
@@ -272,7 +269,6 @@ export const AllRolesFilled: Story = {
             name: "孙质检",
             qq: "",
             avatarUrl: "",
-            isAvatarUploaded: false,
             isSuperAdmin: false,
             lastActiveAt: now,
             createdAt: now,
@@ -291,7 +287,6 @@ export const AllRolesFilled: Story = {
             name: "周发布",
             qq: "",
             avatarUrl: "",
-            isAvatarUploaded: false,
             isSuperAdmin: false,
             lastActiveAt: now,
             createdAt: now,
@@ -310,7 +305,6 @@ export const AllRolesFilled: Story = {
             name: "吴修图",
             qq: "",
             avatarUrl: "",
-            isAvatarUploaded: false,
             isSuperAdmin: false,
             lastActiveAt: now,
             createdAt: now,

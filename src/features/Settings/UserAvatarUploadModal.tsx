@@ -36,8 +36,8 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
 
   const resolvedAvatarUrl =
     localAvatarUrl ??
-    (user.isAvatarUploaded && user.avatarThumbnailUrl
-      ? user.avatarThumbnailUrl
+    (user.avatarThumbnailUrl || user.avatarUrl
+      ? user.avatarThumbnailUrl || user.avatarUrl
       : "");
 
   useEffect(() => {

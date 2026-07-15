@@ -64,7 +64,6 @@ export type RawCreateComicArgs = {
   workset_id: string;
   title: string;
   first_chapter_subtitle?: string;
-  preset_assignment_roles?: number;
 };
 export function unwrapRawCreateComicArgs(
   raw: RawCreateComicArgs,
@@ -75,7 +74,6 @@ export function unwrapRawCreateComicArgs(
     author: raw.author,
     description: raw.description,
     firstChapterTitle: raw.first_chapter_subtitle,
-    presetAssignmentRoles: raw.preset_assignment_roles,
   } as CreateComicArgs;
 }
 

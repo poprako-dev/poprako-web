@@ -28,7 +28,6 @@ const FALLBACK_TEAM: TeamConfig = {
   short: "",
   desc: "",
   avatarUrl: "",
-  isAvatarUploaded: false,
 };
 
 export default function AppSidebar() {

@@ -33,7 +33,6 @@ function makeMockMember(idx: number): MemberInfo {
         idx % 5
       ],
       avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=member${idx}`,
-      isAvatarUploaded: true,
       isSuperAdmin: idx === 0,
       lastActiveAt: now - 1000 * 60 * 60 * idx,
       createdAt: now - 1000 * 60 * 60 * 24 * 30,

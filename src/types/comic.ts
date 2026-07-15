@@ -69,7 +69,6 @@ export type CreateComicArgs = {
   author: string;
   description?: string;
   firstChapterTitle?: string;
-  presetAssignmentRoles?: number;
 };
 
 export type CreateComicResult = { id: string };

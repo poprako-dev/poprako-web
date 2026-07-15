@@ -18,7 +18,6 @@ function deriveTeamConfigs(
         desc: team.description,
         avatarUrl: team.avatarUrl,
         avatarThumbnailUrl: team.avatarThumbnailUrl,
-        isAvatarUploaded: team.isAvatarUploaded,
       };
     });
 }

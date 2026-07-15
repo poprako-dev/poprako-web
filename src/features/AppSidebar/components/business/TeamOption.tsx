@@ -42,8 +42,8 @@ function TeamAvatar({
 }) {
   const resolvedAvatarUrl =
     localAvatarUrl ??
-    (team.isAvatarUploaded && team.avatarThumbnailUrl
-      ? team.avatarThumbnailUrl
+    (team.avatarThumbnailUrl || team.avatarUrl
+      ? team.avatarThumbnailUrl || team.avatarUrl
       : "");
 
   return (
@@ -244,8 +244,8 @@ function TeamList({
                       : "bg-gray-100 text-gray-400",
                   )}
                 >
-                  {t.isAvatarUploaded && t.avatarThumbnailUrl ? (
-                    <img src={t.avatarThumbnailUrl} alt={t.name} className="w-full h-full object-cover" />
+                  {t.avatarThumbnailUrl || t.avatarUrl ? (
+                    <img src={t.avatarThumbnailUrl || t.avatarUrl} alt={t.name} className="w-full h-full object-cover" />
                   ) : (
                     t.short
                   )}

@@ -12,7 +12,6 @@ export type RawInvitationInfo = {
   pending: boolean;
   roles: number;
   team_id: string;
-  created_at?: number;
 };
 
 export function unwrapRawInvitationInfo(
@@ -25,7 +24,7 @@ export function unwrapRawInvitationInfo(
     invitorId: raw.invitor_id,
     pending: raw.pending,
     roles: raw.roles,
-    createdAt: raw.created_at ?? 0,
+    createdAt: 0,
   } as InvitationInfo;
 }
 

@@ -387,7 +387,7 @@ describe("poprako-r API migration", () => {
   });
 
   test("zips list comics response with parallel pinned chapters", async () => {
-    const fetchMock = installFetch(okJson({
+    installFetch(okJson({
       comics: [
         {
           id: "comic_1",

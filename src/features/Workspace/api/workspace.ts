@@ -1,5 +1,5 @@
 import { listAssignmentsByChapter, listMyAssignments } from "@/api/assignment";
-import type { ComicInfo, ChapterInfo } from "@/types";
+import type { ComicInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 
