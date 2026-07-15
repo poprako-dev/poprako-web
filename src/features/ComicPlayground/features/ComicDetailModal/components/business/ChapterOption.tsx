@@ -14,7 +14,10 @@ type Props = {
   isLoading?: boolean;
   onLoadMore: () => void;
   onSelect: (id: string) => void;
-  onCreateChapter?: (subtitle?: string) => Promise<Result<string>>;
+  onCreateChapter?: (
+    subtitle?: string,
+    presetAssignmentRoles?: number,
+  ) => Promise<Result<string>>;
   onDelete?: (id: string) => void;
   onLongPress?: (chapter: ChapterInfo) => void;
 };

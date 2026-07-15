@@ -67,6 +67,9 @@ describe("poprako-r API migration", () => {
     await listWorksets({ teamId: "team_1", offset: 1, limit: 20 });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/teams/team_1/worksets?offset=1&limit=20");
 
+    fetchMock.mockResolvedValueOnce(
+      (await okJson({ comics: [], pinned_chapters: [] })).clone(),
+    );
     await listComics({
       worksetId: "workset_1",
       includes: ["workset.team"],
@@ -325,7 +328,6 @@ describe("poprako-r API migration", () => {
         name: "Team",
         description: "Desc",
         avatar_url: null,
-        workset_next_index: 1,
         created_at: 1,
         updated_at: 2,
       },
@@ -382,5 +384,69 @@ describe("poprako-r API migration", () => {
     expect(lastFetchCall(exportFetchMock).url).toBe(
       "/api/v1/chapters/chapter_1/translations/export?format=poprako",
     );
+  });
+
+  test("zips list comics response with parallel pinned chapters", async () => {
+    const fetchMock = installFetch(okJson({
+      comics: [
+        {
+          id: "comic_1",
+          workset_id: "workset_1",
+          index: 0,
+          title: "Comic One",
+          author: "Author",
+          description: null,
+          cover_url: null,
+          chapter_count: 3,
+          creator_id: "user_1",
+          last_active_at: 1,
+          created_at: 2,
+          updated_at: 3,
+        },
+        {
+          id: "comic_2",
+          workset_id: "workset_1",
+          index: 1,
+          title: "Comic Two",
+          author: "Author",
+          description: null,
+          cover_url: null,
+          chapter_count: 1,
+          creator_id: "user_1",
+          last_active_at: 4,
+          created_at: 5,
+          updated_at: 6,
+        },
+      ],
+      pinned_chapters: [
+        {
+          id: "chapter_1",
+          comic_id: "comic_1",
+          index: 0,
+          subtitle: "Ch1",
+          page_count: 2,
+          pinned: true,
+          created_at: 1,
+          updated_at: 2,
+        },
+        null,
+      ],
+    }));
+
+    const result = await listComics({
+      worksetId: "workset_1",
+      withs: ["pinned_chapter"],
+      offset: 0,
+      limit: 10,
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) throw new Error("unreachable");
+
+    expect(result.data).toHaveLength(2);
+    expect(result.data[0]?.id).toBe("comic_1");
+    expect(result.data[0]?.pinnedChapter?.id).toBe("chapter_1");
+    expect(result.data[1]?.id).toBe("comic_2");
+    expect(result.data[1]?.pinnedChapter).toBeUndefined();
   });
 });

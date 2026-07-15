@@ -5,22 +5,26 @@ import LoadingCircle from "@/components/ui/LoadingCircle";
 
 type Props = {
   title: string;
-  description: string;
+  description?: string;
+  children?: React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
   loading?: boolean;
+  confirmDisabled?: boolean;
 };
 
 export default function ConfirmDialog({
   title,
   description,
+  children,
   confirmLabel = "确认",
   cancelLabel = "取消",
   onConfirm,
   onCancel,
   loading = false,
+  confirmDisabled = false,
 }: Props) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -56,10 +60,14 @@ export default function ConfirmDialog({
 
         <div className="px-5 pt-4 pb-2 text-center">
           <h3 className="text-base font-bold text-slate-800">{title}</h3>
-          <p className="mt-1 text-sm text-slate-500 leading-relaxed">
-            {description}
-          </p>
+          {description && (
+            <p className="mt-1 text-sm text-slate-500 leading-relaxed">
+              {description}
+            </p>
+          )}
         </div>
+
+        {children}
 
         <div className="flex items-center gap-2 px-5 pb-5 pt-3">
           <button
@@ -75,7 +83,7 @@ export default function ConfirmDialog({
           </button>
           <button
             onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || confirmDisabled}
             className={clsx(
               "flex-1 py-2 text-xs font-semibold rounded-lg",
               "flex items-center justify-center gap-1",
@@ -83,7 +91,7 @@ export default function ConfirmDialog({
               "bg-red-50 text-red-500",
               "border border-(--color-border-red-200)",
               "hover:bg-red-100",
-              loading && "opacity-60 cursor-not-allowed",
+              (loading || confirmDisabled) && "opacity-60 cursor-not-allowed",
             )}
           >
             {loading ? <LoadingCircle /> : confirmLabel}

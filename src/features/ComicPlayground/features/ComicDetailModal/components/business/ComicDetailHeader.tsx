@@ -17,7 +17,10 @@ type Props = {
   onLoadMore: () => void;
   onSelect: (chapterId: string | null) => void;
   onCreateChapter?: ComicDetailModalProps["onCreateChapter"];
-  onCreate: (subtitle: string | undefined) => Promise<Result<string>>;
+  onCreate: (
+    subtitle: string | undefined,
+    presetAssignmentRoles: number | undefined,
+  ) => Promise<Result<string>>;
   onDeleteChapter?: ComicDetailModalProps["onDeleteChapter"];
   onDelete: (chapterId: string) => Promise<void>;
   onLongPressTitle?: () => void;
@@ -58,7 +61,8 @@ export default function ComicDetailHeader({
       onSelect={onSelect}
       onCreateChapter={
         onCreateChapter && canCreateChapter
-          ? async (subtitle) => onCreate(subtitle)
+          ? async (subtitle, presetAssignmentRoles) =>
+              onCreate(subtitle, presetAssignmentRoles)
           : undefined
       }
       onDelete={onDeleteChapter ? async (id) => onDelete(id) : undefined}

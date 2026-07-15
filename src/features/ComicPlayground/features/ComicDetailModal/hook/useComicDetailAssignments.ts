@@ -128,7 +128,7 @@ export function useComicDetailAssignments({
       hasRole(currentAssignment, "proofreader"));
   const canReadOnly = activeMember !== null && !canTranslateOrProofread;
   const canManageChapterAssignments =
-    !!currentAssignment && hasRole(currentAssignment, "reviewer");
+    !!currentAssignment && hasRole(currentAssignment, "admin");
   const canUploadRawPages = !!currentAssignment && hasRole(currentAssignment, "rawProvider");
   const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
 

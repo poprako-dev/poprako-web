@@ -47,6 +47,19 @@ function buildQuery(
 
   return url.includes("?") ? `${url}&${qs}` : `${url}?${qs}`;
 }
+function stripNulls(obj: unknown): unknown {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(stripNulls);
+  if (typeof obj !== "object") return obj;
+
+  const result: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(obj as Record<string, unknown>)) {
+    if (val === null || val === undefined) continue;
+    result[key] = stripNulls(val);
+  }
+  return result;
+}
+
 async function request<T>(
   url: string,
   options: RequestInit = {},
@@ -149,7 +162,7 @@ export const api = {
     const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
-      { method: "POST", body: JSON.stringify(body) },
+      { method: "POST", body: JSON.stringify(stripNulls(body)) },
       options.needAuth,
     );
   },
@@ -163,7 +176,7 @@ export const api = {
     const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
-      { method: "PUT", body: JSON.stringify(body) },
+      { method: "PUT", body: JSON.stringify(stripNulls(body)) },
       options.needAuth,
     );
   },
@@ -190,7 +203,7 @@ export const api = {
     const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
-      { method: "DELETE", body: JSON.stringify(body) },
+      { method: "DELETE", body: JSON.stringify(stripNulls(body)) },
       options.needAuth,
     );
   },
@@ -204,7 +217,7 @@ export const api = {
     const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
-      { method: "PATCH", body: JSON.stringify(body) },
+      { method: "PATCH", body: JSON.stringify(stripNulls(body)) },
       options.needAuth,
     );
   },

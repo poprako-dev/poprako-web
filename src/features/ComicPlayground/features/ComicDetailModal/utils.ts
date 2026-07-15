@@ -17,6 +17,37 @@ export function applyWorkflowTransition(
 ): ChapterInfo {
   const now = Date.now();
 
+  if (chapter.stages !== undefined) {
+    const stageOffsets: Record<WorkflowTransition, number> = {
+      upload_complete: 0,
+      upload_revert: 0,
+      translate_start: 2,
+      translate_complete: 2,
+      translate_start_revert: 2,
+      translate_revert: 2,
+      proofread_start: 4,
+      proofread_complete: 4,
+      proofread_start_revert: 4,
+      proofread_revert: 4,
+      typeset_start: 6,
+      typeset_complete: 6,
+      typeset_start_revert: 6,
+      typeset_revert: 6,
+      review_complete: 8,
+      review_revert: 8,
+      publish_complete: 10,
+    };
+    const isRevert = transition.endsWith("_revert");
+    const offset = stageOffsets[transition];
+    const phase = (chapter.stages >> offset) & 0b11;
+    const nextPhase = isRevert ? phase - 1 : phase + 1;
+
+    return {
+      ...chapter,
+      stages: (chapter.stages & ~(0b11 << offset)) | (nextPhase << offset),
+    };
+  }
+
   switch (transition) {
     case "upload_complete":
       return {

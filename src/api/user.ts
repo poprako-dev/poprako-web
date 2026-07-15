@@ -8,10 +8,28 @@ import type { ReserveUserAvatarResult } from "@/types/user";
 import type { Result } from "@/types/utils/result";
 import { api } from "./util";
 
+type UpdateUserPasswordArgs = {
+  currentPassword: string;
+  newPassword: string;
+};
+
 export async function getMyUser() {
   const userInfo = await api.get<RawUserInfo>("/users/me");
   if (!userInfo.success) throw new Error(userInfo.error);
   return unwrapRawUserInfo(userInfo.data);
+}
+
+export async function updateUserPassword(
+  userId: string,
+  args: UpdateUserPasswordArgs,
+): Promise<Result<void>> {
+  return api.put<
+    void,
+    { current_password: string; new_password: string }
+  >(`/users/${userId}/password`, {
+    current_password: args.currentPassword,
+    new_password: args.newPassword,
+  });
 }
 
 export async function reserveUserAvatarUpload(

@@ -2,9 +2,12 @@ import { useState } from "react";
 import { Type, User, AlignLeft, Loader2, Layers, BookOpen } from "lucide-react";
 import clsx from "clsx";
 import IconInputRow from "@/components/ui/IconInputRow";
+import { useActiveTeam } from "@/hooks/useActiveTeam";
+import { roleMask, type Role } from "@/types/role";
 import type { CreateComicArgs } from "../../types/comic";
 import type { Result } from "@/types/utils/result";
 import type { WorksetInfo } from "@/types/workset";
+import PresetAssignmentRoleSwitchGroup from "./PresetAssignmentRoleSwitchGroup";
 
 type Props = {
   currWorkset: WorksetInfo;
@@ -17,12 +20,14 @@ export default function ComicCreatorModal({
   onCreateComic,
   onClose,
 }: Props) {
+  const { activeMember } = useActiveTeam();
   const [formData, setFormData] = useState({
     title: "",
     author: "",
     description: "",
     firstChapterTitle: "",
   });
+  const [presetRoles, setPresetRoles] = useState<Role[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isValid =
@@ -38,6 +43,8 @@ export default function ComicCreatorModal({
       author: formData.author.trim(),
       description: formData.description.trim() || undefined,
       firstChapterTitle: formData.firstChapterTitle.trim() || undefined,
+      presetAssignmentRoles:
+        presetRoles.length > 0 ? roleMask(presetRoles) : undefined,
     });
     setIsSubmitting(false);
     if (result.success) onClose();
@@ -130,6 +137,12 @@ export default function ComicCreatorModal({
               />
             </div>
           </div>
+
+          <PresetAssignmentRoleSwitchGroup
+            activeMember={activeMember}
+            value={presetRoles}
+            onChange={setPresetRoles}
+          />
 
           <div className="mt-4 flex items-center gap-2">
             <button

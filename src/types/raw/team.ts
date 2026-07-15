@@ -14,7 +14,6 @@ export type RawTeamInfo = {
   avatar_url: string | null;
   avatar_thumbnail_url?: string | null;
   avatar_uploaded?: boolean;
-  workset_next_index?: number;
   created_at: number;
   updated_at: number;
 };

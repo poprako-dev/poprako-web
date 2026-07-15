@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Globe2, LogOut, Upload } from "lucide-react";
+import { Globe2, KeyRound, LogOut, Upload } from "lucide-react";
+import clsx from "clsx";
 import { logoutUser } from "@/api/auth";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import TeamSwitchModal from "./TeamSwitchModal";
 import UserAvatarUploadModal from "./UserAvatarUploadModal";
+import PasswordResetDialog from "./PasswordResetDialog";
 import type { TeamConfig } from "@/features/AppSidebar/types/types";
 
 export default function SettingsPanel() {
@@ -19,6 +21,7 @@ export default function SettingsPanel() {
 
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
   const teamConfigs = useMemo<TeamConfig[]>(() => {
     if (!loginState?.memberInfos) return [];
@@ -63,21 +66,39 @@ export default function SettingsPanel() {
   return (
     <div className="flex w-1/3 flex-col gap-4">
       <div
-        className={[
-          "flex cursor-pointer items-center justify-between rounded-sm px-6 py-4 transition-colors",
-          "bg-white/80 ring-1 shadow-sm ring-black/5 hover:bg-green-50/80 hover:ring-green-200 hover:text-green-700",
-        ].join(" ")}
+        className={clsx(
+          "flex cursor-pointer items-center justify-between",
+          "rounded-sm px-6 py-4 transition-colors",
+          "bg-white/80 ring-1 shadow-sm ring-black/5",
+          "hover:bg-green-50/80 hover:ring-green-200 hover:text-green-700",
+        )}
         onClick={() => setIsTeamModalOpen(true)}
       >
         <span className="text-lg font-medium">切换汉化组</span>
         <Globe2 className="h-5 w-5" />
       </div>
 
+      <button
+        type="button"
+        className={clsx(
+          "flex w-full cursor-pointer items-center justify-between",
+          "rounded-sm px-6 py-4 transition-colors",
+          "bg-white/80 ring-1 shadow-sm ring-black/5",
+          "hover:bg-amber-50/80 hover:ring-amber-200 hover:text-amber-700",
+        )}
+        onClick={() => setIsPasswordDialogOpen(true)}
+      >
+        <span className="text-lg font-medium">重置密码</span>
+        <KeyRound className="h-5 w-5" />
+      </button>
+
       <div
-        className={[
-          "flex cursor-pointer items-center justify-between rounded-sm px-6 py-4 transition-colors",
-          "bg-white/80 ring-1 shadow-sm ring-black/5 hover:bg-slate-50/80 hover:ring-slate-200 hover:text-slate-700",
-        ].join(" ")}
+        className={clsx(
+          "flex cursor-pointer items-center justify-between",
+          "rounded-sm px-6 py-4 transition-colors",
+          "bg-white/80 ring-1 shadow-sm ring-black/5",
+          "hover:bg-slate-50/80 hover:ring-slate-200 hover:text-slate-700",
+        )}
         onClick={() => setIsAvatarModalOpen(true)}
       >
         <span className="text-lg font-medium">上传头像</span>
@@ -85,10 +106,12 @@ export default function SettingsPanel() {
       </div>
 
       <div
-        className={[
-          "flex cursor-pointer items-center justify-between rounded-sm px-6 py-4 transition-colors",
-          "bg-white/80 ring-1 shadow-sm ring-black/5 hover:bg-red-50/80 hover:ring-red-200 hover:text-red-500",
-        ].join(" ")}
+        className={clsx(
+          "flex cursor-pointer items-center justify-between",
+          "rounded-sm px-6 py-4 transition-colors",
+          "bg-white/80 ring-1 shadow-sm ring-black/5",
+          "hover:bg-red-50/80 hover:ring-red-200 hover:text-red-500",
+        )}
         onClick={handleLogout}
       >
         <span className="text-lg font-medium">退出登录</span>
@@ -111,6 +134,13 @@ export default function SettingsPanel() {
         <UserAvatarUploadModal
           user={currentUser}
           onClose={() => setIsAvatarModalOpen(false)}
+        />
+      )}
+
+      {isPasswordDialogOpen && currentUser && (
+        <PasswordResetDialog
+          userId={currentUser.id}
+          onClose={() => setIsPasswordDialogOpen(false)}
         />
       )}
     </div>

@@ -39,6 +39,8 @@ export type ChapterInfo = {
   translatedUnitCount: number;
   proofreadUnitCount: number;
 
+  stages?: number;
+
   uploadedAt?: number;
   translatingAt?: number;
   translatedAt?: number;
@@ -59,6 +61,7 @@ export type ChapterInfo = {
 export type CreateChapterArgs = {
   comicId: string;
   subtitle?: string;
+  presetAssignmentRoles?: number;
 };
 
 export type CreateChapterResult = {
@@ -73,6 +76,7 @@ export type UpdateChapterArgs = {
 };
 
 export type WithWorkflow = {
+  stages?: number;
   uploadedAt?: number;
   translatingAt?: number;
   translatedAt?: number;
@@ -84,7 +88,38 @@ export type WithWorkflow = {
   publishedAt?: number;
 };
 
+type WorkflowStage = "upload" | "translate" | "proofread" | "typeset" | "review" | "publish";
+
+function stagePhase(stages: number, stage: WorkflowStage) {
+  const offset: Record<WorkflowStage, number> = {
+    upload: 0,
+    translate: 2,
+    proofread: 4,
+    typeset: 6,
+    review: 8,
+    publish: 10,
+  };
+
+  return (stages >> offset[stage]) & 0b11;
+}
+
+function workflowStatusFromStages(
+  stages: number | undefined,
+  stage: WorkflowStage,
+): WorkflowStatus | undefined {
+  if (stages === undefined) return undefined;
+
+  const phase = stagePhase(stages, stage);
+  if (phase === 0) return "pending";
+  if (phase === 1) return "ongoing";
+  if (phase === 2) return "completed";
+  return "unset";
+}
+
 export function uploadWorkflowStatus(chapter: WithWorkflow) {
+  const status = workflowStatusFromStages(chapter.stages, "upload");
+  if (status !== undefined) return status;
+
   if (chapter.uploadedAt) {
     return "completed" as WorkflowStatus;
   }
@@ -92,6 +127,9 @@ export function uploadWorkflowStatus(chapter: WithWorkflow) {
 }
 
 export function translateWorkflowStatus(chapter: WithWorkflow) {
+  const status = workflowStatusFromStages(chapter.stages, "translate");
+  if (status !== undefined) return status;
+
   if (chapter.translatedAt) {
     return "completed" as WorkflowStatus;
   }
@@ -102,6 +140,9 @@ export function translateWorkflowStatus(chapter: WithWorkflow) {
 }
 
 export function typesetWorkflowStatus(chapter: WithWorkflow) {
+  const status = workflowStatusFromStages(chapter.stages, "typeset");
+  if (status !== undefined) return status;
+
   if (chapter.typesetAt) {
     return "completed" as WorkflowStatus;
   }
@@ -112,6 +153,9 @@ export function typesetWorkflowStatus(chapter: WithWorkflow) {
 }
 
 export function proofreadWorkflowStatus(chapter: WithWorkflow) {
+  const status = workflowStatusFromStages(chapter.stages, "proofread");
+  if (status !== undefined) return status;
+
   if (chapter.proofreadAt) {
     return "completed" as WorkflowStatus;
   }
@@ -122,6 +166,9 @@ export function proofreadWorkflowStatus(chapter: WithWorkflow) {
 }
 
 export function reviewWorkflowStatus(chapter: WithWorkflow) {
+  const status = workflowStatusFromStages(chapter.stages, "review");
+  if (status !== undefined) return status;
+
   if (chapter.reviewedAt) {
     return "completed" as WorkflowStatus;
   }
@@ -129,6 +176,9 @@ export function reviewWorkflowStatus(chapter: WithWorkflow) {
 }
 
 export function publishWorkflowStatus(chapter: WithWorkflow) {
+  const status = workflowStatusFromStages(chapter.stages, "publish");
+  if (status !== undefined) return status;
+
   if (chapter.publishedAt) {
     return "completed" as WorkflowStatus;
   }
@@ -139,6 +189,55 @@ export function canApplyWorkflowTransition(
   chapter: WithWorkflow,
   transition: WorkflowTransition,
 ) {
+  if (chapter.stages !== undefined) {
+    const statusByTransition: Record<WorkflowTransition, WorkflowStatus> = {
+      upload_complete: uploadWorkflowStatus(chapter),
+      translate_start: translateWorkflowStatus(chapter),
+      translate_complete: translateWorkflowStatus(chapter),
+      proofread_start: proofreadWorkflowStatus(chapter),
+      proofread_complete: proofreadWorkflowStatus(chapter),
+      typeset_start: typesetWorkflowStatus(chapter),
+      typeset_complete: typesetWorkflowStatus(chapter),
+      review_complete: reviewWorkflowStatus(chapter),
+      publish_complete: publishWorkflowStatus(chapter),
+      upload_revert: uploadWorkflowStatus(chapter),
+      translate_start_revert: translateWorkflowStatus(chapter),
+      translate_revert: translateWorkflowStatus(chapter),
+      proofread_start_revert: proofreadWorkflowStatus(chapter),
+      proofread_revert: proofreadWorkflowStatus(chapter),
+      typeset_start_revert: typesetWorkflowStatus(chapter),
+      typeset_revert: typesetWorkflowStatus(chapter),
+      review_revert: reviewWorkflowStatus(chapter),
+    };
+    const status = statusByTransition[transition];
+
+    switch (transition) {
+      case "upload_complete":
+      case "review_complete":
+      case "publish_complete":
+        return status === "pending";
+      case "translate_start":
+      case "proofread_start":
+      case "typeset_start":
+        return status === "pending";
+      case "translate_complete":
+      case "proofread_complete":
+      case "typeset_complete":
+        return status === "ongoing";
+      case "upload_revert":
+      case "review_revert":
+        return status === "completed";
+      case "translate_start_revert":
+      case "proofread_start_revert":
+      case "typeset_start_revert":
+        return status === "ongoing";
+      case "translate_revert":
+      case "proofread_revert":
+      case "typeset_revert":
+        return status === "completed";
+    }
+  }
+
   switch (transition) {
     case "upload_complete":
       return !chapter.uploadedAt;
@@ -199,6 +298,7 @@ export function toChapterInfo(raw?: RawChapterInfo): ChapterInfo | undefined {
     totalUnitCount: raw.total_unit_count,
     translatedUnitCount: raw.translated_unit_count,
     proofreadUnitCount: raw.proofread_unit_count,
+    stages: raw.stages,
     uploadedAt: raw.uploaded_at,
     translatingAt: raw.translating_at,
     translatedAt: raw.translated_at,

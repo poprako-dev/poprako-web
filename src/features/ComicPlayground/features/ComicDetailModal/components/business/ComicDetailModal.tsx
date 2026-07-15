@@ -290,7 +290,13 @@ export default function ComicDetailModal({
       onLoadMore={handleLoadMoreChapters}
       onSelect={setSelectedChapterId}
       onCreateChapter={onCreateChapter}
-      onCreate={(subtitle) => handleCreateChapter(subtitle, onCreateChapter)}
+      onCreate={(subtitle, presetAssignmentRoles) =>
+        handleCreateChapter(
+          subtitle,
+          presetAssignmentRoles,
+          onCreateChapter,
+        )
+      }
       onDeleteChapter={onDeleteChapter}
       onDelete={(chapterId) => handleDeleteChapter(chapterId, onDeleteChapter)}
       onLongPressTitle={

@@ -10,6 +10,7 @@ type ListCommentsArgs = {
   teamId: string;
   offset: number;
   limit: number;
+  includes?: string[];
 };
 
 export async function listComments(
@@ -20,6 +21,7 @@ export async function listComments(
     {
       offset: args.offset,
       limit: args.limit,
+      incl: args.includes,
     },
   );
   if (!result.success) return result;

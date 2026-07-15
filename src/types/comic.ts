@@ -47,7 +47,7 @@ export function toComicInfo(raw?: RawComicInfo) {
 
     title: raw.title,
     author: raw.author,
-    description: raw.description,
+    description: raw.description ?? "",
 
     coverUrl: ensureHttpsUrl(raw.cover_url),
     coverThumbnailUrl: ensureHttpsUrl(raw.cover_thumbnail_url),
@@ -69,6 +69,7 @@ export type CreateComicArgs = {
   author: string;
   description?: string;
   firstChapterTitle?: string;
+  presetAssignmentRoles?: number;
 };
 
 export type CreateComicResult = { id: string };

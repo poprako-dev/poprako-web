@@ -85,6 +85,7 @@ export async function createChapter(
   const rawArgs: RawCreateChapterArgs = {
     comic_id: args.comicId,
     subtitle: args.subtitle,
+    preset_assignment_roles: args.presetAssignmentRoles,
   };
 
   const res = await api.post<{ id: string }, RawCreateChapterArgs>(

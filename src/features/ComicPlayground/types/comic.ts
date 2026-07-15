@@ -144,6 +144,7 @@ export type CreateComicArgs = {
   author: string;
   description?: string;
   firstChapterTitle?: string;
+  presetAssignmentRoles?: number;
 };
 
 export type RawCreateComicArgs = {
@@ -152,6 +153,7 @@ export type RawCreateComicArgs = {
   author: string;
   description?: string;
   first_chapter_subtitle?: string;
+  preset_assignment_roles?: number;
 };
 
 export type UpdateComicArgs = {

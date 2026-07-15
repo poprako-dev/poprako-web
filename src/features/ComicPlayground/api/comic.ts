@@ -1,4 +1,4 @@
-import type { RawComicInfo } from "@/types/raw/comic";
+import type { RawComicInfo, RawListComicInfosPayload } from "@/types/raw/comic";
 import type {
   ListComicArgs,
   RawListComicArgs,
@@ -25,19 +25,24 @@ export async function listComics(
     limit: args.limit,
   };
 
-  const res = await api.get<RawComicInfo[]>(
+  const res = await api.get<RawListComicInfosPayload>(
     `/worksets/${args.worksetId}/comics`,
     rawArgs,
   );
   if (!res.success) return res;
 
-  const items = Array.isArray(res.data) ? res.data : [];
+  const payload = res.data;
+  const comics = Array.isArray(payload.comics) ? payload.comics : [];
+  const pinnedChapters = Array.isArray(payload.pinned_chapters)
+    ? payload.pinned_chapters
+    : [];
+
   return {
     success: true,
-    data: items.map((raw) => ({
+    data: comics.map((raw, i) => ({
       ...toComicInfo(raw)!,
-      pinnedChapter: raw.pinned_chapter
-        ? toChapterInfo(raw.pinned_chapter)
+      pinnedChapter: pinnedChapters[i]
+        ? toChapterInfo(pinnedChapters[i]!)
         : undefined,
     })),
   };
@@ -52,15 +57,7 @@ export async function getComic(id: string): Promise<Result<ComicInfo>> {
     return { success: false, error: "漫画不存在" };
   }
 
-  return {
-    success: true,
-    data: {
-      ...comic,
-      pinnedChapter: res.data.pinned_chapter
-        ? toChapterInfo(res.data.pinned_chapter)
-        : undefined,
-    },
-  };
+  return { success: true, data: comic };
 }
 
 export async function createComic(
@@ -72,6 +69,7 @@ export async function createComic(
     author: args.author,
     description: args.description,
     first_chapter_subtitle: args.firstChapterTitle,
+    preset_assignment_roles: args.presetAssignmentRoles,
   };
 
   const res = await api.post<{ id: string }, RawCreateComicArgs>(

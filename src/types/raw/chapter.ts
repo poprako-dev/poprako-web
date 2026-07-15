@@ -25,6 +25,7 @@ export type RawChapterInfo = {
   translated_unit_count: number;
   proofread_unit_count: number;
   is_pinned?: boolean;
+  stages?: number;
 
   uploaded_at?: number;
   translating_at?: number;
@@ -50,6 +51,7 @@ export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
     index: raw.index,
     subtitle: raw.subtitle,
     isPinned: raw.is_pinned,
+    stages: raw.stages,
     pageCount: raw.page_count,
     totalUnitCount: raw.total_unit_count,
     translatedUnitCount: raw.translated_unit_count,
@@ -68,13 +70,18 @@ export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
   } as ChapterInfo;
 }
 
-export type RawCreateChapterArgs = { subtitle?: string; comic_id: string };
+export type RawCreateChapterArgs = {
+  subtitle?: string;
+  comic_id: string;
+  preset_assignment_roles?: number;
+};
 export function unwrapRawCreateChapterArgs(
   raw: RawCreateChapterArgs,
 ): CreateChapterArgs {
   return {
     comicId: raw.comic_id,
     subtitle: raw.subtitle,
+    presetAssignmentRoles: raw.preset_assignment_roles,
   } as CreateChapterArgs;
 }
 

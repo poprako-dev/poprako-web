@@ -73,6 +73,7 @@ export type ComicDetailModalProps = {
   onCreateChapter?: (args: {
     comicId: string;
     subtitle?: string;
+    presetAssignmentRoles?: number;
   }) => Promise<Result<string>>;
   onDeleteChapter?: (chapterId: string) => Promise<Result<void>>;
   onNavigateToTranslator?: (

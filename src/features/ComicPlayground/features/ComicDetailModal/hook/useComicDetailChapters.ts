@@ -163,13 +163,18 @@ export function useComicDetailChapters({
   const handleCreateChapter = useCallback(
     async (
       subtitle: string | undefined,
+      presetAssignmentRoles: number | undefined,
       onCreateChapter?: ComicDetailModalProps["onCreateChapter"],
     ): Promise<Result<string>> => {
       if (!onCreateChapter) {
         return { success: false, error: "未提供创建章节能力" };
       }
 
-      const res = await onCreateChapter({ comicId, subtitle });
+      const res = await onCreateChapter({
+        comicId,
+        subtitle,
+        presetAssignmentRoles,
+      });
       if (!res.success) {
         return res;
       }

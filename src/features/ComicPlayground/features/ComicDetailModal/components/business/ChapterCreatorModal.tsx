@@ -2,12 +2,18 @@ import { useState } from "react";
 import { Loader2, AlignLeft, Layers } from "lucide-react";
 import clsx from "clsx";
 import IconInputRow from "@/components/ui/IconInputRow";
+import { useActiveTeam } from "@/hooks/useActiveTeam";
+import { roleMask, type Role } from "@/types/role";
 import type { Result } from "@/types/utils/result";
 import type { ComicInfo } from "@/types";
+import PresetAssignmentRoleSwitchGroup from "../../../../components/business/PresetAssignmentRoleSwitchGroup";
 
 type Props = {
   comicInfo: ComicInfo;
-  onCreateChapter: (subtitle?: string) => Promise<Result<string>>;
+  onCreateChapter: (
+    subtitle?: string,
+    presetAssignmentRoles?: number,
+  ) => Promise<Result<string>>;
   onClose: () => void;
 };
 
@@ -16,13 +22,18 @@ export default function ChapterCreatorModal({
   onCreateChapter,
   onClose,
 }: Props) {
+  const { activeMember } = useActiveTeam();
   const [subtitle, setSubtitle] = useState("");
+  const [presetRoles, setPresetRoles] = useState<Role[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const result = await onCreateChapter(subtitle.trim() || undefined);
+    const result = await onCreateChapter(
+      subtitle.trim() || undefined,
+      presetRoles.length > 0 ? roleMask(presetRoles) : undefined,
+    );
     setIsSubmitting(false);
     if (result.success) onClose();
   };
@@ -73,6 +84,12 @@ export default function ChapterCreatorModal({
             placeholder="章节副标题（选填）"
             value={subtitle}
             onChange={setSubtitle}
+          />
+
+          <PresetAssignmentRoleSwitchGroup
+            activeMember={activeMember}
+            value={presetRoles}
+            onChange={setPresetRoles}
           />
 
           <div className="mt-4 flex items-center gap-2">

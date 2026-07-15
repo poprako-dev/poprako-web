@@ -41,11 +41,13 @@ export type RawListChapterArgs = {
 export type CreateChapterArgs = {
   comicId: string;
   subtitle?: string;
+  presetAssignmentRoles?: number;
 };
 
 export type RawCreateChapterArgs = {
   comic_id: string;
   subtitle?: string;
+  preset_assignment_roles?: number;
 };
 
 export type UpdateChapterArgs = {

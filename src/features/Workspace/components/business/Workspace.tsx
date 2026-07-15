@@ -104,7 +104,7 @@ export default function Workspace() {
 
   const loadComments = useCallback(async (teamId: string) => {
     setCommentsLoading(true);
-    const result = await listComments({ teamId, offset: 0, limit: 50 });
+    const result = await listComments({ teamId, offset: 0, limit: 50, includes: ["user"] });
     setCommentsLoading(false);
     if (!result.success) {
       console.error("[Workspace] 加载留言失败:", result.error);
