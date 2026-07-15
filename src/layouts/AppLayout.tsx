@@ -108,9 +108,15 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#FEFDF9]">
+    <div className="flex h-[100dvh] overflow-hidden bg-[#FEFDF9]">
       <AppSidebar />
-      <main className={clsx("w-full sm:pl-14", "pb-14 sm:pb-0")}>
+      <main
+        className={clsx(
+          "flex-1 min-h-0 w-full overflow-y-auto",
+          "sm:pl-14",
+          "pb-14 sm:pb-0",
+        )}
+      >
         <Outlet />
       </main>
       <MobileBottomNav />
