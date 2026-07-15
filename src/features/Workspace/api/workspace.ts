@@ -2,27 +2,27 @@ import { listAssignmentsByChapter, listMyAssignments } from "@/api/assignment";
 import type { ComicInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
+import type { ComicTranslationListItem } from "@/features/ComcList/types/types";
 
-export async function fetchMyComics(
+export async function fetchMyAssignmentComicCards(
   offset: number,
   limit: number,
-): Promise<ComicInfo[] | string> {
+): Promise<ComicTranslationListItem[] | string> {
   const result = await listMyAssignments({
     includes: ["chapter.comic.workset.team"],
     offset,
     limit,
   });
   if (!result.success) return result.error;
-  const seen = new Set<string>();
-  const comics: ComicInfo[] = [];
+  const cards: ComicTranslationListItem[] = [];
   for (const assignment of result.data) {
-    const comic = assignment.chapter?.comic;
-    if (comic && !seen.has(comic.id)) {
-      seen.add(comic.id);
-      comics.push(comic);
+    const chapter = assignment.chapter;
+    const comicInfo = chapter?.comic;
+    if (comicInfo && chapter) {
+      cards.push({ comicInfo, chapter });
     }
   }
-  return comics;
+  return cards;
 }
 
 export async function fetchComicAssignments(

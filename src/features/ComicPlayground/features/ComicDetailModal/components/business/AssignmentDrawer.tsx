@@ -54,7 +54,8 @@ const ROLE_DEFS: RoleDef[] = [
     matches: (a) => a.assignedRawProviderAt != null,
     getStatus: uploadWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "upload_complete"),
-    prevRevertTransition: (ch) => (ch.uploadedAt ? "upload_revert" : null),
+    prevRevertTransition: (ch) =>
+      uploadWorkflowStatus(ch) === "completed" ? "upload_revert" : null,
   },
   {
     fullLabel: "翻译",
@@ -68,8 +69,9 @@ const ROLE_DEFS: RoleDef[] = [
       return null;
     },
     prevRevertTransition: (ch) => {
-      if (ch.translatedAt) return "translate_revert";
-      if (ch.translatingAt) return "translate_start_revert";
+      const s = translateWorkflowStatus(ch);
+      if (s === "completed") return "translate_revert";
+      if (s === "ongoing") return "translate_start_revert";
       return null;
     },
   },
@@ -85,8 +87,9 @@ const ROLE_DEFS: RoleDef[] = [
       return null;
     },
     prevRevertTransition: (ch) => {
-      if (ch.proofreadAt) return "proofread_revert";
-      if (ch.proofreadingAt) return "proofread_start_revert";
+      const s = proofreadWorkflowStatus(ch);
+      if (s === "completed") return "proofread_revert";
+      if (s === "ongoing") return "proofread_start_revert";
       return null;
     },
   },
@@ -103,8 +106,9 @@ const ROLE_DEFS: RoleDef[] = [
       return null;
     },
     prevRevertTransition: (ch) => {
-      if (ch.typesetAt) return "typeset_revert";
-      if (ch.typesettingAt) return "typeset_start_revert";
+      const s = typesetWorkflowStatus(ch);
+      if (s === "completed") return "typeset_revert";
+      if (s === "ongoing") return "typeset_start_revert";
       return null;
     },
   },
@@ -115,7 +119,8 @@ const ROLE_DEFS: RoleDef[] = [
     matches: (a) => a.assignedReviewerAt != null,
     getStatus: reviewWorkflowStatus,
     nextTransition: (s) => (s === "completed" ? null : "review_complete"),
-    prevRevertTransition: (ch) => (ch.reviewedAt ? "review_revert" : null),
+    prevRevertTransition: (ch) =>
+      reviewWorkflowStatus(ch) === "completed" ? "review_revert" : null,
   },
   {
     fullLabel: "发布",

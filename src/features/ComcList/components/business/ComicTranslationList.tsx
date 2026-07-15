@@ -1,16 +1,16 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
-import type { ComicInfo } from "@/types";
 import ComicTranslationCard from "@/features/ComicCard/components/business/ComicTranslationCard";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import type { ComicTranslationListItem } from "../../types/types";
 
 type Props = {
   onLoadComics: (
     offset: number,
     limit: number,
-  ) => Promise<ComicInfo[] | string>;
-  onComicClick?: (comicInfo: ComicInfo) => void;
+  ) => Promise<ComicTranslationListItem[] | string>;
+  onComicClick?: (comicInfo: ComicTranslationListItem["comicInfo"]) => void;
 };
 
 export default function ComicTranslationList({
@@ -18,7 +18,7 @@ export default function ComicTranslationList({
   onComicClick,
 }: Props) {
   const pageSize = 12;
-  const [comics, setComics] = useState<ComicInfo[]>([]);
+  const [comics, setComics] = useState<ComicTranslationListItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -112,11 +112,12 @@ export default function ComicTranslationList({
             "px-2 py-1 md:grid-cols-2 xl:grid-cols-3",
           )}
         >
-          {comics.map((comic) => (
+          {comics.map(({ comicInfo, chapter }) => (
             <ComicTranslationCard
-              key={comic.id}
-              comicInfo={comic}
-              onClick={() => onComicClick?.(comic)}
+              key={`${comicInfo.id}:${chapter?.id ?? "pinned"}`}
+              comicInfo={comicInfo}
+              chapter={chapter}
+              onClick={() => onComicClick?.(comicInfo)}
             />
           ))}
         </div>

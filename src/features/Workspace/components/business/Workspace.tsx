@@ -10,7 +10,7 @@ import AnnouncementTable from "./AnnouncementTable";
 import CommentChatBox from "./CommentChatBox";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
-import { fetchMyComics } from "../../api/workspace";
+import { fetchMyAssignmentComicCards } from "../../api/workspace";
 import { deleteComic, getComic, updateComic } from "@/features/ComicPlayground/api/comic";
 import {
   listChapters,
@@ -461,7 +461,7 @@ export default function Workspace() {
           <div className="flex-1 min-h-0 overflow-hidden">
             <ComicTranslationList
               key={comicListRefreshKey}
-              onLoadComics={fetchMyComics}
+              onLoadComics={fetchMyAssignmentComicCards}
               onComicClick={openComicDetail}
             />
           </div>
@@ -572,7 +572,7 @@ export default function Workspace() {
               <div className="w-full shrink-0 h-full overflow-y-auto">
                 <ComicTranslationList
                   key={comicListRefreshKey}
-                  onLoadComics={fetchMyComics}
+                  onLoadComics={fetchMyAssignmentComicCards}
                   onComicClick={openComicDetail}
                 />
               </div>

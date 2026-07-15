@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import ComicTranslationList from "../../features/ComcList/components/business/ComicTranslationList";
 import type { ComicInfo } from "@/types/comic";
+import type { ComicTranslationListItem } from "@/features/ComcList/types/types";
 
 const meta: Meta<typeof ComicTranslationList> = {
   title: "features/ComicTranslationList",
@@ -39,9 +40,12 @@ function makePagedLoader(allComics: ComicInfo[], delay = 800) {
   return async (
     offset: number,
     limit: number,
-  ): Promise<ComicInfo[] | string> => {
+  ): Promise<ComicTranslationListItem[] | string> => {
     await new Promise((resolve) => setTimeout(resolve, delay));
-    return allComics.slice(offset, offset + limit);
+    return allComics.slice(offset, offset + limit).map((comicInfo) => ({
+      comicInfo,
+      chapter: comicInfo.pinnedChapter,
+    }));
   };
 }
 

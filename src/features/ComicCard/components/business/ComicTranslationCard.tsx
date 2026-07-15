@@ -8,11 +8,12 @@ import {
   Tag,
   Hash,
 } from "lucide-react";
-import type { ComicInfo } from "@/types";
+import type { ChapterInfo, ComicInfo } from "@/types";
 import MultiProgressBar from "@/components/ui/MultiProgressBar";
 
 type Props = {
   comicInfo: ComicInfo;
+  chapter?: ChapterInfo;
   onClick: () => void;
 };
 
@@ -50,16 +51,17 @@ function DataTag({ icon, value }: { icon: React.ReactNode; value: number }) {
 
 export default function ComicTranslationCard({
   comicInfo,
+  chapter,
   onClick,
 }: Props) {
-  const chapter = comicInfo.pinnedChapter ?? null;
+  const displayChapter = chapter ?? comicInfo.pinnedChapter ?? null;
 
-  const total = chapter?.totalUnitCount ?? 0;
-  const translated = chapter?.translatedUnitCount ?? 0;
-  const proofread = chapter?.proofreadUnitCount ?? 0;
+  const total = displayChapter?.totalUnitCount ?? 0;
+  const translated = displayChapter?.translatedUnitCount ?? 0;
+  const proofread = displayChapter?.proofreadUnitCount ?? 0;
   const translationPct = total > 0 ? Math.floor((translated / total) * 100) : 0;
   const proofreadPct = total > 0 ? Math.floor((proofread / total) * 100) : 0;
-  const pageCount = chapter?.pageCount ?? 0;
+  const pageCount = displayChapter?.pageCount ?? 0;
 
   return (
     <div
@@ -119,7 +121,7 @@ export default function ComicTranslationCard({
         {/* 第二行：序号 + 日期 + 页数 */}
         <div className="flex items-center gap-1 text-[11px] text-stone-400/80 font-mono">
           <Hash size={11} strokeWidth={2.5} />
-          <span>{comicInfo.index + 1}</span>
+          <span>{displayChapter ? displayChapter.index + 1 : "—"}</span>
           <span className="text-stone-200">|</span>
           <div className="flex items-center gap-1 shrink-0">
             <Clock size={11} strokeWidth={2.5} />

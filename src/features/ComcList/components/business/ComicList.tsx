@@ -6,7 +6,11 @@ import type { AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 import type { WorksetInfo } from "@/types/workset";
 import type { ViewMode } from "@/features/ComicCard/types/types";
-import type { BinaryFilter, TripleFilter } from "../../types/types";
+import type {
+  BinaryFilter,
+  ComicTranslationListItem,
+  TripleFilter,
+} from "../../types/types";
 import ComicListLayout from "../../layouts/ComicListLayout";
 import FilterHeader from "./FilterHeader";
 import ComicTranslationList from "./ComicTranslationList";
@@ -85,6 +89,19 @@ export default function ComicList({
     setIsSidebarOpen((prev) => !prev);
   };
 
+  const loadComicCards = async (
+    offset: number,
+    limit: number,
+  ): Promise<ComicTranslationListItem[] | string> => {
+    const result = await onLoadComics(offset, limit);
+    if (typeof result === "string") return result;
+
+    return result.map((comicInfo) => ({
+      comicInfo,
+      chapter: comicInfo.pinnedChapter,
+    }));
+  };
+
   return (
     <ComicListLayout
       isSidebarOpen={isSidebarOpen}
@@ -159,7 +176,7 @@ export default function ComicList({
 
           {activeMode === "translator" && (
             <ComicTranslationList
-              onLoadComics={onLoadComics}
+              onLoadComics={loadComicCards}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
                 onComicClick?.(comicInfo);
