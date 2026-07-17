@@ -102,6 +102,15 @@ export async function deleteComic(id: string): Promise<Result<void>> {
   return { success: true, data: undefined };
 }
 
+export async function archiveComic(id: string): Promise<Result<void>> {
+  const res = await api.post<{ archived_comic_id: string }, Record<string, never>>(
+    `/comics/${id}/archive`,
+    {},
+  );
+  if (!res.success) return res;
+  return { success: true, data: undefined };
+}
+
 export async function reserveCoverUpload(
   comicId: string,
   fileExtension: string,

@@ -1,8 +1,8 @@
-import type { ChangeEvent, RefObject } from "react";
+import type { RefObject } from "react";
 import {
+  Archive,
   BookOpen,
   CheckSquare,
-  CloudUpload,
   Download,
   Eraser,
   Image as ImageIcon,
@@ -26,19 +26,17 @@ type Props = {
   canReadOnly: boolean;
   canUploadCover: boolean;
   canDeleteChapterPages: boolean;
-  canUploadRawPages: boolean;
+  canArchiveComic: boolean;
   isTeamAdmin: boolean;
   isDeletingChapterPages: boolean;
+  isArchivingComic: boolean;
   isDeletingComic: boolean;
-  isImportingData: boolean;
   isExportingData: boolean;
   onNavigateReadOnly?: () => void;
-  onOpenImportPicker?: () => void;
   onExport?: () => void;
   onDeletePages: () => void;
+  onArchiveComic: () => void;
   onDeleteComic: () => void;
-  importFileInputRef: RefObject<HTMLInputElement | null>;
-  onImportFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   coverInputRef: RefObject<HTMLInputElement | null>;
   coverUpload: CoverUploadState;
 };
@@ -49,19 +47,17 @@ export default function ComicDetailSidebar({
   canReadOnly,
   canUploadCover,
   canDeleteChapterPages,
-  canUploadRawPages,
+  canArchiveComic,
   isTeamAdmin,
   isDeletingChapterPages,
+  isArchivingComic,
   isDeletingComic,
-  isImportingData,
   isExportingData,
   onNavigateReadOnly,
-  onOpenImportPicker,
   onExport,
   onDeletePages,
+  onArchiveComic,
   onDeleteComic,
-  importFileInputRef,
-  onImportFileChange,
   coverInputRef,
   coverUpload,
 }: Props) {
@@ -210,6 +206,7 @@ export default function ComicDetailSidebar({
                 disabled={isDeletingChapterPages}
               />
             )}
+            {/*
             {canUploadRawPages && (
               <ActionButton
                 icon={CloudUpload}
@@ -218,12 +215,14 @@ export default function ComicDetailSidebar({
                 disabled={isImportingData}
               />
             )}
+            */}
             <ActionButton
               icon={Download}
               title="下载数据"
               onClick={onExport}
               disabled={isExportingData}
             />
+            {/*
             <input
               ref={importFileInputRef}
               type="file"
@@ -231,7 +230,16 @@ export default function ComicDetailSidebar({
               className="hidden"
               onChange={onImportFileChange}
             />
+            */}
           </>
+        )}
+        {canArchiveComic && (
+          <ActionButton
+            icon={Archive}
+            title="归档漫画"
+            onClick={onArchiveComic}
+            disabled={isArchivingComic}
+          />
         )}
         {isTeamAdmin && (
           <ActionButton

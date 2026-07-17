@@ -11,7 +11,12 @@ import CommentChatBox from "./CommentChatBox";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { fetchMyAssignmentComicCards } from "../../api/workspace";
-import { deleteComic, getComic, updateComic } from "@/features/ComicPlayground/api/comic";
+import {
+  archiveComic,
+  deleteComic,
+  getComic,
+  updateComic,
+} from "@/features/ComicPlayground/api/comic";
 import {
   listChapters,
   createChapter,
@@ -399,7 +404,23 @@ export default function Workspace() {
         return result;
       }
 
-      clearComicDetail();
+      clearComicDetail(true);
+      setComicListRefreshKey((prev) => prev + 1);
+
+      return result;
+    },
+    [clearComicDetail],
+  );
+
+  const handleArchiveComic = useCallback(
+    async (comicId: string): Promise<Result<void>> => {
+      const result = await archiveComic(comicId);
+      if (!result.success) {
+        console.error("[Workspace] 归档漫画失败:", result.error);
+        return result;
+      }
+
+      clearComicDetail(true);
       setComicListRefreshKey((prev) => prev + 1);
 
       return result;
@@ -626,6 +647,7 @@ export default function Workspace() {
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
           onExportChapterLp={handleExportChapterLp}
+          onArchiveComic={handleArchiveComic}
           onDeleteComic={handleDeleteComic}
           onUpdateComic={handleUpdateComic}
           onUpdateChapter={handleUpdateChapter}

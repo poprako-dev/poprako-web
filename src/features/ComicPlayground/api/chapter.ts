@@ -202,12 +202,12 @@ export async function exportChapter(
       }
     }
 
-    const body = JSON.parse(rawText) as { data?: RawChapterExport };
-    if (!body.data) {
+    const body = JSON.parse(rawText) as RawChapterExport;
+    if (!body) {
       return { success: false, error: "导出 PRK 失败" };
     }
 
-    return { success: true, data: unwrapRawChapterExport(body.data) };
+    return { success: true, data: unwrapRawChapterExport(body) };
   } catch (err) {
     return {
       success: false,
@@ -224,7 +224,7 @@ export async function exportChapterLp(
 
   try {
     const response = await fetch(
-      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=label_plus`,
+      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=label-plus`,
       {
       method: "GET",
         headers: token
@@ -252,15 +252,6 @@ export async function exportChapterLp(
           error: rawText || response.statusText || "导出 LP 失败",
         };
       }
-    }
-
-    try {
-      const body = JSON.parse(rawText) as { data?: string };
-      if (typeof body.data === "string") {
-        return { success: true, data: body.data };
-      }
-    } catch {
-      // ignore parse error and fallback to plain text payload
     }
 
     return { success: true, data: rawText };

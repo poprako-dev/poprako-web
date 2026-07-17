@@ -9,7 +9,12 @@ import { markSysMailRead, listSysMails } from "@/api/sysMail";
 import { reserveTeamAvatarUpload, confirmTeamAvatarUploaded } from "@/api/team";
 import { reserveUserAvatarUpload, confirmUserAvatarUploaded } from "@/api/user";
 import { listChapters, updateChapter, importChapter, exportChapter } from "@/features/ComicPlayground/api/chapter";
-import { listComics, markCoverUploaded, reserveCoverUpload } from "@/features/ComicPlayground/api/comic";
+import {
+  archiveComic,
+  listComics,
+  markCoverUploaded,
+  reserveCoverUpload,
+} from "@/features/ComicPlayground/api/comic";
 import { listPages, reserveChapterPages, reserveExistingPageUpload, updatePage, deleteChapterPages } from "@/features/ComicPlayground/api/page";
 import { listWorksets } from "@/features/ComicPlayground/api/workset";
 import { listUnits, saveUnits } from "@/features/WebTranslator/api/translator";
@@ -150,6 +155,10 @@ describe("poprako-r API migration", () => {
     await markCoverUploaded("comic_1", 12);
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/cover/mark-uploaded");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ cover_version: 12 });
+
+    await archiveComic("comic_1");
+    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/archive");
+    expect(lastFetchCall(fetchMock).init?.method).toBe("POST");
 
     await reserveChapterPages({ chapterId: "chapter_1", pageCount: 3, fileExtension: "png" });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/pages/reserve");
@@ -349,11 +358,16 @@ describe("poprako-r API migration", () => {
     const mails = await listSysMails();
     expect(mails.success && mails.data[0]?.read).toBe(false);
 
-    fetchMock = installFetch(okJson({
-      comic_id: "comic_1",
-      chapter_id: "chapter_1",
-      pages: [],
-    }));
+    fetchMock = installFetch(Promise.resolve(
+      new Response(JSON.stringify({
+        comic_id: "comic_1",
+        chapter_id: "chapter_1",
+        pages: [],
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    ));
     const exported = await exportChapter("chapter_1");
     expect(exported.success && exported.data.chapterId).toBe("chapter_1");
 

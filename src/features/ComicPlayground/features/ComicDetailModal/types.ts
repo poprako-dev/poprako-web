@@ -106,6 +106,7 @@ export type ComicDetailModalProps = {
     chapterId: string,
     options?: { signal?: AbortSignal },
   ) => Promise<Result<string>>;
+  onArchiveComic?: (comicId: string) => Promise<Result<void>>;
   onDeleteComic?: (comicId: string) => Promise<Result<void>>;
   onUpdateComic?: (args: {
     title: string;

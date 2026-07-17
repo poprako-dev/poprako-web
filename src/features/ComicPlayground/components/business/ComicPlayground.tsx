@@ -6,7 +6,14 @@ import ComicList from "@/features/ComcList/components/business/ComicList";
 import ComicCreatorModal from "./ComicCreatorModal";
 import WorksetCreatorModal from "./WorksetCreatorModal";
 import ComicDetailModal from "../../features/ComicDetailModal/components/business/ComicDetailModal";
-import { listComics, createComic, deleteComic, getComic, updateComic } from "../../api/comic";
+import {
+  archiveComic,
+  listComics,
+  createComic,
+  deleteComic,
+  getComic,
+  updateComic,
+} from "../../api/comic";
 import {
   listChapters,
   createChapter,
@@ -377,6 +384,23 @@ export default function ComicPlayground() {
     [clearComicDetail, loadWorksets],
   );
 
+  const handleArchiveComic = useCallback(
+    async (comicId: string): Promise<Result<void>> => {
+      const result = await archiveComic(comicId);
+      if (!result.success) {
+        console.error("[ComicPlayground] 归档漫画失败:", result.error);
+        return result;
+      }
+
+      clearComicDetail(true);
+      await loadWorksets();
+      setComicListRefreshKey((k) => k + 1);
+
+      return result;
+    },
+    [clearComicDetail, loadWorksets],
+  );
+
   const handleCreateChapter = useCallback(
     async (args: { comicId: string; subtitle?: string }): Promise<Result<string>> => {
       return createChapter(args);
@@ -462,6 +486,7 @@ export default function ComicPlayground() {
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
           onExportChapterLp={handleExportChapterLp}
+          onArchiveComic={handleArchiveComic}
           onDeleteComic={handleDeleteComic}
           onUpdateComic={handleUpdateComic}
           onUpdateChapter={handleUpdateChapter}

@@ -43,9 +43,9 @@ export default function ComicDetailModal({
   onDeleteChapterPages,
   onReservePageUpload,
   onJoinChapterRole,
-  onImportChapter,
   onExportChapter,
   onExportChapterLp,
+  onArchiveComic,
   onDeleteComic,
   onUpdateComic,
   onUpdateChapter,
@@ -56,12 +56,12 @@ export default function ComicDetailModal({
   const accessToken = useAppStore((s) => s.accessToken);
   const [activeMember, setActiveMember] = useState<MemberInfo | null>(null);
   const [pendingConfirmAction, setPendingConfirmAction] = useState<
-    "delete-pages" | "delete-comic" | null
+    "delete-pages" | "archive-comic" | "delete-comic" | null
   >(null);
+  const [isArchivingComic, setIsArchivingComic] = useState(false);
   const [isDeletingComic, setIsDeletingComic] = useState(false);
   const [showComicModifier, setShowComicModifier] = useState(false);
   const [chapterToModify, setChapterToModify] = useState<ChapterInfo | null>(null);
-  const importFileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const resolveActiveMemberRef = useRef(onResolveActiveMember);
   useLayoutEffect(() => {
@@ -178,11 +178,9 @@ export default function ComicDetailModal({
   });
 
   const {
-    isImportingData,
     isExportingData,
     exportProgress,
     canUploadCover,
-    handleImportFileChange,
     handleExportData,
     coverUpload,
     cancelExport,
@@ -201,7 +199,6 @@ export default function ComicDetailModal({
     canUploadRawPages,
     onExportChapter,
     onExportChapterLp,
-    onImportChapter,
     reloadCurrentPages,
     reloadLoadedChapters,
     showToast,
@@ -267,6 +264,22 @@ export default function ComicDetailModal({
     showToast("漫画删除成功", "success");
   };
 
+  const handleArchiveCurrentComic = async () => {
+    if (!onArchiveComic) return;
+
+    setIsArchivingComic(true);
+    const res = await onArchiveComic(comicInfo.id);
+    setIsArchivingComic(false);
+
+    if (!res.success) {
+      console.error("[ComicDetailModal] 归档漫画失败:", res);
+      showToast(res.error, "error");
+      return;
+    }
+
+    showToast("漫画归档成功", "success");
+  };
+
   const handleUpdateChapterLocal = useCallback(
     (chapterId: string, subtitle?: string) => {
       setChapters((prev) =>
@@ -319,11 +332,11 @@ export default function ComicDetailModal({
       canReadOnly={canReadOnly}
       canUploadCover={canUploadCover}
       canDeleteChapterPages={canDeleteChapterPages}
-      canUploadRawPages={canUploadRawPages}
+      canArchiveComic={isTeamAdmin && !!onArchiveComic}
       isTeamAdmin={isTeamAdmin && !!onDeleteComic}
       isDeletingChapterPages={isDeletingChapterPages}
+      isArchivingComic={isArchivingComic}
       isDeletingComic={isDeletingComic}
-      isImportingData={isImportingData}
       isExportingData={isExportingData}
       onNavigateReadOnly={
         canReadOnly && selectedChapterId && onNavigateToTranslator
@@ -337,18 +350,12 @@ export default function ComicDetailModal({
             }
           : undefined
       }
-      onOpenImportPicker={
-        selectedChapterId && onImportChapter && !isImportingData
-          ? () => importFileInputRef.current?.click()
-          : undefined
-      }
       onExport={
         onExportChapter && onExportChapterLp ? () => void handleExportData() : undefined
       }
       onDeletePages={() => setPendingConfirmAction("delete-pages")}
+      onArchiveComic={() => setPendingConfirmAction("archive-comic")}
       onDeleteComic={() => setPendingConfirmAction("delete-comic")}
-      importFileInputRef={importFileInputRef}
-      onImportFileChange={handleImportFileChange}
       coverInputRef={coverInputRef}
       coverUpload={coverUpload}
     />
@@ -455,6 +462,21 @@ export default function ComicDetailModal({
           onConfirm={() => {
             setPendingConfirmAction(null);
             void handleDeleteCurrentComic();
+          }}
+          onCancel={() => setPendingConfirmAction(null)}
+        />
+      )}
+      {pendingConfirmAction === "archive-comic" && (
+        <ConfirmDialog
+          title="确认归档漫画"
+          description={
+            `即将归档漫画《${comicInfo.title}》及其全部章节，` +
+            "归档后将从当前漫画列表移除。"
+          }
+          confirmLabel="归档"
+          onConfirm={() => {
+            setPendingConfirmAction(null);
+            void handleArchiveCurrentComic();
           }}
           onCancel={() => setPendingConfirmAction(null)}
         />
