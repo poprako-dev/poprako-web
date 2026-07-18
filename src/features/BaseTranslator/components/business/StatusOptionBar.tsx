@@ -18,9 +18,9 @@ type Props = {
 };
 
 const modeIcon: Record<TranslatorMode, React.ReactNode> = {
-  translate: <FileType size={14} />,
-  proofread: <CheckCheck size={14} />,
-  readOnly: <Lock size={14} />,
+  translate: <FileType size={18} />,
+  proofread: <CheckCheck size={18} />,
+  readOnly: <Lock size={18} />,
 };
 
 const modeLabel: Record<TranslatorMode, string> = {
@@ -52,7 +52,7 @@ export default function StatusOptionBar({
   })();
 
   const btnBase = clsx(
-    "flex-1 flex items-center justify-center py-1.5 transition-colors",
+    "flex-1 flex items-center justify-center py-2 transition-colors",
     "text-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
   );
 
@@ -77,7 +77,7 @@ export default function StatusOptionBar({
             : "bg-white hover:bg-stone-100",
         )}
       >
-        <MapPin size={14} />
+        <MapPin size={18} />
       </button>
       {currMode !== "readOnly" && (
         <>
@@ -91,7 +91,7 @@ export default function StatusOptionBar({
                 : "bg-white hover:bg-stone-100",
             )}
           >
-            <CircleSlash size={14} />
+            <CircleSlash size={18} />
           </button>
           <button
             title="保存"
@@ -106,8 +106,8 @@ export default function StatusOptionBar({
             )}
           >
             {saving
-              ? <Loader2 size={14} className="animate-spin" />
-              : <Save size={14} />}
+              ? <Loader2 size={18} className="animate-spin" />
+              : <Save size={18} />}
           </button>
         </>
       )}
@@ -125,7 +125,7 @@ export default function StatusOptionBar({
             : "bg-white hover:bg-stone-100",
         )}
       >
-        <Eye size={14} />
+        <Eye size={18} />
       </button>
     </div>
   );

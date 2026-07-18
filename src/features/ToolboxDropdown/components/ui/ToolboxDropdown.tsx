@@ -5,9 +5,10 @@ import clsx from "clsx";
 
 type Props = {
   options: ToolboxOption[];
+  direction?: "up" | "down";
 };
 
-export default function ToolboxDropdown({ options }: Props) {
+export default function ToolboxDropdown({ options, direction = "down" }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +39,7 @@ export default function ToolboxDropdown({ options }: Props) {
         ref={dropdownRef}
       >
         <button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={clsx(
             "w-8 h-8 flex items-center justify-center rounded-md transition-all duration-300 border",
@@ -45,17 +47,27 @@ export default function ToolboxDropdown({ options }: Props) {
               ? "bg-green-50 text-gray-800 shadow-lg"
               : "bg-white border-gray-200 text-gray-700 shadow-sm",
           )}
-          aria-label="Toggle Menu"
+          aria-label="工具菜单"
+          aria-expanded={isOpen}
         >
           <Menu size={16} strokeWidth={3} />
         </button>
 
         {/* 纵向图标长条面板 */}
         {isOpen && (
-          <div className="absolute left-0 mt-3 w-8 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div
+            className={clsx(
+              "absolute left-0 w-8 bg-white rounded-lg shadow-xl border",
+              "border-gray-100 overflow-hidden z-50 animate-in fade-in duration-300",
+              direction === "up"
+                ? "bottom-full mb-3 slide-in-from-bottom-4"
+                : "top-full mt-3 slide-in-from-top-4",
+            )}
+          >
             <div className="flex flex-col divide-y divide-gray-50">
               {options.map((item, index) => (
                 <button
+                  type="button"
                   key={index}
                   className={clsx(
                     "w-8 h-8 flex items-center justify-center",
@@ -63,6 +75,7 @@ export default function ToolboxDropdown({ options }: Props) {
                   )}
                   onClick={() => {
                     item.onClick();
+                    setIsOpen(false);
                   }}
                   title={item.title}
                 >

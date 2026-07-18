@@ -21,7 +21,8 @@ export default function BaseTranslatorLayout({ canvas, sidebar }: Props) {
       <div
         className={clsx(
           "shrink-0 flex flex-col overflow-hidden bg-stone-50",
-          "portrait:h-50 portrait:border-t portrait:border-stone-200",
+          "portrait:h-2/5 portrait:border-t portrait:border-stone-200",
+          "sm:portrait:h-50",
           "landscape:w-95 landscape:border-l landscape:border-stone-200",
         )}
       >

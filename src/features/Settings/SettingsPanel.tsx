@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Globe2, KeyRound, LogOut, Upload } from "lucide-react";
+import { FileDown, Globe2, KeyRound, LogOut, Upload } from "lucide-react";
 import clsx from "clsx";
 import { logoutUser } from "@/api/auth";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import { downloadConsoleLogs } from "@/lib/consoleLog";
 import TeamSwitchModal from "./TeamSwitchModal";
 import UserAvatarUploadModal from "./UserAvatarUploadModal";
 import PasswordResetDialog from "./PasswordResetDialog";
@@ -62,6 +63,11 @@ export default function SettingsPanel() {
     }
   };
 
+  const handleExportLogs = () => {
+    const count = downloadConsoleLogs();
+    showToast(`已导出 ${count} 条当前会话日志`, "success");
+  };
+
   return (
     <div className="flex w-1/3 flex-col gap-4">
       <div
@@ -103,6 +109,20 @@ export default function SettingsPanel() {
         <span className="text-lg font-medium">上传头像</span>
         <Upload className="h-5 w-5" />
       </div>
+
+      <button
+        type="button"
+        className={clsx(
+          "flex w-full cursor-pointer items-center justify-between",
+          "rounded-sm px-6 py-4 transition-colors",
+          "bg-white/80 ring-1 shadow-sm ring-black/5",
+          "hover:bg-stone-50/80 hover:ring-stone-200 hover:text-stone-700",
+        )}
+        onClick={handleExportLogs}
+      >
+        <span className="text-lg font-medium">导出日志</span>
+        <FileDown className="h-5 w-5" />
+      </button>
 
       <div
         className={clsx(

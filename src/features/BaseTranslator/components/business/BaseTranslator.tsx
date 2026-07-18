@@ -359,25 +359,16 @@ export default function BaseTranslator({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isShortcutPanelOpen]);
 
-  const toolboxOptions = [
-    ...(readOnly
-      ? []
-      : [
-          {
-            icon: <Command size={20} />,
-            title: "快捷键说明",
-            onClick: () => setIsShortcutPanelOpen(true),
-          },
-          {
-            icon: <CaseSensitive size={20} />,
-            title: "特殊符号面板",
-            onClick: () => setIsSpecialCharPanelOpen(true),
-          },
-        ]),
+  const toolboxOptions = readOnly ? [] : [
     {
-      icon: <SquareArrowRight size={20} />,
-      title: "退出",
-      onClick: handleExit,
+      icon: <Command size={20} />,
+      title: "快捷键说明",
+      onClick: () => setIsShortcutPanelOpen(true),
+    },
+    {
+      icon: <CaseSensitive size={20} />,
+      title: "特殊符号面板",
+      onClick: () => setIsSpecialCharPanelOpen(true),
     },
   ];
 
@@ -403,8 +394,25 @@ export default function BaseTranslator({
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
       <div className="absolute top-2 left-2">
-        <ToolboxDropdown options={toolboxOptions} />
+        <button
+          type="button"
+          title="退出"
+          aria-label="退出翻译器"
+          onClick={handleExit}
+          className={clsx(
+            "flex size-8 items-center justify-center rounded-md border",
+            "border-gray-200 bg-white/85 text-gray-700 shadow-sm",
+            "transition-colors hover:bg-white hover:text-gray-900",
+          )}
+        >
+          <SquareArrowRight size={20} />
+        </button>
       </div>
+      {!readOnly && (
+        <div className="absolute bottom-2 left-2">
+          <ToolboxDropdown options={toolboxOptions} direction="up" />
+        </div>
+      )}
       <div className="absolute top-2 right-2">
         <Paginator
           currPageIndex={pageIndex}

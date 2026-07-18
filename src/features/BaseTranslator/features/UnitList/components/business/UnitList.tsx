@@ -77,18 +77,18 @@ export default function UnitList({
         ))}
       </div>
       {mode === "proofread" && !enableReadOnly && (
-        <div className="flex border-t-2 border-gray-300 text-base justify-center px-0 py-2 bg-stone-50">
-          <button
-            title="全部确认校对"
-            onClick={proofreadAll}
-            className={clsx(
-              "rounded",
-              "text-gray-700 font-bold hover:text-gray-900 transition-colors",
-            )}
-          >
-            <ListCheck size={20} />
-          </button>
-        </div>
+        <button
+          type="button"
+          title="全部确认校对"
+          onClick={proofreadAll}
+          className={clsx(
+            "flex w-full shrink-0 items-center justify-center border-t-2",
+            "border-gray-300 bg-stone-50 py-2 text-gray-700",
+            "transition-colors hover:bg-stone-200 hover:text-gray-900",
+          )}
+        >
+          <ListCheck size={22} />
+        </button>
       )}
     </div>
   );

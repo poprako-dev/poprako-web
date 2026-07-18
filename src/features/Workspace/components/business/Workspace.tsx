@@ -109,14 +109,14 @@ export default function Workspace() {
 
   const loadComments = useCallback(async (teamId: string) => {
     setCommentsLoading(true);
-    const result = await listComments({ teamId, offset: 0, limit: 50, includes: ["user"] });
+    const result = await listComments({ teamId, offset: 0, limit: 15, includes: ["user"] });
     setCommentsLoading(false);
     if (!result.success) {
       console.error("[Workspace] 加载留言失败:", result.error);
       showToast("加载留言失败", "error");
       return;
     }
-    setComments(result.data);
+    setComments([...result.data].reverse());
   }, [showToast]);
 
   useEffect(() => {
@@ -127,16 +127,24 @@ export default function Workspace() {
 
   const handleSendComment = useCallback(
     async (content: string) => {
-      if (!selectedTeamId) return;
+      if (!selectedTeamId || !currentUserId) return;
       const result = await createComment({ teamId: selectedTeamId, content });
       if (!result.success) {
         console.error("[Workspace] 发送留言失败:", result.error);
         showToast("发送留言失败", "error");
         return;
       }
-      await loadComments(selectedTeamId);
+      const newComment: CommentInfo = {
+        id: result.data,
+        teamId: selectedTeamId,
+        userId: currentUserId,
+        user: loginState?.userInfo,
+        content,
+        createdAt: Date.now(),
+      };
+      setComments((prev) => [...prev, newComment]);
     },
-    [selectedTeamId, loadComments, showToast],
+    [selectedTeamId, currentUserId, loginState?.userInfo, showToast],
   );
 
   const resolveActiveMember = useCallback(() => {
