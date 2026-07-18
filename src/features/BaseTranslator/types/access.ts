@@ -5,6 +5,17 @@ type TranslatorCapabilities = {
   canProofread: boolean;
 };
 
+export type TranslatorCompletionStage = "translate" | "proofread";
+
+export function translatorCompletionStage({
+  canTranslate,
+  canProofread,
+}: TranslatorCapabilities): TranslatorCompletionStage | undefined {
+  if (canProofread) return "proofread";
+  if (canTranslate) return "translate";
+  return undefined;
+}
+
 export function availableTranslatorModes({
   canTranslate,
   canProofread,

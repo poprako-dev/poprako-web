@@ -2,21 +2,15 @@ import { useState } from "react";
 import clsx from "clsx";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
-import {
-  canApplyWorkflowTransition,
-  uploadWorkflowStatus,
-  translateWorkflowStatus,
-  proofreadWorkflowStatus,
-  typesetWorkflowStatus,
-  reviewWorkflowStatus,
-  publishWorkflowStatus,
-} from "@/types/chapter";
+import { canApplyWorkflowTransition } from "@/types/chapter";
 import type { ChapterInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
+import type { Role } from "@/types/role";
 import type { WorkflowStatus } from "@/types/workflow";
 import type { Result } from "@/types/utils/result";
+import { ASSIGNMENT_ROLE_DEFS } from "./assignmentWorkflow";
+import QuickWorkflowActions from "./QuickWorkflowActions";
 import RoleTag from "./RoleTag";
-import type { Role } from "@/types/role";
 
 type Props = {
   selectedChapter?: ChapterInfo;
@@ -33,120 +27,6 @@ type Props = {
   isRoleLeaving?: (role: Role) => boolean;
   canOperateWorkflow?: boolean;
   canManageAssignments?: boolean;
-};
-
-type RoleDef = {
-  label: string;
-  /** Returns the role key used when adding a new assignment for this row. */
-  addRole: Role;
-  /** Predicate to check if an assignment belongs to this row. */
-  matches: (a: AssignmentInfo) => boolean;
-  getStatus: (ch: ChapterInfo) => WorkflowStatus;
-  nextTransition: (status: WorkflowStatus) => WorkflowTransition | null;
-  prevRevertTransition: (ch: ChapterInfo) => WorkflowTransition | null;
-};
-
-const ROLE_DEFS: RoleDef[] = [
-  {
-    label: "图",
-    addRole: "rawProvider",
-    matches: (a) => a.assignedRawProviderAt != null,
-    getStatus: uploadWorkflowStatus,
-    nextTransition: (s) => (s === "completed" ? null : "upload_complete"),
-    prevRevertTransition: (ch) =>
-      uploadWorkflowStatus(ch) === "completed" ? "upload_revert" : null,
-  },
-  {
-    label: "翻",
-    addRole: "translator",
-    matches: (a) => a.assignedTranslatorAt != null,
-    getStatus: translateWorkflowStatus,
-    nextTransition: (s) => {
-      if (s === "pending") return "translate_start";
-      if (s === "ongoing") return "translate_complete";
-      return null;
-    },
-    prevRevertTransition: (ch) => {
-      const s = translateWorkflowStatus(ch);
-      if (s === "completed") return "translate_revert";
-      if (s === "ongoing") return "translate_start_revert";
-      return null;
-    },
-  },
-  {
-    label: "校",
-    addRole: "proofreader",
-    matches: (a) => a.assignedProofreaderAt != null,
-    getStatus: proofreadWorkflowStatus,
-    nextTransition: (s) => {
-      if (s === "pending") return "proofread_start";
-      if (s === "ongoing") return "proofread_complete";
-      return null;
-    },
-    prevRevertTransition: (ch) => {
-      const s = proofreadWorkflowStatus(ch);
-      if (s === "completed") return "proofread_revert";
-      if (s === "ongoing") return "proofread_start_revert";
-      return null;
-    },
-  },
-  {
-    // 嵌字 and 美工 share the same typeset workflow stage.
-    label: "嵌",
-    addRole: "typesetter",
-    matches: (a) =>
-      a.assignedTypesetterAt != null ||
-      a.assignedRedrawerAt != null,
-    getStatus: typesetWorkflowStatus,
-    nextTransition: (s) => {
-      if (s === "pending") return "typeset_start";
-      if (s === "ongoing") return "typeset_complete";
-      return null;
-    },
-    prevRevertTransition: (ch) => {
-      const s = typesetWorkflowStatus(ch);
-      if (s === "completed") return "typeset_revert";
-      if (s === "ongoing") return "typeset_start_revert";
-      return null;
-    },
-  },
-  {
-    label: "监",
-    addRole: "reviewer",
-    matches: (a) => a.assignedReviewerAt != null,
-    getStatus: reviewWorkflowStatus,
-    nextTransition: (s) => (s === "completed" ? null : "review_complete"),
-    prevRevertTransition: (ch) =>
-      reviewWorkflowStatus(ch) === "completed" ? "review_revert" : null,
-  },
-  {
-    label: "传",
-    addRole: "publisher",
-    matches: (a) => a.assignedPublisherAt != null,
-    getStatus: publishWorkflowStatus,
-    nextTransition: (s) => (s === "completed" ? null : "publish_complete"),
-    prevRevertTransition: () => null,
-  },
-];
-
-export const TRANSITION_LABELS: Record<WorkflowTransition, string> = {
-  upload_complete: "标记图源上传完成",
-  translate_start: "开始翻译",
-  translate_complete: "标记翻译完成",
-  proofread_start: "开始校对",
-  proofread_complete: "标记校对完成",
-  typeset_start: "开始嵌字",
-  typeset_complete: "标记嵌字完成",
-  review_complete: "标记监修通过",
-  publish_complete: "标记发布完成",
-  upload_revert: "撤销上传完成",
-  translate_start_revert: "撤销开始翻译",
-  translate_revert: "撤销翻译完成",
-  proofread_start_revert: "撤销开始校对",
-  proofread_revert: "撤销校对完成",
-  typeset_start_revert: "撤销开始嵌字",
-  typeset_revert: "撤销嵌字完成",
-  review_revert: "撤销监修通过",
 };
 
 export default function AssignmentFooter({
@@ -193,7 +73,7 @@ export default function AssignmentFooter({
         )}
       >
         <div className="px-4 pt-1 pb-3 flex flex-col gap-1 relative">
-          {ROLE_DEFS.map((roleDef) => {
+          {ASSIGNMENT_ROLE_DEFS.map((roleDef) => {
             const roleAssignments = assignments.filter(roleDef.matches);
             const isCurrentUserAssigned = !!(
               currentUserId &&
@@ -236,8 +116,8 @@ export default function AssignmentFooter({
 
             return (
               <RoleTag
-                key={roleDef.label}
-                label={roleDef.label}
+                key={roleDef.shortLabel}
+                label={roleDef.shortLabel}
                 role={roleDef.addRole}
                 assignments={roleAssignments}
                 status={status}
@@ -272,6 +152,12 @@ export default function AssignmentFooter({
               />
             );
           })}
+          <QuickWorkflowActions
+            selectedChapter={selectedChapter}
+            assignments={assignments}
+            currentUserId={currentUserId}
+            onTransiteWorkflow={onTransiteWorkflow}
+          />
         </div>
       </div>
 

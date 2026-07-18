@@ -346,6 +346,10 @@ async function mockSaveUnits(pageId: string, diff: UnitDiff) {
   console.log("[mock] onSaveUnits", pageId, diff);
 }
 
+async function mockCompleteStage(stage: "translate" | "proofread") {
+  console.log("[mock] onCompleteStage", stage);
+}
+
 export const WithProofread: Story = {
   args: {
     project: mockProject,
@@ -354,6 +358,7 @@ export const WithProofread: Story = {
     onLoadUnits: async (_pageId: string) => mockUnits,
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,
+    onCompleteStage: mockCompleteStage,
     onExit: () => {
       console.log("[mock] onExit");
     },
@@ -368,6 +373,7 @@ export const TranslatorOnly: Story = {
     onLoadUnits: async (_pageId: string) => mockUnits,
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,
+    onCompleteStage: mockCompleteStage,
     onExit: () => {
       console.log("[mock] onExit");
     },
@@ -382,6 +388,7 @@ export const EmptyUnits: Story = {
     onLoadUnits: async (_pageId: string) => [],
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,
+    onCompleteStage: mockCompleteStage,
     onExit: () => {
       console.log("[mock] onExit");
     },

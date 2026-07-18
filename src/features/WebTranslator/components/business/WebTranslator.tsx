@@ -10,10 +10,14 @@ import {
   listUnits,
   saveUnits,
   listPages,
+  completeChapterStage,
 } from "../../api/translator";
 import { listAssignmentsByChapter } from "@/api/assignment";
 
 import type { TranslatorMode } from "@/types/translatorMode";
+import type {
+  TranslatorCompletionStage,
+} from "@/features/BaseTranslator/types/access";
 
 type Props = {
   chapterId: string;
@@ -239,6 +243,14 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     [chapterId, state],
   );
 
+  const handleCompleteStage = useCallback(
+    async (stage: TranslatorCompletionStage) => {
+      const result = await completeChapterStage(chapterId, stage);
+      if (!result.success) throw new Error(result.error);
+    },
+    [chapterId],
+  );
+
   if (state.status === "loading") {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -275,6 +287,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       onLoadUnits={handleLoadUnits}
       onSaveUnits={handleSaveUnits}
       onLoadPageImage={handleLoadPageImage}
+      onCompleteStage={handleCompleteStage}
       onExit={onExit}
       currentUserId={currentUserId}
       canTranslate={state.canTranslate}

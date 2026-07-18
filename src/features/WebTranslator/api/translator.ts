@@ -13,6 +13,9 @@ import {
   type SavePageUnitsResult,
 } from "@/types/raw/unit";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
+import type {
+  TranslatorCompletionStage,
+} from "@/features/BaseTranslator/types/access";
 
 export type ListPageUnitsResult = {
   units: UnitInfo[];
@@ -71,4 +74,20 @@ export async function listPages(
 
   const items = Array.isArray(res.data) ? res.data : [];
   return { success: true, data: items.map(unwrapRawPageInfo) };
+}
+
+export async function completeChapterStage(
+  chapterId: string,
+  stage: TranslatorCompletionStage,
+): Promise<Result<void>> {
+  const payload = {
+    id: chapterId,
+    stage,
+    oper: "advance" as const,
+  };
+
+  return api.post<void, typeof payload>(
+    `/chapters/${chapterId}/stage/advance`,
+    payload,
+  );
 }

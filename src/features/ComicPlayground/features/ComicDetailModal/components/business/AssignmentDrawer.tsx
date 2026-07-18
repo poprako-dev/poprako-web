@@ -2,21 +2,15 @@ import { useState, useRef } from "react";
 import clsx from "clsx";
 import { Plus, UserPlus, UserMinus, Trash2 } from "lucide-react";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
-import {
-  canApplyWorkflowTransition,
-  uploadWorkflowStatus,
-  translateWorkflowStatus,
-  proofreadWorkflowStatus,
-  typesetWorkflowStatus,
-  reviewWorkflowStatus,
-  publishWorkflowStatus,
-} from "@/types/chapter";
+import { canApplyWorkflowTransition } from "@/types/chapter";
 import type { ChapterInfo } from "@/types";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { WorkflowStatus } from "@/types/workflow";
 import type { Result } from "@/types/utils/result";
 import type { Role } from "@/types/role";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { ASSIGNMENT_ROLE_DEFS } from "./assignmentWorkflow";
+import QuickWorkflowActions from "./QuickWorkflowActions";
 import TransitionDialog from "./TransitionDialog";
 
 type Props = {
@@ -35,103 +29,6 @@ type Props = {
   canOperateWorkflow?: boolean;
   canManageAssignments?: boolean;
 };
-
-type RoleDef = {
-  fullLabel: string;
-  shortLabel: string;
-  addRole: Role;
-  matches: (a: AssignmentInfo) => boolean;
-  getStatus: (ch: ChapterInfo) => WorkflowStatus;
-  nextTransition: (status: WorkflowStatus) => WorkflowTransition | null;
-  prevRevertTransition: (ch: ChapterInfo) => WorkflowTransition | null;
-};
-
-const ROLE_DEFS: RoleDef[] = [
-  {
-    fullLabel: "图源",
-    shortLabel: "图",
-    addRole: "rawProvider",
-    matches: (a) => a.assignedRawProviderAt != null,
-    getStatus: uploadWorkflowStatus,
-    nextTransition: (s) => (s === "completed" ? null : "upload_complete"),
-    prevRevertTransition: (ch) =>
-      uploadWorkflowStatus(ch) === "completed" ? "upload_revert" : null,
-  },
-  {
-    fullLabel: "翻译",
-    shortLabel: "翻",
-    addRole: "translator",
-    matches: (a) => a.assignedTranslatorAt != null,
-    getStatus: translateWorkflowStatus,
-    nextTransition: (s) => {
-      if (s === "pending") return "translate_start";
-      if (s === "ongoing") return "translate_complete";
-      return null;
-    },
-    prevRevertTransition: (ch) => {
-      const s = translateWorkflowStatus(ch);
-      if (s === "completed") return "translate_revert";
-      if (s === "ongoing") return "translate_start_revert";
-      return null;
-    },
-  },
-  {
-    fullLabel: "校对",
-    shortLabel: "校",
-    addRole: "proofreader",
-    matches: (a) => a.assignedProofreaderAt != null,
-    getStatus: proofreadWorkflowStatus,
-    nextTransition: (s) => {
-      if (s === "pending") return "proofread_start";
-      if (s === "ongoing") return "proofread_complete";
-      return null;
-    },
-    prevRevertTransition: (ch) => {
-      const s = proofreadWorkflowStatus(ch);
-      if (s === "completed") return "proofread_revert";
-      if (s === "ongoing") return "proofread_start_revert";
-      return null;
-    },
-  },
-  {
-    fullLabel: "嵌字",
-    shortLabel: "嵌",
-    addRole: "typesetter",
-    matches: (a) =>
-      a.assignedTypesetterAt != null || a.assignedRedrawerAt != null,
-    getStatus: typesetWorkflowStatus,
-    nextTransition: (s) => {
-      if (s === "pending") return "typeset_start";
-      if (s === "ongoing") return "typeset_complete";
-      return null;
-    },
-    prevRevertTransition: (ch) => {
-      const s = typesetWorkflowStatus(ch);
-      if (s === "completed") return "typeset_revert";
-      if (s === "ongoing") return "typeset_start_revert";
-      return null;
-    },
-  },
-  {
-    fullLabel: "监修",
-    shortLabel: "监",
-    addRole: "reviewer",
-    matches: (a) => a.assignedReviewerAt != null,
-    getStatus: reviewWorkflowStatus,
-    nextTransition: (s) => (s === "completed" ? null : "review_complete"),
-    prevRevertTransition: (ch) =>
-      reviewWorkflowStatus(ch) === "completed" ? "review_revert" : null,
-  },
-  {
-    fullLabel: "发布",
-    shortLabel: "传",
-    addRole: "publisher",
-    matches: (a) => a.assignedPublisherAt != null,
-    getStatus: publishWorkflowStatus,
-    nextTransition: (s) => (s === "completed" ? null : "publish_complete"),
-    prevRevertTransition: () => null,
-  },
-];
 
 type StatusConfig = {
   statusLabel: string;
@@ -229,7 +126,7 @@ export default function AssignmentDrawer({
         )}
       >
         <div className="flex flex-col gap-1">
-          {ROLE_DEFS.map((roleDef) => {
+          {ASSIGNMENT_ROLE_DEFS.map((roleDef) => {
             const s = selectedChapter
               ? roleDef.getStatus(selectedChapter)
               : "unset";
@@ -256,7 +153,7 @@ export default function AssignmentDrawer({
         )}
       >
         <div className="px-3 py-3 flex flex-col gap-3">
-          {ROLE_DEFS.map((roleDef) => {
+          {ASSIGNMENT_ROLE_DEFS.map((roleDef) => {
             const roleAssignments = assignments.filter(roleDef.matches);
             const isCurrentUserAssigned = !!(
               currentUserId &&
@@ -299,7 +196,11 @@ export default function AssignmentDrawer({
             return (
               <div
                 key={roleDef.addRole}
-                className={clsx("border-l-2 pl-3", cfg.borderColor)}
+                className={clsx(
+                  "rounded-r-sm border-l-2 py-1 pl-3 pr-1 transition-colors",
+                  cfg.borderColor,
+                  hasAnyTransition && "hover:bg-stone-200/70",
+                )}
               >
                 {/* Role header row */}
                 <div
@@ -448,6 +349,12 @@ export default function AssignmentDrawer({
               </div>
             );
           })}
+          <QuickWorkflowActions
+            selectedChapter={selectedChapter}
+            assignments={assignments}
+            currentUserId={currentUserId}
+            onTransiteWorkflow={onTransiteWorkflow}
+          />
         </div>
       </div>
 

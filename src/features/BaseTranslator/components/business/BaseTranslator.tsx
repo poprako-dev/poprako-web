@@ -1,6 +1,12 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
-import { SquareArrowRight, Command, CaseSensitive } from "lucide-react";
+import {
+  SquareArrowRight,
+  Command,
+  CaseSensitive,
+  Check,
+  Loader2,
+} from "lucide-react";
 import Paginator from "@/components/ui/Paginator";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import ToolboxDropdown from "@/features/ToolboxDropdown";
@@ -38,6 +44,8 @@ import {
   availableTranslatorModes,
   initialTranslatorMode,
   nextTranslatorMode,
+  translatorCompletionStage,
+  type TranslatorCompletionStage,
 } from "../../types/access";
 
 type Props = {
@@ -51,6 +59,7 @@ type Props = {
   onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
   // 懒加载的图片 URL 获取器，BaseTranslator 只负责在需要时调用它来获取图片 URL
   onLoadPageImage: (pageId: string) => Promise<string>;
+  onCompleteStage?: (stage: TranslatorCompletionStage) => Promise<void>;
   onExit: () => void;
   currentUserId?: string;
   canTranslate: boolean;
@@ -67,6 +76,7 @@ export default function BaseTranslator({
   onLoadUnits,
   onSaveUnits,
   onLoadPageImage,
+  onCompleteStage,
   onExit,
   currentUserId,
   canTranslate,
@@ -103,6 +113,9 @@ export default function BaseTranslator({
   const [deleteConfirmUnitId, setDeleteConfirmUnitId] = useState<
     string | undefined
   >(undefined);
+  const [isCompletingStage, setIsCompletingStage] = useState(false);
+  const [hasCompletedStage, setHasCompletedStage] = useState(false);
+  const [isCompleteConfirmOpen, setIsCompleteConfirmOpen] = useState(false);
 
   const canvasRef = useRef<CanvasHandle>(null);
   const lastSpecialCharRef = useRef<string | null>(null);
@@ -192,6 +205,38 @@ export default function BaseTranslator({
 
   async function handleSave() {
     await flushIfDirty();
+  }
+
+  async function handleCompleteStage() {
+    if (
+      !completionStage ||
+      !onCompleteStage ||
+      saving ||
+      isCompletingStage ||
+      hasCompletedStage
+    ) {
+      return;
+    }
+
+    setIsCompletingStage(true);
+    try {
+      await flushIfDirty();
+      await onCompleteStage(completionStage);
+      setHasCompletedStage(true);
+      setIsCompleteConfirmOpen(false);
+      showToast(
+        completionStage === "proofread" ? "校对已完成" : "翻译已完成",
+        "success",
+      );
+    } catch (error) {
+      console.error("[BaseTranslator] 推进译校阶段失败", {
+        stage: completionStage,
+        error,
+      });
+      showToast("推进阶段失败，请重试", "error");
+    } finally {
+      setIsCompletingStage(false);
+    }
   }
 
   function handleQuickSpecialChar() {
@@ -372,6 +417,11 @@ export default function BaseTranslator({
     },
   ];
 
+  const completionStage = translatorCompletionStage({
+    canTranslate,
+    canProofread,
+  });
+
   const canvas = (
     <div className="relative w-full h-full bg-stone-700">
       <Canvas
@@ -411,6 +461,29 @@ export default function BaseTranslator({
       {!readOnly && (
         <div className="absolute bottom-2 left-2">
           <ToolboxDropdown options={toolboxOptions} direction="up" />
+        </div>
+      )}
+      {!readOnly && completionStage && onCompleteStage && (
+        <div className="absolute bottom-2 right-2">
+          <button
+            type="button"
+            title={completionStage === "proofread" ? "完成校对" : "完成翻译"}
+            aria-label={completionStage === "proofread" ? "完成校对" : "完成翻译"}
+            disabled={saving || isCompletingStage || hasCompletedStage}
+            onClick={() => setIsCompleteConfirmOpen(true)}
+            className={clsx(
+              "flex size-8 items-center justify-center rounded-md border",
+              "border-gray-200 bg-white/85 text-gray-700 shadow-sm",
+              "transition-colors hover:border-green-200 hover:bg-green-50",
+              "hover:text-green-600 disabled:cursor-not-allowed disabled:opacity-60",
+            )}
+          >
+            {isCompletingStage ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Check size={20} strokeWidth={2.5} />
+            )}
+          </button>
         </div>
       )}
       <div className="absolute top-2 right-2">
@@ -509,6 +582,26 @@ export default function BaseTranslator({
             setDeleteConfirmUnitId(undefined);
           }}
           onCancel={() => setDeleteConfirmUnitId(undefined)}
+        />
+      )}
+      {isCompleteConfirmOpen && completionStage && (
+        <ConfirmDialog
+          title={completionStage === "proofread" ? "确认完成校对" : "确认完成翻译"}
+          description={
+            completionStage === "proofread"
+              ? "确认将当前章节的校对阶段标记为已完成吗？" +
+                "未保存内容会先自动保存。"
+              : "确认将当前章节的翻译阶段标记为已完成吗？" +
+                "未保存内容会先自动保存。"
+          }
+          confirmLabel="确认完成"
+          cancelLabel="取消"
+          confirmTone="success"
+          loading={isCompletingStage}
+          onConfirm={handleCompleteStage}
+          onCancel={() => {
+            if (!isCompletingStage) setIsCompleteConfirmOpen(false);
+          }}
         />
       )}
     </>

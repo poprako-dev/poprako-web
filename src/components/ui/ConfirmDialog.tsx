@@ -13,6 +13,7 @@ type Props = {
   onCancel: () => void;
   loading?: boolean;
   confirmDisabled?: boolean;
+  confirmTone?: "danger" | "success";
 };
 
 export default function ConfirmDialog({
@@ -25,6 +26,7 @@ export default function ConfirmDialog({
   onCancel,
   loading = false,
   confirmDisabled = false,
+  confirmTone = "danger",
 }: Props) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -88,9 +90,10 @@ export default function ConfirmDialog({
               "flex-1 py-2 text-xs font-semibold rounded-lg",
               "flex items-center justify-center gap-1",
               "transition-all duration-200 active:scale-[0.98]",
-              "bg-red-50 text-red-500",
-              "border border-(--color-border-red-200)",
-              "hover:bg-red-100",
+              "border",
+              confirmTone === "success"
+                ? "border-green-200 bg-green-50 text-green-600 hover:bg-green-100"
+                : "border-(--color-border-red-200) bg-red-50 text-red-500 hover:bg-red-100",
               (loading || confirmDisabled) && "opacity-60 cursor-not-allowed",
             )}
           >

@@ -300,6 +300,7 @@ export const Default: Story = {
   args: {
     comicInfo: mockComic,
     pinnedChapter,
+    currentUserId: "u-aki",
     onLoadChapters: async (args) => {
       await delay(200);
       const sliced = ALL_CHAPTERS.slice(args.offset, args.offset + args.limit);

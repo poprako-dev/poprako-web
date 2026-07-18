@@ -17,7 +17,11 @@ import {
 } from "@/features/ComicPlayground/api/comic";
 import { listPages, reserveChapterPages, reserveExistingPageUpload, updatePage, deleteChapterPages } from "@/features/ComicPlayground/api/page";
 import { listWorksets } from "@/features/ComicPlayground/api/workset";
-import { listUnits, saveUnits } from "@/features/WebTranslator/api/translator";
+import {
+  completeChapterStage,
+  listUnits,
+  saveUnits,
+} from "@/features/WebTranslator/api/translator";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 
 type FetchCall = {
@@ -384,6 +388,16 @@ describe("poprako-r API migration", () => {
       id: "chapter_1",
       subtitle: "new",
       pin: true,
+    });
+
+    await completeChapterStage("chapter_1", "proofread");
+    expect(lastFetchCall(fetchMock).url).toBe(
+      "/api/v1/chapters/chapter_1/stage/advance",
+    );
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+      id: "chapter_1",
+      stage: "proofread",
+      oper: "advance",
     });
 
     fetchMock.mockResolvedValueOnce((await okJson({

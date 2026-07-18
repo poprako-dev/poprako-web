@@ -37,7 +37,6 @@ type StatusConfig = {
   labelText: string;
   hoverLabelText: string;
   barColor: string;
-  hoverGradient: string;
 };
 
 const STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
@@ -45,25 +44,21 @@ const STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
     labelText: "text-slate-300",
     hoverLabelText: "group-hover:text-slate-500",
     barColor: "bg-slate-300",
-    hoverGradient: "bg-gradient-to-r from-slate-100/40 to-transparent",
   },
   ongoing: {
     labelText: "text-orange-300",
     hoverLabelText: "group-hover:text-orange-600",
     barColor: "bg-orange-300",
-    hoverGradient: "bg-gradient-to-r from-orange-100/50 to-transparent",
   },
   completed: {
     labelText: "text-emerald-400",
     hoverLabelText: "group-hover:text-emerald-600",
     barColor: "bg-emerald-400",
-    hoverGradient: "bg-gradient-to-r from-emerald-100/50 to-transparent",
   },
   unset: {
     labelText: "text-slate-200",
     hoverLabelText: "group-hover:text-slate-400",
     barColor: "bg-slate-200",
-    hoverGradient: "bg-gradient-to-r from-slate-50/20 to-transparent",
   },
 };
 
@@ -116,18 +111,9 @@ export default function RoleTag({
           "pl-4 pr-2 py-1 gap-3",
           "transition-all duration-200",
           "bg-white",
-          onClickable && "cursor-pointer",
+          onClickable && "cursor-pointer hover:bg-stone-100",
         )}
       >
-        {/* Hover gradient overlay */}
-        <div
-          className={clsx(
-            "absolute inset-0 opacity-0 transition-opacity duration-300",
-            "group-hover:opacity-100 pointer-events-none",
-            cfg.hoverGradient,
-          )}
-        />
-
         {/* Label */}
         <span
           className={clsx(

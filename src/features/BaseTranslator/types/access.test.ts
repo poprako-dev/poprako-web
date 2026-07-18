@@ -4,6 +4,7 @@ import {
   availableTranslatorModes,
   initialTranslatorMode,
   nextTranslatorMode,
+  translatorCompletionStage,
 } from "./access";
 
 describe("translator assignment access", () => {
@@ -50,5 +51,20 @@ describe("translator assignment access", () => {
 
     expect(nextTranslatorMode("translate", modes)).toBe("proofread");
     expect(nextTranslatorMode("proofread", modes)).toBe("translate");
+  });
+
+  test("completes proofreading before translation when both roles are assigned", () => {
+    expect(translatorCompletionStage({
+      canTranslate: true,
+      canProofread: true,
+    })).toBe("proofread");
+    expect(translatorCompletionStage({
+      canTranslate: true,
+      canProofread: false,
+    })).toBe("translate");
+    expect(translatorCompletionStage({
+      canTranslate: false,
+      canProofread: false,
+    })).toBeUndefined();
   });
 });
