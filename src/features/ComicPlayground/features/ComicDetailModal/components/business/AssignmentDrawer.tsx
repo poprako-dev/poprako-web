@@ -196,24 +196,35 @@ export default function AssignmentDrawer({
             return (
               <div
                 key={roleDef.addRole}
+                role={hasAnyTransition ? "button" : undefined}
+                tabIndex={hasAnyTransition ? 0 : undefined}
+                onClick={() => {
+                  if (hasAnyTransition && !transitioningRef.current) {
+                    setTransitioningRole(roleDef.addRole);
+                  }
+                }}
+                onKeyDown={(event) => {
+                  if (
+                    hasAnyTransition &&
+                    !transitioningRef.current &&
+                    (event.key === "Enter" || event.key === " ")
+                  ) {
+                    event.preventDefault();
+                    setTransitioningRole(roleDef.addRole);
+                  }
+                }}
                 className={clsx(
                   "rounded-r-sm border-l-2 py-1 pl-3 pr-1 transition-colors",
                   cfg.borderColor,
-                  hasAnyTransition && "hover:bg-stone-200/70",
+                  hasAnyTransition && [
+                    "cursor-pointer hover:bg-stone-200/70",
+                    "focus-visible:outline-2 focus-visible:outline-stone-400",
+                    "focus-visible:outline-offset-1",
+                  ],
                 )}
               >
                 {/* Role header row */}
-                <div
-                  onClick={() => {
-                    if (hasAnyTransition && !transitioningRef.current) {
-                      setTransitioningRole(roleDef.addRole);
-                    }
-                  }}
-                  className={clsx(
-                    "flex items-center gap-2 mb-1",
-                    hasAnyTransition && "cursor-pointer group",
-                  )}
-                >
+                <div className="flex items-center gap-2 mb-1 group">
                   <span
                     className={clsx(
                       "text-sm font-semibold text-stone-700",
@@ -312,13 +323,14 @@ export default function AssignmentDrawer({
                         </span>
                         {canManageAssignments && onRemoveAssignment && (
                           <button
-                            onClick={() =>
+                            onClick={(event) => {
+                              event.stopPropagation();
                               setPendingRemove({
                                 userId: a.userId,
                                 name: a.user?.name ?? a.userId,
                                 role: roleDef.addRole,
-                              })
-                            }
+                              });
+                            }}
                             className={clsx(
                               "opacity-0 group-hover/member:opacity-100",
                               "transition-opacity mt-0.5 shrink-0",

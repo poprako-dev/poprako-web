@@ -101,8 +101,20 @@ export default function RoleTag({
   return (
     <>
       <div
+        role={onClickable ? "button" : undefined}
+        tabIndex={onClickable ? 0 : undefined}
         onClick={() => {
           if (onClickable && !transitioningRef.current) {
+            setShowTransitionDialog(true);
+          }
+        }}
+        onKeyDown={(event) => {
+          if (
+            onClickable &&
+            !transitioningRef.current &&
+            (event.key === "Enter" || event.key === " ")
+          ) {
+            event.preventDefault();
             setShowTransitionDialog(true);
           }
         }}
@@ -111,7 +123,11 @@ export default function RoleTag({
           "pl-4 pr-2 py-1 gap-3",
           "transition-all duration-200",
           "bg-white",
-          onClickable && "cursor-pointer hover:bg-stone-100",
+          onClickable && [
+            "cursor-pointer hover:bg-stone-100",
+            "focus-visible:outline-2 focus-visible:outline-stone-400",
+            "focus-visible:outline-offset-[-2px]",
+          ],
         )}
       >
         {/* Label */}

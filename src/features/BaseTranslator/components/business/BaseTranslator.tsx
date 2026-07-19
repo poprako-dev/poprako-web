@@ -443,7 +443,10 @@ export default function BaseTranslator({
         enableReadOnly={readOnly}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
-      <div className="absolute top-2 left-2">
+      <div className="absolute top-2 left-2 flex items-center gap-2">
+        {!readOnly && (
+          <ToolboxDropdown options={toolboxOptions} direction="down" />
+        )}
         <button
           type="button"
           title="退出"
@@ -458,11 +461,6 @@ export default function BaseTranslator({
           <SquareArrowRight size={20} />
         </button>
       </div>
-      {!readOnly && (
-        <div className="absolute bottom-2 left-2">
-          <ToolboxDropdown options={toolboxOptions} direction="up" />
-        </div>
-      )}
       {!readOnly && completionStage && onCompleteStage && (
         <div className="absolute bottom-2 right-2">
           <button
