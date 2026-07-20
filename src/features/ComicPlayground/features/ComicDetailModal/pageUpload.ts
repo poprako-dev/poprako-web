@@ -4,17 +4,14 @@ import {
   updatePage,
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
-import type { ToastType } from "@/components/ui/NotificationToast";
 import type { UploadProgressCallbacks } from "@/types";
 import { getFileExtension } from "./utils";
-
-type ShowToast = (message: string, type: ToastType) => void;
+import { hashPageFile } from "./pageHash";
 
 type Args = {
   chapterId: string;
   files: File[];
   callbacks?: UploadProgressCallbacks;
-  showToast: ShowToast;
   logPrefix: string;
   /** 并发上传数，默认 16 */
   concurrency?: number;
@@ -89,7 +86,6 @@ export async function addChapterPages({
   chapterId,
   files,
   callbacks,
-  showToast,
   logPrefix,
   concurrency = DEFAULT_CONCURRENCY,
 }: Args): Promise<void> {
@@ -97,8 +93,7 @@ export async function addChapterPages({
     const extension = getFileExtension(file);
     if (!extension) throw new Error("请选择带后缀的图片文件");
     if (file.size < 1 || file.size > 20 * 1024 * 1024) throw new Error("图片大小必须在 1 至 20 MiB 之间");
-    const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
-    const imageHash = btoa(String.fromCharCode(...new Uint8Array(digest)));
+    const { imageHash } = await hashPageFile(file);
     return { imageHash, byteLength: file.size, extension };
   }));
 

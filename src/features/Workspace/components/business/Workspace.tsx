@@ -358,11 +358,10 @@ export default function Workspace() {
         chapterId,
         files,
         callbacks,
-        showToast,
         logPrefix: "Workspace",
       });
     },
-    [showToast],
+    [],
   );
 
   const handleDeleteChapterPages = useCallback(

@@ -297,11 +297,10 @@ export default function ComicPlayground() {
         chapterId,
         files,
         callbacks,
-        showToast,
         logPrefix: "ComicPlayground",
       });
     },
-    [showToast],
+    [],
   );
 
   const handleDeleteChapterPages = useCallback(
