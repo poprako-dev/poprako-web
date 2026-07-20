@@ -9,6 +9,9 @@ export type Page = {
   imageUrl: string;
   imageThumbnailUrl?: string;
   isUploaded: boolean;
+  imageHash: string;
+  byteLength: number;
+  extension: string;
 
   creatorId: string;
   creator?: UserInfo;
@@ -28,18 +31,33 @@ export type PageInfo = Page & {
   updatedAt: number;
 };
 
-export type PageCreationResult = {
-  pageId: string;
+export type PageImageInput = {
+  pageId?: string;
+  imageHash: string;
+  byteLength: number;
+  extension: string;
+};
+
+export type PageImageUpload = {
   putUrl: string;
   imageVersion: number;
+  headers: Record<string, string>;
+};
+
+export type ReservedPage = {
+  pageId: string;
+  index: number;
+  imageHash: string;
+  byteLength: number;
+  extension: string;
+  upload: PageImageUpload | null;
 };
 
 export type ReserveChapterPagesArgs = {
   chapterId: string;
-  pageCount: number;
-  fileExtension: string;
+  pages: PageImageInput[];
 };
-export type ReserveChapterPagesResult = { creations: PageCreationResult[] };
+export type ReserveChapterPagesResult = { pages: ReservedPage[] };
 
 export type UpdatePageArgs = {
   id: string;

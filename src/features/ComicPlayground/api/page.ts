@@ -43,8 +43,12 @@ export async function reserveChapterPages(
 ): Promise<Result<ReserveChapterPagesResult>> {
   const rawArgs: RawReserveChapterPagesArgs = {
     chapter_id: args.chapterId,
-    page_count: args.pageCount,
-    file_ext: args.fileExtension,
+    pages: args.pages.map((page) => ({
+      page_id: page.pageId,
+      image_hash: page.imageHash,
+      byte_length: page.byteLength,
+      extension: page.extension,
+    })),
   };
 
   const res = await api.post<
@@ -63,30 +67,27 @@ export async function reserveChapterPages(
 
 type ReserveExistingPageUploadArgs = {
   pageId: string;
-  fileExtension: string;
+  imageHash: string;
+  byteLength: number;
+  extension: string;
 };
 
 type RawReserveExistingPageUploadArgs = {
-  file_ext: string;
+  image_hash: string;
+  byte_length: number;
+  extension: string;
 };
 
-type ReserveExistingPageUploadResult = {
-  pageId: string;
-  putUrl: string;
-  imageVersion: number;
-};
-
-type RawReserveExistingPageUploadResult = {
-  page_id: string;
-  put_url: string;
-  image_version: number;
-};
+type ReserveExistingPageUploadResult = import("@/types").ReservedPage;
+type RawReserveExistingPageUploadResult = import("@/types/raw/page").RawReservedPage;
 
 export async function reserveExistingPageUpload(
   args: ReserveExistingPageUploadArgs,
 ): Promise<Result<ReserveExistingPageUploadResult>> {
   const rawArgs: RawReserveExistingPageUploadArgs = {
-    file_ext: args.fileExtension,
+    image_hash: args.imageHash,
+    byte_length: args.byteLength,
+    extension: args.extension,
   };
 
   const res = await api.post<
@@ -98,11 +99,7 @@ export async function reserveExistingPageUpload(
 
   return {
     success: true,
-    data: {
-      pageId: res.data.page_id,
-      putUrl: res.data.put_url,
-      imageVersion: res.data.image_version,
-    },
+    data: unwrapRawReserveChapterPagesResult({ pages: [res.data] }).pages[0],
   };
 }
 
@@ -159,13 +156,14 @@ function extractUrlHost(url: string): string {
 export async function uploadToPresignedUrl(
   putUrl: string,
   file: File,
+  headers: Record<string, string>,
   onProgress?: (percent: number) => void,
 ): Promise<Result<void> & { httpStatus?: number }> {
   return new Promise((resolve) => {
     const xhr = new XMLHttpRequest();
 
     xhr.open("PUT", putUrl, true);
-    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+    for (const [name, value] of Object.entries(headers)) xhr.setRequestHeader(name, value);
     xhr.timeout = 120_000; // 120s 超时，避免永久挂起
 
     xhr.upload.onprogress = (event) => {

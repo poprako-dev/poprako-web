@@ -1,6 +1,6 @@
 import type {
   PageInfo,
-  PageCreationResult,
+  ReservedPage,
   ReserveChapterPagesArgs,
   ReserveChapterPagesResult,
 } from "../page";
@@ -11,6 +11,9 @@ export type RawPageInfo = {
   chapter_id: string;
   image_url: string | null;
   image_thumbnail_url?: string | null;
+  image_hash: string;
+  byte_length: number;
+  extension: string;
   index: number;
   proofread_unit_count: number;
   total_unit_count: number;
@@ -30,50 +33,73 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
     imageUrl: ensureHttpsUrl(raw.image_url),
     imageThumbnailUrl: ensureHttpsUrl(raw.image_thumbnail_url),
     isUploaded: !!raw.image_url,
+    imageHash: raw.image_hash,
+    byteLength: raw.byte_length,
+    extension: raw.extension,
     creatorId: "",
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   } as PageInfo;
 }
 
-export type RawPageCreationResult = {
+export type RawReservedPage = {
   page_id: string;
-  put_url: string;
-  image_version: number;
+  index: number;
+  image_hash: string;
+  byte_length: number;
+  extension: string;
+  upload: {
+    put_url: string;
+    image_version: number;
+    headers: Record<string, string>;
+  } | null;
 };
-export function unwrapRawPageCreationResult(
-  raw: RawPageCreationResult,
-): PageCreationResult {
+export function unwrapRawReservedPage(raw: RawReservedPage): ReservedPage {
   return {
     pageId: raw.page_id,
-    putUrl: raw.put_url,
-    imageVersion: raw.image_version,
+    index: raw.index,
+    imageHash: raw.image_hash,
+    byteLength: raw.byte_length,
+    extension: raw.extension,
+    upload: raw.upload === null ? null : {
+      putUrl: raw.upload.put_url,
+      imageVersion: raw.upload.image_version,
+      headers: raw.upload.headers,
+    },
   };
 }
 
 export type RawReserveChapterPagesArgs = {
   chapter_id: string;
-  page_count: number;
-  file_ext: string;
+  pages: Array<{
+    page_id?: string;
+    image_hash: string;
+    byte_length: number;
+    extension: string;
+  }>;
 };
 export function unwrapRawReserveChapterPagesArgs(
   raw: RawReserveChapterPagesArgs,
 ): ReserveChapterPagesArgs {
   return {
     chapterId: raw.chapter_id,
-    pageCount: raw.page_count,
-    fileExtension: raw.file_ext,
+    pages: raw.pages.map((page) => ({
+      pageId: page.page_id,
+      imageHash: page.image_hash,
+      byteLength: page.byte_length,
+      extension: page.extension,
+    })),
   };
 }
 
 export type RawReserveChapterPagesResult = {
-  creations: RawPageCreationResult[];
+  pages: RawReservedPage[];
 };
 export function unwrapRawReserveChapterPagesResult(
   raw: RawReserveChapterPagesResult,
 ): ReserveChapterPagesResult {
   return {
-    creations: raw.creations.map((c) => unwrapRawPageCreationResult(c)),
+    pages: raw.pages.map(unwrapRawReservedPage),
   };
 }
 

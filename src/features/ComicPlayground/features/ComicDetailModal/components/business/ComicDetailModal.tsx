@@ -218,7 +218,6 @@ export default function ComicDetailModal({
     !!onDeleteChapterPages;
   const canUploadNewRawPages =
     canUploadRawPages &&
-    pages.length === 0 &&
     !!selectedChapterId &&
     !!onAddPages;
   const canReuploadRawPages = canUploadRawPages && !!onReservePageUpload;

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import clsx from "clsx";
-import { UploadCloud } from "lucide-react";
+import { Plus, UploadCloud } from "lucide-react";
 import type { PageInfo } from "@/types";
 import PageCard from "./PageCard";
 
@@ -17,8 +17,6 @@ type Props = {
   onAddPages?: (files: File[]) => Promise<void>;
   accept?: string;
   reuploadAccept?: string;
-  emptyHintText?: string;
-  uploadButtonText?: string;
   uploadProgressByPageId?: Record<string, number>;
 };
 
@@ -45,8 +43,6 @@ export default function PageList({
   onAddPages,
   accept,
   reuploadAccept,
-  emptyHintText,
-  uploadButtonText,
   uploadProgressByPageId,
 }: Props) {
   const [isDragging, setIsDragging] = useState(false);
@@ -128,6 +124,22 @@ export default function PageList({
             uploadProgress={uploadProgressByPageId?.[page.id]}
           />
         ))}
+        {onAddPages && !isUploading && (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className={clsx(
+              "aspect-3/4 rounded-sm border border-dashed border-slate-200",
+              "flex flex-col items-center justify-center gap-2",
+              "text-slate-300 hover:text-slate-500 hover:border-slate-300 hover:bg-slate-50",
+              "transition-all active:scale-[0.98]",
+            )}
+            aria-label="追加页面图片"
+          >
+            <Plus className="h-7 w-7" strokeWidth={1.5} />
+            <span className="text-[11px] font-bold">追加图片</span>
+          </button>
+        )}
       </div>
 
       {/* Drop overlay */}
@@ -153,27 +165,6 @@ export default function PageList({
                 松开以批量上传
               </span>
             </div>
-          )}
-          {!isDragging && pages.length === 0 && !isUploading && (
-            <button
-              onClick={() => inputRef.current?.click()}
-              className={clsx(
-                "mt-4 w-full flex flex-col items-center justify-center gap-2 py-8",
-                "rounded-sm border border-dashed border-slate-200",
-                "text-slate-400 hover:text-slate-500 hover:border-slate-300 hover:bg-slate-50",
-                "transition-all",
-              )}
-            >
-              <UploadCloud className="w-6 h-6" strokeWidth={1.5} />
-              <span className="text-xs font-bold sm:text-[11px]">
-                {uploadButtonText ?? "点击此处上传"}
-              </span>
-              {emptyHintText && (
-                <span className="text-[11px] sm:text-[10px] text-slate-400">
-                  {emptyHintText}
-                </span>
-              )}
-            </button>
           )}
         </>
       )}

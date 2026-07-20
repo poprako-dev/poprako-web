@@ -6,7 +6,7 @@ import {
 } from "@/features/ComicPlayground/api/page";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type { UploadProgressCallbacks } from "@/types";
-import { getUniformFileExtension } from "./utils";
+import { getFileExtension } from "./utils";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -24,16 +24,17 @@ const DEFAULT_CONCURRENCY = 16;
 
 async function uploadOnePage(
   file: File,
-  creation: { pageId: string; putUrl: string; imageVersion: number },
-  fileExtension: string,
+  creation: import("@/types").ReservedPage,
   callbacks: UploadProgressCallbacks | undefined,
   logPrefix: string,
 ): Promise<void> {
-  let { putUrl, imageVersion } = creation;
+  let upload = creation.upload;
+  if (upload === null) return;
 
   let uploadResult = await uploadToPresignedUrl(
-    putUrl,
+    upload.putUrl,
     file,
+    upload.headers,
     (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
   );
 
@@ -45,7 +46,9 @@ async function uploadOnePage(
 
     const reReserveResult = await reserveExistingPageUpload({
       pageId: creation.pageId,
-      fileExtension,
+      imageHash: creation.imageHash,
+      byteLength: creation.byteLength,
+      extension: creation.extension,
     });
     if (!reReserveResult.success) {
       console.error(
@@ -55,12 +58,13 @@ async function uploadOnePage(
       throw new Error(reReserveResult.error);
     }
 
-    putUrl = reReserveResult.data.putUrl;
-    imageVersion = reReserveResult.data.imageVersion;
+    upload = reReserveResult.data.upload;
+    if (upload === null) return;
 
     uploadResult = await uploadToPresignedUrl(
-      putUrl,
+      upload.putUrl,
       file,
+      upload.headers,
       (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
     );
   }
@@ -71,7 +75,7 @@ async function uploadOnePage(
 
   const markResult = await updatePage(creation.pageId, {
     isUploaded: true,
-    imageVersion,
+    imageVersion: upload.imageVersion,
   });
   if (!markResult.success) {
     console.error(`[${logPrefix}] 标记页面上传状态失败:`, markResult.error);
@@ -89,35 +93,32 @@ export async function addChapterPages({
   logPrefix,
   concurrency = DEFAULT_CONCURRENCY,
 }: Args): Promise<void> {
-  const fileExtension = getUniformFileExtension(files);
-  if (fileExtension === null) {
-    const errorMessage = "所选文件后缀必须一致";
-    console.error(`[${logPrefix}] 批量加页文件后缀不一致`, {
-      chapterId,
-      files: files.map((file) => file.name),
-    });
-    showToast(errorMessage, "error");
-    throw new Error(errorMessage);
-  }
+  const pages = await Promise.all(files.map(async (file) => {
+    const extension = getFileExtension(file);
+    if (!extension) throw new Error("请选择带后缀的图片文件");
+    if (file.size < 1 || file.size > 20 * 1024 * 1024) throw new Error("图片大小必须在 1 至 20 MiB 之间");
+    const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+    const imageHash = btoa(String.fromCharCode(...new Uint8Array(digest)));
+    return { imageHash, byteLength: file.size, extension };
+  }));
 
   const reserveResult = await reserveChapterPages({
     chapterId,
-    pageCount: files.length,
-    fileExtension,
+    pages,
   });
   if (!reserveResult.success) {
     throw new Error(reserveResult.error);
   }
 
-  const creations = reserveResult.data.creations;
-  if (creations.length !== files.length) {
+  const reservedPages = reserveResult.data.pages;
+  if (reservedPages.length !== files.length) {
     throw new Error("预留页面数量与选择文件数量不一致");
   }
 
   callbacks?.onPagesReserved(
-    creations.map((creation, index) => ({
-      pageId: creation.pageId,
-      index,
+    reservedPages.map((page) => ({
+      pageId: page.pageId,
+      index: page.index,
     })),
   );
 
@@ -132,8 +133,7 @@ export async function addChapterPages({
       try {
         await uploadOnePage(
           files[i],
-          creations[i],
-          fileExtension!,
+          reservedPages[i],
           callbacks,
           logPrefix,
         );
