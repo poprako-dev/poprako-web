@@ -101,7 +101,10 @@ export default function TransitionDialog({
         if (e.target === e.currentTarget) onCancel();
       }}
     >
+      {/* stopPropagation: 防止点击事件沿 React 组件树冒泡到父级 onClick，
+          导致 dialog 刚被 onCancel 关闭又被父级立即重新打开 */}
       <div
+        onClick={(e) => e.stopPropagation()}
         className={clsx(
           "w-full max-w-xs rounded-sm overflow-hidden",
           "bg-white",

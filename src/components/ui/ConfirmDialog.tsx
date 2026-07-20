@@ -46,7 +46,9 @@ export default function ConfirmDialog({
         if (e.target === e.currentTarget) onCancel();
       }}
     >
+      {/* stopPropagation: 防止点击事件沿 React 组件树冒泡到父级 onClick */}
       <div
+        onClick={(e) => e.stopPropagation()}
         className={clsx(
           "w-full max-w-70 rounded-xl overflow-hidden",
           "bg-white",

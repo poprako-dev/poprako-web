@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { Fragment, useState, useRef } from "react";
 import clsx from "clsx";
 import { Plus, UserPlus, UserMinus, Trash2 } from "lucide-react";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
@@ -194,8 +194,8 @@ export default function AssignmentDrawer({
             const isShowingDialog = transitioningRole === roleDef.addRole;
 
             return (
-              <div
-                key={roleDef.addRole}
+              <Fragment key={roleDef.addRole}>
+                <div
                 role={hasAnyTransition ? "button" : undefined}
                 tabIndex={hasAnyTransition ? 0 : undefined}
                 onClick={() => {
@@ -347,7 +347,8 @@ export default function AssignmentDrawer({
                   )}
                 </div>
 
-                {/* Transition dialog for this role */}
+                {/* Transition dialog — Fragment sibling, not child, so cancel
+                    clicks don't bubble through React tree to the row onClick */}
                 {isShowingDialog && (
                   <TransitionDialog
                     label={roleDef.shortLabel}
@@ -359,6 +360,7 @@ export default function AssignmentDrawer({
                   />
                 )}
               </div>
+              </Fragment>
             );
           })}
           <QuickWorkflowActions

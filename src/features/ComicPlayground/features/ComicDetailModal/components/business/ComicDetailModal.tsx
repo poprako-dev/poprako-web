@@ -215,7 +215,7 @@ export default function ComicDetailModal({
     !!selectedChapterId &&
     !!onAddPages;
   const canReuploadRawPages = canUploadRawPages && !!onReservePageUpload;
-  const canClickPage = canTranslateOrProofread || canReadOnly;
+  const canClickPage = (canTranslateOrProofread || canReadOnly) && !canUploadRawPages;
 
   const handleTransition = async (
     transition: WorkflowTransition,

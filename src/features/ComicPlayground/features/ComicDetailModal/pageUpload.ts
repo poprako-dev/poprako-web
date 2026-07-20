@@ -1,4 +1,8 @@
-import { reserveChapterPages, updatePage, uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
+import {
+  reserveChapterPages,
+  updatePage,
+  uploadToPresignedUrl,
+} from "@/features/ComicPlayground/api/page";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type { UploadProgressCallbacks } from "@/types";
 import { getUniformFileExtension } from "./utils";
@@ -11,7 +15,39 @@ type Args = {
   callbacks?: UploadProgressCallbacks;
   showToast: ShowToast;
   logPrefix: string;
+  /** 并发上传数，默认 16 */
+  concurrency?: number;
 };
+
+const DEFAULT_CONCURRENCY = 16;
+
+async function uploadOnePage(
+  file: File,
+  creation: { pageId: string; putUrl: string; imageVersion: number },
+  callbacks: UploadProgressCallbacks | undefined,
+  logPrefix: string,
+): Promise<void> {
+  const uploadResult = await uploadToPresignedUrl(
+    creation.putUrl,
+    file,
+    (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
+  );
+  if (!uploadResult.success) {
+    console.error(`[${logPrefix}] 上传页面失败:`, uploadResult.error);
+    throw new Error(uploadResult.error);
+  }
+
+  const markResult = await updatePage(creation.pageId, {
+    isUploaded: true,
+    imageVersion: creation.imageVersion,
+  });
+  if (!markResult.success) {
+    console.error(`[${logPrefix}] 标记页面上传状态失败:`, markResult.error);
+    throw new Error(markResult.error);
+  }
+
+  callbacks?.onPageUploaded(creation.pageId, file);
+}
 
 export async function addChapterPages({
   chapterId,
@@ -19,6 +55,7 @@ export async function addChapterPages({
   callbacks,
   showToast,
   logPrefix,
+  concurrency = DEFAULT_CONCURRENCY,
 }: Args): Promise<void> {
   const fileExtension = getUniformFileExtension(files);
   if (fileExtension === null) {
@@ -46,34 +83,34 @@ export async function addChapterPages({
     throw new Error("预留页面数量与选择文件数量不一致");
   }
 
-  callbacks?.onPagesReserved(creations.map((creation, index) => ({
-    pageId: creation.pageId,
-    index,
-  })));
+  callbacks?.onPagesReserved(
+    creations.map((creation, index) => ({
+      pageId: creation.pageId,
+      index,
+    })),
+  );
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const creation = creations[i];
+  // 并发 worker pool：每个 worker 从队列取下一个文件上传，直到全部完成或出错
+  let firstError: Error | null = null;
+  let cursor = 0;
+  const limit = Math.min(concurrency, files.length);
 
-    const uploadResult = await uploadToPresignedUrl(
-      creation.putUrl,
-      file,
-      (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
-    );
-    if (!uploadResult.success) {
-      console.error(`[${logPrefix}] 上传页面失败:`, uploadResult.error);
-      throw new Error(uploadResult.error);
+  async function worker(): Promise<void> {
+    while (cursor < files.length && firstError === null) {
+      const i = cursor++;
+      try {
+        await uploadOnePage(files[i], creations[i], callbacks, logPrefix);
+      } catch (err) {
+        if (firstError === null) {
+          firstError = err instanceof Error ? err : new Error(String(err));
+        }
+      }
     }
+  }
 
-    const markResult = await updatePage(creation.pageId, {
-      isUploaded: true,
-      imageVersion: creation.imageVersion,
-    });
-    if (!markResult.success) {
-      console.error(`[${logPrefix}] 标记页面上传状态失败:`, markResult.error);
-      throw new Error(markResult.error);
-    }
+  await Promise.all(Array.from({ length: limit }, () => worker()));
 
-    callbacks?.onPageUploaded(creation.pageId, file);
+  if (firstError !== null) {
+    throw firstError;
   }
 }
