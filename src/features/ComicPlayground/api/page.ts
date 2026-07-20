@@ -134,6 +134,28 @@ export async function updatePage(
   return { success: true, data: undefined };
 }
 
+function extractS3Error(xhr: XMLHttpRequest): string {
+  try {
+    const text = xhr.responseText;
+    if (!text) return "";
+    const match = /<Message>([^<]+)<\/Message>/.exec(text);
+    if (match && match[1]) return ` (S3: ${match[1]})`;
+    // 有些 S3 兼容实现返回不同格式，截取前 200 字符兜底
+    const snippet = text.trim().slice(0, 200);
+    return snippet ? ` (${snippet})` : "";
+  } catch {
+    return "";
+  }
+}
+
+function extractUrlHost(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "(无法解析的 URL)";
+  }
+}
+
 export async function uploadToPresignedUrl(
   putUrl: string,
   file: File,
@@ -144,6 +166,7 @@ export async function uploadToPresignedUrl(
 
     xhr.open("PUT", putUrl, true);
     xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+    xhr.timeout = 120_000; // 120s 超时，避免永久挂起
 
     xhr.upload.onprogress = (event) => {
       if (!event.lengthComputable) return;
@@ -161,6 +184,12 @@ export async function uploadToPresignedUrl(
         return;
       }
 
+      const s3Detail = extractS3Error(xhr);
+      if (s3Detail) {
+        console.error(
+          `[uploadToPresignedUrl] S3 错误 (HTTP ${xhr.status}):${s3Detail}`,
+        );
+      }
       resolve({
         success: false,
         error: `上传失败: HTTP ${xhr.status}`,
@@ -168,7 +197,19 @@ export async function uploadToPresignedUrl(
       });
     };
 
+    xhr.ontimeout = () => {
+      const host = extractUrlHost(putUrl);
+      console.error(
+        `[uploadToPresignedUrl] 上传超时 (120s), 目标: ${host}, 文件: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`,
+      );
+      resolve({ success: false, error: "上传超时" });
+    };
+
     xhr.onerror = () => {
+      const host = extractUrlHost(putUrl);
+      console.error(
+        `[uploadToPresignedUrl] 网络错误, 目标: ${host}, 文件: ${file.name}`,
+      );
       resolve({ success: false, error: "上传失败" });
     };
 

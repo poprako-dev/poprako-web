@@ -66,7 +66,6 @@ async function uploadOnePage(
   }
 
   if (!uploadResult.success) {
-    console.error(`[${logPrefix}] 上传页面失败:`, uploadResult.error);
     throw new Error(uploadResult.error);
   }
 
@@ -107,7 +106,6 @@ export async function addChapterPages({
     fileExtension,
   });
   if (!reserveResult.success) {
-    console.error(`[${logPrefix}] 预留页面失败:`, reserveResult.error);
     throw new Error(reserveResult.error);
   }
 
