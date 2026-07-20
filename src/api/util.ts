@@ -82,22 +82,50 @@ async function request<T>(
     credentials: "omit",
   };
 
+  const startTime = performance.now();
+  const method = options.method ?? "GET";
+
   try {
     const response = await fetch(`${BASE_URL}${url}`, config);
 
     if (response.status === 204) {
-      if (response.ok) return { success: true, data: undefined as T };
+      if (response.ok) {
+        console.debug(
+          `[API] ${method} ${url} → 204 (${(performance.now() - startTime).toFixed(0)}ms)`,
+        );
+        return { success: true, data: undefined as T };
+      }
 
+      console.error(
+        `[API] ${method} ${url} → HTTP ${response.status}`,
+        {
+          statusText: response.statusText,
+          durationMs: Math.round(performance.now() - startTime),
+        },
+      );
       return {
         success: false,
         error: response.statusText || `HTTP ${response.status}`,
       };
     }
 
+    // clone 一份用于日志，避免 JSON 解析失败后 body 已消费无法读取
+    const clonedResponse = response.clone();
+
     let body: FormatResponse<T> | null = null;
     try {
       body = (await response.json()) as FormatResponse<T>;
     } catch {
+      const rawText = await clonedResponse
+        .text()
+        .catch(() => "(无法读取响应体)");
+      console.error(
+        `[API] ${method} ${url} → HTTP ${response.status}, JSON 解析失败`,
+        {
+          rawBody: rawText.slice(0, 500),
+          durationMs: Math.round(performance.now() - startTime),
+        },
+      );
       return {
         success: false,
         error: response.statusText || `HTTP ${response.status}`,
@@ -105,6 +133,13 @@ async function request<T>(
     }
 
     if (!response.ok) {
+      console.error(
+        `[API] ${method} ${url} → HTTP ${response.status}`,
+        {
+          body,
+          durationMs: Math.round(performance.now() - startTime),
+        },
+      );
       return {
         success: false,
         error: body.message ?? response.statusText ?? `HTTP ${response.status}`,
@@ -112,14 +147,29 @@ async function request<T>(
     }
 
     if (body.code !== 0) {
+      console.error(
+        `[API] ${method} ${url} → code=${body.code}`,
+        {
+          body,
+          durationMs: Math.round(performance.now() - startTime),
+        },
+      );
       return {
         success: false,
         error: body.message ?? `API code ${body.code}`,
       };
     }
 
+    console.debug(
+      `[API] ${method} ${url} → ${response.status} (${(performance.now() - startTime).toFixed(0)}ms)`,
+    );
     return { success: true, data: body.data as T };
   } catch (err) {
+    console.error(
+      `[API] ${method} ${url} → 网络异常`,
+      err instanceof Error ? err : { message: String(err) },
+      { durationMs: Math.round(performance.now() - startTime) },
+    );
     const message = err instanceof Error ? err.message : "未知错误";
     return {
       success: false,

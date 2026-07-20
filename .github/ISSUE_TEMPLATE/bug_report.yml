@@ -1,0 +1,144 @@
+name: 🐛 Bug 报告
+description: 提交一个 Bug 报告，帮助我们改进白杨子 W。
+title: "[Bug] "
+labels: ["bug", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 在提交 Bug 之前
+
+        请确保你已经：
+
+        - 在 [Issues](https://github.com/ATOMLubover/poprako-w/issues?q=is%3Aissue+label%3Abug) 中搜索过，确认没有已存在的重复报告
+        - 将浏览器刷新后重新尝试操作，确认问题仍然存在
+        - 准备好导出日志文件（见下方说明）
+
+        ---
+
+        > **⚠️ 重要：未附带日志文件的 Bug 报告将无法处理。**
+        >
+        > 日志文件由系统自动收集，包含操作记录、API 调用错误、未捕获的异常等关键诊断信息。
+        > 所有敏感字段（Token、密码等）已自动脱敏，可以放心提交。
+
+  - type: textarea
+    id: log-file
+    attributes:
+      label: 📋 导出日志（必须）
+      description: |
+        **操作步骤：**
+        1. 进入白杨子 W 的 **设置页面**（`/settings`，侧边栏底部齿轮图标）
+        2. 点击 **"导出日志"** 按钮
+        3. 浏览器会自动下载 `poprako-w-log-<时间戳>.log` 文件
+        4. 用文本编辑器打开该文件，将全部内容**复制粘贴**到下方文本框中
+        5. 也可以直接将 `.log` 文件拖入此文本框
+
+        > 日志文件自动记录了：页面 URL、浏览器信息、控制台输出（log/error/warn）、API 错误、未捕获异常等。敏感信息已脱敏。
+      placeholder: |
+        将会话日志文件内容粘贴到这里...
+
+        [2025-07-20T12:34:56.789Z] ERROR [Uncaught error] TypeError: Cannot read properties of undefined ...
+        [2025-07-20T12:34:57.123Z] WARN API returned code 500: internal server error
+        ...
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 问题描述
+      description: 请清晰描述发生了什么问题，以及你期望的正确行为是什么。
+      placeholder: |
+        **实际发生：** 点击"保存"按钮后页面无任何反应，翻译内容未被保存。
+
+        **期望行为：** 点击"保存"后应弹出"保存成功"提示，页面数据更新。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔁 复现步骤
+      description: 按顺序列出触发该 Bug 的具体操作步骤。如果无法稳定复现，请说明出现的频率。
+      placeholder: |
+        1. 进入翻译页面 `/translator/<chapterId>/<pageId>`
+        2. 在文本框中输入翻译内容
+        3. 点击工具栏中的"保存"按钮
+        4. 观察页面反应（无任何提示，刷新后翻译丢失）
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: page
+    attributes:
+      label: 📄 涉及页面 / 功能模块
+      options:
+        - 翻译工作台 (Translator Page)
+        - 漫画工作区 (Comic Playground)
+        - 工作组 (Workspace)
+        - 成员管理 (Member List)
+        - 设置 (Settings)
+        - 登录 (Login)
+        - 其他（请在补充信息中说明）
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: 🌐 浏览器
+      options:
+        - Chrome / Edge（Chromium）
+        - Firefox
+        - Safari
+        - 其他（请在补充信息中说明）
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 💻 操作系统
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - 其他（请在补充信息中说明）
+    validations:
+      required: true
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: 👤 用户角色
+      description: 你在当前团队中的角色（可在成员列表中查看）。
+      options:
+        - 组长 (Admin)
+        - 翻译 (Translator)
+        - 访客 (Viewer)
+        - 不知道 / 其他
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 截图 / 录屏
+      description: |
+        如果问题涉及视觉呈现（翻译文本位置偏移、UI 错乱、渲染异常等），请提供截图或屏幕录制。
+        可以直接粘贴图片，或拖入文件。
+      placeholder: 将截图粘贴或拖入此处...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 💬 补充信息
+      description: 任何其他你认为有助于定位问题的信息，例如是否在特定团队/漫画/章节下出现、网络环境、是否使用了代理等。
+      placeholder: 例如：只有在我切换到"XXX汉化组"时才会出现，其他团队正常...
+    validations:
+      required: false
