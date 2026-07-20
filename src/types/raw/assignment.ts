@@ -37,6 +37,7 @@ export function unwrapRawAssignmentInfo(
     assignedRedrawerAt: roles.includes("redrawer") ? ts : undefined,
     assignedReviewerAt: roles.includes("reviewer") ? ts : undefined,
     assignedPublisherAt: roles.includes("publisher") ? ts : undefined,
+    assignedAdminAt: roles.includes("admin") ? ts : undefined,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   } as AssignmentInfo;

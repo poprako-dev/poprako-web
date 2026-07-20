@@ -8,6 +8,7 @@ import type { AssignmentInfo } from "@/types/assignment";
 import type { WorkflowStatus } from "@/types/workflow";
 import type { Result } from "@/types/utils/result";
 import type { Role } from "@/types/role";
+import { hasRole } from "@/types/role";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { ASSIGNMENT_ROLE_DEFS } from "./assignmentWorkflow";
 import QuickWorkflowActions from "./QuickWorkflowActions";
@@ -153,6 +154,19 @@ export default function AssignmentDrawer({
         )}
       >
         <div className="px-3 py-3 flex flex-col gap-3">
+          {/* Admin header */}
+          {(() => {
+            const admins = assignments.filter((a) => hasRole(a, "admin"));
+            if (admins.length === 0) return null;
+            return (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-px bg-gradient-to-r from-stone-300 to-transparent" />
+                <span className="text-xs text-stone-400 shrink-0">
+                  总管：{admins.map((a) => a.user?.name ?? a.userId).join("、")}
+                </span>
+              </div>
+            );
+          })()}
           {ASSIGNMENT_ROLE_DEFS.map((roleDef) => {
             const roleAssignments = assignments.filter(roleDef.matches);
             const isCurrentUserAssigned = !!(

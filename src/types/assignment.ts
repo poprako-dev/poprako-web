@@ -18,6 +18,7 @@ export type AssignmentInfo = {
   assignedRedrawerAt?: number;
   assignedReviewerAt?: number;
   assignedPublisherAt?: number;
+  assignedAdminAt?: number;
 
   createdAt: number;
   updatedAt: number;
