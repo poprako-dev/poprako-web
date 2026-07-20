@@ -233,7 +233,8 @@ export function useComicDetailExport({
     return rows.join("\n");
   }, [assignments]);
 
-  const handleExportData = useCallback(async () => {
+  const handleExportData = useCallback(async (opts?: { includeImages?: boolean }) => {
+    const includeImages = opts?.includeImages ?? true;
     if (!selectedChapterId || !onExportChapter || !onExportChapterLp) return;
     if (isExportingData) return;
 
@@ -243,7 +244,7 @@ export function useComicDetailExport({
     setExportProgress(DEFAULT_EXPORT_PROGRESS);
 
     try {
-      setExportProgressStep("正在读取翻校数据", "正在请求 PRK 与 LP 导出内容。", 5);
+      setExportProgressStep("正在读取翻校数据", "正在请求 PRK 与 LP 导出内容。", 10);
 
       const [prkExportResult, lpExportResult] = await Promise.all([
         onExportChapter(selectedChapterId, { signal: abortController.signal }),
@@ -263,78 +264,93 @@ export function useComicDetailExport({
       }
 
       const zip = new JSZip();
-      const imageFolder = zip.folder("images");
-      const totalPages = prkExportResult.data.pages.length;
-      const imageUrlsByPageId = new Map(
-        pages.map((page) => [page.id, page.imageUrl]),
-      );
-      let completedPages = 0;
+      let skippedImages = 0;
 
-      const pagesWithAssets = await Promise.all(
-        prkExportResult.data.pages.map(async (page) => {
-          assertExportNotAborted();
+      if (includeImages) {
+        const imageFolder = zip.folder("images");
+        const totalPages = prkExportResult.data.pages.length;
+        const imageUrlsByPageId = new Map(
+          pages.map((page) => [page.id, page.imageUrl]),
+        );
+        let completedPages = 0;
 
-          const imageUrl = imageUrlsByPageId.get(page.pageId) ?? "";
+        const pagesWithAssets = await Promise.all(
+          prkExportResult.data.pages.map(async (page) => {
+            assertExportNotAborted();
 
-          if (!imageUrl) {
+            const imageUrl = imageUrlsByPageId.get(page.pageId) ?? "";
+
+            if (!imageUrl) {
+              completedPages += 1;
+              setExportProgressStep(
+                "正在下载页面图片",
+                `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
+                20 + (completedPages / Math.max(totalPages, 1)) * 60,
+              );
+              return {
+                ...page,
+                sourceImageUrl: imageUrl,
+                exportedImagePath: null as string | null,
+              };
+            }
+
+            const imageFile = await fetchImageFileWithRetry(imageUrl, 3);
+            assertExportNotAborted();
+
+            if (imageFile && imageFolder) {
+              const imageFileName = `${String(page.pageIndex).padStart(3, "0")}.${imageFile.extension}`;
+              imageFolder.file(imageFileName, imageFile.blob);
+              completedPages += 1;
+              setExportProgressStep(
+                "正在下载页面图片",
+                `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
+                20 + (completedPages / Math.max(totalPages, 1)) * 60,
+              );
+
+              return {
+                ...page,
+                sourceImageUrl: imageUrl,
+                exportedImagePath: `images/${imageFileName}`,
+              };
+            }
+
             completedPages += 1;
             setExportProgressStep(
               "正在下载页面图片",
               `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
               20 + (completedPages / Math.max(totalPages, 1)) * 60,
             );
-            return {
-              ...page,
-              sourceImageUrl: imageUrl,
-              exportedImagePath: null as string | null,
-            };
-          }
 
-          const imageFile = await fetchImageFileWithRetry(imageUrl, 3);
-          assertExportNotAborted();
+            return { ...page, sourceImageUrl: imageUrl, exportedImagePath: null };
+          }),
+        );
 
-          if (imageFile && imageFolder) {
-            const imageFileName = `${String(page.pageIndex).padStart(3, "0")}.${imageFile.extension}`;
-            imageFolder.file(imageFileName, imageFile.blob);
-            completedPages += 1;
-            setExportProgressStep(
-              "正在下载页面图片",
-              `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
-              20 + (completedPages / Math.max(totalPages, 1)) * 60,
-            );
+        skippedImages = pagesWithAssets.filter(
+          (page) => page.sourceImageUrl && !page.exportedImagePath,
+        ).length;
 
-            return {
-              ...page,
-              sourceImageUrl: imageUrl,
-              exportedImagePath: `images/${imageFileName}`,
-            };
-          }
+        const payload = {
+          ...prkExportResult.data,
+          exportedAt: new Date().toISOString(),
+          skippedImageCount: skippedImages,
+          pages: pagesWithAssets.map(({ sourceImageUrl: _, ...page }) => page),
+        };
 
-          completedPages += 1;
-          setExportProgressStep(
-            "正在下载页面图片",
-            `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
-            20 + (completedPages / Math.max(totalPages, 1)) * 60,
-          );
+        zip.file("translation.prk.json", JSON.stringify(payload, null, 2));
+      } else {
+        zip.file(
+          "translation.prk.json",
+          JSON.stringify(
+            {
+              ...prkExportResult.data,
+              exportedAt: new Date().toISOString(),
+            },
+            null,
+            2,
+          ),
+        );
+      }
 
-          return { ...page, sourceImageUrl: imageUrl, exportedImagePath: null };
-        }),
-      );
-
-      const skippedImages = pagesWithAssets.filter(
-        (page) => page.sourceImageUrl && !page.exportedImagePath,
-      ).length;
-
-      const payload = {
-        ...prkExportResult.data,
-        exportedAt: new Date().toISOString(),
-        skippedImageCount: skippedImages,
-        pages: pagesWithAssets.map(({ sourceImageUrl: _, ...page }) => page),
-      };
-
-      const fileBaseName = buildExportBaseName();
-
-      zip.file("translation.prk.json", JSON.stringify(payload, null, 2));
       zip.file("translation.lp.txt", lpExportResult.data);
       zip.file("assignments.txt", toAssignmentText());
 
@@ -360,10 +376,14 @@ export function useComicDetailExport({
 
       setExportProgressStep("正在保存文件", "正在触发浏览器下载。", 99);
 
+      const fileBaseName = buildExportBaseName();
+
       const downloadUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `${fileBaseName}.zip`;
+      link.download = includeImages
+        ? `${fileBaseName}.zip`
+        : `${fileBaseName}-翻校数据.zip`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -371,7 +391,7 @@ export function useComicDetailExport({
 
       setExportProgressStep("下载完成", "文件已开始下载。", 100);
 
-      if (skippedImages > 0) {
+      if (includeImages && skippedImages > 0) {
         showToast(
           `导出完成，已打包图片、translation.prk.json、translation.lp.txt、assignments.txt，${skippedImages} 张图片下载失败后已跳过`,
           "error",
@@ -379,7 +399,9 @@ export function useComicDetailExport({
         return;
       }
       showToast(
-        "导出成功，已打包图片、translation.prk.json、translation.lp.txt、assignments.txt",
+        includeImages
+          ? "导出成功，已打包图片、translation.prk.json、translation.lp.txt、assignments.txt"
+          : "导出成功，已打包 translation.prk.json、translation.lp.txt、assignments.txt",
         "success",
       );
     } catch (err) {

@@ -1,5 +1,6 @@
 import {
   reserveChapterPages,
+  reserveExistingPageUpload,
   updatePage,
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
@@ -24,14 +25,46 @@ const DEFAULT_CONCURRENCY = 16;
 async function uploadOnePage(
   file: File,
   creation: { pageId: string; putUrl: string; imageVersion: number },
+  fileExtension: string,
   callbacks: UploadProgressCallbacks | undefined,
   logPrefix: string,
 ): Promise<void> {
-  const uploadResult = await uploadToPresignedUrl(
-    creation.putUrl,
+  let { putUrl, imageVersion } = creation;
+
+  let uploadResult = await uploadToPresignedUrl(
+    putUrl,
     file,
     (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
   );
+
+  // presigned URL 过期（S3 403）时重新预留并重试一次
+  if (!uploadResult.success && uploadResult.httpStatus === 403) {
+    console.warn(
+      `[${logPrefix}] presigned URL expired for page ${creation.pageId}, re-reserving...`,
+    );
+
+    const reReserveResult = await reserveExistingPageUpload({
+      pageId: creation.pageId,
+      fileExtension,
+    });
+    if (!reReserveResult.success) {
+      console.error(
+        `[${logPrefix}] 重新预留上传URL失败:`,
+        reReserveResult.error,
+      );
+      throw new Error(reReserveResult.error);
+    }
+
+    putUrl = reReserveResult.data.putUrl;
+    imageVersion = reReserveResult.data.imageVersion;
+
+    uploadResult = await uploadToPresignedUrl(
+      putUrl,
+      file,
+      (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
+    );
+  }
+
   if (!uploadResult.success) {
     console.error(`[${logPrefix}] 上传页面失败:`, uploadResult.error);
     throw new Error(uploadResult.error);
@@ -39,7 +72,7 @@ async function uploadOnePage(
 
   const markResult = await updatePage(creation.pageId, {
     isUploaded: true,
-    imageVersion: creation.imageVersion,
+    imageVersion,
   });
   if (!markResult.success) {
     console.error(`[${logPrefix}] 标记页面上传状态失败:`, markResult.error);
@@ -99,7 +132,13 @@ export async function addChapterPages({
     while (cursor < files.length && firstError === null) {
       const i = cursor++;
       try {
-        await uploadOnePage(files[i], creations[i], callbacks, logPrefix);
+        await uploadOnePage(
+          files[i],
+          creations[i],
+          fileExtension!,
+          callbacks,
+          logPrefix,
+        );
       } catch (err) {
         if (firstError === null) {
           firstError = err instanceof Error ? err : new Error(String(err));

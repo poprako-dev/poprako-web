@@ -138,7 +138,7 @@ export async function uploadToPresignedUrl(
   putUrl: string,
   file: File,
   onProgress?: (percent: number) => void,
-): Promise<Result<void>> {
+): Promise<Result<void> & { httpStatus?: number }> {
   return new Promise((resolve) => {
     const xhr = new XMLHttpRequest();
 
@@ -157,13 +157,14 @@ export async function uploadToPresignedUrl(
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         onProgress?.(100);
-        resolve({ success: true, data: undefined });
+        resolve({ success: true, data: undefined, httpStatus: xhr.status });
         return;
       }
 
       resolve({
         success: false,
         error: `上传失败: HTTP ${xhr.status}`,
+        httpStatus: xhr.status,
       });
     };
 

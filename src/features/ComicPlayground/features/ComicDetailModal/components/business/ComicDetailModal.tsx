@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import clsx from "clsx";
 import { canApplyWorkflowTransition, type ChapterInfo } from "@/types/chapter";
 import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
@@ -45,6 +46,7 @@ export default function ComicDetailModal({
   onJoinChapterRole,
   onExportChapter,
   onExportChapterLp,
+  onImportChapter,
   onArchiveComic,
   onDeleteComic,
   onUpdateComic,
@@ -56,7 +58,7 @@ export default function ComicDetailModal({
   const accessToken = useAppStore((s) => s.accessToken);
   const [activeMember, setActiveMember] = useState<MemberInfo | null>(null);
   const [pendingConfirmAction, setPendingConfirmAction] = useState<
-    "delete-pages" | "archive-comic" | "delete-comic" | null
+    "delete-pages" | "archive-comic" | "delete-comic" | "export-data" | null
   >(null);
   const [isArchivingComic, setIsArchivingComic] = useState(false);
   const [isDeletingComic, setIsDeletingComic] = useState(false);
@@ -178,10 +180,12 @@ export default function ComicDetailModal({
   });
 
   const {
+    isImportingData,
     isExportingData,
     exportProgress,
     canUploadCover,
     handleExportData,
+    handleImportFileChange,
     coverUpload,
     cancelExport,
   } = useComicDetailExport({
@@ -199,6 +203,7 @@ export default function ComicDetailModal({
     canUploadRawPages,
     onExportChapter,
     onExportChapterLp,
+    onImportChapter,
     reloadCurrentPages,
     reloadLoadedChapters,
     showToast,
@@ -215,7 +220,7 @@ export default function ComicDetailModal({
     !!selectedChapterId &&
     !!onAddPages;
   const canReuploadRawPages = canUploadRawPages && !!onReservePageUpload;
-  const canClickPage = (canTranslateOrProofread || canReadOnly) && !canUploadRawPages;
+  const canClickPage = canTranslateOrProofread || canReadOnly;
 
   const handleTransition = async (
     transition: WorkflowTransition,
@@ -331,6 +336,7 @@ export default function ComicDetailModal({
       pagesLength={pages.length}
       canReadOnly={canReadOnly}
       canUploadCover={canUploadCover}
+      canTranslateOrProofread={canTranslateOrProofread}
       canDeleteChapterPages={canDeleteChapterPages}
       canArchiveComic={isTeamAdmin && !!onArchiveComic}
       isTeamAdmin={isTeamAdmin && !!onDeleteComic}
@@ -338,6 +344,7 @@ export default function ComicDetailModal({
       isArchivingComic={isArchivingComic}
       isDeletingComic={isDeletingComic}
       isExportingData={isExportingData}
+      isImportingData={isImportingData}
       onNavigateReadOnly={
         canReadOnly && selectedChapterId && onNavigateToTranslator
           ? () => {
@@ -351,7 +358,12 @@ export default function ComicDetailModal({
           : undefined
       }
       onExport={
-        onExportChapter && onExportChapterLp ? () => void handleExportData() : undefined
+        onExportChapter && onExportChapterLp
+          ? () => setPendingConfirmAction("export-data")
+          : undefined
+      }
+      onImportFileChange={
+        onImportChapter ? handleImportFileChange : undefined
       }
       onDeletePages={() => setPendingConfirmAction("delete-pages")}
       onArchiveComic={() => setPendingConfirmAction("archive-comic")}
@@ -480,6 +492,45 @@ export default function ComicDetailModal({
           }}
           onCancel={() => setPendingConfirmAction(null)}
         />
+      )}
+      {pendingConfirmAction === "export-data" && (
+        <ConfirmDialog
+          title="下载数据"
+          description="请选择导出方式"
+          hideFooter
+          onCancel={() => setPendingConfirmAction(null)}
+        >
+          <div className="flex items-center gap-2 px-5 pb-5 pt-1">
+            <button
+              onClick={() => {
+                setPendingConfirmAction(null);
+                void handleExportData({ includeImages: false });
+              }}
+              className={clsx(
+                "flex-1 py-2 text-xs font-semibold rounded-lg",
+                "transition-all duration-200 active:scale-[0.98]",
+                "text-slate-500 bg-slate-50 hover:bg-slate-100",
+                "border border-slate-100",
+              )}
+            >
+              仅翻校数据
+            </button>
+            <button
+              onClick={() => {
+                setPendingConfirmAction(null);
+                void handleExportData({ includeImages: true });
+              }}
+              className={clsx(
+                "flex-1 py-2 text-xs font-semibold rounded-lg",
+                "flex items-center justify-center gap-1",
+                "transition-all duration-200 active:scale-[0.98]",
+                "border border-green-200 bg-green-50 text-green-600 hover:bg-green-100",
+              )}
+            >
+              包含图源
+            </button>
+          </div>
+        </ConfirmDialog>
       )}
       {showComicModifier && onUpdateComic && (
         <ComicModifierModal
