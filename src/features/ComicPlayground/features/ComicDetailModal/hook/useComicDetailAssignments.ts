@@ -13,6 +13,7 @@ type Args = {
   currentUserId?: string | null;
   activeMember: MemberInfo | null;
   pinnedChapterId?: string | null;
+  pinnedChapterAssignments?: AssignmentInfo[];
   onLoadAssignments: ComicDetailModalProps["onLoadAssignments"];
   onAddAssignment?: ComicDetailModalProps["onAddAssignment"];
   onRemoveAssignment?: ComicDetailModalProps["onRemoveAssignment"];
@@ -26,6 +27,7 @@ export function useComicDetailAssignments({
   currentUserId,
   activeMember,
   pinnedChapterId,
+  pinnedChapterAssignments,
   onLoadAssignments,
   onAddAssignment,
   onRemoveAssignment,
@@ -83,6 +85,17 @@ export function useComicDetailAssignments({
       return;
     }
 
+    // 优先使用预加载的置顶章节分工数据，避免额外网络请求
+    if (pinnedChapterAssignments) {
+      const pinnedAssignment = pinnedChapterAssignments.find(
+        (assignment) => assignment.userId === currentUserId,
+      );
+      setCanCreateChapter(
+        !!pinnedAssignment && hasRole(pinnedAssignment, "reviewer"),
+      );
+      return;
+    }
+
     let cancelled = false;
 
     onLoadAssignments(pinnedChapterId)
@@ -115,7 +128,13 @@ export function useComicDetailAssignments({
     return () => {
       cancelled = true;
     };
-  }, [activeMember, currentUserId, onLoadAssignments, pinnedChapterId]);
+  }, [
+    activeMember,
+    currentUserId,
+    onLoadAssignments,
+    pinnedChapterAssignments,
+    pinnedChapterId,
+  ]);
 
   const currentAssignment = useMemo(
     () => assignments.find((item) => item.userId === currentUserId),

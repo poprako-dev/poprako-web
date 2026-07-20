@@ -91,7 +91,7 @@ export default function ComicPlayground() {
       if (!activeWorksetId) return [];
       const result = await listComics({
         worksetId: activeWorksetId,
-        withs: ["pinned_chapter"],
+        withs: ["pinned_chapter", "pinned_chapter_assignment"],
         offset: 0,
         limit: 200,
       });
@@ -140,15 +140,6 @@ export default function ComicPlayground() {
       });
     },
     [],
-  );
-
-  const handleLoadAssignmentsForComic = useCallback(
-    async (comicInfo: ComicInfo): Promise<Result<AssignmentInfo[]>> => {
-      const chapterId = comicInfo.pinnedChapter?.id;
-      if (!chapterId) return { success: true, data: [] };
-      return handleLoadAssignments(chapterId);
-    },
-    [handleLoadAssignments],
   );
 
   const handleRemoveRole = useCallback(
@@ -444,7 +435,6 @@ export default function ComicPlayground() {
         onDeleteWorkset={handleDeleteWorkset}
         onUpdateWorkset={isAdmin ? handleUpdateWorkset : undefined}
         onLoadComics={handleLoadComics}
-        onLoadAssignments={handleLoadAssignmentsForComic}
         onComicClick={openComicDetail}
         onCreateComic={() => setShowComicCreatorModal(true)}
         onChangeFuzzyTitle={setActiveFuzzyTitle}
@@ -467,6 +457,7 @@ export default function ComicPlayground() {
           key={selectedComic.id}
           comicInfo={selectedComic}
           pinnedChapter={selectedComicPinnedChapter}
+          pinnedChapterAssignments={selectedComic.pinnedChapterAssignments}
           initialChapterId={urlChapterId}
           onLoadChapters={handleLoadDetailChapters}
           onLoadAssignments={handleLoadAssignments}

@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import clsx from "clsx";
 import type { ComicInfo } from "@/types";
 import type { ChapterInfo } from "@/types/chapter";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { WorkflowStatus } from "@/types/workflow";
 import type { ViewMode } from "@/features/ComicCard/types/types";
-import type { Result } from "@/types/utils/result";
 import {
   uploadWorkflowStatus,
   translateWorkflowStatus,
@@ -14,15 +13,11 @@ import {
   reviewWorkflowStatus,
   publishWorkflowStatus,
 } from "@/types/chapter";
-import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import WorkflowStepDropdown from "./WorkflowStepDropdown";
 
 type Props = {
   comicInfo: ComicInfo;
   mode: ViewMode;
-  onLoadAssignments: (
-    comicInfo: ComicInfo,
-  ) => Promise<Result<AssignmentInfo[]>>;
   onClick: () => void;
 };
 
@@ -144,38 +139,16 @@ function formatDate(ts: number | undefined): string {
 export default function ComicProgressItem({
   comicInfo,
   // mode is reserved for future differentiated rendering
-  onLoadAssignments,
   onClick,
 }: Props) {
-  const { showToast } = useToastStore();
   const chapter: ChapterInfo | null = comicInfo.pinnedChapter ?? null;
-  const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
+  const [assignments] = useState<AssignmentInfo[]>(
+    comicInfo.pinnedChapterAssignments ?? [],
+  );
   const [hoveredStep, setHoveredStep] = useState<string | null>(null);
   const [showCover, setShowCover] = useState(false);
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
   const [showMobileProgress, setShowMobileProgress] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    onLoadAssignments(comicInfo)
-      .then((res) => {
-        if (!active) return;
-        if (!res.success) {
-          console.error("[ComicProgressItem] 加载分工信息失败:", res);
-          showToast("加载分工信息失败", "error");
-          return;
-        }
-        setAssignments(res.data);
-      })
-      .catch((err) => {
-        if (!active) return;
-        console.error("[ComicProgressItem] 加载分工信息异常:", err);
-        showToast("加载分工信息失败", "error");
-      });
-    return () => {
-      active = false;
-    };
-  }, [comicInfo, onLoadAssignments, showToast]);
 
   const statusDotClass = getActivityStatusColor(comicInfo.lastActiveAt);
 

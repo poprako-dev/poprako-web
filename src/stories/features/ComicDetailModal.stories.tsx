@@ -300,6 +300,7 @@ export const Default: Story = {
   args: {
     comicInfo: mockComic,
     pinnedChapter,
+    pinnedChapterAssignments: makeAssignments("chapter-42"),
     currentUserId: "u-aki",
     onLoadChapters: async (args) => {
       await delay(200);

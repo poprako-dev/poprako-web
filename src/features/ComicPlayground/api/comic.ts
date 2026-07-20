@@ -12,6 +12,7 @@ import { toComicInfo } from "@/types";
 import type { ComicInfo } from "@/types";
 import { toChapterInfo } from "@/types/chapter";
 import type { Result } from "@/types/utils/result";
+import { unwrapRawAssignmentInfo } from "@/types/raw/assignment";
 
 export async function listComics(
   args: ListComicArgs,
@@ -36,6 +37,11 @@ export async function listComics(
   const pinnedChapters = Array.isArray(payload.pinned_chapters)
     ? payload.pinned_chapters
     : [];
+  const pinnedChapterAssignmentsList = Array.isArray(
+    payload.pinned_chapter_assignments,
+  )
+    ? payload.pinned_chapter_assignments
+    : [];
 
   return {
     success: true,
@@ -44,6 +50,9 @@ export async function listComics(
       pinnedChapter: pinnedChapters[i]
         ? toChapterInfo(pinnedChapters[i]!)
         : undefined,
+      pinnedChapterAssignments: (
+        pinnedChapterAssignmentsList[i] || []
+      ).map(unwrapRawAssignmentInfo),
     })),
   };
 }

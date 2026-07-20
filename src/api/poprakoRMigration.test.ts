@@ -77,7 +77,7 @@ describe("poprako-r API migration", () => {
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/teams/team_1/worksets?offset=1&limit=20");
 
     fetchMock.mockResolvedValueOnce(
-      (await okJson({ comics: [], pinned_chapters: [] })).clone(),
+      (await okJson({ comics: [], pinned_chapters: [], pinned_chapter_assignments: [] })).clone(),
     );
     await listComics({
       worksetId: "workset_1",
@@ -459,6 +459,7 @@ describe("poprako-r API migration", () => {
         },
         null,
       ],
+      pinned_chapter_assignments: [],
     }));
 
     const result = await listComics({

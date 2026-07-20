@@ -2,9 +2,7 @@ import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import ComicList from "@/features/ComcList/components/business/ComicList";
 import type { ComicInfo } from "@/types/comic";
-import type { AssignmentInfo } from "@/types/assignment";
 import type { WorksetInfo } from "@/types/workset";
-import type { Result } from "@/types/utils/result";
 import type {
   BinaryFilter,
   TripleFilter,
@@ -31,45 +29,6 @@ function makeMockComic(idx: number): ComicInfo {
     updatedAt: now,
   };
 }
-
-const mockAssignments: AssignmentInfo[] = [
-  {
-    id: "a-1",
-    chapterId: "chapter-0",
-    userId: "translator-1",
-    user: {
-      id: "translator-1",
-      name: "李翻译",
-      qq: "",
-      avatarUrl: "",
-      isSuperAdmin: false,
-      lastActiveAt: now,
-      createdAt: now,
-      updatedAt: now,
-    },
-    assignedTranslatorAt: now,
-    createdAt: now,
-    updatedAt: now,
-  },
-  {
-    id: "a-2",
-    chapterId: "chapter-0",
-    userId: "proofreader-1",
-    user: {
-      id: "proofreader-1",
-      name: "王校对",
-      qq: "",
-      avatarUrl: "",
-      isSuperAdmin: false,
-      lastActiveAt: now,
-      createdAt: now,
-      updatedAt: now,
-    },
-    assignedProofreaderAt: now,
-    createdAt: now,
-    updatedAt: now,
-  },
-];
 
 const mockWorksets: WorksetInfo[] = [
   {
@@ -222,10 +181,6 @@ function InteractiveComicList() {
         onCreateWorkset={handleCreateWorkset}
         onDeleteWorkset={handleDeleteWorkset}
         onLoadComics={pagedLoaderWithFilters}
-        onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => {
-          await new Promise((r) => setTimeout(r, 200));
-          return { success: true, data: mockAssignments };
-        }}
         onComicClick={(c) => console.log("click comic:", c.title)}
         onCreateComic={() => console.log("create comic")}
         activeFuzzyTitle={title}
@@ -274,10 +229,6 @@ function ReviewerComicList() {
         onCreateWorkset={() => console.log("create workset")}
         onDeleteWorkset={(id) => console.log("delete:", id)}
         onLoadComics={makePagedLoader(FULL_COMICS)}
-        onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => {
-          await new Promise((r) => setTimeout(r, 200));
-          return { success: true, data: mockAssignments };
-        }}
         onComicClick={(c) => console.log("click:", c.title)}
         onCreateComic={() => console.log("create comic")}
         activeFuzzyTitle={title}
@@ -326,10 +277,6 @@ export const EmptyState: Story = {
           onCreateWorkset={() => {}}
           onDeleteWorkset={() => {}}
           onLoadComics={async () => []}
-          onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => ({
-            success: true as const,
-            data: [],
-          })}
           onCreateComic={() => {}}
           activeFuzzyTitle={title}
           onChangeFuzzyTitle={setTitle}
@@ -373,10 +320,6 @@ export const SingleWorkset: Story = {
           onCreateWorkset={() => console.log("create workset")}
           onDeleteWorkset={() => {}}
           onLoadComics={makePagedLoader(FULL_COMICS.slice(0, 5), 400)}
-          onLoadAssignments={async (): Promise<Result<AssignmentInfo[]>> => ({
-            success: true as const,
-            data: [],
-          })}
           onCreateComic={() => console.log("create comic")}
           activeFuzzyTitle={title}
           onChangeFuzzyTitle={setTitle}

@@ -3,7 +3,6 @@ import ComicProgressItem from "@/features/ComicProgressList/components/ComicProg
 import type { ComicInfo } from "@/types/comic";
 import type { ChapterInfo } from "@/types/chapter";
 import type { AssignmentInfo } from "@/types/assignment";
-import type { Result } from "@/types/utils/result";
 
 const now = Date.now();
 
@@ -127,19 +126,19 @@ function makeAssignments(extras?: AssignmentInfo[]): AssignmentInfo[] {
 
 function createStoryComponent(
   comic: ComicInfo,
-  chapterResult: Result<ChapterInfo | null>,
-  assignmentResult: Result<AssignmentInfo[]>,
+  chapterResult: { success: boolean; data: ChapterInfo | null },
+  assignments: AssignmentInfo[],
 ) {
   const storyComic: ComicInfo = {
     ...comic,
     pinnedChapter: chapterResult.success ? (chapterResult.data ?? undefined) : undefined,
+    pinnedChapterAssignments: chapterResult.success ? assignments : undefined,
   };
   return () => (
     <div className="w-180 max-w-full">
       <ComicProgressItem
         comicInfo={storyComic}
         mode="translator"
-        onLoadAssignments={async () => assignmentResult}
         onClick={() => console.log("clicked:", comic.title)}
       />
     </div>
@@ -167,7 +166,7 @@ export const Default: Story = {
   render: createStoryComponent(
     baseComic,
     { success: true, data: makePinnedChapter() },
-    { success: true, data: makeAssignments() },
+    makeAssignments(),
   ),
 };
 
@@ -181,7 +180,7 @@ export const ActiveWithin3Months: Story = {
       lastActiveAt: now - 1000 * 60 * 60 * 24 * 10,
     },
     { success: true, data: makePinnedChapter() },
-    { success: true, data: makeAssignments() },
+    makeAssignments(),
   ),
 };
 
@@ -198,7 +197,7 @@ export const ActiveWithin6Months: Story = {
       success: true,
       data: makePinnedChapter({ uploadedAt: now - 1000 * 60 * 60 * 24 * 30 }),
     },
-    { success: true, data: makeAssignments() },
+    makeAssignments(),
   ),
 };
 
@@ -212,7 +211,7 @@ export const InactiveOver6Months: Story = {
       lastActiveAt: now - 1000 * 60 * 60 * 24 * 200,
     },
     { success: true, data: null },
-    { success: true, data: [] },
+    [],
   ),
 };
 
@@ -224,7 +223,7 @@ export const Published: Story = {
       success: true,
       data: makePinnedChapter({ publishedAt: now - 1000 * 60 * 60 }),
     },
-    { success: true, data: makeAssignments() },
+    makeAssignments(),
   ),
 };
 
@@ -238,7 +237,7 @@ export const NoChapter: Story = {
       lastActiveAt: now - 1000 * 60 * 60 * 24 * 7,
     },
     { success: true, data: null },
-    { success: true, data: [] },
+    [],
   ),
 };
 
@@ -254,68 +253,65 @@ export const AllRolesFilled: Story = {
         typesetAt: now - 1000 * 60 * 60 * 4,
       }),
     },
-    {
-      success: true,
-      data: [
-        makeTranslatorAssignment("user-t1", "李翻译"),
-        makeProofreaderAssignment("user-p1", "王校对"),
-        makeTypesetterAssignment("user-ts1", "赵嵌字"),
-        {
-          id: "a-user-r1",
-          chapterId: "chapter-1",
-          userId: "user-r1",
-          user: {
-            id: "user-r1",
-            name: "孙质检",
-            qq: "",
-            avatarUrl: "",
-            isSuperAdmin: false,
-            lastActiveAt: now,
-            createdAt: now,
-            updatedAt: now,
-          },
-          assignedReviewerAt: now - 1000 * 60 * 60 * 2,
+    [
+      makeTranslatorAssignment("user-t1", "李翻译"),
+      makeProofreaderAssignment("user-p1", "王校对"),
+      makeTypesetterAssignment("user-ts1", "赵嵌字"),
+      {
+        id: "a-user-r1",
+        chapterId: "chapter-1",
+        userId: "user-r1",
+        user: {
+          id: "user-r1",
+          name: "孙质检",
+          qq: "",
+          avatarUrl: "",
+          isSuperAdmin: false,
+          lastActiveAt: now,
           createdAt: now,
           updatedAt: now,
-        } as AssignmentInfo,
-        {
-          id: "a-user-pub1",
-          chapterId: "chapter-1",
-          userId: "user-pub1",
-          user: {
-            id: "user-pub1",
-            name: "周发布",
-            qq: "",
-            avatarUrl: "",
-            isSuperAdmin: false,
-            lastActiveAt: now,
-            createdAt: now,
-            updatedAt: now,
-          },
-          assignedPublisherAt: now - 1000 * 60 * 60 * 1,
+        },
+        assignedReviewerAt: now - 1000 * 60 * 60 * 2,
+        createdAt: now,
+        updatedAt: now,
+      } as AssignmentInfo,
+      {
+        id: "a-user-pub1",
+        chapterId: "chapter-1",
+        userId: "user-pub1",
+        user: {
+          id: "user-pub1",
+          name: "周发布",
+          qq: "",
+          avatarUrl: "",
+          isSuperAdmin: false,
+          lastActiveAt: now,
           createdAt: now,
           updatedAt: now,
-        } as AssignmentInfo,
-        {
-          id: "a-user-rp1",
-          chapterId: "chapter-1",
-          userId: "user-rp1",
-          user: {
-            id: "user-rp1",
-            name: "吴修图",
-            qq: "",
-            avatarUrl: "",
-            isSuperAdmin: false,
-            lastActiveAt: now,
-            createdAt: now,
-            updatedAt: now,
-          },
-          assignedRawProviderAt: now - 1000 * 60 * 60 * 72,
+        },
+        assignedPublisherAt: now - 1000 * 60 * 60 * 1,
+        createdAt: now,
+        updatedAt: now,
+      } as AssignmentInfo,
+      {
+        id: "a-user-rp1",
+        chapterId: "chapter-1",
+        userId: "user-rp1",
+        user: {
+          id: "user-rp1",
+          name: "吴修图",
+          qq: "",
+          avatarUrl: "",
+          isSuperAdmin: false,
+          lastActiveAt: now,
           createdAt: now,
           updatedAt: now,
-        } as AssignmentInfo,
-      ],
-    },
+        },
+        assignedRawProviderAt: now - 1000 * 60 * 60 * 72,
+        createdAt: now,
+        updatedAt: now,
+      } as AssignmentInfo,
+    ],
   ),
 };
 
@@ -335,7 +331,7 @@ export const NoAssignments: Story = {
         translatingAt: now - 1000 * 60 * 60 * 12,
       }),
     },
-    { success: true, data: [] },
+    [],
   ),
 };
 
@@ -343,8 +339,8 @@ export const LoadError: Story = {
   name: "加载失败（静默降级）",
   render: createStoryComponent(
     { ...baseComic, index: 5, title: "NARUTO" },
-    { success: false, error: "Network error" },
-    { success: false, error: "Network error" },
+    { success: false, data: null },
+    [],
   ),
 };
 
@@ -366,7 +362,7 @@ export const HoverTooltip: Story = {
       success: true,
       data: makePinnedChapter({ translatingAt: now - 1000 * 60 * 60 * 12 }),
     },
-    { success: true, data: longNameMembers },
+    longNameMembers,
   ),
 };
 
@@ -378,9 +374,6 @@ export const HoverTooltipSingle: Story = {
       success: true,
       data: makePinnedChapter({ translatingAt: now - 1000 * 60 * 60 * 24 }),
     },
-    {
-      success: true,
-      data: [makeTranslatorAssignment("user-sole", "唯一翻译者")],
-    },
+    [makeTranslatorAssignment("user-sole", "唯一翻译者")],
   ),
 };

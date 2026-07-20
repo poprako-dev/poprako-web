@@ -43,6 +43,7 @@ export const ROLE_TITLE_LABEL: Record<Role, string> = {
 export type ComicDetailModalProps = {
   comicInfo: ComicInfo;
   pinnedChapter: ChapterInfo | null;
+  pinnedChapterAssignments?: AssignmentInfo[];
   initialChapterId?: string | null;
   onLoadChapters: (args: ListChapterArgs) => Promise<Result<ChapterInfo[]>>;
   onLoadAssignments: (chapterId: string) => Promise<Result<AssignmentInfo[]>>;

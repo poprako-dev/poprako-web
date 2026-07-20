@@ -3,6 +3,7 @@ import { unwrapRawUserInfo, type RawUserInfo } from "./raw/user";
 import type { UserInfo } from "./user";
 import { toWorksetInfo, type WorksetInfo } from "./workset";
 import type { ChapterInfo } from "./chapter";
+import type { AssignmentInfo } from "./assignment";
 import { ensureHttpsUrl } from "@/utils/url";
 
 export type ComicInfo = {
@@ -26,6 +27,7 @@ export type ComicInfo = {
   creator?: UserInfo;
 
   pinnedChapter?: ChapterInfo;
+  pinnedChapterAssignments?: AssignmentInfo[];
 
   lastActiveAt: number;
 

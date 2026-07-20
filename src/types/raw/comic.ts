@@ -7,6 +7,7 @@ import type {
 import { toWorksetInfo } from "../workset";
 import type { RawUserInfo } from "./user";
 import type { RawWorksetInfo } from "./workset";
+import type { RawAssignmentInfo } from "./assignment";
 import type { RawChapterInfo } from "./chapter";
 import { ensureHttpsUrl } from "@/utils/url";
 
@@ -36,6 +37,7 @@ export type RawComicInfo = {
 export type RawListComicInfosPayload = {
   comics: RawComicInfo[];
   pinned_chapters: (RawChapterInfo | null)[];
+  pinned_chapter_assignments: RawAssignmentInfo[][];
 };
 
 export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {

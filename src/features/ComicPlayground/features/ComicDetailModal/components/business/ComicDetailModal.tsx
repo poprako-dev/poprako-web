@@ -28,6 +28,7 @@ import { applyWorkflowTransition } from "../../utils";
 export default function ComicDetailModal({
   comicInfo,
   pinnedChapter,
+  pinnedChapterAssignments,
   initialChapterId,
   onLoadChapters,
   onLoadAssignments,
@@ -149,6 +150,7 @@ export default function ComicDetailModal({
     currentUserId,
     activeMember,
     pinnedChapterId: pinnedChapter?.id,
+    pinnedChapterAssignments,
     onLoadAssignments,
     onAddAssignment,
     onRemoveAssignment,
