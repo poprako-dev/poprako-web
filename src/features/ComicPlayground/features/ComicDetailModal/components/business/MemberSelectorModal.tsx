@@ -84,7 +84,7 @@ export default function MemberSelectorModal({
         role,
         keyword: keyword.trim() || undefined,
         offset: 0,
-        limit: 50,
+        limit: 20,
       })
         .then((result) => {
           if (latestRequestIdRef.current !== requestId) return;

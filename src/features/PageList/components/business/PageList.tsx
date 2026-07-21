@@ -137,7 +137,6 @@ export default function PageList({
             aria-label="追加页面图片"
           >
             <Plus className="h-7 w-7" strokeWidth={1.5} />
-            <span className="text-[11px] font-bold">追加图片</span>
           </button>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import clsx from "clsx";
 import { PencilLine, Eye } from "lucide-react";
 import type { ComicInfo } from "@/types";
@@ -84,18 +84,21 @@ export default function ComicList({
     setIsSidebarOpen((prev) => !prev);
   };
 
-  const loadComicCards = async (
-    offset: number,
-    limit: number,
-  ): Promise<ComicTranslationListItem[] | string> => {
-    const result = await onLoadComics(offset, limit);
-    if (typeof result === "string") return result;
+  const loadComicCards = useCallback(
+    async (
+      offset: number,
+      limit: number,
+    ): Promise<ComicTranslationListItem[] | string> => {
+      const result = await onLoadComics(offset, limit);
+      if (typeof result === "string") return result;
 
-    return result.map((comicInfo) => ({
-      comicInfo,
-      chapter: comicInfo.pinnedChapter,
-    }));
-  };
+      return result.map((comicInfo) => ({
+        comicInfo,
+        chapter: comicInfo.pinnedChapter,
+      }));
+    },
+    [onLoadComics],
+  );
 
   return (
     <ComicListLayout

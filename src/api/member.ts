@@ -14,7 +14,7 @@ export async function listMyMembers(args: ListMyMembersArgs) {
     owner_id: args.ownerId,
     incl: ["team"],
     offset: args.offset ?? 0,
-    limit: args.limit ?? 100,
+    limit: args.limit ?? 20,
   });
   if (!result.success) throw new Error(result.error);
   return (result.data ?? []).map(unwrapRawMemberInfo);

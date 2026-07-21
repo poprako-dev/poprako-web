@@ -1,4 +1,4 @@
-import { useRef, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import clsx from "clsx";
 import type { UnitInfo } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
@@ -76,6 +76,8 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     onAddUnit,
     onDeleteUnit,
   });
+
+  const [hoveredUnitId, setHoveredUnitId] = useState<string | null>(null);
 
   // Keep a live ref to transform to avoid stale closures in imperative handle
   const transformRef = useRef(transform);
@@ -194,6 +196,10 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     e.stopPropagation();
                     onToggleBubble?.(id);
                   }}
+                  onMouseEnter={() => setHoveredUnitId(id)}
+                  onMouseLeave={() =>
+                    setHoveredUnitId((prev) => (prev === id ? null : prev))
+                  }
                 >
                   <Marker
                     index={unitIndex(unit)}
@@ -213,19 +219,24 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
 
             {/* Preview overlay — rendered outside markers to avoid z-index stacking issues */}
             {(() => {
-              const focusedUnit = focusedUnitId
-                ? units.find((u) => unitId(u) === focusedUnitId)
+              // hover takes priority over focus; focus only shows in proofread mode
+              const previewUnitId =
+                hoveredUnitId ??
+                (mode === "proofread" &&
+                proofreadPreviewVisibility === "visible"
+                  ? focusedUnitId
+                  : null);
+              const previewUnit = previewUnitId
+                ? units.find((u) => unitId(u) === previewUnitId)
                 : null;
               if (
-                !focusedUnit ||
-                mode !== "proofread" ||
-                proofreadPreviewVisibility !== "visible" ||
-                !unitFinalText(focusedUnit) ||
-                dragMarker?.id === focusedUnitId
+                !previewUnit ||
+                !unitFinalText(previewUnit) ||
+                dragMarker?.id === previewUnitId
               ) {
                 return null;
               }
-              const pos = unitPosition(focusedUnit);
+              const pos = unitPosition(previewUnit);
               return (
                 <div
                   className="absolute z-50 pointer-events-none"
@@ -237,7 +248,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                   }}
                 >
                   <div className="px-2 py-1 rounded-sm bg-slate-800/90 text-slate-50 text-xs backdrop-blur-md shadow-xl border border-white/10 whitespace-pre">
-                    {unitFinalText(focusedUnit)}
+                    {unitFinalText(previewUnit)}
                   </div>
                 </div>
               );

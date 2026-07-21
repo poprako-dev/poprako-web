@@ -15,8 +15,8 @@ import {
 
 export type ListPageArgs = {
   chapterId: string;
-  offset: number;
-  limit: number;
+  offset?: number;
+  limit?: number;
 };
 
 export async function listPages(

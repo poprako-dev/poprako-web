@@ -29,7 +29,6 @@ export async function listUnits(
 ): Promise<Result<ListPageUnitsResult>> {
   const res = await api.get<RawListPageUnitsResult>(
     `/pages/${pageId}/units`,
-    { offset: 0, limit: 500 },
   );
   if (!res.success) return res;
 
@@ -68,7 +67,6 @@ export async function listPages(
 ): Promise<Result<PageInfo[]>> {
   const res = await api.get<RawPageInfo[]>(
     `/chapters/${chapterId}/pages`,
-    { offset: 0, limit: 500 },
   );
   if (!res.success) return res;
 

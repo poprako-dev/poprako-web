@@ -23,7 +23,7 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
       return;
     }
 
-    const result = await listWorksets({ teamId, offset: 0, limit: 100 });
+    const result = await listWorksets({ teamId, offset: 0, limit: 20 });
     if (!result.success) {
       console.error("[ComicPlayground] 加载作品集失败:", result.error);
       showToast(result.error, "error");

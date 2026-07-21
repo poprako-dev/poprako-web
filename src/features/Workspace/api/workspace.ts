@@ -33,7 +33,7 @@ export async function fetchComicAssignments(
   return listAssignmentsByChapter({
     chapterId,
     offset: 0,
-    limit: 50,
+    limit: 20,
     includes: ["user"],
   });
 }

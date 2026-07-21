@@ -92,8 +92,6 @@ export async function addChapterPages({
 }: Args): Promise<void> {
   const existingPagesResult = await listPages({
     chapterId,
-    offset: 0,
-    limit: 200,
   });
   if (!existingPagesResult.success) {
     throw new Error(existingPagesResult.error);

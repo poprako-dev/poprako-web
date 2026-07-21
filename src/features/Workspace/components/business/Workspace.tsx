@@ -54,7 +54,7 @@ import type { CommentInfo } from "@/types/comment";
 export default function Workspace() {
   const loginState = useAppStore((s) => s.loginState);
   const currentUserId = loginState?.userInfo.id ?? null;
-  const { showToast } = useToastStore();
+  const showToast = useToastStore((s) => s.showToast);
   const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
   const [comments, setComments] = useState<CommentInfo[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -178,7 +178,7 @@ export default function Workspace() {
       return listAssignmentsByChapter({
         chapterId,
         offset: 0,
-        limit: 100,
+        limit: 20,
         includes: ["user"],
       });
     },
@@ -186,7 +186,7 @@ export default function Workspace() {
   );
 
   const handleLoadPages = useCallback(async (chapterId: string) => {
-    return listPages({ chapterId, offset: 0, limit: 200 });
+    return listPages({ chapterId });
   }, []);
 
   const handleTransiteWorkflow = useCallback(

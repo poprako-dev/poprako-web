@@ -53,7 +53,7 @@ import { useComicPlaygroundWorksets } from "../../hook/useComicPlaygroundWorkset
 export default function ComicPlayground() {
   const { activeTeamId: teamId, activeMember } = useActiveTeam();
   const currentUserId = useAppStore((s) => s.loginState?.userInfo.id ?? null);
-  const { showToast } = useToastStore();
+  const showToast = useToastStore((s) => s.showToast);
 
   const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
   const [showComicCreatorModal, setShowComicCreatorModal] = useState(false);
@@ -93,19 +93,16 @@ export default function ComicPlayground() {
         worksetId: activeWorksetId,
         withs: ["pinned_chapter", "pinned_chapter_assignment"],
         offset: 0,
-        limit: 200,
+        limit: Math.min(limit, 20),
       });
       if (!result.success) return result.error;
 
-      const filtered = result.data
-        .filter((comic) =>
-          matchComicClientFilters(comic, comic.pinnedChapter ?? null, comicFilters),
-        )
-        .map((comic) => comic);
+      const filtered = result.data.filter((comic) =>
+        matchComicClientFilters(comic, comic.pinnedChapter ?? null, comicFilters),
+      );
 
       return filtered.slice(offset, offset + limit);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeWorksetId, comicFilters, comicListRefreshKey],
   );
 
@@ -135,7 +132,7 @@ export default function ComicPlayground() {
       return listAssignmentsByChapter({
         chapterId,
         offset: 0,
-        limit: 100,
+        limit: 20,
         includes: ["user"],
       });
     },
@@ -177,7 +174,7 @@ export default function ComicPlayground() {
   );
 
   const handleLoadPages = useCallback(async (chapterId: string) => {
-    return listPages({ chapterId, offset: 0, limit: 200 });
+    return listPages({ chapterId });
   }, []);
 
   const handleLoadAssignableMembers = useCallback(
