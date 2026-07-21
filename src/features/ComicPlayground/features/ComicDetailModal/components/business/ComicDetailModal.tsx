@@ -393,8 +393,6 @@ export default function ComicDetailModal({
       onReuploadPage={canReuploadRawPages ? handleReuploadPage : undefined}
       reuploadAccept="image/*"
       accept="image/*"
-      emptyHintText=""
-      uploadButtonText="点击此处以上传图片"
       uploadProgressByPageId={uploadProgressByPageId}
     />
   );

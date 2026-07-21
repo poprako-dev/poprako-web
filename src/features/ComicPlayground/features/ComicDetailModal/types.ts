@@ -91,8 +91,10 @@ export type ComicDetailModalProps = {
   onDeleteChapterPages?: (chapterId: string) => Promise<Result<void>>;
   onReservePageUpload?: (args: {
     pageId: string;
-    fileExtension: string;
-  }) => Promise<Result<{ pageId: string; putUrl: string; imageVersion: number }>>;
+    imageHash: string;
+    byteLength: number;
+    extension: string;
+  }) => Promise<Result<import("@/types").ReservedPage>>;
   onJoinChapterRole?: (chapterId: string, role: Role) => Promise<Result<void>>;
   onImportChapter?: (args: {
     chapterId: string;

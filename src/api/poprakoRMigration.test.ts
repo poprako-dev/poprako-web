@@ -133,7 +133,7 @@ describe("poprako-r API migration", () => {
       cover_version: 12,
       image_version: 13,
       page_id: "page_1",
-      creations: [],
+      pages: [],
     }));
 
     await reserveUserAvatarUpload("user_1", "png");
@@ -164,17 +164,56 @@ describe("poprako-r API migration", () => {
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/archive");
     expect(lastFetchCall(fetchMock).init?.method).toBe("POST");
 
-    await reserveChapterPages({ chapterId: "chapter_1", pageCount: 3, fileExtension: "png" });
+    await reserveChapterPages({
+      chapterId: "chapter_1",
+      pages: [
+        {
+          imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          byteLength: 3,
+          extension: "png",
+        },
+      ],
+    });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/pages/reserve");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       chapter_id: "chapter_1",
-      page_count: 3,
-      file_ext: "png",
+      pages: [
+        {
+          image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          byte_length: 3,
+          extension: "png",
+        },
+      ],
     });
 
-    await reserveExistingPageUpload({ pageId: "page_1", fileExtension: "png" });
+    fetchMock.mockResolvedValueOnce(
+      (await okJson({
+        page_id: "page_1",
+        index: 0,
+        image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        byte_length: 3,
+        extension: "png",
+        upload: {
+          put_url: "https://upload.example/put",
+          image_version: 13,
+          headers: {
+            "content-type": "image/png",
+          },
+        },
+      })).clone(),
+    );
+    await reserveExistingPageUpload({
+      pageId: "page_1",
+      imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      byteLength: 3,
+      extension: "png",
+    });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/image/reserve");
-    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ file_ext: "png" });
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+      image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      byte_length: 3,
+      extension: "png",
+    });
 
     await updatePage("page_1", { isUploaded: true, imageVersion: 13 });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/image/mark-uploaded");
@@ -285,8 +324,6 @@ describe("poprako-r API migration", () => {
             is_proofread: false,
             translated_text: "hello",
             last_translator_id: "user_translator",
-            proofread_text: null,
-            last_proofreader_id: null,
           },
           {
             oper: "save",
@@ -295,8 +332,6 @@ describe("poprako-r API migration", () => {
             y_coord: 0.4,
             is_bubble: false,
             is_proofread: true,
-            translated_text: null,
-            last_translator_id: null,
             proofread_text: "done",
             last_proofreader_id: "user_proofreader",
           },

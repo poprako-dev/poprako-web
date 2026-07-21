@@ -317,7 +317,12 @@ export default function Workspace() {
   );
 
   const handleReservePageUpload = useCallback(
-    async (args: { pageId: string; fileExtension: string }) => {
+    async (args: {
+      pageId: string;
+      imageHash: string;
+      byteLength: number;
+      extension: string;
+    }) => {
       return reserveExistingPageUpload(args);
     },
     [],

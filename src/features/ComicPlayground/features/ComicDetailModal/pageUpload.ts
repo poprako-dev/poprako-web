@@ -1,4 +1,5 @@
 import {
+  listPages,
   reserveChapterPages,
   reserveExistingPageUpload,
   updatePage,
@@ -89,7 +90,29 @@ export async function addChapterPages({
   logPrefix,
   concurrency = DEFAULT_CONCURRENCY,
 }: Args): Promise<void> {
-  const pages = await Promise.all(files.map(async (file) => {
+  const existingPagesResult = await listPages({
+    chapterId,
+    offset: 0,
+    limit: 200,
+  });
+  if (!existingPagesResult.success) {
+    throw new Error(existingPagesResult.error);
+  }
+
+  const existingManifest = existingPagesResult.data.map((page) => {
+    if (!page.imageHash || !page.byteLength || !page.extension) {
+      throw new Error(`页面 ${page.id} 缺少图片身份信息，请刷新后重试`);
+    }
+
+    return {
+      pageId: page.id,
+      imageHash: page.imageHash,
+      byteLength: page.byteLength,
+      extension: page.extension,
+    };
+  });
+
+  const newManifest = await Promise.all(files.map(async (file) => {
     const extension = getFileExtension(file);
     if (!extension) throw new Error("请选择带后缀的图片文件");
     if (file.size < 1 || file.size > 20 * 1024 * 1024) throw new Error("图片大小必须在 1 至 20 MiB 之间");
@@ -99,16 +122,18 @@ export async function addChapterPages({
 
   const reserveResult = await reserveChapterPages({
     chapterId,
-    pages,
+    pages: [...existingManifest, ...newManifest],
   });
   if (!reserveResult.success) {
     throw new Error(reserveResult.error);
   }
 
-  const reservedPages = reserveResult.data.pages;
-  if (reservedPages.length !== files.length) {
+  const allReservedPages = reserveResult.data.pages;
+  if (allReservedPages.length !== existingManifest.length + files.length) {
     throw new Error("预留页面数量与选择文件数量不一致");
   }
+
+  const reservedPages = allReservedPages.slice(existingManifest.length);
 
   callbacks?.onPagesReserved(
     reservedPages.map((page) => ({

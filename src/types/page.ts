@@ -9,9 +9,9 @@ export type Page = {
   imageUrl: string;
   imageThumbnailUrl?: string;
   isUploaded: boolean;
-  imageHash: string;
-  byteLength: number;
-  extension: string;
+  imageHash?: string;
+  byteLength?: number;
+  extension?: string;
 
   creatorId: string;
   creator?: UserInfo;

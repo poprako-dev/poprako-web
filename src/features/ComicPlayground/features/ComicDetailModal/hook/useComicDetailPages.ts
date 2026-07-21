@@ -4,6 +4,7 @@ import type { PageInfo, UploadProgressCallbacks } from "@/types";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type { ComicDetailModalProps } from "../types";
 import { getFileExtension } from "../utils";
+import { hashPageFile } from "../pageHash";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -221,13 +222,20 @@ export function useComicDetailPages({
         showToast("请选择带后缀的图片文件", "error");
         return;
       }
+      if (file.size < 1 || file.size > 20 * 1024 * 1024) {
+        showToast("图片大小必须在 1 至 20 MiB 之间", "error");
+        return;
+      }
 
       setReuploadingPageIds((prev) => ({ ...prev, [pageId]: true }));
       setUploadProgressByPageId((prev) => ({ ...prev, [pageId]: 0 }));
       try {
+        const { imageHash } = await hashPageFile(file);
         const reserveResult = await onReservePageUpload({
           pageId,
-          fileExtension,
+          imageHash,
+          byteLength: file.size,
+          extension: fileExtension,
         });
         if (!reserveResult.success) {
           console.error("[ComicDetailModal] 重上传预留失败:", reserveResult);
@@ -235,9 +243,17 @@ export function useComicDetailPages({
           return;
         }
 
+        const upload = reserveResult.data.upload;
+        if (upload === null) {
+          await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
+          showToast("页面图片未发生变化", "success");
+          return;
+        }
+
         const uploadResult = await uploadToPresignedUrl(
-          reserveResult.data.putUrl,
+          upload.putUrl,
           file,
+          upload.headers,
           (percent) => {
             setUploadProgressByPageId((prev) => ({ ...prev, [pageId]: percent }));
           },
@@ -250,7 +266,7 @@ export function useComicDetailPages({
 
         const markResult = await updatePage(reserveResult.data.pageId, {
           isUploaded: true,
-          imageVersion: reserveResult.data.imageVersion,
+          imageVersion: upload.imageVersion,
         });
         if (!markResult.success) {
           console.error("[ComicDetailModal] 标记重上传状态失败:", markResult.error);

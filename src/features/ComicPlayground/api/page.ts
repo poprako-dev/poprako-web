@@ -156,9 +156,12 @@ function extractUrlHost(url: string): string {
 export async function uploadToPresignedUrl(
   putUrl: string,
   file: File,
-  headers: Record<string, string>,
+  headersOrOnProgress: Record<string, string> | ((percent: number) => void) = {},
   onProgress?: (percent: number) => void,
 ): Promise<Result<void> & { httpStatus?: number }> {
+  const headers = typeof headersOrOnProgress === "function" ? {} : headersOrOnProgress;
+  const progress = typeof headersOrOnProgress === "function" ? headersOrOnProgress : onProgress;
+
   return new Promise((resolve) => {
     const xhr = new XMLHttpRequest();
 
@@ -172,12 +175,12 @@ export async function uploadToPresignedUrl(
         0,
         Math.min(100, Math.round((event.loaded / event.total) * 100)),
       );
-      onProgress?.(percent);
+      progress?.(percent);
     };
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        onProgress?.(100);
+        progress?.(100);
         resolve({ success: true, data: undefined, httpStatus: xhr.status });
         return;
       }
