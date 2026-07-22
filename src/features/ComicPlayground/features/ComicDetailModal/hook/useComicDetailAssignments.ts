@@ -3,6 +3,7 @@ import type { AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
 import { hasRole, type Role } from "@/types/role";
 import type { ToastType } from "@/components/ui/NotificationToast";
+import { assignmentRolesForStage } from "../assignmentStage";
 import type { ComicDetailModalProps } from "../types";
 
 type ShowToast = (message: string, type: ToastType) => void;
@@ -35,6 +36,7 @@ export function useComicDetailAssignments({
   showToast,
 }: Args) {
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
+  const [isAssignmentsLoading, setIsAssignmentsLoading] = useState(false);
   const [isMemberSelectorLoading, setIsMemberSelectorLoading] = useState(false);
   const [memberSelectorRole, setMemberSelectorRole] = useState<Role | null>(null);
   const [isAddingAssignment, setIsAddingAssignment] = useState(false);
@@ -43,11 +45,19 @@ export function useComicDetailAssignments({
   const [canCreateChapter, setCanCreateChapter] = useState(false);
 
   useEffect(() => {
-    if (!selectedChapterId || !isSelectedChapterAvailable) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!selectedChapterId || !isSelectedChapterAvailable) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAssignments([]);
+      setIsAssignmentsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
     setAssignments([]);
+    setIsAssignmentsLoading(true);
     onLoadAssignments(selectedChapterId)
       .then((res) => {
+        if (cancelled) return;
         if (!res.success) {
           console.error("[ComicDetailModal] 加载分工失败:", res);
           showToast("加载分工失败", "error");
@@ -56,21 +66,38 @@ export function useComicDetailAssignments({
         setAssignments(res.data);
       })
       .catch((err) => {
+        if (cancelled) return;
         console.error("[ComicDetailModal] 加载分工异常:", err);
         showToast("加载分工失败", "error");
+      })
+      .finally(() => {
+        if (!cancelled) setIsAssignmentsLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isSelectedChapterAvailable, onLoadAssignments, selectedChapterId, showToast]);
 
   const reloadAssignments = useCallback(async () => {
     if (!selectedChapterId) return null;
-    const refreshed = await onLoadAssignments(selectedChapterId);
-    if (!refreshed.success) {
-      console.error("[ComicDetailModal] 刷新分工失败:", refreshed);
-      showToast(refreshed.error, "error");
+    setIsAssignmentsLoading(true);
+    try {
+      const refreshed = await onLoadAssignments(selectedChapterId);
+      if (!refreshed.success) {
+        console.error("[ComicDetailModal] 刷新分工失败:", refreshed);
+        showToast(refreshed.error, "error");
+        return null;
+      }
+      setAssignments(refreshed.data);
+      return refreshed.data;
+    } catch (err) {
+      console.error("[ComicDetailModal] 刷新分工异常:", err);
+      showToast("刷新分工失败", "error");
       return null;
+    } finally {
+      setIsAssignmentsLoading(false);
     }
-    setAssignments(refreshed.data);
-    return refreshed.data;
   }, [onLoadAssignments, selectedChapterId, showToast]);
 
   useEffect(() => {
@@ -164,24 +191,43 @@ export function useComicDetailAssignments({
           })
           .map((assignment) => assignment.userId);
 
-  const handleRemoveAssignment = useCallback(
-    (userId: string, role: Role) => {
-      if (!selectedChapterId || !onRemoveAssignment) return;
-      onRemoveAssignment(selectedChapterId, userId, role)
-        .then((res) => {
-          if (!res.success) {
-            console.error("[ComicDetailModal] 移除角色失败:", res);
-            showToast("移除角色失败", "error");
-            return;
+  const removeRoles = useCallback(
+    async (userId: string, roles: Role[]) => {
+      if (!selectedChapterId || !onRemoveAssignment || roles.length === 0) {
+        return false;
+      }
+
+      let changed = false;
+      try {
+        for (const role of roles) {
+          const result = await onRemoveAssignment(selectedChapterId, userId, role);
+          if (!result.success) {
+            console.error("[ComicDetailModal] 移除角色失败:", result);
+            showToast(result.error, "error");
+            if (changed) await reloadAssignments();
+            return false;
           }
-          void reloadAssignments();
-        })
-        .catch((err) => {
-          console.error("[ComicDetailModal] 移除角色异常:", err);
-          showToast("移除角色失败", "error");
-        });
+          changed = true;
+        }
+
+        await reloadAssignments();
+        return true;
+      } catch (err) {
+        console.error("[ComicDetailModal] 移除角色异常:", err);
+        showToast("移除角色失败", "error");
+        if (changed) await reloadAssignments();
+        return false;
+      }
     },
     [onRemoveAssignment, reloadAssignments, selectedChapterId, showToast],
+  );
+
+  const handleRemoveAssignment = useCallback(
+    (userId: string, role: Role) => {
+      const assignment = assignments.find((item) => item.userId === userId);
+      void removeRoles(userId, assignmentRolesForStage(assignment, role));
+    },
+    [assignments, removeRoles],
   );
 
   const handleOpenMemberSelector = useCallback(
@@ -234,27 +280,14 @@ export function useComicDetailAssignments({
     [activeMember, currentUserId, isRoleAlreadyJoined, onJoinChapterRole, selectedChapterId],
   );
 
-  const resolveSelfRoleForRemoval = useCallback(
-    (role: Role): Role | null => {
-      if (!currentAssignment) return null;
-      if (role !== "typesetter") {
-        return hasRole(currentAssignment, role) ? role : null;
-      }
-      if (hasRole(currentAssignment, "typesetter")) return "typesetter";
-      if (hasRole(currentAssignment, "redrawer")) return "redrawer";
-      return null;
-    },
-    [currentAssignment],
-  );
-
   const canLeaveRole = useCallback(
     (role: Role) => {
       if (!onRemoveAssignment || !selectedChapterId || !currentUserId) {
         return false;
       }
-      return resolveSelfRoleForRemoval(role) !== null;
+      return assignmentRolesForStage(currentAssignment, role).length > 0;
     },
-    [currentUserId, onRemoveAssignment, resolveSelfRoleForRemoval, selectedChapterId],
+    [currentAssignment, currentUserId, onRemoveAssignment, selectedChapterId],
   );
 
   const handleJoinRole = useCallback(
@@ -290,21 +323,14 @@ export function useComicDetailAssignments({
 
       setLeavingRoles((prev) => ({ ...prev, [role]: true }));
       try {
-        const removableRole = resolveSelfRoleForRemoval(role);
-        if (!removableRole) {
+        const removableRoles = assignmentRolesForStage(currentAssignment, role);
+        if (removableRoles.length === 0) {
           showToast("当前分工无需退出", "error");
           return;
         }
 
-        const result = await onRemoveAssignment(selectedChapterId, currentUserId, removableRole);
-        if (!result.success) {
-          console.error("[ComicDetailModal] 退出章节分工失败:", result);
-          showToast(result.error, "error");
-          return;
-        }
-
-        await reloadAssignments();
-        showToast("退出分工成功", "success");
+        const removed = await removeRoles(currentUserId, removableRoles);
+        if (removed) showToast("退出分工成功", "success");
       } catch (err) {
         console.error("[ComicDetailModal] 退出章节分工异常:", err);
         showToast(err instanceof Error ? err.message : "退出分工失败", "error");
@@ -312,12 +338,21 @@ export function useComicDetailAssignments({
         setLeavingRoles((prev) => ({ ...prev, [role]: false }));
       }
     },
-    [currentUserId, leavingRoles, onRemoveAssignment, reloadAssignments, resolveSelfRoleForRemoval, selectedChapterId, showToast],
+    [
+      currentAssignment,
+      currentUserId,
+      leavingRoles,
+      onRemoveAssignment,
+      removeRoles,
+      selectedChapterId,
+      showToast,
+    ],
   );
 
   return {
     assignments,
     setAssignments,
+    isAssignmentsLoading,
     memberSelectorRole,
     setMemberSelectorRole,
     isMemberSelectorLoading,

@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import ComicDetailModal from "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import ComicDetailModal from "@/features/ComicPlayground/features/ComicDetailModal";
 import type { ComicInfo } from "@/types/comic";
 import type { ChapterInfo } from "@/types/chapter";
 import type { PageInfo } from "@/types/page";
 import type { AssignmentInfo } from "@/types/assignment";
+import type { MemberInfo } from "@/types/member";
+import type { Role } from "@/types/role";
 import type { UserInfo } from "@/types/user";
 
 const now = Date.now();
 
-// ── Mock Builders ─────────────────────────────────
+// Mock builders
 
 function makeUser(id: string, name: string): UserInfo {
   return {
@@ -20,6 +23,23 @@ function makeUser(id: string, name: string): UserInfo {
     lastActiveAt: now,
     createdAt: now,
     updatedAt: now,
+  };
+}
+
+function makeMember(
+  userId: string,
+  name: string,
+  roles: Partial<MemberInfo> = {},
+): MemberInfo {
+  return {
+    id: `member-${userId}`,
+    userId,
+    user: makeUser(userId, name),
+    teamId: "team-1",
+    roles: 0,
+    createdAt: now,
+    updatedAt: now,
+    ...roles,
   };
 }
 
@@ -102,6 +122,15 @@ function makePages(chapterId: string, count: number): PageInfo[] {
 
 function makeAssignments(chapterId: string): AssignmentInfo[] {
   return [
+    {
+      id: "a-admin",
+      chapterId,
+      userId: "u-admin",
+      user: makeUser("u-admin", "Mori"),
+      assignedAdminAt: now,
+      createdAt: now,
+      updatedAt: now,
+    },
     {
       id: "a1",
       chapterId,
@@ -186,7 +215,7 @@ function makeAssignments(chapterId: string): AssignmentInfo[] {
   ];
 }
 
-// ── 超大量、超长名测试数据 ──────────────────────────
+// 超大量、超长名测试数据
 
 const LONG_NAMES = [
   "芥見下下のファン一号",
@@ -276,6 +305,13 @@ function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
 
+const removeCombinedTypesetAssignment = fn(
+  async (_chapterId: string, _userId: string, _role: Role) => ({
+    success: true as const,
+    data: undefined,
+  }),
+);
+
 const meta: Meta<typeof ComicDetailModal> = {
   title: "Features/ComicDetailModal",
   component: ComicDetailModal,
@@ -336,6 +372,8 @@ export const Default: Story = {
       console.log("remove assignment:", userId);
       return { success: true, data: undefined };
     },
+    onResolveActiveMember: () =>
+      makeMember("u-aki", "Aki", { assignedTranslatorAt: now }),
     onClose: () => console.log("closed"),
   },
 };
@@ -356,6 +394,143 @@ export const ManyPeopleWithLongNames: Story = {
       await delay(150);
       return { success: true, data: makeManyAssignments(chapterId) };
     },
+  },
+};
+
+export const EmptyAssignments: Story = {
+  name: "所有阶段均未分配",
+  args: {
+    ...Default.args,
+    currentUserId: "u-viewer",
+    onLoadAssignments: async () => {
+      await delay(150);
+      return { success: true, data: [] };
+    },
+    onResolveActiveMember: () => makeMember("u-viewer", "Viewer"),
+  },
+};
+
+export const SlowAssignments: Story = {
+  name: "分工成员加载中",
+  args: {
+    ...Default.args,
+    onLoadAssignments: async (chapterId) => {
+      await delay(5000);
+      return { success: true, data: makeAssignments(chapterId) };
+    },
+  },
+};
+
+export const AdminAssignmentControls: Story = {
+  name: "管理员分配与移除",
+  args: {
+    ...Default.args,
+    currentUserId: "u-admin",
+    onLoadAssignments: async (chapterId) => {
+      await delay(100);
+      return {
+        success: true,
+        data: makeManyAssignments(chapterId).concat({
+          id: "a-admin",
+          chapterId,
+          userId: "u-admin",
+          user: makeUser("u-admin", "Mori"),
+          assignedAdminAt: now,
+          assignedTranslatorAt: now,
+          createdAt: now,
+          updatedAt: now,
+        }),
+      };
+    },
+    onResolveActiveMember: () =>
+      makeMember("u-admin", "Mori", {
+        assignedAdminAt: now,
+        assignedTranslatorAt: now,
+      }),
+    onLoadAssignableMembers: async () => ({ success: true, data: [] }),
+    onAddAssignment: async (_chapterId, userId, role) => {
+      console.log("add assignment:", userId, role);
+      return { success: true, data: undefined };
+    },
+  },
+};
+
+export const SelfServiceControls: Story = {
+  name: "成员加入与退出",
+  args: {
+    ...Default.args,
+    currentUserId: "u-aki",
+    onResolveActiveMember: () =>
+      makeMember("u-aki", "Aki", {
+        assignedTranslatorAt: now,
+        assignedProofreaderAt: now,
+      }),
+    onJoinChapterRole: async (_chapterId, role) => {
+      console.log("join assignment:", role);
+      return { success: true, data: undefined };
+    },
+  },
+};
+
+export const CombinedTypesetRemoval: Story = {
+  name: "嵌字与美工角色同时移除",
+  args: {
+    ...Default.args,
+    currentUserId: "u-admin",
+    onLoadAssignments: async (chapterId) => ({
+      success: true,
+      data: [
+        {
+          id: "a-admin",
+          chapterId,
+          userId: "u-admin",
+          user: makeUser("u-admin", "Mori"),
+          assignedAdminAt: now,
+          createdAt: now,
+          updatedAt: now,
+        },
+        {
+          id: "a-dual",
+          chapterId,
+          userId: "u-dual",
+          user: makeUser("u-dual", "Dual Artist"),
+          assignedTypesetterAt: now,
+          assignedRedrawerAt: now,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+    }),
+    onResolveActiveMember: () =>
+      makeMember("u-admin", "Mori", { assignedAdminAt: now }),
+    onRemoveAssignment: removeCombinedTypesetAssignment,
+  },
+  play: async ({ canvasElement }) => {
+    removeCombinedTypesetAssignment.mockClear();
+    const canvas = within(canvasElement);
+    const avatar = await canvas.findByRole("button", {
+      name: "移除Dual Artist的当前分工",
+    });
+    await userEvent.click(avatar);
+
+    const body = within(document.body);
+    expect(body.queryByRole("heading", { name: "嵌字流程" })).not.toBeInTheDocument();
+    await userEvent.click(await body.findByRole("button", { name: "移除" }));
+
+    await waitFor(() => {
+      expect(removeCombinedTypesetAssignment).toHaveBeenNthCalledWith(
+        1,
+        "chapter-42",
+        "u-dual",
+        "typesetter",
+      );
+      expect(removeCombinedTypesetAssignment).toHaveBeenNthCalledWith(
+        2,
+        "chapter-42",
+        "u-dual",
+        "redrawer",
+      );
+    });
   },
 };
 

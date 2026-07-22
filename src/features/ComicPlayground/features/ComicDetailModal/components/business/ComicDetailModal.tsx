@@ -10,8 +10,8 @@ import { useAppStore } from "@/store/app";
 import PageList from "@/features/PageList/components/business/PageList";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
+import AssignmentGroup from "./AssignmentGroup";
 import AssignmentFooter from "./AssignmentFooter";
-import AssignmentDrawer from "./AssignmentDrawer";
 import ComicDetailHeader from "./ComicDetailHeader";
 import ComicDetailSidebar from "./ComicDetailSidebar";
 import ComicModifierModal from "./ComicModifierModal";
@@ -123,6 +123,7 @@ export default function ComicDetailModal({
 
   const {
     assignments,
+    isAssignmentsLoading,
     memberSelectorRole,
     setMemberSelectorRole,
     isMemberSelectorLoading,
@@ -416,7 +417,12 @@ export default function ComicDetailModal({
 
   const footer = <AssignmentFooter {...sharedAssignmentProps} />;
 
-  const assignmentDrawer = <AssignmentDrawer {...sharedAssignmentProps} />;
+  const assignmentGroup = (
+    <AssignmentGroup
+      {...sharedAssignmentProps}
+      isAssignmentsLoading={isAssignmentsLoading}
+    />
+  );
 
   return (
     <>
@@ -432,7 +438,7 @@ export default function ComicDetailModal({
         sidebar={sidebar}
         pageGrid={pageGrid}
         footer={footer}
-        assignmentDrawer={assignmentDrawer}
+        assignmentGroup={assignmentGroup}
       />
       {memberSelectorRole && (
         <MemberSelectorModal

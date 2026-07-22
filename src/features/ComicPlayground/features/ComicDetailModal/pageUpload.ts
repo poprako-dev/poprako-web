@@ -6,6 +6,7 @@ import {
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
 import type { UploadProgressCallbacks } from "@/types";
+import type { Result } from "@/types/utils/result";
 import { getFileExtension } from "./utils";
 import { hashPageFile } from "./pageHash";
 
@@ -19,6 +20,62 @@ type Args = {
 };
 
 const DEFAULT_CONCURRENCY = 16;
+
+type PageManifestImage = {
+  imageHash: string;
+  byteLength: number;
+  extension: string;
+};
+
+type NewPage = {
+  file: File;
+  manifest: PageManifestImage;
+  fileIndex: number;
+};
+
+function imageIdentity({
+  imageHash,
+  byteLength,
+  extension,
+}: PageManifestImage): string {
+  return JSON.stringify([imageHash, byteLength, extension]);
+}
+
+async function retryMarkUploaded(
+  pageId: string,
+  imageVersion: number,
+  logPrefix: string,
+  maxAttempts = 3,
+): Promise<Result<void>> {
+  let lastResult: Result<void> | undefined;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let result: Result<void>;
+    try {
+      result = await updatePage(pageId, {
+        isUploaded: true,
+        imageVersion,
+      });
+    } catch (err) {
+      result = {
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+    if (result.success) return result;
+
+    lastResult = result;
+    if (attempt < maxAttempts) {
+      const delay = Math.pow(2, attempt - 1) * 1000;
+      console.warn(
+        `[${logPrefix}] 标记页面上传状态失败 (attempt ${attempt}/${maxAttempts}):`,
+        result.error,
+        `— ${delay / 1000}s 后重试...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  return lastResult!;
+}
 
 async function uploadOnePage(
   file: File,
@@ -71,10 +128,11 @@ async function uploadOnePage(
     throw new Error(uploadResult.error);
   }
 
-  const markResult = await updatePage(creation.pageId, {
-    isUploaded: true,
-    imageVersion: upload.imageVersion,
-  });
+  const markResult = await retryMarkUploaded(
+    creation.pageId,
+    upload.imageVersion,
+    logPrefix,
+  );
   if (!markResult.success) {
     console.error(`[${logPrefix}] 标记页面上传状态失败:`, markResult.error);
     throw new Error(markResult.error);
@@ -110,13 +168,27 @@ export async function addChapterPages({
     };
   });
 
-  const newManifest = await Promise.all(files.map(async (file) => {
+  const newPages = await Promise.all(files.map(async (file, fileIndex): Promise<NewPage> => {
     const extension = getFileExtension(file);
     if (!extension) throw new Error("请选择带后缀的图片文件");
     if (file.size < 1 || file.size > 20 * 1024 * 1024) throw new Error("图片大小必须在 1 至 20 MiB 之间");
     const { imageHash } = await hashPageFile(file);
-    return { imageHash, byteLength: file.size, extension };
+    return {
+      file,
+      manifest: { imageHash, byteLength: file.size, extension },
+      fileIndex,
+    };
   }));
+
+  const imageIdentities = new Set(existingManifest.map(imageIdentity));
+  const uniqueNewPages = newPages.filter(({ manifest }) => {
+    const identity = imageIdentity(manifest);
+    if (imageIdentities.has(identity)) return false;
+    imageIdentities.add(identity);
+    return true;
+  });
+
+  const newManifest = uniqueNewPages.map(({ manifest }) => manifest);
 
   const reserveResult = await reserveChapterPages({
     chapterId,
@@ -127,30 +199,31 @@ export async function addChapterPages({
   }
 
   const allReservedPages = reserveResult.data.pages;
-  if (allReservedPages.length !== existingManifest.length + files.length) {
+  if (allReservedPages.length !== existingManifest.length + newManifest.length) {
     throw new Error("预留页面数量与选择文件数量不一致");
   }
 
   const reservedPages = allReservedPages.slice(existingManifest.length);
 
   callbacks?.onPagesReserved(
-    reservedPages.map((page) => ({
+    reservedPages.map((page, i) => ({
       pageId: page.pageId,
       index: page.index,
+      fileIndex: uniqueNewPages[i].fileIndex,
     })),
   );
 
   // 并发 worker pool：每个 worker 从队列取下一个文件上传，直到全部完成或出错
   let firstError: Error | null = null;
   let cursor = 0;
-  const limit = Math.min(concurrency, files.length);
+  const limit = Math.min(concurrency, uniqueNewPages.length);
 
   async function worker(): Promise<void> {
-    while (cursor < files.length && firstError === null) {
+    while (cursor < uniqueNewPages.length && firstError === null) {
       const i = cursor++;
       try {
         await uploadOnePage(
-          files[i],
+          uniqueNewPages[i].file,
           reservedPages[i],
           callbacks,
           logPrefix,

@@ -65,7 +65,7 @@ export type UpdatePageArgs = {
   imageVersion?: number;
 };
 
-export type PendingPage = { pageId: string; index: number };
+export type PendingPage = { pageId: string; index: number; fileIndex: number };
 
 export type UploadProgressCallbacks = {
   onPagesReserved: (pendingPages: PendingPage[]) => void;

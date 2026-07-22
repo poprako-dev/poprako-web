@@ -121,25 +121,46 @@ export function useComicDetailPages({
             pendingPageIds.add(pendingPages[i].pageId);
           }
 
+          // Build fileIndex → reservedPageId map for correct mapping after dedup
+          const fileIndexToPageId = new Map<number, string>();
+          const reservedFileIndices = new Set<number>();
+          for (const pp of pendingPages) {
+            fileIndexToPageId.set(pp.fileIndex, pp.pageId);
+            reservedFileIndices.add(pp.fileIndex);
+          }
+
+          // Collect temp IDs for duplicates that weren't reserved
+          const unmappedTempIds = new Set<string>();
+          for (let i = 0; i < tempPageIds.length; i++) {
+            if (!reservedFileIndices.has(i)) {
+              unmappedTempIds.add(tempPageIds[i]);
+            }
+          }
+
           setPages((prev) => {
             const idMap = new Map<string, string>();
             for (let i = 0; i < pendingPages.length; i++) {
-              const tempId = tempPageIds[i];
+              const tempId = tempPageIds[pendingPages[i].fileIndex];
               const reservedPageId = pendingPages[i].pageId;
               if (tempId) idMap.set(tempId, reservedPageId);
             }
 
-            return prev.map((page) => {
-              const reservedPageId = idMap.get(page.id);
-              if (!reservedPageId) return page;
-              return { ...page, id: reservedPageId };
-            });
+            return prev
+              .filter((page) => !unmappedTempIds.has(page.id))
+              .map((page) => {
+                const reservedPageId = idMap.get(page.id);
+                if (!reservedPageId) return page;
+                return { ...page, id: reservedPageId };
+              });
           });
 
           setUploadProgressByPageId((prev) => {
             const next = { ...prev };
+            for (const unmappedId of unmappedTempIds) {
+              delete next[unmappedId];
+            }
             for (let i = 0; i < pendingPages.length; i++) {
-              const tempId = tempPageIds[i];
+              const tempId = tempPageIds[pendingPages[i].fileIndex];
               const reservedPageId = pendingPages[i].pageId;
               if (!tempId) continue;
               next[reservedPageId] = next[tempId] ?? 0;

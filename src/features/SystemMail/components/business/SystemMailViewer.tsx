@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Check, Mail } from "lucide-react";
 import clsx from "clsx";
 import { listSysMails, markSysMailRead } from "@/api/sysMail";
@@ -20,23 +20,52 @@ function formatMailDate(ts: number): string {
 }
 
 export default function SystemMailViewer() {
-  const sysMailCache = useAppStore((s) => s.sysMailCache);
   const setSysMailCache = useAppStore((s) => s.setSysMailCache);
   const markSysMailCacheRead = useAppStore((s) => s.markSysMailCacheRead);
 
-  const [items, setItems] = useState<SysMailInfo[]>(
-    () => sysMailCache?.mails ?? [],
-  );
-  const [hasMore, setHasMore] = useState<boolean>(
-    () => sysMailCache?.hasMore ?? true,
-  );
+  const [items, setItems] = useState<SysMailInfo[]>([]);
+  const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const [loadedOnce, setLoadedOnce] = useState(() => sysMailCache !== null);
-  const offsetRef = useRef(sysMailCache?.mails.length ?? 0);
+  const [loadedOnce, setLoadedOnce] = useState(false);
+  const [cutoff, setCutoff] = useState(() => Date.now() - THREE_DAYS_MS);
+  const offsetRef = useRef(0);
   const isFetchingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const showToast = useToastStore((s) => s.showToast);
+
+  // always refresh from offset 0 on mount — never rely on stale cache
+  const refreshAll = useCallback(async () => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+    setIsFetching(true);
+    setLoadedOnce(false);
+
+    const result = await listSysMails(0, PAGE_SIZE + 1);
+    isFetchingRef.current = false;
+    setIsFetching(false);
+
+    if (!result.success) {
+      showToast(result.error, "error");
+      console.error("[SystemMailViewer] refreshAll:", result.error);
+      setLoadedOnce(true);
+      return;
+    }
+
+    const batch = result.data.slice(0, PAGE_SIZE);
+    const nextHasMore = result.data.length > PAGE_SIZE;
+
+    setItems(batch);
+    offsetRef.current = batch.length;
+    setHasMore(nextHasMore);
+    setLoadedOnce(true);
+    setCutoff(Date.now() - THREE_DAYS_MS);
+    setSysMailCache({ mails: batch, hasMore: nextHasMore });
+  }, [showToast, setSysMailCache]);
+
+  useEffect(() => {
+    refreshAll();
+  }, [refreshAll]);
 
   const fetchMore = useCallback(async () => {
     if (isFetchingRef.current) return;
@@ -49,8 +78,7 @@ export default function SystemMailViewer() {
 
     if (!result.success) {
       showToast(result.error, "error");
-      console.error("[SystemMailViewer] listSysMails:", result.error);
-      setLoadedOnce(true);
+      console.error("[SystemMailViewer] fetchMore:", result.error);
       return;
     }
 
@@ -65,13 +93,7 @@ export default function SystemMailViewer() {
     });
     offsetRef.current += batch.length;
     setHasMore(nextHasMore);
-    setLoadedOnce(true);
   }, [showToast, setSysMailCache]);
-
-  useEffect(() => {
-    if (sysMailCache !== null) return;
-    fetchMore();
-  }, [fetchMore, sysMailCache]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -100,8 +122,6 @@ export default function SystemMailViewer() {
     markSysMailCacheRead(sysMailId);
   };
 
-  // eslint-disable-next-line react-hooks/purity
-  const cutoff = useMemo(() => Date.now() - THREE_DAYS_MS, []);
   const recentItems = items.filter((m) => m.createdAt >= cutoff);
   const olderItems = items.filter((m) => m.createdAt < cutoff);
 

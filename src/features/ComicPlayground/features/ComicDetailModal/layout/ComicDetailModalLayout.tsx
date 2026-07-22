@@ -6,7 +6,7 @@ type Props = {
   sidebar: ReactNode;
   pageGrid: ReactNode;
   footer: ReactNode;
-  assignmentDrawer?: ReactNode;
+  assignmentGroup?: ReactNode;
 };
 
 export default function ComicDetailModalLayout({
@@ -14,7 +14,7 @@ export default function ComicDetailModalLayout({
   sidebar,
   pageGrid,
   footer,
-  assignmentDrawer,
+  assignmentGroup,
 }: Props) {
   return (
     <div className={clsx(
@@ -61,21 +61,24 @@ export default function ComicDetailModalLayout({
               {sidebar}
             </div>
 
-            {/* Content – sunken canvas, wrapped for drawer positioning on md+ */}
-            <div className="w-full sm:min-w-0 sm:flex-1 sm:relative sm:overflow-hidden">
+            {/* Content – persistent progress workspace above the page canvas */}
+            <div
+              className={clsx(
+                "w-full",
+                "sm:flex sm:min-w-0 sm:flex-1 sm:flex-col sm:overflow-hidden",
+              )}
+            >
+              <div className="hidden shrink-0 md:block">{assignmentGroup}</div>
               <div
                 className={clsx(
                   "bg-stone-100 p-4",
                   "shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]",
-                  "sm:absolute sm:inset-y-0 sm:left-0 sm:right-6 sm:overflow-y-auto",
+                  "sm:min-h-0 sm:flex-1 sm:overflow-y-auto",
                   "scrollbar-thin scrollbar-thumb-stone-300",
                 )}
               >
                 {pageGrid}
               </div>
-
-              {/* Assignment drawer (md+ only) */}
-              {assignmentDrawer}
             </div>
           </div>
 
