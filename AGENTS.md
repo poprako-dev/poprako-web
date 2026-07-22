@@ -2,15 +2,17 @@
 
 This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
+Fanning-out multiple agents(parent-children, children-children) for a **unified purpose** IS FORBIDDEN!!!(For example, "Let read relevant files while the subagents are exploring". STRICTLY BANNED).
+
 ## Build / Dev Commands
 
-| Command | What |
-|---------|------|
-| `pnpm dev` | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
-| `pnpm build` | Type-check (`tsc -b`) then bundle (`vite build`) |
-| `pnpm lint` | Run ESLint |
-| `pnpm storybook` | Start Storybook on port 6006 |
-| `pnpm dlx shadcn@latest add <comp>` | Add a shadcn/ui component |
+| Command                             | What                                                           |
+| ----------------------------------- | -------------------------------------------------------------- |
+| `pnpm dev`                          | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
+| `pnpm build`                        | Type-check (`tsc -b`) then bundle (`vite build`)               |
+| `pnpm lint`                         | Run ESLint                                                     |
+| `pnpm storybook`                    | Start Storybook on port 6006                                   |
+| `pnpm dlx shadcn@latest add <comp>` | Add a shadcn/ui component                                      |
 
 Tests use Vitest with Playwright (browser mode) via `@storybook/addon-vitest`. There is no standalone `pnpm test` script — tests run through the Storybook test integration. See `.storybook/vitest.setup.ts`.
 
@@ -38,6 +40,7 @@ src/
 ### Feature Module Convention
 
 Each `src/features/<Name>/` follows this structure:
+
 - `components/business/` — the actual components
 - `layouts/` — optional layout wrapper
 - `api/` — feature-specific API calls

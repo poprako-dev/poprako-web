@@ -139,7 +139,7 @@ export default function AssignmentGroup({
   return (
     <section
       aria-labelledby="assignment-group-title"
-      className="relative z-20 border-b border-stone-200 bg-stone-50 px-4 pb-3 pt-2.5"
+      className="relative border-b border-stone-200 bg-stone-50 px-4 pb-3 pt-2.5"
     >
       <div className="mb-2 flex min-h-8 items-center gap-2">
         <div className="h-px flex-1 bg-stone-200" />
