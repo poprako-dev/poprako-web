@@ -50,7 +50,7 @@ export type ReservedPage = {
   imageHash: string;
   byteLength: number;
   extension: string;
-  upload: PageImageUpload | null;
+  slot: PageImageUpload | null;
 };
 
 export type ReserveChapterPagesArgs = {

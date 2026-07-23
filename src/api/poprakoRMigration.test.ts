@@ -193,7 +193,7 @@ describe("poprako-r API migration", () => {
         image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
         byte_length: 3,
         extension: "png",
-        upload: {
+        slot: {
           put_url: "https://upload.example/put",
           image_version: 13,
           headers: {

@@ -48,7 +48,7 @@ export type RawReservedPage = {
   image_hash: string;
   byte_length: number;
   extension: string;
-  upload: {
+  slot: {
     put_url: string;
     image_version: number;
     headers: Record<string, string>;
@@ -61,10 +61,10 @@ export function unwrapRawReservedPage(raw: RawReservedPage): ReservedPage {
     imageHash: raw.image_hash,
     byteLength: raw.byte_length,
     extension: raw.extension,
-    upload: raw.upload === null ? null : {
-      putUrl: raw.upload.put_url,
-      imageVersion: raw.upload.image_version,
-      headers: raw.upload.headers,
+    slot: raw.slot === null ? null : {
+      putUrl: raw.slot.put_url,
+      imageVersion: raw.slot.image_version,
+      headers: raw.slot.headers,
     },
   };
 }

@@ -60,7 +60,7 @@ describe("addChapterPages", () => {
             imageHash: "existing-hash",
             byteLength: 2,
             extension: "png",
-            upload: null,
+            slot: null,
           },
           {
             pageId: "page-new",
@@ -68,7 +68,7 @@ describe("addChapterPages", () => {
             imageHash: "new-hash",
             byteLength: 3,
             extension: "png",
-            upload: {
+            slot: {
               putUrl: "https://upload.example/page-new",
               imageVersion: 1,
               headers: {
@@ -176,7 +176,7 @@ describe("addChapterPages", () => {
           ...existingPages.map((page, index) => ({
             ...page,
             index,
-            upload: null,
+            slot: null,
           })),
           ...[4, 5, 6, 7, 8].map((index) => ({
             pageId: `page-${index}`,
@@ -184,7 +184,7 @@ describe("addChapterPages", () => {
             imageHash: `hash-${index}`,
             byteLength: 1,
             extension: "png",
-            upload: {
+            slot: {
               putUrl: `https://upload.example/page-${index}`,
               imageVersion: 1,
               headers: {},
@@ -245,7 +245,7 @@ describe("addChapterPages", () => {
             imageHash: "hash-1",
             byteLength: 3,
             extension: "png",
-            upload: {
+            slot: {
               putUrl: "https://upload.example/page-1",
               imageVersion: 1,
               headers: {},
@@ -291,7 +291,7 @@ describe("addChapterPages", () => {
             imageHash: "hash-1",
             byteLength: 3,
             extension: "png",
-            upload: {
+            slot: {
               putUrl: "https://upload.example/page-1",
               imageVersion: 1,
               headers: {},

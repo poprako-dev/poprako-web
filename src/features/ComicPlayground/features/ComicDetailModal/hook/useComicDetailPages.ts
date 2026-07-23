@@ -264,7 +264,7 @@ export function useComicDetailPages({
           return;
         }
 
-        const upload = reserveResult.data.upload;
+        const slot = reserveResult.data.slot;
         if (upload === null) {
           await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
           showToast("页面图片未发生变化", "success");
@@ -272,9 +272,9 @@ export function useComicDetailPages({
         }
 
         const uploadResult = await uploadToPresignedUrl(
-          upload.putUrl,
+          slot.putUrl,
           file,
-          upload.headers,
+          slot.headers,
           (percent) => {
             setUploadProgressByPageId((prev) => ({ ...prev, [pageId]: percent }));
           },
@@ -287,7 +287,7 @@ export function useComicDetailPages({
 
         const markResult = await updatePage(reserveResult.data.pageId, {
           isUploaded: true,
-          imageVersion: upload.imageVersion,
+          imageVersion: slot.imageVersion,
         });
         if (!markResult.success) {
           console.error("[ComicDetailModal] 标记重上传状态失败:", markResult.error);

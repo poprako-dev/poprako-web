@@ -83,13 +83,13 @@ async function uploadOnePage(
   callbacks: UploadProgressCallbacks | undefined,
   logPrefix: string,
 ): Promise<void> {
-  let upload = creation.upload;
-  if (upload === null) return;
+  let slot = creation.slot;
+  if (slot === null) return;
 
   let uploadResult = await uploadToPresignedUrl(
-    upload.putUrl,
+    slot.putUrl,
     file,
-    upload.headers,
+    slot.headers,
     (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
   );
 
@@ -113,13 +113,13 @@ async function uploadOnePage(
       throw new Error(reReserveResult.error);
     }
 
-    upload = reReserveResult.data.upload;
-    if (upload === null) return;
+    slot = reReserveResult.data.slot;
+    if (slot === null) return;
 
     uploadResult = await uploadToPresignedUrl(
-      upload.putUrl,
+      slot.putUrl,
       file,
-      upload.headers,
+      slot.headers,
       (percent) => callbacks?.onPageUploadProgress?.(creation.pageId, percent),
     );
   }
@@ -130,7 +130,7 @@ async function uploadOnePage(
 
   const markResult = await retryMarkUploaded(
     creation.pageId,
-    upload.imageVersion,
+    slot.imageVersion,
     logPrefix,
   );
   if (!markResult.success) {
