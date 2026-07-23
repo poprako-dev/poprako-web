@@ -92,16 +92,14 @@ export default function ComicPlayground() {
       const result = await listComics({
         worksetId: activeWorksetId,
         withs: ["pinned_chapter", "pinned_chapter_assignment"],
-        offset: 0,
-        limit: Math.min(limit, 20),
+        offset,
+        limit,
       });
       if (!result.success) return result.error;
 
-      const filtered = result.data.filter((comic) =>
+      return result.data.filter((comic) =>
         matchComicClientFilters(comic, comic.pinnedChapter ?? null, comicFilters),
       );
-
-      return filtered.slice(offset, offset + limit);
     },
     [activeWorksetId, comicFilters, comicListRefreshKey],
   );

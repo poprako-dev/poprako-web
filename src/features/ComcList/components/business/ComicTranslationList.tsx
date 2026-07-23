@@ -21,7 +21,6 @@ export default function ComicTranslationList({
   const [comics, setComics] = useState<ComicTranslationListItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const isLoadingRef = useRef(false);
@@ -71,16 +70,42 @@ export default function ComicTranslationList({
     }
   }, [onLoadComics, pageSize, showToast]);
 
+  // 保持最新的 loadComics 引用，供 post-load check 使用
+  const loadComicsRef = useRef(loadComics);
+  useEffect(() => {
+    loadComicsRef.current = loadComics;
+  });
+
   useEffect(() => {
     isLoadingRef.current = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadComics(true);
   }, [loadComics]);
 
+  // 每次加载完成后，检查 loadMoreRef 是否仍在可视区。
+  // 如果仍在可视区（列表没撑满视口）且 hasMore 为 true，则继续加载。
+  // 这解决了 observer 在 isLoading=true 时触发被忽略、之后不再触发的竞态问题。
+  const prevIsLoadingRef = useRef(isLoading);
+  useEffect(() => {
+    const wasLoading = prevIsLoadingRef.current;
+    prevIsLoadingRef.current = isLoading;
+
+    if (!wasLoading || isLoading) return;
+    if (!hasMoreRef.current) return;
+    if (!loadMoreRef.current || !scrollContainerRef.current) return;
+
+    const containerRect = scrollContainerRef.current.getBoundingClientRect();
+    const targetRect = loadMoreRef.current.getBoundingClientRect();
+
+    if (targetRect.top < containerRect.bottom) {
+      loadComicsRef.current();
+    }
+  }, [isLoading]);
+
   useEffect(() => {
     if (!loadMoreRef.current) return;
 
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         const firstEntry = entries[0];
         if (firstEntry && firstEntry.isIntersecting) {
@@ -89,13 +114,9 @@ export default function ComicTranslationList({
       },
       { root: scrollContainerRef.current },
     );
-    observerRef.current.observe(loadMoreRef.current);
+    observer.observe(loadMoreRef.current);
 
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
+    return () => observer.disconnect();
   }, [loadComics]);
 
   return (

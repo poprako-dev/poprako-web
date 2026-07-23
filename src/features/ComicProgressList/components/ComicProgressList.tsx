@@ -19,7 +19,6 @@ export default function ComicProgressList({
   const [comics, setComics] = useState<ComicInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const isLoadingRef = useRef(false);
@@ -68,6 +67,11 @@ export default function ComicProgressList({
     }
   }, [onLoadComics, pageSize, showToast]);
 
+  const loadComicsRef = useRef(loadComics);
+  useEffect(() => {
+    loadComicsRef.current = loadComics;
+  });
+
   useEffect(() => {
     isLoadingRef.current = false;
     const timerId = window.setTimeout(() => {
@@ -79,10 +83,28 @@ export default function ComicProgressList({
     };
   }, [loadComics]);
 
+  // 每次加载完成后，检查 loadMoreRef 是否仍在可视区，处理竞态问题
+  const prevIsLoadingRef = useRef(isLoading);
+  useEffect(() => {
+    const wasLoading = prevIsLoadingRef.current;
+    prevIsLoadingRef.current = isLoading;
+
+    if (!wasLoading || isLoading) return;
+    if (!hasMoreRef.current) return;
+    if (!loadMoreRef.current || !scrollContainerRef.current) return;
+
+    const containerRect = scrollContainerRef.current.getBoundingClientRect();
+    const targetRect = loadMoreRef.current.getBoundingClientRect();
+
+    if (targetRect.top < containerRect.bottom) {
+      loadComicsRef.current();
+    }
+  }, [isLoading]);
+
   useEffect(() => {
     if (!loadMoreRef.current) return;
 
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         const firstEntry = entries[0];
         if (firstEntry && firstEntry.isIntersecting) {
@@ -91,10 +113,8 @@ export default function ComicProgressList({
       },
       { root: scrollContainerRef.current },
     );
-    observerRef.current.observe(loadMoreRef.current);
-    return () => {
-      if (observerRef.current) observerRef.current.disconnect();
-    };
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
   }, [loadComics]);
 
   return (
