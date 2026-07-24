@@ -14,7 +14,4 @@ export type UserInfo = {
   updatedAt: number;
 };
 
-export type ReserveUserAvatarResult = {
-  putUrl: string;
-  avatarVersion: number;
-};
+export type ReserveUserAvatarResult = import("./image").ImageUploadSlot | null;

@@ -258,7 +258,7 @@ describe("addChapterPages", () => {
     // Fail the first two updatePage calls, succeed on the third
     apiMocks.updatePage
       .mockRejectedValueOnce(new Error("network error"))
-      .mockResolvedValueOnce({ success: false, error: "server error" } as any)
+      .mockResolvedValueOnce({ success: false, error: "server error" })
       .mockResolvedValueOnce({ success: true, data: undefined });
 
     await addChapterPages({
@@ -304,7 +304,7 @@ describe("addChapterPages", () => {
     apiMocks.updatePage.mockResolvedValue({
       success: false,
       error: "persistent error",
-    } as any);
+    });
 
     await expect(addChapterPages({
       chapterId: "chapter-1",

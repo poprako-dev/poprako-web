@@ -12,8 +12,7 @@ export type RawPageInfo = {
   image_url: string | null;
   image_thumbnail_url?: string | null;
   image_hash: string;
-  byte_length: number;
-  extension: string;
+  ext: string;
   index: number;
   proofread_unit_count: number;
   total_unit_count: number;
@@ -34,8 +33,7 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
     imageThumbnailUrl: ensureHttpsUrl(raw.image_thumbnail_url),
     isUploaded: !!raw.image_url,
     imageHash: raw.image_hash,
-    byteLength: raw.byte_length,
-    extension: raw.extension,
+    extension: raw.ext,
     creatorId: "",
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
@@ -46,8 +44,7 @@ export type RawReservedPage = {
   page_id: string;
   index: number;
   image_hash: string;
-  byte_length: number;
-  extension: string;
+  ext: string;
   slot: {
     put_url: string;
     image_version: number;
@@ -59,8 +56,7 @@ export function unwrapRawReservedPage(raw: RawReservedPage): ReservedPage {
     pageId: raw.page_id,
     index: raw.index,
     imageHash: raw.image_hash,
-    byteLength: raw.byte_length,
-    extension: raw.extension,
+    extension: raw.ext,
     slot: raw.slot === null ? null : {
       putUrl: raw.slot.put_url,
       imageVersion: raw.slot.image_version,
@@ -75,7 +71,7 @@ export type RawReserveChapterPagesArgs = {
     page_id?: string;
     image_hash: string;
     byte_length: number;
-    extension: string;
+    ext: string;
   }>;
 };
 export function unwrapRawReserveChapterPagesArgs(
@@ -87,7 +83,7 @@ export function unwrapRawReserveChapterPagesArgs(
       pageId: page.page_id,
       imageHash: page.image_hash,
       byteLength: page.byte_length,
-      extension: page.extension,
+      extension: page.ext,
     })),
   };
 }

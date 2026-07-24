@@ -18,6 +18,7 @@ import ComicProgressList from "@/features/ComicProgressList";
 
 type Props = {
   initialMode?: ViewMode;
+  refreshKey?: number;
   worksets: WorksetInfo[];
   activeWorksetId: string;
   onChangeWorkset: (worksetId: string) => void;
@@ -51,6 +52,7 @@ type Props = {
 
 export default function ComicList({
   initialMode = "translator",
+  refreshKey = 0,
   worksets,
   activeWorksetId,
   onChangeWorkset,
@@ -174,6 +176,7 @@ export default function ComicList({
 
           {activeMode === "translator" && (
             <ComicTranslationList
+              key={`translator-${refreshKey}`}
               onLoadComics={loadComicCards}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
@@ -183,6 +186,7 @@ export default function ComicList({
           )}
           {activeMode === "reviewer" && (
             <ComicProgressList
+              key={`reviewer-${refreshKey}`}
               onLoadComics={onLoadComics}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);

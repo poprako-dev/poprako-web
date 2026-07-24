@@ -6,6 +6,10 @@ import type {
   ReserveTeamAvatarResult,
 } from "../team";
 import { ensureHttpsUrl } from "@/utils/url";
+import {
+  unwrapRawImageUploadSlot,
+  type RawReserveImageResult,
+} from "./image";
 
 export type RawTeamInfo = {
   id: string;
@@ -54,15 +58,9 @@ export function unwrapRawUpdateTeamArgs(
   return { id: raw.id, name: raw.name, description: raw.description };
 }
 
-export type RawReserveTeamAvatarResult = {
-  put_url: string;
-  avatar_version: number;
-};
+export type RawReserveTeamAvatarResult = RawReserveImageResult;
 export function unwrapRawReserveTeamAvatarResult(
   raw: RawReserveTeamAvatarResult,
 ): ReserveTeamAvatarResult {
-  return {
-    putUrl: raw.put_url,
-    avatarVersion: raw.avatar_version,
-  };
+  return raw.slot === null ? null : unwrapRawImageUploadSlot(raw.slot);
 }

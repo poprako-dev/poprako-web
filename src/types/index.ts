@@ -1,4 +1,5 @@
 export * from "./user";
+export * from "./image";
 export * from "./team";
 export * from "./member";
 export * from "./page";

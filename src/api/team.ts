@@ -1,23 +1,24 @@
 import { api } from "./util";
 import type { Result } from "@/types/utils/result";
 import type { ReserveTeamAvatarResult, UpdateTeamArgs } from "@/types/team";
+import type { ReserveImageArgs } from "@/types/image";
 import {
   unwrapRawReserveTeamAvatarResult,
   type RawReserveTeamAvatarResult,
 } from "@/types/raw/team";
 
-type ReserveTeamAvatarArgs = {
-  fileExtension: string;
-};
-
 export async function reserveTeamAvatarUpload(
   teamId: string,
-  args: ReserveTeamAvatarArgs,
+  args: ReserveImageArgs,
 ): Promise<Result<ReserveTeamAvatarResult>> {
   const res = await api.post<
     RawReserveTeamAvatarResult,
-    { file_ext: string }
-  >(`/teams/${teamId}/avatar/reserve`, { file_ext: args.fileExtension });
+    { image_hash: string; byte_length: number; ext: string }
+  >(`/teams/${teamId}/avatar/reserve`, {
+    image_hash: args.imageHash,
+    byte_length: args.byteLength,
+    ext: args.extension,
+  });
   if (!res.success) return res;
 
   return {
@@ -28,11 +29,11 @@ export async function reserveTeamAvatarUpload(
 
 export async function confirmTeamAvatarUploaded(
   teamId: string,
-  avatarVersion: number,
+  imageVersion: number,
 ): Promise<Result<void>> {
-  const res = await api.post<void, { avatar_version: number }>(
+  const res = await api.post<void, { image_version: number }>(
     `/teams/${teamId}/avatar/mark-uploaded`,
-    { avatar_version: avatarVersion },
+    { image_version: imageVersion },
   );
   if (!res.success) return res;
   return { success: true, data: undefined };

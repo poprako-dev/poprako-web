@@ -35,4 +35,5 @@
 - [x] assignment sidebar.
 - [x] completed archive.
 - [x] reloc when open translator paginator to show current page item.
-- [ ] reload sysmails when entering sysmail page.
+- [x] reload sysmails when entering sysmail page.
+- [ ] add a shortcut list for a hotkey.

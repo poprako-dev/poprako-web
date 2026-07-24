@@ -101,7 +101,7 @@ export default function ComicPlayground() {
         matchComicClientFilters(comic, comic.pinnedChapter ?? null, comicFilters),
       );
     },
-    [activeWorksetId, comicFilters, comicListRefreshKey],
+    [activeWorksetId, comicFilters],
   );
 
   const {
@@ -427,6 +427,7 @@ export default function ComicPlayground() {
   return (
     <>
       <ComicList
+        refreshKey={comicListRefreshKey}
         worksets={worksets}
         activeWorksetId={activeWorksetId}
         onChangeWorkset={setActiveWorksetId}

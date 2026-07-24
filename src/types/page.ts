@@ -1,4 +1,5 @@
 import type { UserInfo } from "./user";
+import type { ImageUploadSlot } from "./image";
 
 export type Page = {
   id: string;
@@ -38,17 +39,12 @@ export type PageImageInput = {
   extension: string;
 };
 
-export type PageImageUpload = {
-  putUrl: string;
-  imageVersion: number;
-  headers: Record<string, string>;
-};
+export type PageImageUpload = ImageUploadSlot;
 
 export type ReservedPage = {
   pageId: string;
   index: number;
   imageHash: string;
-  byteLength: number;
   extension: string;
   slot: PageImageUpload | null;
 };

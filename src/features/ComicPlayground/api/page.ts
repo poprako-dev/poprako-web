@@ -47,7 +47,7 @@ export async function reserveChapterPages(
       page_id: page.pageId,
       image_hash: page.imageHash,
       byte_length: page.byteLength,
-      extension: page.extension,
+      ext: page.extension,
     })),
   };
 
@@ -75,7 +75,7 @@ type ReserveExistingPageUploadArgs = {
 type RawReserveExistingPageUploadArgs = {
   image_hash: string;
   byte_length: number;
-  extension: string;
+  ext: string;
 };
 
 type ReserveExistingPageUploadResult = import("@/types").ReservedPage;
@@ -87,7 +87,7 @@ export async function reserveExistingPageUpload(
   const rawArgs: RawReserveExistingPageUploadArgs = {
     image_hash: args.imageHash,
     byte_length: args.byteLength,
-    extension: args.extension,
+    ext: args.extension,
   };
 
   const res = await api.post<

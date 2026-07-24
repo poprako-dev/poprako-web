@@ -5,7 +5,7 @@ import {
   updatePage,
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
-import type { UploadProgressCallbacks } from "@/types";
+import type { PageInfo, UploadProgressCallbacks } from "@/types";
 import type { Result } from "@/types/utils/result";
 import { getFileExtension } from "./utils";
 import { hashPageFile } from "./pageHash";
@@ -39,6 +39,21 @@ function imageIdentity({
   extension,
 }: PageManifestImage): string {
   return JSON.stringify([imageHash, byteLength, extension]);
+}
+
+async function getImageByteLength(page: PageInfo): Promise<number> {
+  if (page.byteLength) return page.byteLength;
+
+  if (!page.imageUrl) {
+    throw new Error(`页面 ${page.id} 的图片尚未上传，无法重新预留页面清单`);
+  }
+
+  const response = await fetch(page.imageUrl);
+  if (!response.ok) {
+    throw new Error(`无法读取页面 ${page.id} 的图片大小`);
+  }
+
+  return (await response.blob()).size;
 }
 
 async function retryMarkUploaded(
@@ -102,7 +117,7 @@ async function uploadOnePage(
     const reReserveResult = await reserveExistingPageUpload({
       pageId: creation.pageId,
       imageHash: creation.imageHash,
-      byteLength: creation.byteLength,
+      byteLength: file.size,
       extension: creation.extension,
     });
     if (!reReserveResult.success) {
@@ -155,18 +170,18 @@ export async function addChapterPages({
     throw new Error(existingPagesResult.error);
   }
 
-  const existingManifest = existingPagesResult.data.map((page) => {
-    if (!page.imageHash || !page.byteLength || !page.extension) {
+  const existingManifest = await Promise.all(existingPagesResult.data.map(async (page) => {
+    if (!page.imageHash || !page.extension) {
       throw new Error(`页面 ${page.id} 缺少图片身份信息，请刷新后重试`);
     }
 
     return {
       pageId: page.id,
       imageHash: page.imageHash,
-      byteLength: page.byteLength,
+      byteLength: await getImageByteLength(page),
       extension: page.extension,
     };
-  });
+  }));
 
   const newPages = await Promise.all(files.map(async (file, fileIndex): Promise<NewPage> => {
     const extension = getFileExtension(file);

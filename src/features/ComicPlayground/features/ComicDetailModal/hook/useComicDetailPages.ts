@@ -265,7 +265,7 @@ export function useComicDetailPages({
         }
 
         const slot = reserveResult.data.slot;
-        if (upload === null) {
+        if (slot === null) {
           await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
           showToast("页面图片未发生变化", "success");
           return;

@@ -106,9 +106,7 @@ describe("poprako-r API migration", () => {
     );
 
     await listUnits("page_1");
-    expect(lastFetchCall(fetchMock).url).toBe(
-      "/api/v1/pages/page_1/units?offset=0&limit=500",
-    );
+    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/units");
 
     await listAnnouncements({ teamId: "team_1", offset: 5, limit: 60 });
     expect(lastFetchCall(fetchMock).url).toBe(
@@ -128,37 +126,62 @@ describe("poprako-r API migration", () => {
 
   test("uses renamed poprako-r RPC paths and body fields", async () => {
     const fetchMock = installFetch(okJson({
-      put_url: "https://upload.example/put",
-      avatar_version: 11,
-      cover_version: 12,
-      image_version: 13,
+      slot: {
+        put_url: "https://upload.example/put",
+        image_version: 13,
+        headers: { "content-type": "image/png" },
+      },
       page_id: "page_1",
       pages: [],
     }));
 
-    await reserveUserAvatarUpload("user_1", "png");
+    await reserveUserAvatarUpload("user_1", {
+      imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      byteLength: 3,
+      extension: "png",
+    });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/users/user_1/avatar/reserve");
-    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ file_ext: "png" });
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+      image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      byte_length: 3,
+      ext: "png",
+    });
 
     await confirmUserAvatarUploaded("user_1", 10);
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/users/user_1/avatar/mark-uploaded");
-    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ avatar_version: 10 });
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ image_version: 10 });
 
-    await reserveTeamAvatarUpload("team_1", { fileExtension: "webp" });
+    await reserveTeamAvatarUpload("team_1", {
+      imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      byteLength: 3,
+      extension: "webp",
+    });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/teams/team_1/avatar/reserve");
-    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ file_ext: "webp" });
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+      image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      byte_length: 3,
+      ext: "webp",
+    });
 
     await confirmTeamAvatarUploaded("team_1", 11);
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/teams/team_1/avatar/mark-uploaded");
-    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ avatar_version: 11 });
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ image_version: 11 });
 
-    await reserveCoverUpload("comic_1", "jpg");
+    await reserveCoverUpload("comic_1", {
+      imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      byteLength: 3,
+      extension: "jpg",
+    });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/cover/reserve");
-    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ file_ext: "jpg" });
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+      image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      byte_length: 3,
+      ext: "jpg",
+    });
 
     await markCoverUploaded("comic_1", 12);
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/cover/mark-uploaded");
-    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ cover_version: 12 });
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ image_version: 12 });
 
     await archiveComic("comic_1");
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/archive");
@@ -181,7 +204,7 @@ describe("poprako-r API migration", () => {
         {
           image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
           byte_length: 3,
-          extension: "png",
+          ext: "png",
         },
       ],
     });
@@ -191,8 +214,7 @@ describe("poprako-r API migration", () => {
         page_id: "page_1",
         index: 0,
         image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-        byte_length: 3,
-        extension: "png",
+        ext: "png",
         slot: {
           put_url: "https://upload.example/put",
           image_version: 13,
@@ -212,7 +234,7 @@ describe("poprako-r API migration", () => {
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       byte_length: 3,
-      extension: "png",
+      ext: "png",
     });
 
     await updatePage("page_1", { isUploaded: true, imageVersion: 13 });
@@ -382,7 +404,7 @@ describe("poprako-r API migration", () => {
     }]));
     const members = await listMyMembers({ ownerId: "user_1" });
     expect(lastFetchCall(fetchMock).url).toBe(
-      "/api/v1/members?owner_id=user_1&incl=team&offset=0&limit=100",
+      "/api/v1/members?owner_id=user_1&incl=team&offset=0&limit=20",
     );
     expect(members[0]?.roles).toBe(128);
     expect(members[0]?.team?.id).toBe("team_1");

@@ -5,6 +5,7 @@ import {
   type RawUserInfo,
 } from "@/types/raw/user";
 import type { ReserveUserAvatarResult } from "@/types/user";
+import type { ReserveImageArgs } from "@/types/image";
 import type { Result } from "@/types/utils/result";
 import { api } from "./util";
 
@@ -34,11 +35,15 @@ export async function updateUserPassword(
 
 export async function reserveUserAvatarUpload(
   userId: string,
-  fileExtension: string,
+  args: ReserveImageArgs,
 ): Promise<Result<ReserveUserAvatarResult>> {
-  const res = await api.post<RawReserveUserAvatarResult, { file_ext: string }>(
+  const res = await api.post<RawReserveUserAvatarResult, {
+    image_hash: string;
+    byte_length: number;
+    ext: string;
+  }>(
     `/users/${userId}/avatar/reserve`,
-    { file_ext: fileExtension },
+    { image_hash: args.imageHash, byte_length: args.byteLength, ext: args.extension },
   );
   if (!res.success) return res;
 
@@ -50,11 +55,11 @@ export async function reserveUserAvatarUpload(
 
 export async function confirmUserAvatarUploaded(
   userId: string,
-  avatarVersion: number,
+  imageVersion: number,
 ): Promise<Result<void>> {
-  const res = await api.post<void, { avatar_version: number }>(
+  const res = await api.post<void, { image_version: number }>(
     `/users/${userId}/avatar/mark-uploaded`,
-    { avatar_version: avatarVersion },
+    { image_version: imageVersion },
   );
   if (!res.success) return res;
   return { success: true, data: undefined };

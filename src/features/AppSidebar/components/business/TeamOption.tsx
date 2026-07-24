@@ -5,6 +5,7 @@ import type { TeamConfig } from "../../types/types";
 import { joinMember } from "@/api/member";
 import { confirmTeamAvatarUploaded, reserveTeamAvatarUpload } from "@/api/team";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
+import { hashPageFile } from "@/features/ComicPlayground/features/ComicDetailModal/pageHash";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
@@ -386,21 +387,31 @@ export default function TeamOption({
       return;
     }
 
-    const reserveRes = await reserveTeamAvatarUpload(activeTeam.id, {
-      fileExtension: extension,
-    });
-    if (!reserveRes.success) {
-      showToast(reserveRes.error, "error");
-      return;
-    }
-
     setIsUploadingAvatar(true);
     setAvatarUploadProgress(0);
 
     try {
+      const { imageHash } = await hashPageFile(file);
+      const reserveRes = await reserveTeamAvatarUpload(activeTeam.id, {
+        imageHash,
+        byteLength: file.size,
+        extension,
+      });
+      if (!reserveRes.success) {
+        showToast(reserveRes.error, "error");
+        return;
+      }
+
+      const slot = reserveRes.data;
+      if (slot === null) {
+        showToast("团队头像未发生变化", "success");
+        return;
+      }
+
       const uploadRes = await uploadToPresignedUrl(
-        reserveRes.data.putUrl,
+        slot.putUrl,
         file,
+        slot.headers,
         (percent) => setAvatarUploadProgress(percent),
       );
       if (!uploadRes.success) {
@@ -410,7 +421,7 @@ export default function TeamOption({
 
       const confirmRes = await confirmTeamAvatarUploaded(
         activeTeam.id,
-        reserveRes.data.avatarVersion,
+        slot.imageVersion,
       );
       if (!confirmRes.success) {
         showToast(confirmRes.error, "error");

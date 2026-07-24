@@ -64,7 +64,11 @@ export default function SystemMailViewer() {
   }, [showToast, setSysMailCache]);
 
   useEffect(() => {
-    refreshAll();
+    const timeoutId = window.setTimeout(() => {
+      void refreshAll();
+    });
+
+    return () => window.clearTimeout(timeoutId);
   }, [refreshAll]);
 
   const fetchMore = useCallback(async () => {

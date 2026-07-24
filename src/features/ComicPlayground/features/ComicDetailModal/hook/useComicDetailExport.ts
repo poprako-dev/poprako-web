@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import JSZip from "jszip";
 import { markCoverUploaded, reserveCoverUpload } from "@/features/ComicPlayground/api/comic";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
+import { hashPageFile } from "../pageHash";
 import { hasRole } from "@/types/role";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
@@ -481,15 +482,27 @@ export function useComicDetailExport({
       setCoverUploadProgress(0);
 
       try {
-        const reserveRes = await reserveCoverUpload(comicId, ext);
+        const { imageHash } = await hashPageFile(file);
+        const reserveRes = await reserveCoverUpload(comicId, {
+          imageHash,
+          byteLength: file.size,
+          extension: ext,
+        });
         if (!reserveRes.success) {
           showToast(reserveRes.error, "error");
           return;
         }
 
+        const slot = reserveRes.data;
+        if (slot === null) {
+          showToast("封面图片未发生变化", "success");
+          return;
+        }
+
         const uploadRes = await uploadToPresignedUrl(
-          reserveRes.data.putUrl,
+          slot.putUrl,
           file,
+          slot.headers,
           (percent) => setCoverUploadProgress(percent),
         );
         if (!uploadRes.success) {
@@ -499,7 +512,7 @@ export function useComicDetailExport({
 
         const markRes = await markCoverUploaded(
           comicId,
-          reserveRes.data.coverVersion,
+          slot.imageVersion,
         );
         if (!markRes.success) {
           showToast(markRes.error, "error");

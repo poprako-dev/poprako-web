@@ -37,10 +37,7 @@ export type UpdateTeamArgs = {
   description?: string;
 };
 
-export type ReserveTeamAvatarResult = {
-  putUrl: string;
-  avatarVersion: number;
-};
+export type ReserveTeamAvatarResult = import("./image").ImageUploadSlot | null;
 
 export function teamAvatarUrl(team: TeamInfo) {
   if (team.avatarThumbnailUrl) {

@@ -4,6 +4,7 @@ import { Upload, User as UserIcon } from "lucide-react";
 import clsx from "clsx";
 import { confirmUserAvatarUploaded, reserveUserAvatarUpload } from "@/api/user";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
+import { hashPageFile } from "@/features/ComicPlayground/features/ComicDetailModal/pageHash";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useRefreshLoginState } from "@/hooks/useRefreshLoginState";
@@ -84,19 +85,31 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
       return;
     }
 
-    const reserveRes = await reserveUserAvatarUpload(user.id, extension);
-    if (!reserveRes.success) {
-      showToast(reserveRes.error, "error");
-      return;
-    }
-
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
+      const { imageHash } = await hashPageFile(file);
+      const reserveRes = await reserveUserAvatarUpload(user.id, {
+        imageHash,
+        byteLength: file.size,
+        extension,
+      });
+      if (!reserveRes.success) {
+        showToast(reserveRes.error, "error");
+        return;
+      }
+
+      const slot = reserveRes.data;
+      if (slot === null) {
+        showToast("头像图片未发生变化", "success");
+        return;
+      }
+
       const uploadRes = await uploadToPresignedUrl(
-        reserveRes.data.putUrl,
+        slot.putUrl,
         file,
+        slot.headers,
         (percent) => setUploadProgress(percent),
       );
       if (!uploadRes.success) {
@@ -106,7 +119,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
 
       const confirmRes = await confirmUserAvatarUploaded(
         user.id,
-        reserveRes.data.avatarVersion,
+        slot.imageVersion,
       );
       if (!confirmRes.success) {
         showToast(confirmRes.error, "error");

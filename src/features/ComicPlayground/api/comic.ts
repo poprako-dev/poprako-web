@@ -12,6 +12,7 @@ import { toComicInfo } from "@/types";
 import type { ComicInfo } from "@/types";
 import { toChapterInfo } from "@/types/chapter";
 import type { Result } from "@/types/utils/result";
+import type { ImageUploadSlot, ReserveImageArgs } from "@/types/image";
 import { unwrapRawAssignmentInfo } from "@/types/raw/assignment";
 
 export async function listComics(
@@ -122,29 +123,34 @@ export async function archiveComic(id: string): Promise<Result<void>> {
 
 export async function reserveCoverUpload(
   comicId: string,
-  fileExtension: string,
-): Promise<Result<{ putUrl: string; coverVersion: number }>> {
+  args: ReserveImageArgs,
+): Promise<Result<ImageUploadSlot | null>> {
   const res = await api.post<
-    { put_url: string; cover_version: number },
-    { file_ext: string }
-  >(`/comics/${comicId}/cover/reserve`, { file_ext: fileExtension });
+    { slot: { put_url: string; image_version: number; headers: Record<string, string> } | null },
+    { image_hash: string; byte_length: number; ext: string }
+  >(`/comics/${comicId}/cover/reserve`, {
+    image_hash: args.imageHash,
+    byte_length: args.byteLength,
+    ext: args.extension,
+  });
   if (!res.success) return res;
   return {
     success: true,
-    data: {
-      putUrl: res.data.put_url,
-      coverVersion: res.data.cover_version,
+    data: res.data.slot === null ? null : {
+      putUrl: res.data.slot.put_url,
+      imageVersion: res.data.slot.image_version,
+      headers: res.data.slot.headers,
     },
   };
 }
 
 export async function markCoverUploaded(
   comicId: string,
-  coverVersion: number,
+  imageVersion: number,
 ): Promise<Result<void>> {
-  const res = await api.post<void, { cover_version: number }>(
+  const res = await api.post<void, { image_version: number }>(
     `/comics/${comicId}/cover/mark-uploaded`,
-    { cover_version: coverVersion },
+    { image_version: imageVersion },
   );
   if (!res.success) return res;
   return { success: true, data: undefined };
