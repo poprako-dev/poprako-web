@@ -8,6 +8,7 @@ import {
 } from "../pageUpload";
 import {
   usePageUploadTaskStore,
+  clearChapterUploadTasks,
   type PageUploadTaskStatus,
   type PageUploadTaskView,
 } from "../pageUploadStore";
@@ -65,9 +66,6 @@ export function useComicDetailPages({
   const [serverPages, setServerPages] = useState<PageInfo[]>([]);
   const [isDeletingChapterPages, setIsDeletingChapterPages] = useState(false);
   const uploadTasks = usePageUploadTaskStore((state) => state.tasks);
-  const chapterRevision = usePageUploadTaskStore((state) =>
-    chapterId ? state.chapterRevision[chapterId] ?? 0 : 0,
-  );
   const taskByPageId = useMemo(
     () => latestTasksByPage(uploadTasks, chapterId),
     [chapterId, uploadTasks],
@@ -110,21 +108,14 @@ export function useComicDetailPages({
     setServerPages(res.data);
   }, [chapterId, onLoadPages, showToast]);
 
-  useEffect(() => {
-    if (!chapterId || chapterRevision === 0) return;
-    const timeoutId = globalThis.setTimeout(() => {
-      void Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
-    }, 0);
-    return () => globalThis.clearTimeout(timeoutId);
-  }, [
-    chapterId,
-    chapterRevision,
-    reloadCurrentPages,
-    reloadLoadedChapters,
-  ]);
-
   const pages = useMemo(() => {
-    const merged = [...serverPages];
+    const merged = serverPages.map((page) => {
+      const task = taskByPageId.get(page.id);
+      if (task?.status === "succeeded" && !page.isUploaded) {
+        return { ...page, isUploaded: true };
+      }
+      return page;
+    });
     const serverPageIds = new Set(serverPages.map((page) => page.id));
 
     for (const task of taskByPageId.values()) {
@@ -134,7 +125,7 @@ export function useComicDetailPages({
         chapterId: task.chapterId,
         index: task.index,
         imageUrl: "",
-        isUploaded: false,
+        isUploaded: task.status === "succeeded",
         creatorId: currentUserId ?? "",
         totalUnitCount: 0,
         translatedUnitCount: 0,
@@ -222,12 +213,13 @@ export function useComicDetailPages({
       return;
     }
 
-    await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
+    setServerPages([]);
+    clearChapterUploadTasks(chapterId);
+    await reloadLoadedChapters();
     showToast("页面已清空", "success");
   }, [
     chapterId,
     onDeleteChapterPages,
-    reloadCurrentPages,
     reloadLoadedChapters,
     showToast,
   ]);

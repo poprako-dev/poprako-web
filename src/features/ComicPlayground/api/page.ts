@@ -153,6 +153,10 @@ function extractUrlHost(url: string): string {
   }
 }
 
+function isBrowserManagedHeader(name: string): boolean {
+  return name.toLowerCase() === "content-length";
+}
+
 export async function uploadToPresignedUrl(
   putUrl: string,
   file: File,
@@ -187,7 +191,10 @@ export async function uploadToPresignedUrl(
     const abortUpload = () => xhr.abort();
 
     xhr.open("PUT", putUrl, true);
-    for (const [name, value] of Object.entries(headers)) xhr.setRequestHeader(name, value);
+    for (const [name, value] of Object.entries(headers)) {
+      if (isBrowserManagedHeader(name)) continue;
+      xhr.setRequestHeader(name, value);
+    }
     xhr.timeout = 120_000; // 120s 超时，避免永久挂起
     signal?.addEventListener("abort", abortUpload, { once: true });
     if (signal?.aborted) {

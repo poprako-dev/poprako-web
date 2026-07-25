@@ -143,7 +143,6 @@ function failTask(task: RuntimeTask, error: unknown): void {
     status: "failed",
     error: message,
   });
-  bumpPageUploadChapterRevision(task.chapterId);
 }
 
 function succeedTask(task: RuntimeTask): void {
@@ -153,7 +152,6 @@ function succeedTask(task: RuntimeTask): void {
     error: null,
   });
   task.callbacks?.onPageUploaded(task.pageId, task.file);
-  bumpPageUploadChapterRevision(task.chapterId);
 }
 
 async function retryMarkUploaded(task: RuntimeTask, imageVersion: number): Promise<void> {

@@ -87,3 +87,15 @@ export function clearPageUploadTasks(): void {
     chapterRevision: {},
   });
 }
+
+export function clearChapterUploadTasks(chapterId: string): void {
+  useMutablePageUploadTaskStore.setState((state) => {
+    const tasks = { ...state.tasks };
+    for (const id of Object.keys(tasks)) {
+      if (tasks[id].chapterId === chapterId) delete tasks[id];
+    }
+    const chapterRevision = { ...state.chapterRevision };
+    delete chapterRevision[chapterId];
+    return { tasks, chapterRevision };
+  });
+}
