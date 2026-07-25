@@ -268,8 +268,20 @@ export default function BaseTranslator({
 
   function handleModifyUnit(targetUnitId: string, updates: UnitEdit) {
     const nextUpdates = { ...updates };
+    const currentUnit = unitBufRef.current.find(
+      (unit) => unitId(unit) === targetUnitId,
+    );
+    const currentTranslatedText = currentUnit
+      ? unitTranslatedText(currentUnit)
+      : null;
 
     if (updates.translatedText?.trim()) {
+      nextUpdates.translatorId = currentUserId;
+    }
+
+    // FIXME: 服务端应从认证 token 写入编辑者，并迁移历史缺失作者的数据。
+    // 当前协议会拒绝带翻译文本却没有翻译者的完整 unit payload，先以当前用户兜底。
+    if (currentTranslatedText?.trim() && !currentUnit?.translatorId) {
       nextUpdates.translatorId = currentUserId;
     }
 
