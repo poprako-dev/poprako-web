@@ -3,7 +3,6 @@ import { describe, expect, test } from "vitest";
 import {
   availableTranslatorModes,
   initialTranslatorMode,
-  nextTranslatorMode,
   translatorCompletionStage,
 } from "./access";
 
@@ -30,10 +29,10 @@ describe("translator assignment access", () => {
     expect(availableTranslatorModes({
       canTranslate: true,
       canProofread: true,
-    })).toEqual(["translate", "proofread"]);
+    })).toEqual(["proofread"]);
   });
 
-  test("does not let a requested mode expand granted permissions", () => {
+  test("locks the mode selected at entry and prioritizes proofreading", () => {
     const modes = availableTranslatorModes({
       canTranslate: false,
       canProofread: true,
@@ -41,16 +40,6 @@ describe("translator assignment access", () => {
 
     expect(initialTranslatorMode(modes, "translate")).toBe("proofread");
     expect(initialTranslatorMode(modes, "readOnly")).toBe("readOnly");
-  });
-
-  test("cycles only through modes granted by the assignment", () => {
-    const modes = availableTranslatorModes({
-      canTranslate: true,
-      canProofread: true,
-    });
-
-    expect(nextTranslatorMode("translate", modes)).toBe("proofread");
-    expect(nextTranslatorMode("proofread", modes)).toBe("translate");
   });
 
   test("completes proofreading before translation when both roles are assigned", () => {

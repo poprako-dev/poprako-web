@@ -22,8 +22,9 @@ export function availableTranslatorModes({
 }: TranslatorCapabilities): TranslatorMode[] {
   const modes: TranslatorMode[] = [];
 
-  if (canTranslate) modes.push("translate");
+  // 校对优先：同时拥有翻译和校对身份时，进入的是校对模式；翻译仅作为可切换视图。
   if (canProofread) modes.push("proofread");
+  else if (canTranslate) modes.push("translate");
 
   return modes.length > 0 ? modes : ["readOnly"];
 }
@@ -34,15 +35,5 @@ export function initialTranslatorMode(
 ): TranslatorMode {
   if (requestedMode === "readOnly") return "readOnly";
 
-  return requestedMode && availableModes.includes(requestedMode)
-    ? requestedMode
-    : availableModes[0];
-}
-
-export function nextTranslatorMode(
-  currentMode: TranslatorMode,
-  availableModes: TranslatorMode[],
-): TranslatorMode {
-  const currentIndex = availableModes.indexOf(currentMode);
-  return availableModes[(currentIndex + 1) % availableModes.length];
+  return availableModes[0];
 }

@@ -43,7 +43,6 @@ import { useUnitPersistence } from "../../hook/useUnitPersistence";
 import {
   availableTranslatorModes,
   initialTranslatorMode,
-  nextTranslatorMode,
   translatorCompletionStage,
   type TranslatorCompletionStage,
 } from "../../types/access";
@@ -94,14 +93,16 @@ export default function BaseTranslator({
     () => availableTranslatorModes({ canTranslate, canProofread }),
     [canProofread, canTranslate],
   );
-  const [mode, setMode] = useState<TranslatorMode>(() =>
+  const [mode] = useState<TranslatorMode>(() =>
     initialTranslatorMode(availableModes, startMode),
   );
+  const [view, setView] = useState<TranslatorMode>(mode);
   const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
     useState<ProofreadPreviewVisibility>("visible");
 
-  const displayMode = mode === "readOnly" ? "proofread" : mode;
   const readOnly = mode === "readOnly";
+  const canSwitchView = mode === "proofread" && canTranslate;
+  const isEditingView = !readOnly && view === mode;
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
@@ -136,9 +137,7 @@ export default function BaseTranslator({
         ].includes(s.action),
       );
     }
-    if (availableModes.length <= 1) {
-      shortcuts = shortcuts.filter((s) => s.action !== "toggleMode");
-    }
+    shortcuts = shortcuts.filter((s) => s.action !== "toggleMode");
     return shortcuts;
   })();
 
@@ -344,15 +343,14 @@ export default function BaseTranslator({
     canvasRef.current?.centerOn(position.xCoord, position.yCoord);
   }, [focusedUnitId, isRelocationEnabled, unitBuf]);
 
-  function handleCycleMode() {
-    setMode((current) => nextTranslatorMode(current, availableModes));
+  function handleSwitchView() {
+    if (!canSwitchView) return;
+    setView((current) => current === "proofread" ? "translate" : "proofread");
   }
 
   useShortcutActions(
     {
-      toggleMode: () => {
-        setMode((current) => nextTranslatorMode(current, availableModes));
-      },
+      toggleMode: handleSwitchView,
       toggleRelocation: () => {
         setIsRelocationEnabled((v) => !v);
       },
@@ -428,19 +426,20 @@ export default function BaseTranslator({
         ref={canvasRef}
         imageSrc={imageUrl}
         units={unitBuf}
-        mode={displayMode}
+        mode={view}
         isLoading={isLoadingPage}
-        isUnitCreationEnabled={readOnly ? false : isUnitCreationEnabled}
+        isUnitCreationEnabled={isEditingView ? isUnitCreationEnabled : false}
         focusedUnitId={focusedUnitId}
         onFocusUnit={setFocusedUnitId}
-        onMoveUnit={readOnly ? undefined : handleMoveUnit}
-        onAddUnit={readOnly ? undefined : handleAddUnit}
-        onDeleteUnit={readOnly ? undefined : handleDeleteUnit}
+        onMoveUnit={isEditingView ? handleMoveUnit : undefined}
+        onAddUnit={isEditingView ? handleAddUnit : undefined}
+        onDeleteUnit={isEditingView ? handleDeleteUnit : undefined}
         onToggleBubble={
-          readOnly ? undefined : (targetId) =>
+          isEditingView ? (targetId) =>
             handleModifyUnit(targetId, { isBubble: !unitIsBubble(unitBufRef.current.find(u => unitId(u) === targetId)!) })
+            : undefined
         }
-        enableReadOnly={readOnly}
+        enableReadOnly={!isEditingView}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
       <div className="absolute top-2 left-2 flex items-center gap-2">
@@ -507,11 +506,12 @@ export default function BaseTranslator({
         <div className="flex-1 min-w-0">
           <StatusOptionBar
             currMode={mode}
-            availableModes={availableModes}
+            view={view}
+            canSwitchView={canSwitchView}
             isRelocationEnabled={isRelocationEnabled}
             isUnitCreationEnabled={isUnitCreationEnabled}
             proofreadPreviewVisibility={proofreadPreviewVisibility}
-            onCycleMode={handleCycleMode}
+            onSwitchView={handleSwitchView}
             onRelocationClick={() => setIsRelocationEnabled((v) => !v)}
             onUnitCreationClick={() => setIsUnitCreationEnabled((v) => !v)}
             onToggleProofreadPreviewClick={() =>
@@ -533,10 +533,10 @@ export default function BaseTranslator({
         <UnitList
           units={unitBuf}
           focusedUnitId={focusedUnitId}
-          mode={displayMode}
+          mode={view}
           onFocusUnit={setFocusedUnitId}
-          onModifyUnit={readOnly ? undefined : handleModifyUnit}
-          enableReadOnly={readOnly}
+          onModifyUnit={isEditingView ? handleModifyUnit : undefined}
+          enableReadOnly={!isEditingView}
           specialCharInsertRequest={specialCharInsertRequest}
           onSpecialCharUse={handleSpecialCharUse}
         />

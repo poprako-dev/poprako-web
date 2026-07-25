@@ -5,12 +5,13 @@ import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types
 
 type Props = {
   currMode: TranslatorMode;
-  availableModes: TranslatorMode[];
+  view: TranslatorMode;
+  canSwitchView: boolean;
   isRelocationEnabled: boolean;
   isUnitCreationEnabled: boolean;
   proofreadPreviewVisibility: ProofreadPreviewVisibility;
   saving: boolean;
-  onCycleMode: () => void;
+  onSwitchView: () => void;
   onRelocationClick: () => void;
   onUnitCreationClick: () => void;
   onToggleProofreadPreviewClick: () => void;
@@ -31,26 +32,18 @@ const modeLabel: Record<TranslatorMode, string> = {
 
 export default function StatusOptionBar({
   currMode,
-  availableModes,
+  view,
+  canSwitchView,
   isRelocationEnabled,
   isUnitCreationEnabled,
   proofreadPreviewVisibility,
   saving,
-  onCycleMode,
+  onSwitchView,
   onRelocationClick,
   onUnitCreationClick,
   onToggleProofreadPreviewClick,
   onSaveClick,
 }: Props) {
-  const canCycle = availableModes.length > 1;
-
-  const modeCycleTooltip = (() => {
-    if (!canCycle) return modeLabel[currMode];
-    const idx = availableModes.indexOf(currMode);
-    const next = availableModes[(idx + 1) % availableModes.length];
-    return `当前：${modeLabel[currMode]}，点击切换到${modeLabel[next]}`;
-  })();
-
   const btnBase = clsx(
     "flex-1 flex items-center justify-center py-2 transition-colors",
     "text-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
@@ -58,14 +51,23 @@ export default function StatusOptionBar({
 
   return (
     <div className="flex w-full divide-x divide-stone-200">
-      {canCycle && (
+      {canSwitchView ? (
         <button
-          title={modeCycleTooltip}
-          onClick={onCycleMode}
+          title={`当前：${modeLabel[view].replace("模式", "视图")}，点击切换视图`}
+          aria-label={`切换到${view === "proofread" ? "翻译" : "校对"}视图`}
+          onClick={onSwitchView}
           className={clsx(btnBase, "bg-green-50 hover:bg-green-100")}
         >
-          {modeIcon[currMode]}
+          {modeIcon[view]}
         </button>
+      ) : (
+        <div
+          title={modeLabel[currMode]}
+          aria-label={modeLabel[currMode]}
+          className={clsx(btnBase, "bg-stone-100 text-stone-500")}
+        >
+          {modeIcon[currMode]}
+        </div>
       )}
       <button
         title="切换重定位模式"

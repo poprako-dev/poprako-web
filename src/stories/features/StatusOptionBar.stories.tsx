@@ -17,32 +17,31 @@ type Story = StoryObj<typeof StatusOptionBar>;
 
 function InteractiveWrapper({
   initialMode,
-  availableModes,
+  canSwitchView,
 }: {
   initialMode: TranslatorMode;
-  availableModes: TranslatorMode[];
+  canSwitchView: boolean;
 }) {
-  const [mode, setMode] = useState<TranslatorMode>(initialMode);
+  const [view, setView] = useState<TranslatorMode>(initialMode);
   const [relocation, setRelocation] = useState(false);
   const [previewVisibility, setPreviewVisibility] = useState<
     "visible" | "dimmed"
   >("visible");
 
-  function cycleMode() {
-    const idx = availableModes.indexOf(mode);
-    const next = availableModes[(idx + 1) % availableModes.length];
-    setMode(next);
+  function switchView() {
+    setView((current) => current === "proofread" ? "translate" : "proofread");
   }
 
   return (
     <div className="w-64 border border-border rounded">
       <StatusOptionBar
-        currMode={mode}
-        availableModes={availableModes}
+        currMode={initialMode}
+        view={view}
+        canSwitchView={canSwitchView}
         isRelocationEnabled={relocation}
         isUnitCreationEnabled={true}
         proofreadPreviewVisibility={previewVisibility}
-        onCycleMode={cycleMode}
+        onSwitchView={switchView}
         onRelocationClick={() => setRelocation((v) => !v)}
         onUnitCreationClick={() => console.log("unit creation toggled")}
         onToggleProofreadPreviewClick={() =>
@@ -55,32 +54,32 @@ function InteractiveWrapper({
   );
 }
 
-export const NonProofreaderTranslate: Story = {
+export const TranslateMode: Story = {
   name: "非校对用户（翻译模式，无循环按钮）",
   render: () => (
     <InteractiveWrapper
       initialMode="translate"
-      availableModes={["translate"]}
+      canSwitchView={false}
     />
   ),
 };
 
-export const WithProofreadCycle: Story = {
-  name: "校对用户（三模式循环）",
-  render: () => (
-    <InteractiveWrapper
-      initialMode="translate"
-      availableModes={["translate", "proofread", "readOnly"]}
-    />
-  ),
-};
-
-export const ProofreadActive: Story = {
-  name: "校对模式激活",
+export const ProofreadModeWithTranslationView: Story = {
+  name: "校对模式（可查看翻译视图）",
   render: () => (
     <InteractiveWrapper
       initialMode="proofread"
-      availableModes={["translate", "proofread", "readOnly"]}
+      canSwitchView
+    />
+  ),
+};
+
+export const ProofreadMode: Story = {
+  name: "校对模式（锁定校对视图）",
+  render: () => (
+    <InteractiveWrapper
+      initialMode="proofread"
+      canSwitchView={false}
     />
   ),
 };
@@ -90,7 +89,7 @@ export const ReadOnlyActive: Story = {
   render: () => (
     <InteractiveWrapper
       initialMode="readOnly"
-      availableModes={["translate", "proofread", "readOnly"]}
+      canSwitchView={false}
     />
   ),
 };
