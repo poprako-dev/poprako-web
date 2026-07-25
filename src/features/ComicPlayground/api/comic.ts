@@ -22,7 +22,7 @@ export async function listComics(
     incl: args.includes,
     with: args.withs,
     fuzzy_title: args.fuzzyTitle,
-    stages: undefined,
+    stages: args.stages,
     offset: args.offset,
     limit: args.limit,
   };

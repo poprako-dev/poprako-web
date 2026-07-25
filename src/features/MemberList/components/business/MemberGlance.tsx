@@ -58,7 +58,12 @@ export default function MemberGlance() {
   const handleLoadInvitations = useCallback(
     async (offset: number, limit: number): Promise<Result<InvitationInfo[]>> => {
       if (!activeTeamId) return { success: true, data: [] };
-      return listInvitations({ teamId: activeTeamId, offset, limit });
+      return listInvitations({
+        teamId: activeTeamId,
+        offset,
+        limit,
+        pending: true,
+      });
     },
     [activeTeamId],
   );

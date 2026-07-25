@@ -18,13 +18,13 @@ type Props = {
 };
 
 function getActivityStatusColor(lastActiveAt: number | undefined): string {
-  if (!lastActiveAt) return "bg-stone-300";
+  if (!lastActiveAt) return "bg-stone-300 text-stone-600";
   const diff = Date.now() - lastActiveAt;
   const threeMonths = 1000 * 60 * 60 * 24 * 90;
   const sixMonths = 1000 * 60 * 60 * 24 * 180;
-  if (diff <= threeMonths) return "bg-[#2e5c33]";
-  if (diff <= sixMonths) return "bg-amber-200";
-  return "bg-stone-300";
+  if (diff <= threeMonths) return "bg-green-800/60 text-white/85";
+  if (diff <= sixMonths) return "bg-amber-200 text-amber-700";
+  return "bg-stone-300 text-stone-600";
 }
 
 function formatDate(ts: number | undefined): string {
@@ -100,7 +100,7 @@ export default function ComicTranslationCard({
 
       {/* 右侧数据 */}
       <div className="flex-1 flex flex-col justify-between min-w-0 px-2 py-1">
-        {/* 第一行：标题 + 状态指示线 */}
+        {/* 第一行：标题 + 序号指示 */}
         <div className="flex items-center justify-between gap-1.5">
           <h3
             className={clsx(
@@ -112,10 +112,12 @@ export default function ComicTranslationCard({
           </h3>
           <div
             className={clsx(
-              "h-3 w-1 rounded-full shrink-0",
+              "flex items-center justify-center px-1.5 h-[14px] rounded-xs text-[10px] font-mono font-medium leading-none shrink-0",
               getActivityStatusColor(comicInfo.lastActiveAt),
             )}
-          />
+          >
+            #{comicInfo.index + 1}
+          </div>
         </div>
 
         {/* 第二行：序号 + 日期 + 页数 */}

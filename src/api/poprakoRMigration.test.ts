@@ -4,7 +4,7 @@ import { listAnnouncements } from "@/api/announcement";
 import { upsertAssignment } from "@/api/assignment";
 import { listComments } from "@/api/comment";
 import { listInvitations, createInvitation } from "@/api/invitation";
-import { updateMemberRole, joinMember, listMyMembers } from "@/api/member";
+import { updateMemberRole, joinMember, listMembers, listMyMembers } from "@/api/member";
 import { markSysMailRead, listSysMails } from "@/api/sysMail";
 import { reserveTeamAvatarUpload, confirmTeamAvatarUploaded } from "@/api/team";
 import { reserveUserAvatarUpload, confirmUserAvatarUploaded } from "@/api/user";
@@ -83,11 +83,24 @@ describe("poprako-r API migration", () => {
       worksetId: "workset_1",
       includes: ["workset.team"],
       fuzzyTitle: "foo",
+      stages: 3903,
       offset: 2,
       limit: 30,
     });
     expect(lastFetchCall(fetchMock).url).toBe(
-      "/api/v1/worksets/workset_1/comics?incl=workset.team&fuzzy_title=foo&offset=2&limit=30",
+      "/api/v1/worksets/workset_1/comics?incl=workset.team&fuzzy_title=foo&stages=3903&offset=2&limit=30",
+    );
+
+    await listMembers({
+      teamId: "team_1",
+      includes: ["user"],
+      userNicknameKeyword: "alice",
+      role: 2,
+      offset: 4,
+      limit: 10,
+    });
+    expect(lastFetchCall(fetchMock).url).toBe(
+      "/api/v1/members?team_id=team_1&offset=4&limit=10&incl=user&fuzzy_nickname=alice&role=2",
     );
 
     await listChapters({

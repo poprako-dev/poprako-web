@@ -135,43 +135,6 @@ function InteractiveComicList() {
       if (next) setActiveWsId(next.id);
     }
   };
-  // loader that respects filter state (for storybook interactive demo)
-  const pagedLoaderWithFilters = async (
-    offset: number,
-    limit: number,
-  ): Promise<ComicInfo[] | string> => {
-    await new Promise((r) => setTimeout(r, 400));
-
-    const matchTriple = (idx: number, status: TripleFilter) => {
-      if (status === "unset") return true;
-      const m = idx % 3;
-      if (status === "pending") return m === 0;
-      if (status === "ongoing") return m === 1;
-      return m === 2; // completed
-    };
-
-    const matchBinary = (idx: number, status: BinaryFilter) => {
-      if (status === "unset") return true;
-      const m = idx % 2;
-      if (status === "pending") return m === 0;
-      return m === 1; // completed
-    };
-
-    const filtered = FULL_COMICS.filter((c) => {
-      const idx = c.index;
-      return (
-        matchBinary(idx, upload) &&
-        matchTriple(idx, translate) &&
-        matchTriple(idx, proofread) &&
-        matchTriple(idx, typeset) &&
-        matchBinary(idx, review) &&
-        matchBinary(idx, publish)
-      );
-    });
-
-    return filtered.slice(offset, offset + limit);
-  };
-
   return (
     <div className="h-screen w-full">
       <ComicList
@@ -180,7 +143,7 @@ function InteractiveComicList() {
         onChangeWorkset={(id) => setActiveWsId(id)}
         onCreateWorkset={handleCreateWorkset}
         onDeleteWorkset={handleDeleteWorkset}
-        onLoadComics={pagedLoaderWithFilters}
+        onLoadComics={makePagedLoader(FULL_COMICS, 400)}
         onComicClick={(c) => console.log("click comic:", c.title)}
         onCreateComic={() => console.log("create comic")}
         activeFuzzyTitle={title}

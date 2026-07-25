@@ -154,7 +154,7 @@ export default function MemberInvitorModal({
       showToast(result.error, "error");
       return;
     }
-    setPendingInvitations(result.data.filter((inv) => inv.pending));
+    setPendingInvitations(result.data);
   }, [onLoadInvitations, showToast]);
 
   useEffect(() => {
@@ -165,7 +165,7 @@ export default function MemberInvitorModal({
         showToast(result.error, "error");
         return;
       }
-      setPendingInvitations(result.data.filter((inv) => inv.pending));
+      setPendingInvitations(result.data);
     });
     return () => {
       alive = false;

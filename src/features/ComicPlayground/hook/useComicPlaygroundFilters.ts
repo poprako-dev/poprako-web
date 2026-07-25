@@ -3,7 +3,13 @@ import type {
   BinaryFilter,
   TripleFilter,
 } from "@/features/ComcList/types/types";
-import type { ComicClientFilters } from "../types/comic";
+
+function phaseBits(status: BinaryFilter | TripleFilter) {
+  if (status === "unset") return 0b11;
+  if (status === "pending") return 0b00;
+  if (status === "ongoing") return 0b01;
+  return 0b10;
+}
 
 export function useComicPlaygroundFilters() {
   const [activeFuzzyTitle, setActiveFuzzyTitle] = useState<string>("");
@@ -20,18 +26,19 @@ export function useComicPlaygroundFilters() {
   const [activePublishStatus, setActivePublishStatus] =
     useState<BinaryFilter>("unset");
 
-  const comicFilters = useMemo<ComicClientFilters>(
-    () => ({
-      fuzzyTitle: activeFuzzyTitle,
-      uploadStatus: activeUploadStatus,
-      translateStatus: activeTranslateStatus,
-      proofreadStatus: activeProofreadStatus,
-      typesetStatus: activeTypesetStatus,
-      reviewStatus: activeReviewStatus,
-      publishStatus: activePublishStatus,
-    }),
+  const activeStages = useMemo(
+    () => {
+      const stages =
+        phaseBits(activeUploadStatus) |
+        (phaseBits(activeTranslateStatus) << 2) |
+        (phaseBits(activeProofreadStatus) << 4) |
+        (phaseBits(activeTypesetStatus) << 6) |
+        (phaseBits(activeReviewStatus) << 8) |
+        (phaseBits(activePublishStatus) << 10);
+
+      return stages === 0b111111111111 ? undefined : stages;
+    },
     [
-      activeFuzzyTitle,
       activeUploadStatus,
       activeTranslateStatus,
       activeProofreadStatus,
@@ -42,7 +49,7 @@ export function useComicPlaygroundFilters() {
   );
 
   return {
-    comicFilters,
+    activeStages,
     activeFuzzyTitle,
     setActiveFuzzyTitle,
     activeUploadStatus,

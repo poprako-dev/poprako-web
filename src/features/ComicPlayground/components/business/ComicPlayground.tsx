@@ -36,7 +36,6 @@ import {
   upsertAssignment,
 } from "@/api/assignment";
 import type { ComicInfo, ChapterInfo, UploadProgressCallbacks } from "@/types";
-import { matchComicClientFilters } from "../../types/comic";
 import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
 import type { MemberInfo } from "@/types/member";
@@ -60,7 +59,7 @@ export default function ComicPlayground() {
   const [showWorksetCreatorModal, setShowWorksetCreatorModal] = useState(false);
   const isAdmin = activeMember !== null && hasRole(activeMember, "admin");
   const {
-    comicFilters,
+    activeStages,
     activeFuzzyTitle,
     setActiveFuzzyTitle,
     activeUploadStatus,
@@ -87,21 +86,27 @@ export default function ComicPlayground() {
   } = useComicPlaygroundWorksets({ teamId, showToast });
 
   const handleLoadComics = useCallback(
-    async (offset: number, limit: number): Promise<ComicInfo[] | string> => {
+    async (
+      offset: number,
+      limit: number,
+      mode: "translator" | "reviewer",
+    ): Promise<ComicInfo[] | string> => {
       if (!activeWorksetId) return [];
       const result = await listComics({
         worksetId: activeWorksetId,
-        withs: ["pinned_chapter", "pinned_chapter_assignment"],
+        withs: mode === "reviewer"
+          ? ["pinned_chapter", "pinned_chapter_assignment"]
+          : ["pinned_chapter"],
+        fuzzyTitle: activeFuzzyTitle || undefined,
+        stages: activeStages,
         offset,
         limit,
       });
       if (!result.success) return result.error;
 
-      return result.data.filter((comic) =>
-        matchComicClientFilters(comic, comic.pinnedChapter ?? null, comicFilters),
-      );
+      return result.data;
     },
-    [activeWorksetId, comicFilters],
+    [activeFuzzyTitle, activeStages, activeWorksetId],
   );
 
   const {

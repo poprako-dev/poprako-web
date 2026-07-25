@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { Search, X, Loader2, Plus } from "lucide-react";
 import type { MemberInfo } from "@/types/member";
@@ -23,7 +23,6 @@ type Props = {
   title: string;
   chapterId: string | null;
   role: Role;
-  assignedUserIds: string[];
   onLoadMembers?: (
     chapterId: string,
     args: {
@@ -43,7 +42,6 @@ export default function MemberSelectorModal({
   title,
   chapterId,
   role,
-  assignedUserIds,
   onLoadMembers,
   setIsLoading,
   isSubmitting,
@@ -113,11 +111,6 @@ export default function MemberSelectorModal({
     };
   }, [chapterId, keyword, onLoadMembers, role, setIsLoading]);
 
-  const filteredMembers = useMemo(
-    () => members.filter((member) => !assignedUserIds.includes(member.userId)),
-    [assignedUserIds, members],
-  );
-
   return (
     <div
       className={clsx(
@@ -176,7 +169,7 @@ export default function MemberSelectorModal({
 
         <div className="flex-1 overflow-y-auto px-3 py-3">
           <div className="flex flex-col gap-2">
-            {filteredMembers.map((member) => (
+            {members.map((member) => (
               <button
                 key={member.id}
                 type="button"
@@ -254,7 +247,7 @@ export default function MemberSelectorModal({
               </div>
             )}
 
-            {!isFetching && filteredMembers.length === 0 && (
+            {!isFetching && members.length === 0 && (
               <div className="flex h-24 items-center justify-center text-sm text-slate-400">
                 没有可添加的成员
               </div>

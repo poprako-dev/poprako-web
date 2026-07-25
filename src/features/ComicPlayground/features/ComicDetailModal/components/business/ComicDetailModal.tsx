@@ -131,7 +131,6 @@ export default function ComicDetailModal({
     isAddingAssignment,
     joiningRoles,
     leavingRoles,
-    assignedUserIdsForSelectedRole,
     canTranslateOrProofread,
     canReadOnly,
     canManageChapterAssignments,
@@ -449,7 +448,6 @@ export default function ComicDetailModal({
           title={`添加${ROLE_TITLE_LABEL[memberSelectorRole]}成员`}
           chapterId={selectedChapterId}
           role={memberSelectorRole}
-          assignedUserIds={assignedUserIdsForSelectedRole}
           onLoadMembers={onLoadAssignableMembers}
           setIsLoading={setIsMemberSelectorLoading}
           isSubmitting={isMemberSelectorLoading || isAddingAssignment}

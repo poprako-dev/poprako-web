@@ -31,6 +31,7 @@ type Props = {
   onLoadComics: (
     offset: number,
     limit: number,
+    mode: ViewMode,
   ) => Promise<ComicInfo[] | string>;
   onComicClick?: (comicInfo: ComicInfo) => void;
   onCreateComic: () => void;
@@ -91,7 +92,7 @@ export default function ComicList({
       offset: number,
       limit: number,
     ): Promise<ComicTranslationListItem[] | string> => {
-      const result = await onLoadComics(offset, limit);
+      const result = await onLoadComics(offset, limit, "translator");
       if (typeof result === "string") return result;
 
       return result.map((comicInfo) => ({
@@ -99,6 +100,11 @@ export default function ComicList({
         chapter: comicInfo.pinnedChapter,
       }));
     },
+    [onLoadComics],
+  );
+
+  const loadComicProgress = useCallback(
+    async (offset: number, limit: number) => onLoadComics(offset, limit, "reviewer"),
     [onLoadComics],
   );
 
@@ -187,7 +193,7 @@ export default function ComicList({
           {activeMode === "reviewer" && (
             <ComicProgressList
               key={`reviewer-${refreshKey}`}
-              onLoadComics={onLoadComics}
+              onLoadComics={loadComicProgress}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
                 onComicClick?.(comicInfo);

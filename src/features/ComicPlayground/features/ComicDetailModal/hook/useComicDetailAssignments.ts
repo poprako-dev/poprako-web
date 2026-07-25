@@ -178,19 +178,6 @@ export function useComicDetailAssignments({
   const canUploadRawPages = !!currentAssignment && hasRole(currentAssignment, "rawProvider");
   const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
 
-  const assignedUserIdsForSelectedRole =
-    memberSelectorRole === null
-      ? []
-      : assignments
-          .filter((assignment) => {
-            if (memberSelectorRole !== "typesetter") {
-              return hasRole(assignment, memberSelectorRole);
-            }
-
-            return hasRole(assignment, "typesetter") || hasRole(assignment, "redrawer");
-          })
-          .map((assignment) => assignment.userId);
-
   const removeRoles = useCallback(
     async (userId: string, roles: Role[]) => {
       if (!selectedChapterId || !onRemoveAssignment || roles.length === 0) {
@@ -360,7 +347,6 @@ export function useComicDetailAssignments({
     isAddingAssignment,
     joiningRoles,
     leavingRoles,
-    assignedUserIdsForSelectedRole,
     currentAssignment,
     canTranslateOrProofread,
     canReadOnly,
