@@ -103,6 +103,12 @@ export async function reserveExistingPageUpload(
   };
 }
 
+export async function getPage(pageId: string): Promise<Result<PageInfo>> {
+  const res = await api.get<RawPageInfo>(`/pages/${pageId}`);
+  if (!res.success) return res;
+  return { success: true, data: unwrapRawPageInfo(res.data) };
+}
+
 export async function deletePage(_pageId: string): Promise<Result<void>> {
   return {
     success: false,
@@ -195,7 +201,7 @@ export async function uploadToPresignedUrl(
       if (isBrowserManagedHeader(name)) continue;
       xhr.setRequestHeader(name, value);
     }
-    xhr.timeout = 120_000; // 120s 超时，避免永久挂起
+    xhr.timeout = 8 * 60_000; // 8 分钟超时，容纳对象存储完成写入与响应。
     signal?.addEventListener("abort", abortUpload, { once: true });
     if (signal?.aborted) {
       abortUpload();
@@ -235,7 +241,7 @@ export async function uploadToPresignedUrl(
       const host = extractUrlHost(putUrl);
       const sizeMiB = (file.size / 1024 / 1024).toFixed(1);
       console.error(
-        `[uploadToPresignedUrl] 上传超时 (120s), 目标: ${host}, `
+          `[uploadToPresignedUrl] 上传超时 (8m), 目标: ${host}, `
           + `文件: ${file.name} (${sizeMiB}MB)`,
       );
       finish({ success: false, error: "上传超时", failureKind: "timeout" });

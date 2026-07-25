@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PageInfo } from "@/types";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type { ComicDetailModalProps } from "../types";
@@ -12,6 +12,7 @@ import {
   type PageUploadTaskStatus,
   type PageUploadTaskView,
 } from "../pageUploadStore";
+import { getPage } from "@/features/ComicPlayground/api/page";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -97,6 +98,32 @@ export function useComicDetailPages({
         showToast("加载页面失败", "error");
       });
   }, [chapterId, isSelectedChapterAvailable, onLoadPages, showToast]);
+
+  const fetchedTaskIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!chapterId) return;
+
+    for (const task of taskByPageId.values()) {
+      if (task.status !== "succeeded" || !task.pageId) continue;
+      if (fetchedTaskIdsRef.current.has(task.taskId)) continue;
+
+      fetchedTaskIdsRef.current.add(task.taskId);
+
+      getPage(task.pageId).then((res) => {
+        if (!res.success) return;
+        setServerPages((prev) => {
+          const idx = prev.findIndex((p) => p.id === task.pageId);
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = res.data;
+            return next;
+          }
+          return [...prev, res.data];
+        });
+      });
+    }
+  }, [chapterId, taskByPageId]);
 
   const reloadCurrentPages = useCallback(async () => {
     if (!chapterId) return;

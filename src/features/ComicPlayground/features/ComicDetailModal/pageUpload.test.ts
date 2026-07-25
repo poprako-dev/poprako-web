@@ -116,6 +116,110 @@ describe("page upload coordinator", () => {
     });
   });
 
+  test("re-reserves a matching pending page instead of skipping it as a duplicate", async () => {
+    apiMocks.listPages.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: "page-pending",
+          imageHash: "pending-hash",
+          extension: "png",
+          imageUrl: "",
+          isUploaded: false,
+        },
+      ],
+    });
+    hashMocks.hashPageFile.mockResolvedValue({ imageHash: "pending-hash" });
+    apiMocks.reserveChapterPages.mockResolvedValue({
+      success: true,
+      data: {
+        pages: [
+          {
+            ...slot("page-pending", 2),
+            imageHash: "pending-hash",
+          },
+        ],
+      },
+    });
+
+    const started = await startChapterPageUpload("chapter-1", [file("001.png")]);
+    const summary = await started.completion;
+
+    expect(summary).toEqual({ succeeded: 1, failed: 0 });
+    expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
+      chapterId: "chapter-1",
+      pages: [
+        {
+          pageId: "page-pending",
+          imageHash: "pending-hash",
+          newByteLen: 1,
+          extension: "png",
+        },
+      ],
+    });
+    expect(apiMocks.uploadToPresignedUrl).toHaveBeenCalledWith(
+      "https://upload.example/page-pending/2",
+      expect.any(File),
+      {},
+      expect.any(Function),
+      expect.any(AbortSignal),
+    );
+  });
+
+  test("refreshes a slotless page through the completed page task", async () => {
+    apiMocks.listPages.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: "page-uploaded",
+          imageHash: "uploaded-hash",
+          extension: "png",
+          imageUrl: "https://cdn.example/page-uploaded.png",
+          isUploaded: true,
+        },
+      ],
+    });
+    hashMocks.hashPageFile.mockResolvedValue({ imageHash: "uploaded-hash" });
+    apiMocks.reserveChapterPages.mockResolvedValue({
+      success: true,
+      data: {
+        pages: [
+          {
+            ...slot("page-uploaded"),
+            imageHash: "uploaded-hash",
+            slot: null,
+          },
+        ],
+      },
+    });
+
+    const started = await startChapterPageUpload("chapter-1", [file("001.png")]);
+    const summary = await started.completion;
+
+    expect(summary).toEqual({ succeeded: 0, failed: 0 });
+    expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
+      chapterId: "chapter-1",
+      pages: [
+        {
+          pageId: "page-uploaded",
+          imageHash: "uploaded-hash",
+          newByteLen: 1,
+          extension: "png",
+        },
+      ],
+    });
+    expect(apiMocks.uploadToPresignedUrl).not.toHaveBeenCalled();
+    expect(Object.values(getPageUploadTaskState().tasks)).toContainEqual(
+      expect.objectContaining({
+        pageId: "page-uploaded",
+        index: 0,
+        status: "succeeded",
+        progress: 100,
+        error: null,
+      }),
+    );
+  });
+
   test("continues other page tasks after one deterministic PUT failure", async () => {
     const files = [file("001.png", 1), file("002.png", 2), file("003.png", 3)];
     hashMocks.hashPageFile

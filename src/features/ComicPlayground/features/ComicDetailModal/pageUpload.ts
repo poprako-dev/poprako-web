@@ -5,11 +5,7 @@ import {
   updatePage,
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
-import type {
-  PageInfo,
-  ReservedPage,
-  UploadProgressCallbacks,
-} from "@/types";
+import type { PageInfo, ReservedPage, UploadProgressCallbacks } from "@/types";
 import { getFileExtension } from "./utils";
 import { hashPageFile } from "./pageHash";
 import {
@@ -19,7 +15,7 @@ import {
   putPageUploadTask,
 } from "./pageUploadStore";
 
-const WORKER_CONCURRENCY = 8;
+const WORKER_CONCURRENCY = 4;
 const PUT_ATTEMPTS = 3;
 const MARK_ATTEMPTS = 3;
 
@@ -68,6 +64,12 @@ type PreparedFile = {
   imageHash: string;
   extension: string;
   fileIndex: number;
+};
+
+type ExistingManifestEntry = {
+  pageId: string;
+  imageHash: string;
+  extension: string;
 };
 
 const queue: QueueEntry[] = [];
@@ -154,7 +156,10 @@ function succeedTask(task: RuntimeTask): void {
   task.callbacks?.onPageUploaded(task.pageId, task.file);
 }
 
-async function retryMarkUploaded(task: RuntimeTask, imageVersion: number): Promise<void> {
+async function retryMarkUploaded(
+  task: RuntimeTask,
+  imageVersion: number,
+): Promise<void> {
   let lastError = "等待对象存储确认失败";
 
   for (let attempt = 1; attempt <= MARK_ATTEMPTS; attempt += 1) {
@@ -186,7 +191,9 @@ function canRetryPut(httpStatus?: number, failureKind?: string): boolean {
   return httpStatus >= 500;
 }
 
-async function reserveRetrySlot(task: RuntimeTask): Promise<ReservedPage["slot"]> {
+async function reserveRetrySlot(
+  task: RuntimeTask,
+): Promise<ReservedPage["slot"]> {
   return serializeChapterReserve(task.chapterId, async () => {
     const result = await reserveExistingPageUpload({
       pageId: task.pageId,
@@ -245,8 +252,13 @@ async function executeTask(task: RuntimeTask): Promise<boolean> {
         task.file,
         slot.headers,
         (progress) => {
-          patchPageUploadTask(task.taskId, { progress: Math.min(progress, 99) });
-          task.callbacks?.onPageUploadProgress?.(task.pageId, Math.min(progress, 99));
+          patchPageUploadTask(task.taskId, {
+            progress: Math.min(progress, 99),
+          });
+          task.callbacks?.onPageUploadProgress?.(
+            task.pageId,
+            Math.min(progress, 99),
+          );
         },
         task.abortController.signal,
       );
@@ -264,8 +276,8 @@ async function executeTask(task: RuntimeTask): Promise<boolean> {
       }
 
       if (
-        attempt >= PUT_ATTEMPTS
-        || !canRetryPut(uploadResult.httpStatus, uploadResult.failureKind)
+        attempt >= PUT_ATTEMPTS ||
+        !canRetryPut(uploadResult.httpStatus, uploadResult.failureKind)
       ) {
         throw new Error(uploadResult.error);
       }
@@ -368,7 +380,7 @@ async function prepareFile(
   }
 }
 
-function existingManifest(pages: PageInfo[]) {
+function existingManifest(pages: PageInfo[]): ExistingManifestEntry[] {
   return pages.map((page) => {
     if (!page.imageHash || !page.extension) {
       throw new Error(`页面 ${page.id} 缺少图片身份信息，请刷新后重试`);
@@ -398,27 +410,51 @@ export async function startChapterPageUpload(
       if (!pagesResult.success) throw new Error(pagesResult.error);
 
       const manifest = existingManifest(pagesResult.data);
-      const identities = new Set(
-        manifest.map((page) => imageIdentity(page.imageHash, page.extension)),
-      );
-      const uniqueFiles = preparedFiles.filter((prepared) => {
+      const pagesByIdentity = new Map<string, ExistingManifestEntry[]>();
+      for (const page of manifest) {
+        const identity = imageIdentity(page.imageHash, page.extension);
+        const matchingPages = pagesByIdentity.get(identity) ?? [];
+        matchingPages.push(page);
+        pagesByIdentity.set(identity, matchingPages);
+      }
+
+      const preparedFilesByPageId = new Map<string, PreparedFile>();
+      const newFiles: PreparedFile[] = [];
+
+      for (const prepared of preparedFiles) {
         const identity = imageIdentity(prepared.imageHash, prepared.extension);
-        if (identities.has(identity)) {
-          patchPageUploadTask(prepared.taskId, {
-            status: "succeeded",
-            error: "已跳过重复图片",
-          });
-          return false;
+        const matchingPages = pagesByIdentity.get(identity);
+        const matchingPage = matchingPages?.shift();
+        if (matchingPage) {
+          preparedFilesByPageId.set(matchingPage.pageId, prepared);
+          continue;
         }
-        identities.add(identity);
-        return true;
+
+        newFiles.push(prepared);
+      }
+
+      const manifestInputs = manifest.map((page) => {
+        const prepared = preparedFilesByPageId.get(page.pageId);
+        if (!prepared) {
+          return {
+            pageId: page.pageId,
+            imageHash: page.imageHash,
+            extension: page.extension,
+          };
+        }
+        return {
+          pageId: page.pageId,
+          imageHash: page.imageHash,
+          newByteLen: prepared.file.size,
+          extension: page.extension,
+        };
       });
 
       const reserveResult = await reserveChapterPages({
         chapterId,
         pages: [
-          ...manifest,
-          ...uniqueFiles.map((prepared) => ({
+          ...manifestInputs,
+          ...newFiles.map((prepared) => ({
             imageHash: prepared.imageHash,
             newByteLen: prepared.file.size,
             extension: prepared.extension,
@@ -428,23 +464,40 @@ export async function startChapterPageUpload(
       if (!reserveResult.success) throw new Error(reserveResult.error);
 
       if (
-        reserveResult.data.pages.length
-        !== manifest.length + uniqueFiles.length
+        reserveResult.data.pages.length !==
+        manifest.length + newFiles.length
       ) {
         throw new Error("预留页面数量与清单数量不一致");
       }
 
-      const reservedPages = reserveResult.data.pages.slice(manifest.length);
+      const uploadPages: Array<{ page: ReservedPage; prepared: PreparedFile }> = [];
+      for (const [index, page] of reserveResult.data.pages.entries()) {
+        const prepared = index < manifest.length
+          ? preparedFilesByPageId.get(page.pageId)
+          : newFiles[index - manifest.length];
+        if (!prepared) continue;
+        if (!page.slot) {
+          patchPageUploadTask(prepared.taskId, {
+            pageId: page.pageId,
+            index: page.index,
+            status: "succeeded",
+            progress: 100,
+            error: null,
+          });
+          continue;
+        }
+        uploadPages.push({ page, prepared });
+      }
+
       callbacks?.onPagesReserved(
-        reservedPages.map((page, index) => ({
+        uploadPages.map(({ page, prepared }) => ({
           pageId: page.pageId,
           index: page.index,
-          fileIndex: uniqueFiles[index].fileIndex,
+          fileIndex: prepared.fileIndex,
         })),
       );
 
-      const taskCompletions = reservedPages.map((page, index) => {
-        const prepared = uniqueFiles[index];
+      const taskCompletions = uploadPages.map(({ page, prepared }) => {
         patchPageUploadTask(prepared.taskId, {
           pageId: page.pageId,
           index: page.index,
@@ -471,8 +524,8 @@ export async function startChapterPageUpload(
 
       return {
         batchId,
-        reservedCount: reservedPages.length,
-        skippedCount: preparedFiles.length - uniqueFiles.length,
+        reservedCount: uploadPages.length,
+        skippedCount: preparedFiles.length - uploadPages.length,
         completion: Promise.all(taskCompletions).then(completionSummary),
       };
     });
