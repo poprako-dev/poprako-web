@@ -51,7 +51,7 @@ export default function StatusOptionBar({
 
   return (
     <div className="flex w-full divide-x divide-stone-200">
-      {canSwitchView ? (
+      {canSwitchView && (
         <button
           title={`当前：${modeLabel[view].replace("模式", "视图")}，点击切换视图`}
           aria-label={`切换到${view === "proofread" ? "翻译" : "校对"}视图`}
@@ -60,14 +60,6 @@ export default function StatusOptionBar({
         >
           {modeIcon[view]}
         </button>
-      ) : (
-        <div
-          title={modeLabel[currMode]}
-          aria-label={modeLabel[currMode]}
-          className={clsx(btnBase, "bg-stone-100 text-stone-500")}
-        >
-          {modeIcon[currMode]}
-        </div>
       )}
       <button
         title="切换重定位模式"

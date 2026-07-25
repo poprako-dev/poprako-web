@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { ListCheck } from "lucide-react";
 import type { TranslatorMode } from "@/types/translatorMode";
-import { unitId, type UnitInfo, type UnitEdit } from "@/types/unit";
+import { unitId, unitIsProofread, type UnitInfo, type UnitEdit } from "@/types/unit";
 import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
@@ -51,12 +51,13 @@ export default function UnitList({
     mode === "translate" ? TranslateModeUnitItem : ProofreadModeUnitItem;
 
   const { showToast } = useToastStore();
+  const allUnitsProofread = units.length > 0 && units.every(unitIsProofread);
 
   const proofreadAll = () => {
     units.forEach((unit) =>
-      onModifyUnit?.(unitId(unit), { isProofread: true }),
+      onModifyUnit?.(unitId(unit), { isProofread: !allUnitsProofread }),
     );
-    showToast("全部校对已确认", "success");
+    showToast(allUnitsProofread ? "已取消全部校对" : "全部校对已确认", "success");
   };
 
   return (
@@ -79,12 +80,14 @@ export default function UnitList({
       {mode === "proofread" && !enableReadOnly && (
         <button
           type="button"
-          title="全部确认校对"
+          title={allUnitsProofread ? "取消全部校对" : "全部确认校对"}
           onClick={proofreadAll}
           className={clsx(
             "flex w-full shrink-0 items-center justify-center border-t-2",
-            "border-gray-300 bg-stone-50 py-2 text-gray-700",
-            "transition-colors hover:bg-stone-200 hover:text-gray-900",
+            "border-gray-300 bg-stone-50 py-2",
+            allUnitsProofread
+              ? "text-red-600 hover:bg-red-50 hover:text-red-700"
+              : "text-gray-700 hover:bg-stone-200 hover:text-gray-900",
           )}
         >
           <ListCheck size={22} />

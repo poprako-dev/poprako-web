@@ -102,7 +102,9 @@ export default function BaseTranslator({
 
   const readOnly = mode === "readOnly";
   const canSwitchView = mode === "proofread" && canTranslate;
-  const isEditingView = !readOnly && view === mode;
+  const canEditView = !readOnly && (
+    view === "translate" ? canTranslate : canProofread
+  );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
@@ -428,18 +430,18 @@ export default function BaseTranslator({
         units={unitBuf}
         mode={view}
         isLoading={isLoadingPage}
-        isUnitCreationEnabled={isEditingView ? isUnitCreationEnabled : false}
+        isUnitCreationEnabled={canEditView ? isUnitCreationEnabled : false}
         focusedUnitId={focusedUnitId}
         onFocusUnit={setFocusedUnitId}
-        onMoveUnit={isEditingView ? handleMoveUnit : undefined}
-        onAddUnit={isEditingView ? handleAddUnit : undefined}
-        onDeleteUnit={isEditingView ? handleDeleteUnit : undefined}
+        onMoveUnit={canEditView ? handleMoveUnit : undefined}
+        onAddUnit={canEditView ? handleAddUnit : undefined}
+        onDeleteUnit={canEditView ? handleDeleteUnit : undefined}
         onToggleBubble={
-          isEditingView ? (targetId) =>
+          canEditView ? (targetId) =>
             handleModifyUnit(targetId, { isBubble: !unitIsBubble(unitBufRef.current.find(u => unitId(u) === targetId)!) })
             : undefined
         }
-        enableReadOnly={!isEditingView}
+        enableReadOnly={!canEditView}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
       <div className="absolute top-2 left-2 flex items-center gap-2">
@@ -535,8 +537,8 @@ export default function BaseTranslator({
           focusedUnitId={focusedUnitId}
           mode={view}
           onFocusUnit={setFocusedUnitId}
-          onModifyUnit={isEditingView ? handleModifyUnit : undefined}
-          enableReadOnly={!isEditingView}
+          onModifyUnit={canEditView ? handleModifyUnit : undefined}
+          enableReadOnly={!canEditView}
           specialCharInsertRequest={specialCharInsertRequest}
           onSpecialCharUse={handleSpecialCharUse}
         />
