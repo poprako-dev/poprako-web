@@ -32,7 +32,10 @@ const DISPLAY_KEY_MAP: Record<string, string> = {
 
 export function formatKeys(keys: string[]): string {
   return keys
-    .map((k) => DISPLAY_KEY_MAP[k] ?? k)
+    .map((k) => {
+      if (k === "Alt" && navigator.platform.includes("Mac")) return "Opt";
+      return DISPLAY_KEY_MAP[k] ?? k;
+    })
     .map((s) => s.toUpperCase())
     .join(" + ");
 }
@@ -52,7 +55,10 @@ export function matchesShortcut(e: KeyboardEvent, keys: string[]): boolean {
   if (e.altKey !== wantAlt) return false;
   if (e.metaKey !== wantMeta) return false;
 
-  return e.key.toLowerCase() === nonModifiers[0].toLowerCase();
+  const expectedKey = nonModifiers[0];
+  if (/^\d$/.test(expectedKey)) return e.code === `Digit${expectedKey}`;
+
+  return e.key.toLowerCase() === expectedKey.toLowerCase();
 }
 
 export function hasConflict(

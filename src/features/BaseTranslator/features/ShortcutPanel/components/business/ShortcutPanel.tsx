@@ -33,7 +33,8 @@ export default function ShortcutPanel({
     const handleKeyDown = (e: KeyboardEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      recordedKeys.current.add(e.key);
+      const key = e.code.startsWith("Digit") ? e.code.slice(-1) : e.key;
+      recordedKeys.current.add(key);
     };
 
     const handleKeyUp = () => {

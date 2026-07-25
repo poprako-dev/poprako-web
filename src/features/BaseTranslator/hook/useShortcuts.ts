@@ -73,17 +73,17 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
   {
     action: "quickSpecialChar1",
     label: "输入优选符号#1",
-    keys: ["Control", "F1"],
+    keys: ["Alt", "1"],
   },
   {
     action: "quickSpecialChar2",
     label: "输入优选符号#2",
-    keys: ["Control", "F2"],
+    keys: ["Alt", "2"],
   },
   {
     action: "quickSpecialChar3",
     label: "输入优选符号#3",
-    keys: ["Control", "F3"],
+    keys: ["Alt", "3"],
   },
   {
     action: "save",
