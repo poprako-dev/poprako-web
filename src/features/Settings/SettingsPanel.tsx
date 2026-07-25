@@ -10,6 +10,8 @@ import TeamSwitchModal from "./TeamSwitchModal";
 import UserAvatarUploadModal from "./UserAvatarUploadModal";
 import PasswordResetDialog from "./PasswordResetDialog";
 import type { TeamConfig } from "@/features/AppSidebar/types/types";
+import { cancelAllPageUploads } from
+  "@/features/ComicPlayground/features/ComicDetailModal/pageUpload";
 
 export default function SettingsPanel() {
   const navigate = useNavigate();
@@ -57,6 +59,7 @@ export default function SettingsPanel() {
         "error",
       );
     } finally {
+      cancelAllPageUploads();
       setAccessToken(null);
       setLoginState(null);
       navigate("/login");

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, fn, userEvent, within } from "storybook/test";
 import PageList from "@/features/PageList/components/business/PageList";
 import type { PageInfo } from "@/types/page";
 
@@ -94,5 +95,47 @@ export const WithDeleteAndUpload: Story = {
         files.map((f) => f.name),
       );
     },
+  },
+};
+
+const navigatePendingPage = fn();
+const reuploadPendingPage = fn();
+
+export const PendingUploadFailed: Story = {
+  name: "待上传失败（不可导航、可重传）",
+  args: {
+    pages: makePages(1),
+    onClickPage: navigatePendingPage,
+    canReuploadPage: () => true,
+    onReuploadPage: reuploadPendingPage,
+    uploadStatusByPageId: {
+      "page-1": "failed",
+    },
+    uploadErrorByPageId: {
+      "page-1": "上传超时",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    navigatePendingPage.mockClear();
+    reuploadPendingPage.mockClear();
+
+    const canvas = within(canvasElement);
+    const pageBadge = canvas.getAllByText("P2")[0];
+    const pageCard = pageBadge.closest(".aspect-3\\/4");
+    expect(pageCard).not.toBeNull();
+
+    await userEvent.click(pageCard!);
+    expect(navigatePendingPage).not.toHaveBeenCalled();
+
+    const fileInput = canvasElement.querySelector<HTMLInputElement>(
+      'input[type="file"]:not([multiple])',
+    );
+    expect(fileInput).not.toBeNull();
+
+    const replacement = new File(["replacement"], "replacement.png", {
+      type: "image/png",
+    });
+    await userEvent.upload(fileInput!, replacement);
+    expect(reuploadPendingPage).toHaveBeenCalledWith("page-1", replacement);
   },
 };

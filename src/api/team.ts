@@ -13,10 +13,10 @@ export async function reserveTeamAvatarUpload(
 ): Promise<Result<ReserveTeamAvatarResult>> {
   const res = await api.post<
     RawReserveTeamAvatarResult,
-    { image_hash: string; byte_length: number; ext: string }
+    { image_hash: string; new_byte_len: number; ext: string }
   >(`/teams/${teamId}/avatar/reserve`, {
     image_hash: args.imageHash,
-    byte_length: args.byteLength,
+    new_byte_len: args.newByteLen,
     ext: args.extension,
   });
   if (!res.success) return res;

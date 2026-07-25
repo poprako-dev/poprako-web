@@ -70,7 +70,7 @@ export type RawReserveChapterPagesArgs = {
   pages: Array<{
     page_id?: string;
     image_hash: string;
-    byte_length: number;
+    new_byte_len?: number;
     ext: string;
   }>;
 };
@@ -82,7 +82,7 @@ export function unwrapRawReserveChapterPagesArgs(
     pages: raw.pages.map((page) => ({
       pageId: page.page_id,
       imageHash: page.image_hash,
-      byteLength: page.byte_length,
+      newByteLen: page.new_byte_len,
       extension: page.ext,
     })),
   };

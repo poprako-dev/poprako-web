@@ -394,7 +394,7 @@ export default function TeamOption({
       const { imageHash } = await hashPageFile(file);
       const reserveRes = await reserveTeamAvatarUpload(activeTeam.id, {
         imageHash,
-        byteLength: file.size,
+        newByteLen: file.size,
         extension,
       });
       if (!reserveRes.success) {

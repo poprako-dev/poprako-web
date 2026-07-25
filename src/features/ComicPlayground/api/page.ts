@@ -46,7 +46,7 @@ export async function reserveChapterPages(
     pages: args.pages.map((page) => ({
       page_id: page.pageId,
       image_hash: page.imageHash,
-      byte_length: page.byteLength,
+      new_byte_len: page.newByteLen,
       ext: page.extension,
     })),
   };
@@ -68,13 +68,13 @@ export async function reserveChapterPages(
 type ReserveExistingPageUploadArgs = {
   pageId: string;
   imageHash: string;
-  byteLength: number;
+  newByteLen: number;
   extension: string;
 };
 
 type RawReserveExistingPageUploadArgs = {
   image_hash: string;
-  byte_length: number;
+  new_byte_len: number;
   ext: string;
 };
 
@@ -86,7 +86,7 @@ export async function reserveExistingPageUpload(
 ): Promise<Result<ReserveExistingPageUploadResult>> {
   const rawArgs: RawReserveExistingPageUploadArgs = {
     image_hash: args.imageHash,
-    byte_length: args.byteLength,
+    new_byte_len: args.newByteLen,
     ext: args.extension,
   };
 
@@ -158,30 +158,55 @@ export async function uploadToPresignedUrl(
   file: File,
   headersOrOnProgress: Record<string, string> | ((percent: number) => void) = {},
   onProgress?: (percent: number) => void,
-): Promise<Result<void> & { httpStatus?: number }> {
+  signal?: AbortSignal,
+): Promise<
+  Result<void> & {
+    httpStatus?: number;
+    failureKind?: "http" | "timeout" | "network" | "aborted";
+  }
+> {
   const headers = typeof headersOrOnProgress === "function" ? {} : headersOrOnProgress;
   const progress = typeof headersOrOnProgress === "function" ? headersOrOnProgress : onProgress;
 
   return new Promise((resolve) => {
     const xhr = new XMLHttpRequest();
+    let settled = false;
+
+    const finish = (
+      result: Result<void> & {
+        httpStatus?: number;
+        failureKind?: "http" | "timeout" | "network" | "aborted";
+      },
+    ) => {
+      if (settled) return;
+      settled = true;
+      signal?.removeEventListener("abort", abortUpload);
+      resolve(result);
+    };
+
+    const abortUpload = () => xhr.abort();
 
     xhr.open("PUT", putUrl, true);
     for (const [name, value] of Object.entries(headers)) xhr.setRequestHeader(name, value);
     xhr.timeout = 120_000; // 120s 超时，避免永久挂起
+    signal?.addEventListener("abort", abortUpload, { once: true });
+    if (signal?.aborted) {
+      abortUpload();
+      return;
+    }
 
     xhr.upload.onprogress = (event) => {
       if (!event.lengthComputable) return;
       const percent = Math.max(
         0,
-        Math.min(100, Math.round((event.loaded / event.total) * 100)),
+        Math.min(99, Math.round((event.loaded / event.total) * 100)),
       );
       progress?.(percent);
     };
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        progress?.(100);
-        resolve({ success: true, data: undefined, httpStatus: xhr.status });
+        finish({ success: true, data: undefined, httpStatus: xhr.status });
         return;
       }
 
@@ -191,19 +216,22 @@ export async function uploadToPresignedUrl(
           `[uploadToPresignedUrl] S3 错误 (HTTP ${xhr.status}):${s3Detail}`,
         );
       }
-      resolve({
+      finish({
         success: false,
         error: `上传失败: HTTP ${xhr.status}`,
         httpStatus: xhr.status,
+        failureKind: "http",
       });
     };
 
     xhr.ontimeout = () => {
       const host = extractUrlHost(putUrl);
+      const sizeMiB = (file.size / 1024 / 1024).toFixed(1);
       console.error(
-        `[uploadToPresignedUrl] 上传超时 (120s), 目标: ${host}, 文件: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`,
+        `[uploadToPresignedUrl] 上传超时 (120s), 目标: ${host}, `
+          + `文件: ${file.name} (${sizeMiB}MB)`,
       );
-      resolve({ success: false, error: "上传超时" });
+      finish({ success: false, error: "上传超时", failureKind: "timeout" });
     };
 
     xhr.onerror = () => {
@@ -211,19 +239,20 @@ export async function uploadToPresignedUrl(
       console.error(
         `[uploadToPresignedUrl] 网络错误, 目标: ${host}, 文件: ${file.name}`,
       );
-      resolve({ success: false, error: "上传失败" });
+      finish({ success: false, error: "上传失败", failureKind: "network" });
     };
 
     xhr.onabort = () => {
-      resolve({ success: false, error: "上传已取消" });
+      finish({ success: false, error: "上传已取消", failureKind: "aborted" });
     };
 
     try {
       xhr.send(file);
     } catch (err) {
-      resolve({
+      finish({
         success: false,
         error: err instanceof Error ? err.message : "上传失败",
+        failureKind: "network",
       });
     }
   });

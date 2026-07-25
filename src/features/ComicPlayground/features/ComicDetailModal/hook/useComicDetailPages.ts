@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
-import { updatePage, uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
-import type { PageInfo, UploadProgressCallbacks } from "@/types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { PageInfo } from "@/types";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type { ComicDetailModalProps } from "../types";
-import { getFileExtension } from "../utils";
-import { hashPageFile } from "../pageHash";
+import {
+  startChapterPageUpload,
+  startPageReupload,
+} from "../pageUpload";
+import {
+  usePageUploadTaskStore,
+  type PageUploadTaskStatus,
+  type PageUploadTaskView,
+} from "../pageUploadStore";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -22,6 +28,27 @@ type Args = {
   showToast: ShowToast;
 };
 
+function isActiveTask(status: PageUploadTaskStatus): boolean {
+  return (
+    status === "preparing"
+    || status === "queued"
+    || status === "uploading"
+    || status === "confirming"
+  );
+}
+
+function latestTasksByPage(
+  tasks: Record<string, PageUploadTaskView>,
+  chapterId: string | null,
+): Map<string, PageUploadTaskView> {
+  const latest = new Map<string, PageUploadTaskView>();
+  for (const task of Object.values(tasks)) {
+    if (task.chapterId !== chapterId || !task.pageId) continue;
+    latest.set(task.pageId, task);
+  }
+  return latest;
+}
+
 export function useComicDetailPages({
   chapterId,
   comicId,
@@ -35,26 +62,28 @@ export function useComicDetailPages({
   reloadLoadedChapters,
   showToast,
 }: Args) {
-  const [pages, setPages] = useState<PageInfo[]>([]);
-  const [reuploadingPageIds, setReuploadingPageIds] = useState<Record<string, boolean>>({});
-  const [uploadProgressByPageId, setUploadProgressByPageId] = useState<Record<string, number>>(
-    {},
-  );
+  const [serverPages, setServerPages] = useState<PageInfo[]>([]);
   const [isDeletingChapterPages, setIsDeletingChapterPages] = useState(false);
+  const uploadTasks = usePageUploadTaskStore((state) => state.tasks);
+  const chapterRevision = usePageUploadTaskStore((state) =>
+    chapterId ? state.chapterRevision[chapterId] ?? 0 : 0,
+  );
+  const taskByPageId = useMemo(
+    () => latestTasksByPage(uploadTasks, chapterId),
+    [chapterId, uploadTasks],
+  );
 
   useEffect(() => {
     if (chapterId && isSelectedChapterAvailable) return;
     /* eslint-disable react-hooks/set-state-in-effect */
-    setPages([]);
-    setUploadProgressByPageId({});
+    setServerPages([]);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [chapterId, isSelectedChapterAvailable]);
 
   useEffect(() => {
     if (!chapterId || !isSelectedChapterAvailable) return;
     /* eslint-disable react-hooks/set-state-in-effect */
-    setPages([]);
-    setUploadProgressByPageId({});
+    setServerPages([]);
     /* eslint-enable react-hooks/set-state-in-effect */
     onLoadPages(chapterId)
       .then((res) => {
@@ -63,10 +92,10 @@ export function useComicDetailPages({
           showToast("加载页面失败", "error");
           return;
         }
-        setPages(res.data);
+        setServerPages(res.data);
       })
-      .catch((err) => {
-        console.error("[ComicDetailModal] 加载页面异常:", err);
+      .catch((error) => {
+        console.error("[ComicDetailModal] 加载页面异常:", error);
         showToast("加载页面失败", "error");
       });
   }, [chapterId, isSelectedChapterAvailable, onLoadPages, showToast]);
@@ -78,143 +107,106 @@ export function useComicDetailPages({
       showToast(res.error, "error");
       return;
     }
-    setPages(res.data);
-    setUploadProgressByPageId({});
+    setServerPages(res.data);
   }, [chapterId, onLoadPages, showToast]);
 
-  const handleAddRawPages = useCallback(
-    async (files: File[]) => {
-      if (!chapterId || !onAddPages) return;
+  useEffect(() => {
+    if (!chapterId || chapterRevision === 0) return;
+    const timeoutId = globalThis.setTimeout(() => {
+      void Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
+    }, 0);
+    return () => globalThis.clearTimeout(timeoutId);
+  }, [
+    chapterId,
+    chapterRevision,
+    reloadCurrentPages,
+    reloadLoadedChapters,
+  ]);
 
-      const blobUrls: string[] = [];
-      const tempPageIds = files.map(
-        (_, index) =>
-          `tmp-page-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
-      );
-      const pendingPageIds = new Set<string>(tempPageIds);
-      const startIndex = pages.length;
+  const pages = useMemo(() => {
+    const merged = [...serverPages];
+    const serverPageIds = new Set(serverPages.map((page) => page.id));
 
-      const tempPages: PageInfo[] = tempPageIds.map((tempId, index) => ({
-        id: tempId,
-        chapterId,
-        index: startIndex + index,
+    for (const task of taskByPageId.values()) {
+      if (serverPageIds.has(task.pageId!) || task.index === null) continue;
+      merged.push({
+        id: task.pageId!,
+        chapterId: task.chapterId,
+        index: task.index,
         imageUrl: "",
         isUploaded: false,
         creatorId: currentUserId ?? "",
         totalUnitCount: 0,
         translatedUnitCount: 0,
         proofreadUnitCount: 0,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      }));
-      setPages((prev) => [...prev, ...tempPages]);
-      setUploadProgressByPageId((prev) => {
-        const next = { ...prev };
-        for (const tempId of tempPageIds) next[tempId] = 0;
-        return next;
+        createdAt: 0,
+        updatedAt: 0,
       });
+    }
 
-      const callbacks: UploadProgressCallbacks = {
-        onPagesReserved: (pendingPages) => {
-          pendingPageIds.clear();
-          for (let i = 0; i < pendingPages.length; i++) {
-            pendingPageIds.add(pendingPages[i].pageId);
-          }
+    return merged.sort((left, right) => left.index - right.index);
+  }, [currentUserId, serverPages, taskByPageId]);
 
-          // Build fileIndex → reservedPageId map for correct mapping after dedup
-          const fileIndexToPageId = new Map<number, string>();
-          const reservedFileIndices = new Set<number>();
-          for (const pp of pendingPages) {
-            fileIndexToPageId.set(pp.fileIndex, pp.pageId);
-            reservedFileIndices.add(pp.fileIndex);
-          }
+  const uploadProgressByPageId = useMemo(() => {
+    const progress: Record<string, number> = {};
+    for (const [pageId, task] of taskByPageId) {
+      if (isActiveTask(task.status)) progress[pageId] = task.progress;
+    }
+    return progress;
+  }, [taskByPageId]);
 
-          // Collect temp IDs for duplicates that weren't reserved
-          const unmappedTempIds = new Set<string>();
-          for (let i = 0; i < tempPageIds.length; i++) {
-            if (!reservedFileIndices.has(i)) {
-              unmappedTempIds.add(tempPageIds[i]);
-            }
-          }
+  const uploadStatusByPageId = useMemo(() => {
+    const statuses: Record<string, PageUploadTaskStatus> = {};
+    for (const [pageId, task] of taskByPageId) {
+      statuses[pageId] = task.status;
+    }
+    return statuses;
+  }, [taskByPageId]);
 
-          setPages((prev) => {
-            const idMap = new Map<string, string>();
-            for (let i = 0; i < pendingPages.length; i++) {
-              const tempId = tempPageIds[pendingPages[i].fileIndex];
-              const reservedPageId = pendingPages[i].pageId;
-              if (tempId) idMap.set(tempId, reservedPageId);
-            }
+  const uploadErrorByPageId = useMemo(() => {
+    const errors: Record<string, string> = {};
+    for (const [pageId, task] of taskByPageId) {
+      if (task.status === "failed" && task.error) errors[pageId] = task.error;
+    }
+    return errors;
+  }, [taskByPageId]);
 
-            return prev
-              .filter((page) => !unmappedTempIds.has(page.id))
-              .map((page) => {
-                const reservedPageId = idMap.get(page.id);
-                if (!reservedPageId) return page;
-                return { ...page, id: reservedPageId };
-              });
-          });
+  const reuploadingPageIds = useMemo(() => {
+    const active: Record<string, boolean> = {};
+    for (const [pageId, task] of taskByPageId) {
+      if (isActiveTask(task.status)) active[pageId] = true;
+    }
+    return active;
+  }, [taskByPageId]);
 
-          setUploadProgressByPageId((prev) => {
-            const next = { ...prev };
-            for (const unmappedId of unmappedTempIds) {
-              delete next[unmappedId];
-            }
-            for (let i = 0; i < pendingPages.length; i++) {
-              const tempId = tempPageIds[pendingPages[i].fileIndex];
-              const reservedPageId = pendingPages[i].pageId;
-              if (!tempId) continue;
-              next[reservedPageId] = next[tempId] ?? 0;
-              delete next[tempId];
-            }
-            return next;
-          });
-        },
-        onPageUploadProgress: (pageId, percent) => {
-          setUploadProgressByPageId((prev) => ({ ...prev, [pageId]: percent }));
-        },
-        onPageUploaded: (pageId, file) => {
-          const blobUrl = URL.createObjectURL(file);
-          blobUrls.push(blobUrl);
-          setUploadProgressByPageId((prev) => {
-            if (!(pageId in prev)) return prev;
-            const next = { ...prev };
-            delete next[pageId];
-            return next;
-          });
-          setPages((prev) =>
-            prev.map((page) =>
-              page.id === pageId
-                ? {
-                    ...page,
-                    imageUrl: blobUrl,
-                    imageThumbnailUrl: blobUrl,
-                    isUploaded: true,
-                  }
-                : page,
-            ),
-          );
-        },
-      };
+  const handleAddRawPages = useCallback(
+    async (files: File[]) => {
+      if (!chapterId || !onAddPages) return;
 
       try {
-        await onAddPages(chapterId, files, callbacks);
-        for (const url of blobUrls) URL.revokeObjectURL(url);
-        setUploadProgressByPageId({});
-        await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
-      } catch (err) {
-        for (const url of blobUrls) URL.revokeObjectURL(url);
-        setPages((prev) => prev.filter((page) => !pendingPageIds.has(page.id)));
-        setUploadProgressByPageId((prev) => {
-          const next = { ...prev };
-          for (const pageId of pendingPageIds) delete next[pageId];
-          for (const tempId of tempPageIds) delete next[tempId];
-          return next;
+        const started = await startChapterPageUpload(chapterId, files);
+        if (started.skippedCount > 0) {
+          showToast(
+            `已跳过 ${started.skippedCount} 张重复图片，`
+              + `开始上传 ${started.reservedCount} 张`,
+            "info",
+          );
+        }
+
+        void started.completion.then((summary) => {
+          if (summary.failed > 0) {
+            showToast(
+              `${summary.failed} 张图片上传失败，可在对应页面重传`,
+              "error",
+            );
+          }
         });
-        console.error("[ComicDetailModal] 上传页面失败:", err);
-        showToast(err instanceof Error ? err.message : "上传页面失败", "error");
+      } catch (error) {
+        console.error("[ComicDetailModal] 预留页面失败:", error);
+        showToast(error instanceof Error ? error.message : "预留页面失败", "error");
       }
     },
-    [chapterId, currentUserId, onAddPages, pages.length, reloadCurrentPages, reloadLoadedChapters, showToast],
+    [chapterId, onAddPages, showToast],
   );
 
   const handleDeleteAllChapterPages = useCallback(async () => {
@@ -232,85 +224,38 @@ export function useComicDetailPages({
 
     await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
     showToast("页面已清空", "success");
-  }, [chapterId, onDeleteChapterPages, reloadCurrentPages, reloadLoadedChapters, showToast]);
+  }, [
+    chapterId,
+    onDeleteChapterPages,
+    reloadCurrentPages,
+    reloadLoadedChapters,
+    showToast,
+  ]);
 
   const handleReuploadPage = useCallback(
     async (pageId: string, file: File) => {
-      if (!onReservePageUpload || reuploadingPageIds[pageId]) return;
+      if (!chapterId || !onReservePageUpload || reuploadingPageIds[pageId]) return;
 
-      const fileExtension = getFileExtension(file);
-      if (!fileExtension) {
-        showToast("请选择带后缀的图片文件", "error");
-        return;
-      }
-      if (file.size < 1 || file.size > 20 * 1024 * 1024) {
-        showToast("图片大小必须在 1 至 20 MiB 之间", "error");
-        return;
-      }
-
-      setReuploadingPageIds((prev) => ({ ...prev, [pageId]: true }));
-      setUploadProgressByPageId((prev) => ({ ...prev, [pageId]: 0 }));
       try {
-        const { imageHash } = await hashPageFile(file);
-        const reserveResult = await onReservePageUpload({
-          pageId,
-          imageHash,
-          byteLength: file.size,
-          extension: fileExtension,
+        const started = await startPageReupload(chapterId, pageId, file);
+        void started.completion.then((summary) => {
+          if (summary.succeeded > 0) {
+            showToast("重上传成功", "success");
+            return;
+          }
+          showToast("重上传失败，请检查对应页面", "error");
         });
-        if (!reserveResult.success) {
-          console.error("[ComicDetailModal] 重上传预留失败:", reserveResult);
-          showToast(reserveResult.error, "error");
-          return;
-        }
-
-        const slot = reserveResult.data.slot;
-        if (slot === null) {
-          await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
-          showToast("页面图片未发生变化", "success");
-          return;
-        }
-
-        const uploadResult = await uploadToPresignedUrl(
-          slot.putUrl,
-          file,
-          slot.headers,
-          (percent) => {
-            setUploadProgressByPageId((prev) => ({ ...prev, [pageId]: percent }));
-          },
-        );
-        if (!uploadResult.success) {
-          console.error("[ComicDetailModal] 重上传文件失败:", uploadResult.error);
-          showToast(uploadResult.error, "error");
-          return;
-        }
-
-        const markResult = await updatePage(reserveResult.data.pageId, {
-          isUploaded: true,
-          imageVersion: slot.imageVersion,
-        });
-        if (!markResult.success) {
-          console.error("[ComicDetailModal] 标记重上传状态失败:", markResult.error);
-          showToast(markResult.error, "error");
-          return;
-        }
-
-        await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
-        showToast("重上传成功", "success");
-      } catch (err) {
-        console.error("[ComicDetailModal] 重上传异常:", err);
-        showToast(err instanceof Error ? err.message : "重上传失败", "error");
-      } finally {
-        setReuploadingPageIds((prev) => ({ ...prev, [pageId]: false }));
-        setUploadProgressByPageId((prev) => {
-          if (!(pageId in prev)) return prev;
-          const next = { ...prev };
-          delete next[pageId];
-          return next;
-        });
+      } catch (error) {
+        console.error("[ComicDetailModal] 重上传预留失败:", error);
+        showToast(error instanceof Error ? error.message : "重上传失败", "error");
       }
     },
-    [onReservePageUpload, reuploadingPageIds, reloadCurrentPages, reloadLoadedChapters, showToast],
+    [
+      chapterId,
+      onReservePageUpload,
+      reuploadingPageIds,
+      showToast,
+    ],
   );
 
   const reloadChapterStats = useCallback(async () => {
@@ -330,9 +275,9 @@ export function useComicDetailPages({
 
   return {
     pages,
-    setPages,
     uploadProgressByPageId,
-    setUploadProgressByPageId,
+    uploadStatusByPageId,
+    uploadErrorByPageId,
     reuploadingPageIds,
     isDeletingChapterPages,
     reloadCurrentPages,

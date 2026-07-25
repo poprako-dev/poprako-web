@@ -162,6 +162,8 @@ export default function ComicDetailModal({
   const {
     pages,
     uploadProgressByPageId,
+    uploadStatusByPageId,
+    uploadErrorByPageId,
     reuploadingPageIds,
     isDeletingChapterPages,
     reloadCurrentPages,
@@ -395,6 +397,8 @@ export default function ComicDetailModal({
       reuploadAccept="image/*"
       accept="image/*"
       uploadProgressByPageId={uploadProgressByPageId}
+      uploadStatusByPageId={uploadStatusByPageId}
+      uploadErrorByPageId={uploadErrorByPageId}
     />
   );
 

@@ -320,7 +320,7 @@ export default function Workspace() {
     async (args: {
       pageId: string;
       imageHash: string;
-      byteLength: number;
+      newByteLen: number;
       extension: string;
     }) => {
       return reserveExistingPageUpload(args);

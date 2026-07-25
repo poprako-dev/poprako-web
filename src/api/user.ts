@@ -39,11 +39,11 @@ export async function reserveUserAvatarUpload(
 ): Promise<Result<ReserveUserAvatarResult>> {
   const res = await api.post<RawReserveUserAvatarResult, {
     image_hash: string;
-    byte_length: number;
+    new_byte_len: number;
     ext: string;
   }>(
     `/users/${userId}/avatar/reserve`,
-    { image_hash: args.imageHash, byte_length: args.byteLength, ext: args.extension },
+    { image_hash: args.imageHash, new_byte_len: args.newByteLen, ext: args.extension },
   );
   if (!res.success) return res;
 

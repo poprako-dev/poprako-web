@@ -127,10 +127,10 @@ export async function reserveCoverUpload(
 ): Promise<Result<ImageUploadSlot | null>> {
   const res = await api.post<
     { slot: { put_url: string; image_version: number; headers: Record<string, string> } | null },
-    { image_hash: string; byte_length: number; ext: string }
+    { image_hash: string; new_byte_len: number; ext: string }
   >(`/comics/${comicId}/cover/reserve`, {
     image_hash: args.imageHash,
-    byte_length: args.byteLength,
+    new_byte_len: args.newByteLen,
     ext: args.extension,
   });
   if (!res.success) return res;

@@ -11,7 +11,7 @@ export type Page = {
   imageThumbnailUrl?: string;
   isUploaded: boolean;
   imageHash?: string;
-  byteLength?: number;
+  newByteLen?: number;
   extension?: string;
 
   creatorId: string;
@@ -35,7 +35,7 @@ export type PageInfo = Page & {
 export type PageImageInput = {
   pageId?: string;
   imageHash: string;
-  byteLength: number;
+  newByteLen?: number;
   extension: string;
 };
 

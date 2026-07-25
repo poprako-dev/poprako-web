@@ -2,6 +2,8 @@ import { useRef, type ChangeEvent } from "react";
 import clsx from "clsx";
 import { Trash2, Upload } from "lucide-react";
 import type { PageInfo } from "@/types";
+import type { PageUploadTaskStatus } from
+  "@/features/ComicPlayground/features/ComicDetailModal/pageUploadStore";
 import MultiProgressBar from "@/components/ui/MultiProgressBar";
 import LazyImage from
   "@/features/ComicPlayground/features/ComicDetailModal/components/business/LazyImage";
@@ -17,6 +19,8 @@ type Props = {
   isReuploading?: boolean;
   reuploadAccept?: string;
   uploadProgress?: number;
+  uploadStatus?: PageUploadTaskStatus;
+  uploadError?: string;
 };
 
 export default function PageCard({
@@ -30,6 +34,8 @@ export default function PageCard({
   isReuploading = false,
   reuploadAccept,
   uploadProgress,
+  uploadStatus,
+  uploadError,
 }: Props) {
   const isPending = !page.imageUrl;
   const total = page.totalUnitCount;
@@ -55,7 +61,7 @@ export default function PageCard({
 
   return (
     <div
-      onClick={enableClick ? onClick : undefined}
+      onClick={enableClick && !isPending ? onClick : undefined}
       style={{ contentVisibility: "auto", containIntrinsicSize: "auto 150px" }}
       className={clsx(
         "relative aspect-3/4 border rounded-sm flex flex-col",
@@ -70,7 +76,8 @@ export default function PageCard({
       <div
         className={clsx(
           "absolute top-2 left-2 z-10",
-          "bg-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded flex items-center justify-center",
+          "bg-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded",
+          "flex items-center justify-center",
         )}
       >
         <span className="text-[10px] font-bold text-white/90 leading-none">
@@ -83,7 +90,8 @@ export default function PageCard({
         <div
           className={clsx(
             "absolute top-2 right-2 z-10",
-            "bg-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded flex items-center justify-center",
+            "bg-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded",
+            "flex items-center justify-center",
           )}
         >
           <div
@@ -123,9 +131,15 @@ export default function PageCard({
       )}
 
       {/* Hover dim overlay */}
-      <div className="absolute inset-0 z-[3] bg-black/0 group-hover:bg-black/[0.07] transition-colors duration-200 pointer-events-none" />
+      <div
+        className={clsx(
+          "absolute inset-0 z-[3] bg-black/0 pointer-events-none",
+          "group-hover:bg-black/[0.07] transition-colors duration-200",
+        )}
+      />
 
-      {clampedUploadProgress !== null && clampedUploadProgress < 100 && (
+      {clampedUploadProgress !== null
+        && (clampedUploadProgress < 100 || uploadStatus === "confirming") && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25">
           <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
             <circle
@@ -146,8 +160,22 @@ export default function PageCard({
             />
           </svg>
           <span className="absolute text-[11px] font-bold text-white/90">
-            {clampedUploadProgress}%
+            {uploadStatus === "confirming"
+              ? "确认中"
+              : `${clampedUploadProgress}%`}
           </span>
+        </div>
+      )}
+
+      {uploadStatus === "failed" && uploadError && (
+        <div
+          className={clsx(
+            "absolute inset-x-1.5 bottom-1.5 z-20 rounded-sm px-1.5 py-1",
+            "bg-rose-600/90 text-center text-[9px] font-bold text-white",
+          )}
+          title={uploadError}
+        >
+          上传失败，可重传
         </div>
       )}
 
@@ -188,7 +216,7 @@ export default function PageCard({
         </button>
       )}
 
-      {canReupload && onReupload && !isPending && (
+      {canReupload && onReupload && (
         <>
           <input
             ref={reuploadInputRef}

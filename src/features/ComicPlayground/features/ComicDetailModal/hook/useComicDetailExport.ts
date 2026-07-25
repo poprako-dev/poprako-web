@@ -485,7 +485,7 @@ export function useComicDetailExport({
         const { imageHash } = await hashPageFile(file);
         const reserveRes = await reserveCoverUpload(comicId, {
           imageHash,
-          byteLength: file.size,
+          newByteLen: file.size,
           extension: ext,
         });
         if (!reserveRes.success) {

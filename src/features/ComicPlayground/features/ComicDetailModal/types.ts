@@ -92,7 +92,7 @@ export type ComicDetailModalProps = {
   onReservePageUpload?: (args: {
     pageId: string;
     imageHash: string;
-    byteLength: number;
+    newByteLen: number;
     extension: string;
   }) => Promise<Result<import("@/types").ReservedPage>>;
   onJoinChapterRole?: (chapterId: string, role: Role) => Promise<Result<void>>;

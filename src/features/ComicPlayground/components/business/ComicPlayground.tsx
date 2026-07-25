@@ -258,7 +258,7 @@ export default function ComicPlayground() {
     async (args: {
       pageId: string;
       imageHash: string;
-      byteLength: number;
+      newByteLen: number;
       extension: string;
     }) => {
       return reserveExistingPageUpload(args);

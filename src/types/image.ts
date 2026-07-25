@@ -6,6 +6,6 @@ export type ImageUploadSlot = {
 
 export type ReserveImageArgs = {
   imageHash: string;
-  byteLength: number;
+  newByteLen: number;
   extension: string;
 };

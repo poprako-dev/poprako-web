@@ -137,13 +137,13 @@ describe("poprako-r API migration", () => {
 
     await reserveUserAvatarUpload("user_1", {
       imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      byteLength: 3,
+      newByteLen: 3,
       extension: "png",
     });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/users/user_1/avatar/reserve");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      byte_length: 3,
+      new_byte_len: 3,
       ext: "png",
     });
 
@@ -153,13 +153,13 @@ describe("poprako-r API migration", () => {
 
     await reserveTeamAvatarUpload("team_1", {
       imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      byteLength: 3,
+      newByteLen: 3,
       extension: "webp",
     });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/teams/team_1/avatar/reserve");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      byte_length: 3,
+      new_byte_len: 3,
       ext: "webp",
     });
 
@@ -169,13 +169,13 @@ describe("poprako-r API migration", () => {
 
     await reserveCoverUpload("comic_1", {
       imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      byteLength: 3,
+      newByteLen: 3,
       extension: "jpg",
     });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/cover/reserve");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      byte_length: 3,
+      new_byte_len: 3,
       ext: "jpg",
     });
 
@@ -192,7 +192,7 @@ describe("poprako-r API migration", () => {
       pages: [
         {
           imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-          byteLength: 3,
+          newByteLen: 3,
           extension: "png",
         },
       ],
@@ -203,7 +203,7 @@ describe("poprako-r API migration", () => {
       pages: [
         {
           image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-          byte_length: 3,
+          new_byte_len: 3,
           ext: "png",
         },
       ],
@@ -227,13 +227,13 @@ describe("poprako-r API migration", () => {
     await reserveExistingPageUpload({
       pageId: "page_1",
       imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      byteLength: 3,
+      newByteLen: 3,
       extension: "png",
     });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/image/reserve");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      byte_length: 3,
+      new_byte_len: 3,
       ext: "png",
     });
 

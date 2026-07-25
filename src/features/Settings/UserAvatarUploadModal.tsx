@@ -92,7 +92,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
       const { imageHash } = await hashPageFile(file);
       const reserveRes = await reserveUserAvatarUpload(user.id, {
         imageHash,
-        byteLength: file.size,
+        newByteLen: file.size,
         extension,
       });
       if (!reserveRes.success) {

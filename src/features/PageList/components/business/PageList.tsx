@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import { Plus, UploadCloud } from "lucide-react";
 import type { PageInfo } from "@/types";
+import type { PageUploadTaskStatus } from
+  "@/features/ComicPlayground/features/ComicDetailModal/pageUploadStore";
 import PageCard from "./PageCard";
 
 type Props = {
@@ -18,6 +20,8 @@ type Props = {
   accept?: string;
   reuploadAccept?: string;
   uploadProgressByPageId?: Record<string, number>;
+  uploadStatusByPageId?: Record<string, PageUploadTaskStatus>;
+  uploadErrorByPageId?: Record<string, string>;
 };
 
 function naturalSort(files: FileList): File[] {
@@ -44,6 +48,8 @@ export default function PageList({
   accept,
   reuploadAccept,
   uploadProgressByPageId,
+  uploadStatusByPageId,
+  uploadErrorByPageId,
 }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -122,6 +128,8 @@ export default function PageList({
             }
             reuploadAccept={reuploadAccept}
             uploadProgress={uploadProgressByPageId?.[page.id]}
+            uploadStatus={uploadStatusByPageId?.[page.id]}
+            uploadError={uploadErrorByPageId?.[page.id]}
           />
         ))}
         {onAddPages && !isUploading && (
