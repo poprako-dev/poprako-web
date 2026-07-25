@@ -41,14 +41,11 @@ export default function ComicDetailModalLayout({
 
         {/* Body */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Assignment group – outside overflow-hidden so avatar tooltips
-              (absolute bottom-full) aren't clipped on sm+ screens */}
-          <div className="hidden shrink-0 md:block">{assignmentGroup}</div>
           <div
             className={clsx(
               "flex-1 min-h-0",
-              "flex flex-col overflow-y-auto",
-              "sm:flex-row sm:overflow-hidden",
+              "flex flex-col overflow-y-auto sm:overflow-y-visible",
+              "sm:flex-row",
             )}
           >
             {/* Sidebar – warm white */}
@@ -68,9 +65,10 @@ export default function ComicDetailModalLayout({
             <div
               className={clsx(
                 "w-full",
-                "sm:flex sm:min-w-0 sm:flex-1 sm:flex-col sm:overflow-hidden",
+                "sm:flex sm:min-w-0 sm:min-h-0 sm:flex-1 sm:flex-col",
               )}
             >
+              <div className="hidden shrink-0 md:block">{assignmentGroup}</div>
               <div
                 className={clsx(
                   "bg-stone-100 p-4",
