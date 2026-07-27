@@ -293,87 +293,61 @@ describe("poprako-r API migration", () => {
     });
   });
 
-  test("saves units with the poprako-r create-save-delete schema", async () => {
-    const fetchMock = installFetch(okJson({
-      local_id_mappers: [{ local_id: "local_1", unit_id: "unit_99" }],
-      total_unit_count: 2,
-      translated_unit_count: 1,
-      proofread_unit_count: 0,
-    }));
+  test("saves units with sparse create-patch-delete edits", async () => {
+    const fetchMock = installFetch(noContent());
     const diff: UnitDiff = {
       ops: [
         {
-          oper: "create",
+          edit: "create",
           localId: "local_1",
-          beforeId: "unit_1",
-          xCoord: 0.1,
-          yCoord: 0.2,
+          nextId: "unit_1",
           isBubble: true,
-          isProofread: false,
-          translatedText: "hello",
-          lastTranslatorId: "user_translator",
-          proofreadText: null,
-          lastProofreaderId: null,
+          coord: { xCoord: 0.1, yCoord: 0.2 },
+          translation: { translatedText: "hello" },
         },
         {
-          oper: "save",
+          edit: "patch",
           id: "unit_1",
-          beforeId: undefined,
-          xCoord: 0.3,
-          yCoord: 0.4,
+          nextId: { type: "clear" },
           isBubble: false,
-          isProofread: true,
-          translatedText: null,
-          lastTranslatorId: null,
-          proofreadText: "done",
-          lastProofreaderId: "user_proofreader",
+          coord: { xCoord: 0.3, yCoord: 0.4 },
+          translation: { type: "clear" },
+          revision: {
+            type: "assign",
+            value: { isProofread: true, proofreadText: "done" },
+          },
         },
-        { oper: "delete", id: "unit_deleted" },
+        { edit: "delete", id: "unit_deleted" },
       ],
     };
 
     const result = await saveUnits("page_1", diff);
 
-    expect(result).toEqual({
-      success: true,
-      data: {
-        localIdMappers: [{ localId: "local_1", unitId: "unit_99" }],
-        totalUnitCount: 2,
-        translatedUnitCount: 1,
-        proofreadUnitCount: 0,
-      },
-    });
+    expect(result).toEqual({ success: true, data: undefined });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/units/save");
-    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
-      page_id: "page_1",
-      diff: {
-        page_id: "page_1",
-        opers: [
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual([
           {
-            oper: "create",
+            edit: "create",
             local_id: "local_1",
-            before_id: "unit_1",
-            x_coord: 0.1,
-            y_coord: 0.2,
+            next_id: "unit_1",
             is_bubble: true,
-            is_proofread: false,
-            translated_text: "hello",
-            last_translator_id: "user_translator",
+            coord: { x_coord: 0.1, y_coord: 0.2 },
+            translation: { translated_text: "hello" },
           },
           {
-            oper: "save",
+            edit: "patch",
             id: "unit_1",
-            x_coord: 0.3,
-            y_coord: 0.4,
+            next_id: { type: "clear" },
             is_bubble: false,
-            is_proofread: true,
-            proofread_text: "done",
-            last_proofreader_id: "user_proofreader",
+            coord: { x_coord: 0.3, y_coord: 0.4 },
+            translation: { type: "clear" },
+            revision: {
+              type: "assign",
+              value: { is_proofread: true, proofread_text: "done" },
+            },
           },
-          { oper: "delete", id: "unit_deleted" },
-        ],
-      },
-    });
+          { edit: "delete", id: "unit_deleted" },
+    ]);
   });
 
   test("maps renamed poprako-r response fields", async () => {

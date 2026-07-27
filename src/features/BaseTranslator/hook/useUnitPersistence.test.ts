@@ -54,17 +54,10 @@ describe("unit save persistence", () => {
     expect(calls).toEqual(["save", "reload"]);
     expect(onSaveUnits.mock.calls[0]?.[1]).toEqual({
       ops: [{
-        oper: "create",
+        edit: "create",
         localId: "local_1",
-        beforeId: undefined,
-        xCoord: 0.1,
-        yCoord: 0.2,
         isBubble: true,
-        isProofread: false,
-        translatedText: null,
-        lastTranslatorId: null,
-        proofreadText: null,
-        lastProofreaderId: null,
+        coord: { xCoord: 0.1, yCoord: 0.2 },
       }],
     });
   });
@@ -86,7 +79,7 @@ describe("unit save persistence", () => {
     expect(onReloadUnits).not.toHaveBeenCalled();
   });
 
-  test("normalizes indexes and expresses order through beforeId opers", () => {
+  test("normalizes indexes and expresses order through nextId edits", () => {
     const baseline = normalizeUnitIndexes([
       { ...localUnit, id: "unit_a", index: 10 },
       { ...localUnit, id: "unit_b", index: 10 },
@@ -101,45 +94,28 @@ describe("unit save persistence", () => {
     expect(current.map((unit) => unit.index)).toEqual([0, 1, 2]);
     expect(buildUnitDiff(current, baseline)).toEqual({
       ops: [
-        { oper: "delete", id: "unit_c" },
+        { edit: "delete", id: "unit_c" },
         {
-          oper: "save",
+          edit: "patch",
           id: "unit_a",
-          beforeId: undefined,
-          xCoord: 0.1,
-          yCoord: 0.2,
-          isBubble: true,
-          isProofread: false,
-          translatedText: null,
-          lastTranslatorId: null,
-          proofreadText: null,
-          lastProofreaderId: null,
+          nextId: { type: "clear" },
+          translation: { type: "skip" },
+          revision: { type: "skip" },
         },
         {
-          oper: "save",
+          edit: "patch",
           id: "unit_b",
-          beforeId: "unit_a",
-          xCoord: 0.5,
-          yCoord: 0.2,
-          isBubble: true,
-          isProofread: false,
-          translatedText: null,
-          lastTranslatorId: null,
-          proofreadText: null,
-          lastProofreaderId: null,
+          nextId: { type: "assign", value: "local_new" },
+          coord: { xCoord: 0.5, yCoord: 0.2 },
+          translation: { type: "skip" },
+          revision: { type: "skip" },
         },
         {
-          oper: "create",
+          edit: "create",
           localId: "local_new",
-          beforeId: "unit_a",
-          xCoord: 0.1,
-          yCoord: 0.2,
+          nextId: "unit_a",
           isBubble: true,
-          isProofread: false,
-          translatedText: null,
-          lastTranslatorId: null,
-          proofreadText: null,
-          lastProofreaderId: null,
+          coord: { xCoord: 0.1, yCoord: 0.2 },
         },
       ],
     });

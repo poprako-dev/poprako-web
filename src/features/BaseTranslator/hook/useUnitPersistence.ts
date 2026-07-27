@@ -5,8 +5,8 @@ import type {
   UnitCreateOp,
   UnitDiff,
   UnitOp,
-  UnitPayload,
-  UnitSaveOp,
+  UnitPatchOp,
+  Patch,
 } from "../types/type";
 
 type ShowToast = (message: string, type: ToastType) => void;
@@ -29,81 +29,105 @@ function normalizedText(val?: string): string | null {
   return val && val !== "" ? val : null;
 }
 
-function hasPersistedMutation(current: UnitInfo, baseline: UnitInfo): boolean {
-  if (current.xCoord !== baseline.xCoord || current.yCoord !== baseline.yCoord) {
-    return true;
-  }
-  if (current.isBubble !== baseline.isBubble) {
-    return true;
-  }
-  if (current.isProofread !== baseline.isProofread) {
-    return true;
-  }
-  if (normalizedText(current.translatedText) !== normalizedText(baseline.translatedText)) {
-    return true;
-  }
-  if ((current.translatorId ?? null) !== (baseline.translatorId ?? null)) {
-    return true;
-  }
-  if (
-    normalizedText(current.proofreadText) !==
-    normalizedText(baseline.proofreadText)
-  ) {
-    return true;
-  }
-  return (current.proofreaderId ?? null) !== (baseline.proofreaderId ?? null);
-}
-
-function buildUnitPayload(
-  unit: UnitInfo,
-  beforeId: string | undefined,
-): UnitPayload {
+function buildUnitCoord(unit: UnitInfo) {
   return {
-    beforeId,
     xCoord: unit.xCoord,
     yCoord: unit.yCoord,
-    isBubble: unit.isBubble,
-    isProofread: unit.isProofread,
-    translatedText: normalizedText(unit.translatedText),
-    lastTranslatorId: unit.translatorId ?? null,
-    proofreadText: normalizedText(unit.proofreadText),
-    lastProofreaderId: unit.proofreaderId ?? null,
   };
+}
+
+function buildUnitTranslation(unit: UnitInfo) {
+  const translatedText = normalizedText(unit.translatedText);
+  return translatedText === null ? undefined : { translatedText };
+}
+
+function buildUnitRevision(unit: UnitInfo) {
+  const proofreadText = normalizedText(unit.proofreadText);
+  if (!unit.isProofread && proofreadText === null) return undefined;
+
+  return {
+    isProofread: unit.isProofread,
+    proofreadText: proofreadText ?? undefined,
+  };
+}
+
+function skipPatch<T>(): Patch<T> {
+  return { type: "skip" };
+}
+
+function clearPatch<T>(): Patch<T> {
+  return { type: "clear" };
+}
+
+function assignPatch<T>(value: T): Patch<T> {
+  return { type: "assign", value };
 }
 
 function buildCreateUnitOp(
   unit: UnitInfo,
-  beforeId: string | undefined,
+  nextId: string | null,
 ): UnitCreateOp {
   return {
-    oper: "create",
+    edit: "create",
     localId: unitId(unit),
-    ...buildUnitPayload(unit, beforeId),
+    nextId: nextId ?? undefined,
+    isBubble: unit.isBubble,
+    coord: buildUnitCoord(unit),
+    translation: buildUnitTranslation(unit),
+    revision: buildUnitRevision(unit),
   };
 }
 
-function buildSaveUnitOp(
+function buildPatchUnitOp(
   unit: UnitInfo,
-  beforeId: string | undefined,
-): UnitSaveOp {
-  return {
-    oper: "save",
+  baseline: UnitInfo,
+  nextId: string | null | undefined,
+): UnitPatchOp {
+  const edit: UnitPatchOp = {
+    edit: "patch",
     id: unitId(unit),
-    ...buildUnitPayload(unit, beforeId),
+    nextId: skipPatch(),
+    translation: skipPatch(),
+    revision: skipPatch(),
   };
-}
 
-function nextExistingId(
-  units: UnitInfo[],
-  startIndex: number,
-  baselineById: Map<string, UnitInfo>,
-): string | undefined {
-  for (let index = startIndex + 1; index < units.length; index++) {
-    const id = unitId(units[index]);
-    if (baselineById.has(id)) return id;
+  if (nextId !== undefined) {
+    edit.nextId = nextId === null ? clearPatch() : assignPatch(nextId);
+  }
+  if (unit.isBubble !== baseline.isBubble) edit.isBubble = unit.isBubble;
+  if (unit.xCoord !== baseline.xCoord || unit.yCoord !== baseline.yCoord) {
+    edit.coord = buildUnitCoord(unit);
   }
 
-  return undefined;
+  if (normalizedText(unit.translatedText) !== normalizedText(baseline.translatedText)) {
+    const translation = buildUnitTranslation(unit);
+    edit.translation = translation ? assignPatch(translation) : skipPatch();
+  }
+
+  if (
+    unit.isProofread !== baseline.isProofread
+    || normalizedText(unit.proofreadText) !== normalizedText(baseline.proofreadText)
+  ) {
+    const revision = buildUnitRevision(unit);
+    edit.revision = revision ? assignPatch(revision) : skipPatch();
+  }
+
+  return edit;
+}
+
+function nextUnitId(
+  units: UnitInfo[],
+  index: number,
+): string | null {
+  return units[index + 1] ? unitId(units[index + 1]) : null;
+}
+
+function isEmptyPatch(edit: UnitPatchOp): boolean {
+  return edit.nextId.type === "skip"
+    && edit.isBubble === undefined
+    && edit.coord === undefined
+    && edit.translation.type === "skip"
+    && edit.revision.type === "skip";
 }
 
 function existingOrderChanged(
@@ -137,7 +161,7 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
       continue;
     }
 
-    ops.push({ oper: "delete", id: unitId(unit) });
+      ops.push({ edit: "delete", id: unitId(unit) });
   }
 
   const orderChanged = existingOrderChanged(current, baseline);
@@ -147,9 +171,10 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
       const unit = current[index];
       if (!baselineById.has(unitId(unit))) continue;
 
-      ops.push(buildSaveUnitOp(
+      ops.push(buildPatchUnitOp(
         unit,
-        nextExistingId(current, index, baselineById),
+        baselineById.get(unitId(unit))!,
+        nextUnitId(current, index),
       ));
     }
   } else {
@@ -157,12 +182,8 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
       const unit = current[index];
       const baselineUnit = baselineById.get(unitId(unit));
       if (!baselineUnit) continue;
-      if (!hasPersistedMutation(unit, baselineUnit)) continue;
-
-      ops.push(buildSaveUnitOp(
-        unit,
-        nextExistingId(current, index, baselineById),
-      ));
+      const edit = buildPatchUnitOp(unit, baselineUnit, undefined);
+      if (!isEmptyPatch(edit)) ops.push(edit);
     }
   }
 
@@ -172,7 +193,7 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
 
     ops.push(buildCreateUnitOp(
       unit,
-      nextExistingId(current, index, baselineById),
+      nextUnitId(current, index),
     ));
   }
 

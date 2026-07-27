@@ -3,8 +3,8 @@ import type {
   UnitCreateOp,
   UnitDiff,
   UnitOp,
-  UnitPayload,
-  UnitSaveOp,
+  UnitPatchOp,
+  Patch,
 } from "@/features/BaseTranslator/types/type";
 
 export type RawUnitInfo = {
@@ -73,110 +73,119 @@ export function unwrapRawListPageUnitsResult(
   };
 }
 
-export type RawUnitPayload = {
-  before_id?: string;
+export type RawUnitCoord = {
   x_coord: number;
   y_coord: number;
-  is_bubble: boolean;
+};
+
+export type RawUnitTranslation = {
+  translated_text: string;
+};
+
+export type RawUnitRevision = {
   is_proofread: boolean;
-  translated_text: string | null;
-  last_translator_id: string | null;
-  proofread_text: string | null;
-  last_proofreader_id: string | null;
+  proofread_text?: string;
 };
 
-export type RawUnitCreateOp = RawUnitPayload & {
-  oper: "create";
+export type RawPatch<T> =
+  | { type: "clear" }
+  | { type: "assign"; value: T };
+
+export type RawUnitCreateEdit = {
+  edit: "create";
   local_id: string;
+  next_id?: string;
+  is_bubble: boolean;
+  coord: RawUnitCoord;
+  translation?: RawUnitTranslation;
+  revision?: RawUnitRevision;
 };
 
-export type RawUnitSaveOp = RawUnitPayload & {
-  oper: "save";
+export type RawUnitPatchEdit = {
+  edit: "patch";
+  id: string;
+  next_id?: RawPatch<string>;
+  is_bubble?: boolean;
+  coord?: RawUnitCoord;
+  translation?: RawPatch<RawUnitTranslation>;
+  revision?: RawPatch<RawUnitRevision>;
+};
+
+export type RawUnitDeleteEdit = {
+  edit: "delete";
   id: string;
 };
 
-export type RawUnitDeleteOp = {
-  oper: "delete";
-  id: string;
-};
+export type RawUnitEdit = RawUnitCreateEdit | RawUnitPatchEdit | RawUnitDeleteEdit;
 
-export type RawUnitOp = RawUnitCreateOp | RawUnitSaveOp | RawUnitDeleteOp;
-
-function wrapUnitPayload(payload: UnitPayload): RawUnitPayload {
+function wrapUnitCoord(payload: { xCoord: number; yCoord: number }): RawUnitCoord {
   return {
-    before_id: payload.beforeId,
     x_coord: payload.xCoord,
     y_coord: payload.yCoord,
-    is_bubble: payload.isBubble,
-    is_proofread: payload.isProofread,
-    translated_text: payload.translatedText,
-    last_translator_id: payload.lastTranslatorId,
-    proofread_text: payload.proofreadText,
-    last_proofreader_id: payload.lastProofreaderId,
   };
 }
 
-function wrapCreateUnitOp(op: UnitCreateOp): RawUnitCreateOp {
-  return { oper: "create", local_id: op.localId, ...wrapUnitPayload(op) };
-}
-
-function wrapSaveUnitOp(op: UnitSaveOp): RawUnitSaveOp {
-  return { oper: "save", id: op.id, ...wrapUnitPayload(op) };
-}
-
-export function wrapUnitOp(op: UnitOp): RawUnitOp {
-  switch (op.oper) {
-    case "create":
-      return wrapCreateUnitOp(op);
-    case "save":
-      return wrapSaveUnitOp(op);
-    case "delete":
-      return { oper: "delete", id: op.id };
+function wrapPatch<T, R>(
+  patch: Patch<T>,
+  wrap: (value: T) => R,
+): RawPatch<R> | undefined {
+  switch (patch.type) {
+    case "skip":
+      return undefined;
+    case "clear":
+      return { type: "clear" };
+    case "assign":
+      return { type: "assign", value: wrap(patch.value) };
   }
 }
 
-export type RawUnitDiff = {
-  page_id: string;
-  opers: RawUnitOp[];
-};
-
-export type RawSavePageUnitsResult = {
-  local_id_mappers: Array<{
-    local_id: string;
-    unit_id: string;
-  }>;
-  total_unit_count: number;
-  translated_unit_count: number;
-  proofread_unit_count: number;
-};
-
-export type SavePageUnitsResult = {
-  localIdMappers: Array<{
-    localId: string;
-    unitId: string;
-  }>;
-  totalUnitCount: number;
-  translatedUnitCount: number;
-  proofreadUnitCount: number;
-};
-
-export function unwrapRawSavePageUnitsResult(
-  raw: RawSavePageUnitsResult,
-): SavePageUnitsResult {
+function wrapCreateUnitEdit(op: UnitCreateOp): RawUnitCreateEdit {
   return {
-    localIdMappers: raw.local_id_mappers.map((mapper) => ({
-      localId: mapper.local_id,
-      unitId: mapper.unit_id,
-    })),
-    totalUnitCount: raw.total_unit_count,
-    translatedUnitCount: raw.translated_unit_count,
-    proofreadUnitCount: raw.proofread_unit_count,
+    edit: "create",
+    local_id: op.localId,
+    next_id: op.nextId,
+    is_bubble: op.isBubble,
+    coord: wrapUnitCoord(op.coord),
+    translation: op.translation && { translated_text: op.translation.translatedText },
+    revision: op.revision && {
+      is_proofread: op.revision.isProofread,
+      proofread_text: op.revision.proofreadText,
+    },
   };
 }
 
-export function wrapUnitDiff(pageId: string, diff: UnitDiff): RawUnitDiff {
+function wrapPatchUnitEdit(op: UnitPatchOp): RawUnitPatchEdit {
   return {
-    page_id: pageId,
-    opers: diff.ops.map(wrapUnitOp),
+    edit: "patch",
+    id: op.id,
+    next_id: wrapPatch(op.nextId, (value) => value),
+    is_bubble: op.isBubble,
+    coord: op.coord && wrapUnitCoord(op.coord),
+    translation: wrapPatch(
+      op.translation,
+      (value) => ({ translated_text: value.translatedText }),
+    ),
+    revision: wrapPatch(
+      op.revision,
+      (value) => ({
+        is_proofread: value.isProofread,
+        proofread_text: value.proofreadText,
+      }),
+    ),
   };
+}
+
+export function wrapUnitEdit(op: UnitOp): RawUnitEdit {
+  switch (op.edit) {
+    case "create":
+      return wrapCreateUnitEdit(op);
+    case "patch":
+      return wrapPatchUnitEdit(op);
+    case "delete":
+      return { edit: "delete", id: op.id };
+  }
+}
+
+export function wrapUnitDiff(diff: UnitDiff): RawUnitEdit[] {
+  return diff.ops.map(wrapUnitEdit);
 }

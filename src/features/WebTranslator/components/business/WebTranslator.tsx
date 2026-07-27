@@ -200,25 +200,6 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
         throw new Error(result.error);
       }
 
-      setState((prev) => {
-        if (prev.status !== "ready") return prev;
-
-        const nextPages = mergePageCounters(prev.project.pages, pageId, {
-          totalUnitCount: result.data.totalUnitCount,
-          translatedUnitCount: result.data.translatedUnitCount,
-          proofreadUnitCount: result.data.proofreadUnitCount,
-        });
-        const counters = aggregateProjectCounters(nextPages);
-
-        return {
-          ...prev,
-          project: {
-            ...prev.project,
-            pages: nextPages,
-            ...counters,
-          },
-        };
-      });
     },
     [],
   );
