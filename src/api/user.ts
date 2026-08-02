@@ -4,7 +4,7 @@ import {
   type RawReserveUserAvatarResult,
   type RawUserInfo,
 } from "@/types/raw/user";
-import type { ReserveUserAvatarResult } from "@/types/user";
+import type { ReserveUserAvatarResult, UserInfo } from "@/types/user";
 import type { ReserveImageArgs } from "@/types/image";
 import type { Result } from "@/types/utils/result";
 import { api } from "./util";
@@ -18,6 +18,13 @@ export async function getMyUser() {
   const userInfo = await api.get<RawUserInfo>("/users/me");
   if (!userInfo.success) throw new Error(userInfo.error);
   return unwrapRawUserInfo(userInfo.data);
+}
+
+export async function getUser(userId: string): Promise<Result<UserInfo>> {
+  const result = await api.get<RawUserInfo>(`/users/${userId}`);
+  if (!result.success) return result;
+
+  return { success: true, data: unwrapRawUserInfo(result.data) };
 }
 
 export async function updateUserPassword(

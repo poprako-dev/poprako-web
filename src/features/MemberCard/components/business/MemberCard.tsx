@@ -4,6 +4,7 @@ import type { MemberInfo } from "@/types/member";
 
 type Props = {
   member: MemberInfo;
+  isOnline?: boolean;
   onClick?: () => void;
 };
 
@@ -20,14 +21,6 @@ function formatDate(ts?: number): string {
   if (!ts) return "—";
   const d = new Date(ts);
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
-}
-
-function getStatusColor(lastActiveAt?: number): string {
-  if (!lastActiveAt) return "bg-stone-300";
-  const daysAgo = (Date.now() - lastActiveAt) / (1000 * 60 * 60 * 24);
-  if (daysAgo <= 7) return "bg-[#2e5c33]";
-  if (daysAgo <= 30) return "bg-amber-200";
-  return "bg-stone-300";
 }
 
 type RoleTagProps = {
@@ -53,7 +46,7 @@ function RoleTag({ label, isActive, isFirst, isLast }: RoleTagProps) {
   );
 }
 
-export default function MemberCard({ member, onClick }: Props) {
+export default function MemberCard({ member, isOnline = false, onClick }: Props) {
   const { user } = member;
   const isAdmin = user?.isSuperAdmin || !!member.assignedAdminAt;
 
@@ -114,7 +107,7 @@ export default function MemberCard({ member, onClick }: Props) {
           <div
             className={clsx(
               "h-3 w-1 rounded-full shrink-0 transition-colors duration-300",
-              getStatusColor(user?.lastActiveAt),
+              isOnline ? "bg-[#2e5c33]" : "bg-stone-300",
             )}
           />
         </div>

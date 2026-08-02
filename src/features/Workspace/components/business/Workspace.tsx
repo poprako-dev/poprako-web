@@ -8,6 +8,7 @@ import ComicTranslationList from "@/features/ComcList/components/business/ComicT
 import ComicDetailModal from "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
 import AnnouncementTable from "./AnnouncementTable";
 import CommentChatBox from "./CommentChatBox";
+import OnlineUserPopover from "./OnlineUserPopover";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { fetchMyAssignmentComicCards } from "../../api/workspace";
@@ -48,6 +49,7 @@ import { addChapterPages } from "@/features/ComicPlayground/features/ComicDetail
 import { useComicDetailHost } from "@/features/ComicPlayground/features/ComicDetailModal/hook/useComicDetailHost";
 import { listComments, createComment } from "@/api/comment";
 import type { CommentInfo } from "@/types/comment";
+import { useOnlineUserIds, useOnlineUsers } from "@/hooks/useTeamOnline";
 
 // 个人工作区组件，会直接放置在 WorkspacePage 中，展示个人工作区的相关内容
 // 所以自身不设定高度，而是适应父组件
@@ -94,6 +96,8 @@ export default function Workspace() {
 
   const userName = loginState?.userInfo.name ?? "用户";
   const selectedTeamId = useAppStore((s) => s.selectedTeamId);
+  const onlineUserIds = useOnlineUserIds(selectedTeamId);
+  const onlineUsers = useOnlineUsers(selectedTeamId, onlineUserIds);
   const selectedComicTeamId = selectedComic?.workset?.teamId ?? null;
 
   const activeMember = useMemo(() => {
@@ -456,6 +460,12 @@ export default function Workspace() {
             {userName}
           </h1>
         </div>
+        {selectedTeamId && (
+          <OnlineUserPopover
+            onlineCount={onlineUserIds.size}
+            users={onlineUsers}
+          />
+        )}
       </div>
 
       {selectedTeamId && (

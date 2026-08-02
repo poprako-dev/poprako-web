@@ -7,6 +7,19 @@ import {
   type RawReserveTeamAvatarResult,
 } from "@/types/raw/team";
 
+export async function markSelfOnline(teamId: string): Promise<Result<void>> {
+  return api.put<void, Record<string, never>>(
+    `/teams/${teamId}/mark-self-online`,
+    {},
+  );
+}
+
+export async function listOnlineUserIds(
+  teamId: string,
+): Promise<Result<string[]>> {
+  return api.get<string[]>(`/teams/${teamId}/online-users`);
+}
+
 export async function reserveTeamAvatarUpload(
   teamId: string,
   args: ReserveImageArgs,

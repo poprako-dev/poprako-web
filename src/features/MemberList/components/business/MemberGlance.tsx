@@ -7,6 +7,7 @@ import {
   deleteInvitation,
 } from "@/api/invitation";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
+import { useOnlineUserIds } from "@/hooks/useTeamOnline";
 import type { MemberInfo } from "@/types/member";
 import type { CreateInvitationArgs, InvitationInfo } from "@/types/invitation";
 import type { Result } from "@/types/utils/result";
@@ -19,6 +20,7 @@ import MemberDetailModal from "./MemberDetailModal";
 
 export default function MemberGlance() {
   const { activeTeamId, activeMember } = useActiveTeam();
+  const onlineUserIds = useOnlineUserIds(activeTeamId);
   const { showToast } = useToastStore();
   const [fuzzyName, setFuzzyName] = useState("");
   const [activeRole, setActiveRole] = useState<RoleFilter | null>(null);
@@ -99,6 +101,7 @@ export default function MemberGlance() {
         onCreateMember={() => setIsInvitorOpen(true)}
         onLoadMembers={handleLoadMembers}
         onMemberClick={isAdmin ? setSelectedMember : undefined}
+        onlineUserIds={onlineUserIds}
       />
 
       {isInvitorOpen && activeTeamId && (
