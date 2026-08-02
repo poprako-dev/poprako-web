@@ -11,7 +11,7 @@ type ListInvitationsArgs = {
   offset: number;
   limit: number;
   includes?: Array<"invitor" | "invitee">;
-  pending?: boolean;
+  isPending?: boolean;
 };
 
 export async function listInvitations(
@@ -22,7 +22,7 @@ export async function listInvitations(
     {
       offset: args.offset,
       limit: args.limit,
-      pending: args.pending,
+      is_pending: args.isPending,
       incl: args.includes,
     },
   );

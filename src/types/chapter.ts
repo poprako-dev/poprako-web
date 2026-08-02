@@ -67,11 +67,6 @@ export type CreateChapterResult = {
   id: string;
 };
 
-export type UpdateChapterArgs = {
-  subtitle?: string;
-  isPinned?: boolean | null;
-};
-
 export type WithWorkflow = {
   stages?: number;
   uploadedAt?: number;

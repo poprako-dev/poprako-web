@@ -25,7 +25,7 @@ const fixedShortcuts: FixedShortcut[] = [
   },
   {
     label: "切换框内外",
-    keys: ["双击已有单元标记"],
+    keys: ["左键双击已有标记"],
   },
 ];
 
@@ -99,7 +99,9 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
     defaultConfigurableShortcuts.map((s) => [s.action, s]),
   );
 
-  const byLabel = new Map(defaultConfigurableShortcuts.map((s) => [s.label, s]));
+  const byLabel = new Map(
+    defaultConfigurableShortcuts.map((s) => [s.label, s]),
+  );
 
   const migrated: ConfigurableShortcut[] = [];
   const migratedActions = new Set<ConfigurableShortcut["action"]>();
@@ -116,7 +118,9 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
     }
 
     const action =
-      "action" in item && typeof item.action === "string" ? item.action : undefined;
+      "action" in item && typeof item.action === "string"
+        ? item.action
+        : undefined;
     const fallbackByAction = action ? byAction.get(action) : undefined;
     const fallbackByLabel =
       "label" in item && typeof item.label === "string"

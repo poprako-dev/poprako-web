@@ -100,16 +100,23 @@ export async function updateChapter(
   id: string,
   args: UpdateChapterArgs,
 ): Promise<Result<void>> {
-  if (args.subtitle !== undefined || args.isPinned !== undefined) {
+  if (args.subtitle !== undefined) {
     const rawArgs: RawUpdateChapterArgs = {
       id,
       subtitle: args.subtitle,
-      pin: args.isPinned,
     };
 
     const res = await api.patch<void, RawUpdateChapterArgs>(
       `/chapters/${id}`,
       rawArgs,
+    );
+    if (!res.success) return res;
+  }
+
+  if (args.isPinned) {
+    const res = await api.post<void, object>(
+      `/chapters/${id}/mark-pinned`,
+      {},
     );
     if (!res.success) return res;
   }

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { listAnnouncements } from "@/api/announcement";
 import { upsertAssignment } from "@/api/assignment";
+import { listAssignmentInvitations } from "@/api/assignmentInvitation";
 import { listComments } from "@/api/comment";
 import { listInvitations, createInvitation } from "@/api/invitation";
 import { updateMemberRole, joinMember, listMembers, listMyMembers } from "@/api/member";
@@ -126,9 +127,25 @@ describe("poprako-r API migration", () => {
       "/api/v1/teams/team_1/announcements?offset=5&limit=60&incl=user",
     );
 
-    await listInvitations({ teamId: "team_1", offset: 6, limit: 70, includes: ["invitor"] });
+    await listInvitations({
+      teamId: "team_1",
+      offset: 6,
+      limit: 70,
+      includes: ["invitor"],
+      isPending: true,
+    });
     expect(lastFetchCall(fetchMock).url).toBe(
-      "/api/v1/teams/team_1/member-invitations?offset=6&limit=70&incl=invitor",
+      "/api/v1/teams/team_1/member-invitations?offset=6&limit=70&is_pending=true&incl=invitor",
+    );
+
+    await listAssignmentInvitations({
+      chapterId: "chapter_1",
+      isPending: false,
+      offset: 7,
+      limit: 80,
+    });
+    expect(lastFetchCall(fetchMock).url).toBe(
+      "/api/v1/chapters/chapter_1/assignment-invitations?is_pending=false&offset=7&limit=80",
     );
 
     await listComments({ teamId: "team_1", offset: 0, limit: 50 });
@@ -400,11 +417,14 @@ describe("poprako-r API migration", () => {
       id: "mail_1",
       title: "T",
       content: "C",
-      read: false,
+      is_read: false,
       created_at: 1,
     }]));
-    const mails = await listSysMails();
-    expect(mails.success && mails.data[0]?.read).toBe(false);
+    const mails = await listSysMails(0, 10, false);
+    expect(lastFetchCall(fetchMock).url).toBe(
+      "/api/v1/system-mails?is_read=false&offset=0&limit=10",
+    );
+    expect(mails.success && mails.data[0]?.isRead).toBe(false);
 
     fetchMock = installFetch(Promise.resolve(
       new Response(JSON.stringify({
@@ -425,14 +445,20 @@ describe("poprako-r API migration", () => {
   test("uses chapter stage/import export routes from poprako-r", async () => {
     const fetchMock = installFetch(noContent());
 
-    await updateChapter("chapter_1", { subtitle: "new", isPinned: true });
+    await updateChapter("chapter_1", { subtitle: "new" });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1");
     expect(lastFetchCall(fetchMock).init?.method).toBe("PATCH");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       id: "chapter_1",
       subtitle: "new",
-      pin: true,
     });
+
+    await updateChapter("chapter_1", { isPinned: true });
+    expect(lastFetchCall(fetchMock).url).toBe(
+      "/api/v1/chapters/chapter_1/mark-pinned",
+    );
+    expect(lastFetchCall(fetchMock).init?.method).toBe("POST");
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({});
 
     await completeChapterStage("chapter_1", "proofread");
     expect(lastFetchCall(fetchMock).url).toBe(

@@ -5,7 +5,7 @@ export type InvitationInfo = {
   inviteeQq: string;
   invitorId: string;
 
-  pending: boolean;
+  isPending: boolean;
   roles: number;
 
   createdAt: number;

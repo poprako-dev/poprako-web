@@ -37,7 +37,7 @@ export default function AppSidebar() {
   const setSelectedTeamId = useAppStore((s) => s.setSelectedTeamId);
   const sysMailCache = useAppStore((s) => s.sysMailCache);
   const loginState = useAppStore((s) => s.loginState);
-  const hasUnread = sysMailCache?.mails.some((m) => !m.read) ?? false;
+  const hasUnread = sysMailCache?.mails.some((m) => !m.isRead) ?? false;
 
   const isTeamAdmin = useMemo(() => {
     const member = loginState?.memberInfos.find((m) => m.teamId === selectedTeamId);

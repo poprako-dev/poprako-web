@@ -2,7 +2,6 @@ import type {
   ChapterInfo,
   CreateChapterArgs,
   CreateChapterResult,
-  UpdateChapterArgs,
 } from "../chapter";
 import { unwrapRawComicInfo, type RawComicInfo } from "./comic";
 import { unwrapRawUserInfo, type RawUserInfo } from "./user";
@@ -68,19 +67,4 @@ export function unwrapRawCreateChapterResult(
   raw: RawCreateChapterResult,
 ): CreateChapterResult {
   return { id: raw.id };
-}
-
-export type RawUpdateChapterArgs = {
-  chapter_id: string;
-  subtitle?: string;
-  pin?: boolean | null;
-};
-
-export function unwrapRawUpdateChapterArgs(
-  raw: RawUpdateChapterArgs,
-): UpdateChapterArgs {
-  return {
-    subtitle: raw.subtitle,
-    isPinned: raw.pin,
-  } as UpdateChapterArgs;
 }

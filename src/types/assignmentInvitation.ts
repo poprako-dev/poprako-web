@@ -4,7 +4,7 @@ export type AssignmentInvitationInfo = {
   invitationCode: string;
   inviteeQq: string;
   inviterId: string;
-  pending: boolean;
+  isPending: boolean;
   roles: number;
   createdAt: number;
   updatedAt: number;
@@ -12,7 +12,7 @@ export type AssignmentInvitationInfo = {
 
 export type ListAssignmentInvitationsArgs = {
   chapterId: string;
-  pending?: boolean;
+  isPending?: boolean;
   offset: number;
   limit: number;
 };

@@ -52,7 +52,7 @@ export const useAppStore = create<AppStore>()(
             sysMailCache: {
               ...curr.sysMailCache,
               mails: curr.sysMailCache.mails.map((m) =>
-                m.id === mailId ? { ...m, read: true } : m,
+                m.id === mailId ? { ...m, isRead: true } : m,
               ),
             },
           };

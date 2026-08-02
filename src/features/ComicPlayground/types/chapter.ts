@@ -60,7 +60,6 @@ export type UpdateChapterArgs = {
 export type RawUpdateChapterArgs = {
   id: string;
   subtitle?: string;
-  pin?: boolean;
 };
 
 export type RawUpdateChapterStageArgs = {

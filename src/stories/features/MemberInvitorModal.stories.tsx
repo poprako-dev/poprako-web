@@ -15,7 +15,7 @@ const MOCK_INVITATIONS: InvitationInfo[] = [
     invitorId: "user-0",
     invitationCode: "POP-A1B2C3",
     roles: 2 | 16,     // 翻译 + 美工
-    pending: true,
+    isPending: true,
     createdAt: now - 1000 * 60 * 30,
   },
   {
@@ -24,7 +24,7 @@ const MOCK_INVITATIONS: InvitationInfo[] = [
     invitorId: "user-0",
     invitationCode: "POP-X9Y8Z7",
     roles: 2,          // 翻译
-    pending: true,
+    isPending: true,
     createdAt: now - 1000 * 60 * 60 * 2,
   },
   {
@@ -33,7 +33,7 @@ const MOCK_INVITATIONS: InvitationInfo[] = [
     invitorId: "user-0",
     invitationCode: "POP-R3V1EW",
     roles: 1 | 4 | 32, // 图源 + 校对 + 监修
-    pending: true,
+    isPending: true,
     createdAt: now - 1000 * 60 * 60 * 5,
   },
 ];
@@ -86,7 +86,7 @@ export const Default: Story = {
         invitorId: "user-me",
         invitationCode: code,
         roles: args.roles,
-        pending: true,
+        isPending: true,
         createdAt: Date.now(),
       };
       setInvitations((prev) => [newInv, ...prev]);
@@ -247,7 +247,7 @@ export const AllRoles: Story = {
       invitorId: "user-0",
       invitationCode: "POP-FULL01",
       roles: 255, // all 8 bits
-      pending: true,
+      isPending: true,
       createdAt: now,
     }]);
 
@@ -294,7 +294,7 @@ export const LongList: Story = {
         invitorId: "user-0",
         invitationCode: `POP-${i.toString(16).toUpperCase().padStart(6, "0")}`,
         roles: (1 << (i % 8)) | (1 << ((i + 3) % 8)),
-        pending: true,
+        isPending: true,
         createdAt: now - 1000 * 60 * 10 * i,
       })),
     );
@@ -358,7 +358,7 @@ export const SlowNetwork: Story = {
           invitorId: "user-me",
           invitationCode: code,
           roles: args.roles,
-          pending: true,
+          isPending: true,
           createdAt: Date.now(),
         },
         ...prev,

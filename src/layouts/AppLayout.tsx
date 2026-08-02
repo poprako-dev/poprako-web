@@ -23,7 +23,7 @@ function MobileBottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const sysMailCache = useAppStore((s) => s.sysMailCache);
-  const hasUnread = sysMailCache?.mails.some((m) => !m.read) ?? false;
+  const hasUnread = sysMailCache?.mails.some((m) => !m.isRead) ?? false;
 
   return (
     <nav

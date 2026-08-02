@@ -55,12 +55,6 @@ export type ReserveChapterPagesArgs = {
 };
 export type ReserveChapterPagesResult = { pages: ReservedPage[] };
 
-export type UpdatePageArgs = {
-  id: string;
-  isUploaded?: boolean;
-  imageVersion?: number;
-};
-
 export type PendingPage = { pageId: string; index: number; fileIndex: number };
 
 export type UploadProgressCallbacks = {

@@ -20,7 +20,7 @@ export async function listAssignmentInvitations(
   const result = await api.get<RawAssignmentInvitationInfo[]>(
     `/chapters/${args.chapterId}/assignment-invitations`,
     {
-      pending: args.pending,
+      is_pending: args.isPending,
       offset: args.offset,
       limit: args.limit,
     },

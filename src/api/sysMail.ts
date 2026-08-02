@@ -9,8 +9,10 @@ import {
 export async function listSysMails(
   offset: number = 0,
   limit: number = 10,
+  isRead?: boolean,
 ): Promise<Result<SysMailInfo[]>> {
   const result = await api.get<RawSysMailVal[] | null>("/system-mails", {
+    is_read: isRead,
     offset,
     limit,
   });

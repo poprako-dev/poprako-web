@@ -62,7 +62,7 @@ export default function MemberGlance() {
         teamId: activeTeamId,
         offset,
         limit,
-        pending: true,
+        isPending: true,
       });
     },
     [activeTeamId],

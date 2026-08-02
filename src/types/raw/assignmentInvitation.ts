@@ -10,7 +10,7 @@ export type RawAssignmentInvitationInfo = {
   code: string;
   invitee_qid: string;
   inviter_id: string;
-  pending: boolean;
+  is_pending: boolean;
   roles: number;
   created_at: number;
   updated_at: number;
@@ -36,7 +36,7 @@ export function unwrapRawAssignmentInvitationInfo(
     invitationCode: raw.code,
     inviteeQq: raw.invitee_qid,
     inviterId: raw.inviter_id,
-    pending: raw.pending,
+    isPending: raw.is_pending,
     roles: raw.roles,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,

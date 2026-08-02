@@ -121,7 +121,7 @@ export default function SystemMailViewer() {
     }
     showToast("已标记为已读", "success");
     setItems((prev) =>
-      prev.map((m) => (m.id === sysMailId ? { ...m, read: true } : m)),
+      prev.map((m) => (m.id === sysMailId ? { ...m, isRead: true } : m)),
     );
     markSysMailCacheRead(sysMailId);
   };
@@ -237,7 +237,7 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
           className={clsx(
             "w-2.5 h-2.5 rounded-full shrink-0 z-10",
             "transition-colors duration-300",
-            !mail.read
+            !mail.isRead
               ? "bg-green-500"
               : "border-2 border-stone-300 bg-[#FEFDF9]",
           )}
@@ -254,7 +254,7 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
             <h3
               className={clsx(
                 "leading-snug",
-                !mail.read
+                !mail.isRead
                   ? "text-base font-semibold text-stone-800"
                   : "text-sm font-medium text-stone-500",
               )}
@@ -268,7 +268,7 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
           <p
             className={clsx(
               "text-sm leading-relaxed mt-0.5",
-              !mail.read ? "text-stone-600" : "text-stone-400",
+              !mail.isRead ? "text-stone-600" : "text-stone-400",
             )}
           >
             {mail.content}
@@ -278,11 +278,11 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
         {/* mark-read button */}
         <button
           onClick={() => onMarkRead(mail.id)}
-          title={mail.read ? "已读" : "标记为已读"}
+          title={mail.isRead ? "已读" : "标记为已读"}
           className={clsx(
             "shrink-0 p-1.5 rounded-md mt-0.5",
             "transition-all duration-200",
-            !mail.read
+            !mail.isRead
               ? [
                   "opacity-0 group-hover:opacity-100 max-sm:opacity-100",
                   "text-stone-400 hover:text-green-500",

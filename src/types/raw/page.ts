@@ -99,11 +99,6 @@ export function unwrapRawReserveChapterPagesResult(
   };
 }
 
-export type RawUpdatePageArgs = { id: string; is_uploaded?: boolean };
-export function unwrapRawUpdatePageArgs(raw: RawUpdatePageArgs) {
-  return { id: raw.id, isUploaded: raw.is_uploaded };
-}
-
 export type RawDeleteChapterPagesArgs = { chapter_id: string };
 export function wrapDeleteChapterPagesArgs(chapterId: string): RawDeleteChapterPagesArgs {
   return { chapter_id: chapterId };
