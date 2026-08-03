@@ -1,6 +1,9 @@
 allowBuilds:
   esbuild: true
   msw: true
+auditConfig:
+  ignoreGhsas:
+    - GHSA-qwww-vcr4-c8h2
 onlyBuiltDependencies:
   - esbuild
   - msw

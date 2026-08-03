@@ -6,15 +6,19 @@ Fanning-out multiple agents(parent-children, children-children) for a **unified 
 
 ## Build / Dev Commands
 
-| Command                             | What                                                           |
-| ----------------------------------- | -------------------------------------------------------------- |
-| `pnpm dev`                          | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
-| `pnpm build`                        | Type-check (`tsc -b`) then bundle (`vite build`)               |
-| `pnpm lint`                         | Run ESLint                                                     |
-| `pnpm storybook`                    | Start Storybook on port 6006                                   |
-| `pnpm dlx shadcn@latest add <comp>` | Add a shadcn/ui component                                      |
+| Command | What |
+| --- | --- |
+| `pnpm dev` | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
+| `pnpm build` | Type-check (`tsc -b`) then bundle (`vite build`) |
+| `pnpm lint` | Run ESLint |
+| `pnpm test:unit` | Run Node-based unit tests |
+| `pnpm storybook` | Start Storybook on port 6006 |
+| `sh scripts/ci-check.sh` | Run all required repository checks |
+| `pnpm dlx shadcn@latest add <comp>` | Add a shadcn/ui component |
 
-Tests use Vitest with Playwright (browser mode) via `@storybook/addon-vitest`. There is no standalone `pnpm test` script — tests run through the Storybook test integration. See `.storybook/vitest.setup.ts`.
+Unit tests use Vitest's Node environment. Storybook interaction tests use
+Playwright browser mode via `@storybook/addon-vitest`; CI builds Storybook but
+does not run browser tests until the browser suite has a stable fixture policy.
 
 **Always use `pnpm`**. Never npm, yarn, or bun for package management.
 
@@ -74,10 +78,11 @@ Each `src/features/<Name>/` follows this structure:
 
 AppLayout requires auth; TranslatorPage requires auth + chapterId + pageId. Root `/` redirects to `/workspace`.
 
-## Coding Style (from copilot-instructions.md)
+## Coding Style
 
 - Components: `export default function Foo()`, NOT `React.FC`
 - Props: separate `type Props = { ... }` declaration — never inline in function params
+- Props are required unless the caller genuinely may omit them
 - Component-level closures: `function`. Inner closures: arrow functions `() =>`
 - Styles go INSIDE the `return` block; never extract styles to module-level variables
 - Line length max 100 characters; use `clsx` to group Tailwind classes

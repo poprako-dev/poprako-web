@@ -1,95 +1,75 @@
-# React + TypeScript + Vite
+# poprako-web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+PopRaKo 漫画翻译项目管理平台的 Web 客户端，使用 React、TypeScript、Vite 和
+Tailwind CSS 构建。项目目前处于活跃开发阶段。
 
-Currently, two official plugins are available:
+客户端提供团队工作区、漫画与章节管理、任务分配、成员管理、系统邮件和漫画
+翻译器。生产构建是静态站点，默认通过同源 `/api/v1` 访问
+[`poprako-server`](https://github.com/poprako-dev/poprako-server)。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 环境要求
 
-## React Compiler
+- Node.js 24
+- pnpm 11
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+`package.json` 固定了受支持的工具链范围和 pnpm 版本。请使用 pnpm，不要使用
+npm、Yarn 或 Bun 安装依赖。
 
-## Expanding the ESLint configuration
+## 本地开发
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+corepack enable
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+开发服务器把 `/api` 代理到 `http://localhost:8888`。如需连接其他 API，可复制
+环境变量模板并覆盖地址：
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+cp .env.example .env.development
 ```
 
-## Acknowledgments
+## 常用命令
 
-### People
+```sh
+pnpm lint
+pnpm test:unit
+pnpm build
+pnpm build-storybook
+sh scripts/ci-check.sh
+```
 
-- [电容](https://github.com/influ3nza)
-- [Pkuism](https://github.com/pkuislm)
-- [星辰大海](https://github.com/SeaAndStars)
-- 秋叶声生
+`scripts/ci-check.sh` 是仓库和 CI 共用的权威检查入口；`justfile` 仅提供本地快捷
+命令，不是 CI/CD 接口。
 
-### Repositories
+## 分支与发布
 
-- [萌翻](https://github.com/moeflow-com/moeflow)
-- [LP](https://github.com/LabelPlus/LabelPlus)
+功能和修复通过 pull request 合入 `dev`，再由 `dev` 合入受保护的 `main`。
+`main` 的每次推送通过受保护的 GitHub Actions `production` 环境部署，以完整
+commit SHA 标识不可变静态产物。版本标签和 GitHub Release 的规则见
+[`RELEASE.md`](RELEASE.md)。
 
-### Tech Stack
+生产部署准备、必需 secrets 和 nginx 示例见
+[`docs/frontend-deploy.md`](docs/frontend-deploy.md)。
 
-- [React](https://react.dev)
-- [TypeScript](https://www.typescriptlang.org)
-- [Vite](https://vite.dev)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Lucide Icons](https://lucide.dev)
+## 文档
+
+- [贡献指南](CONTRIBUTING.md)
+- [安全策略](SECURITY.md)
+- [支持渠道](SUPPORT.md)
+- [发布策略](RELEASE.md)
+- [组织迁移准备清单](docs/organization-transfer-readiness.md)
+- [项目与 Agent 规范](AGENTS.md)
+- [后端 OpenAPI 快照](docs/swagger.json)
+
+## 致谢
+
+感谢电容、[Pkuism](https://github.com/pkuislm)、
+[星辰大海](https://github.com/SeaAndStars) 和秋叶声生，以及
+[萌翻](https://github.com/moeflow-com/moeflow) 与
+[LabelPlus](https://github.com/LabelPlus/LabelPlus) 等开源项目。
+
+## License
+
+[MIT](LICENSE)

@@ -165,7 +165,7 @@ export function downloadConsoleLogs() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 
   anchor.href = url;
-  anchor.download = `poprako-w-log-${timestamp}.log`;
+  anchor.download = `poprako-web-log-${timestamp}.log`;
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();

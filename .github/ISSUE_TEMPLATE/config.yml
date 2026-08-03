@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 📖 项目文档
-    url: https://github.com/ATOMLubover/poprako-w#readme
-    about: 提交 Issue 前请先查阅 README 和相关文档。
+  - name: 🔒 私密安全报告
+    url: https://github.com/poprako-dev/poprako-web/security/advisories/new
+    about: 请勿在公开 Issue 中披露漏洞。
   - name: 💬 讨论 / 提问
-    url: https://github.com/ATOMLubover/poprako-w/discussions
+    url: https://github.com/poprako-dev/poprako-web/discussions
     about: 使用中的疑问或一般性问题，请在 Discussions 中发起讨论。

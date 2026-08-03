@@ -11,7 +11,7 @@ body:
 
         请确保你已经：
 
-        - 在 [Issues](https://github.com/ATOMLubover/poprako-w/issues?q=is%3Aissue+label%3Abug) 中搜索过，确认没有已存在的重复报告
+        - 在 [Issues](/poprako-dev/poprako-web/issues) 中搜索过，确认没有重复报告
         - 将浏览器刷新后重新尝试操作，确认问题仍然存在
         - 准备好导出日志文件（见下方说明）
 
@@ -30,7 +30,7 @@ body:
         **操作步骤：**
         1. 进入白杨子 W 的 **设置页面**（`/settings`，侧边栏底部齿轮图标）
         2. 点击 **"导出日志"** 按钮
-        3. 浏览器会自动下载 `poprako-w-log-<时间戳>.log` 文件
+        3. 浏览器会自动下载 `poprako-web-log-<时间戳>.log` 文件
         4. 用文本编辑器打开该文件，将全部内容**复制粘贴**到下方文本框中
         5. 也可以直接将 `.log` 文件拖入此文本框
 

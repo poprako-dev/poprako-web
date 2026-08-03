@@ -27,4 +27,9 @@ dist-ssr
 storybook-static
 
 # .env
-.env.development
+.env*
+!.env.example
+
+# Local agent state
+.claude/settings.local.json
+.omx/
