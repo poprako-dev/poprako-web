@@ -50,7 +50,7 @@ sh scripts/ci-check.sh
 commit SHA 标识不可变静态产物。版本标签和 GitHub Release 的规则见
 [`RELEASE.md`](RELEASE.md)。
 
-生产部署准备、必需 secrets 和 nginx 示例见
+生产部署拓扑、CI 契约和回滚方式见
 [`docs/frontend-deploy.md`](docs/frontend-deploy.md)。
 
 ## 文档
@@ -59,7 +59,6 @@ commit SHA 标识不可变静态产物。版本标签和 GitHub Release 的规�
 - [安全策略](SECURITY.md)
 - [支持渠道](SUPPORT.md)
 - [发布策略](RELEASE.md)
-- [组织迁移准备清单](docs/organization-transfer-readiness.md)
 - [项目与 Agent 规范](AGENTS.md)
 - [后端 OpenAPI 快照](docs/swagger.json)
 

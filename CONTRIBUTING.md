@@ -26,5 +26,5 @@ Node.js 24 和 pnpm 11 是受支持的工具链。`AGENTS.md` 与
 `src/types/` 的领域类型，并同步后端生成的 `docs/swagger.json`。不要手工维护
 第二份 OpenAPI 快照。
 
-生产部署脚本和 GitHub Actions 的修改必须通过 pull request 审核，且不得提交
-凭据、私钥、真实主机名或其他基础设施标识。
+生产部署脚本和 GitHub Actions 的修改必须通过 pull request 审核。不得提交凭据、
+私钥、主机公钥或私有基础设施地址；公开域名和非敏感部署拓扑应记录在部署文档中。

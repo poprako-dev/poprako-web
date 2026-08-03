@@ -9,7 +9,10 @@ Fixed、Security 和 Removed 分类。
   deployment, rollback, retention, and post-deployment verification.
 - Changed repository documentation and tooling to use the `poprako-web`
   organization identity and one canonical pnpm check path.
+- Changed production deployment documentation to match the containerized nginx,
+  webroot certificate renewal, and the existing `deploy` account.
 - Removed obsolete prototypes, completed plans, duplicate API snapshots,
-  personal agent hooks, and superseded repository skills.
+  personal agent hooks, superseded repository skills, migration checklists,
+  placeholder assets, and duplicate deployment examples.
 - Security upgraded React Router to 7.18.2, resolving the production advisories
   that have a stable patched release.
