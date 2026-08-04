@@ -45,9 +45,9 @@ sh scripts/ci-check.sh
 
 ## 分支与发布
 
-功能和修复通过 pull request 合入 `dev`，再由 `dev` 合入受保护的 `main`。
-`main` 的每次推送通过受保护的 GitHub Actions `production` 环境部署，以完整
-commit SHA 标识不可变静态产物。版本标签和 GitHub Release 的规则见
+功能和修复通过 pull request 直接合入受保护的 `main`，禁止直接 push、强推和
+删除 `main`。`main` 的每次合入通过受保护的 GitHub Actions `production` 环境部署，
+以完整 commit SHA 标识不可变静态产物。版本标签和 GitHub Release 的规则见
 [`RELEASE.md`](RELEASE.md)。
 
 生产部署拓扑、CI 契约和回滚方式见
