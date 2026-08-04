@@ -4,7 +4,7 @@ PopRaKo 漫画翻译项目管理平台的 Web 客户端，使用 React、TypeScr
 Tailwind CSS 构建。项目目前处于活跃开发阶段。
 
 客户端提供团队工作区、漫画与章节管理、任务分配、成员管理、系统邮件和漫画
-翻译器。生产构建是静态站点，默认通过同源 `/api/v1` 访问
+翻译器。生产构建是静态站点，通过 `https://api.poprako.com/api/v1` 访问
 [`poprako-server`](https://github.com/poprako-dev/poprako-server)。
 
 ## 环境要求
@@ -42,6 +42,10 @@ sh scripts/ci-check.sh
 
 `scripts/ci-check.sh` 是仓库和 CI 共用的权威检查入口；`justfile` 仅提供本地快捷
 命令，不是 CI/CD 接口。
+
+生产构建由 GitHub Actions `production` environment 的 `API_BASE_URL` secret
+注入 API 基址；其值必须是 `https://api.poprako.com/api/v1`。这个值会映射为仅供
+Vite 构建使用的 `VITE_API_BASE_URL`，不需要也不应提交 `.env.production`。
 
 ## 分支与发布
 

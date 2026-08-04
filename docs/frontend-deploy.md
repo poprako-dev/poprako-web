@@ -7,10 +7,10 @@ GitHub Actions `production` environment；environment 与所需仓库配置已�
 ## 生产拓扑
 
 ```text
-Cloudflare
-  -> poprako-web-nginx:80/443
-       |- poprako.com -> /var/www/poprako-web/current
-       `- api.poprako.com and /api/* -> poprako-server-prod:8888
+Cloudflare (proxied)
+  -> poprako-web-nginx:80/443 on the production host
+       |- poprako.com -> SPA files and /api/* -> poprako-server-prod:8888
+       `- api.poprako.com (DNS only, same host) -> poprako-server-prod:8888
 
 Docker network: poprako-prod
 ```
@@ -19,6 +19,11 @@ Nginx 以独立容器运行，是唯一公开 80/443 的入口。它和后端容
 `poprako-prod` 网络；PostgreSQL 不加入前端发布链路。权威 Nginx 配置保存在
 `deploy/poprako-web/nginx.conf`，远端安装路径是
 `/opt/poprako-web/nginx.conf`。
+
+两个域名解析到同一台生产服务器，但使用不同代理方式：主站经 Cloudflare 代理，
+`api.poprako.com` 为 DNS-only。主站继续反代 `/api/*`，以 443 暴露后端；部署 job
+从 `production` environment 的 `API_BASE_URL` secret 注入构建，其值必须为
+`https://api.poprako.com/api/v1`。API 域名通过 CORS 只允许 `https://poprako.com`。
 
 `/api/health` 只接受后端容器自身的 loopback 请求。跨容器请求即使来自同一
 Docker network 也不是 loopback，因此前端部署不得用该接口做健康检查。
@@ -65,6 +70,7 @@ DEPLOY_ROOT
 DEPLOY_HEALTHCHECK_URL
 DEPLOY_SSH_PRIVATE_KEY
 DEPLOY_KNOWN_HOSTS
+API_BASE_URL
 ```
 
 这些值只存在于 GitHub 配置中，不提交 `.env` 或示例凭据文件。当前生产契约要求：
@@ -73,6 +79,7 @@ DEPLOY_KNOWN_HOSTS
 DEPLOY_USER=deploy
 DEPLOY_ROOT=/var/www/poprako-web
 DEPLOY_HEALTHCHECK_URL=https://poprako.com/
+API_BASE_URL=https://api.poprako.com/api/v1
 ```
 
 `DEPLOY_KNOWN_HOSTS` 必须使用预先核验的主机公钥记录；workflow 不得通过

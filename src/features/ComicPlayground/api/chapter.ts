@@ -187,7 +187,7 @@ export async function exportChapter(
               Authorization: `Bearer ${token}`,
             }
           : undefined,
-        credentials: "include",
+        credentials: "omit",
         signal: options?.signal,
       },
     );
@@ -239,7 +239,7 @@ export async function exportChapterLp(
               Authorization: `Bearer ${token}`,
             }
           : undefined,
-        credentials: "include",
+        credentials: "omit",
         signal: options?.signal,
       },
     );
