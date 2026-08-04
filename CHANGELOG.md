@@ -11,6 +11,8 @@ Fixed、Security 和 Removed 分类。
   organization identity and one canonical pnpm check path.
 - Changed production deployment documentation to match the containerized nginx,
   webroot certificate renewal, and the existing `deploy` account.
+- Changed repository governance to accept pull requests directly into protected
+  `main`, with no long-lived development branch.
 - Removed obsolete prototypes, completed plans, duplicate API snapshots,
   personal agent hooks, superseded repository skills, migration checklists,
   placeholder assets, and duplicate deployment examples.

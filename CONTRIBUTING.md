@@ -1,12 +1,13 @@
 # Contributing
 
-PopRaKo 使用两步集成流程：
+PopRaKo 使用 main-only 集成流程：
 
-1. 功能和修复 pull request 以 `dev` 为目标分支。
-2. 定期将 `dev` 合入 `main`；只有 `main` 会通过受保护环境部署生产版本。
+1. 功能和修复从独立分支发起 pull request，以 `main` 为目标分支。
+2. 必需检查全部通过并解决 review threads 后才能合入；每次合入都会部署生产版本。
 
-不要从功能分支或 `dev` 部署。保持 pull request 聚焦，并使用 `feat:`、`fix:`、
-`refactor:`、`test:`、`docs:`、`ci:` 或 `chore:` 等 conventional commit 类型。
+禁止直接 push、强推或删除 `main`。保持 pull request 聚焦，并使用 `feat:`、
+`fix:`、`refactor:`、`test:`、`docs:`、`ci:` 或 `chore:` 等 conventional commit
+类型。
 
 ## 必需检查
 
