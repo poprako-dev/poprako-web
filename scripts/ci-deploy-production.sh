@@ -12,6 +12,7 @@ deploy_sha=${DEPLOY_SHA:?DEPLOY_SHA is required}
 deploy_healthcheck_url=${DEPLOY_HEALTHCHECK_URL:?DEPLOY_HEALTHCHECK_URL is required}
 deploy_private_key=${DEPLOY_SSH_PRIVATE_KEY:?DEPLOY_SSH_PRIVATE_KEY is required}
 deploy_known_hosts=${DEPLOY_KNOWN_HOSTS:?DEPLOY_KNOWN_HOSTS is required}
+vite_api_base_url=${VITE_API_BASE_URL:?VITE_API_BASE_URL is required}
 
 validate_simple_value() {
     value=$1
@@ -81,6 +82,14 @@ case "$deploy_healthcheck_url" in
         ;;
 esac
 
+case "$vite_api_base_url" in
+    https://api.poprako.com/api/v1) ;;
+    *)
+        echo "VITE_API_BASE_URL must be https://api.poprako.com/api/v1" >&2
+        exit 1
+        ;;
+esac
+
 case "$deploy_sha" in
     *[!0-9a-f]*)
         echo "DEPLOY_SHA must be a lowercase hexadecimal commit SHA" >&2
@@ -110,6 +119,7 @@ trap cleanup EXIT
 trap 'exit 1' INT TERM
 
 cd "$project_root"
+export VITE_API_BASE_URL="$vite_api_base_url"
 sh scripts/ci-build.sh
 tar -czf "$artifact_path" -C dist .
 

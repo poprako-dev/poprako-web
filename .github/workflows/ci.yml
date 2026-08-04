@@ -69,6 +69,7 @@ jobs:
       name: production
 
     env:
+      VITE_API_BASE_URL: ${{ secrets.API_BASE_URL }}
       DEPLOY_HEALTHCHECK_URL: ${{ secrets.DEPLOY_HEALTHCHECK_URL }}
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
       DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
