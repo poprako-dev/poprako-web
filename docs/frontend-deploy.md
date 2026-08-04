@@ -10,7 +10,7 @@ GitHub Actions `production` environment；environment 与所需仓库配置已�
 Cloudflare (proxied)
   -> poprako-web-nginx:80/443 on the production host
        |- poprako.com -> SPA files and /api/* -> poprako-server-prod:8888
-       `- api.poprako.com (DNS only, same host) -> poprako-server-prod:8888
+       `- api.poprako.com (same host) -> poprako-server-prod:8888
 
 Docker network: poprako-prod
 ```
@@ -20,11 +20,11 @@ Nginx 以独立容器运行，是唯一公开 80/443 的入口。它和后端容
 `deploy/poprako-web/nginx.conf`，远端安装路径是
 `/opt/poprako-web/nginx.conf`。
 
-两个域名解析到同一台生产服务器，但使用不同代理方式：主站经 Cloudflare 代理，
-`api.poprako.com` 为 DNS-only。主站继续反代 `/api/*`，以 443 暴露后端；部署 job
+两个域名解析到同一台生产服务器。主站继续反代 `/api/*`，以 443 暴露后端；部署 job
 从 `production` environment 的 `API_BASE_URL` secret 注入构建，其值必须为
 `https://api.poprako.com/api/v1`。后端 API 通过 CORS 只允许
-`https://poprako.com`。
+`https://poprako.com`。`api.poprako.com` 的 Cloudflare proxy 状态由 DNS 配置控制，
+与 CORS 的实现无关。
 
 `/api/health` 只接受后端容器自身的 loopback 请求。跨容器请求即使来自同一
 Docker network 也不是 loopback，因此前端部署不得用该接口做健康检查。
