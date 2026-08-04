@@ -23,7 +23,8 @@ Nginx 以独立容器运行，是唯一公开 80/443 的入口。它和后端容
 两个域名解析到同一台生产服务器，但使用不同代理方式：主站经 Cloudflare 代理，
 `api.poprako.com` 为 DNS-only。主站继续反代 `/api/*`，以 443 暴露后端；部署 job
 从 `production` environment 的 `API_BASE_URL` secret 注入构建，其值必须为
-`https://api.poprako.com/api/v1`。API 域名通过 CORS 只允许 `https://poprako.com`。
+`https://api.poprako.com/api/v1`。后端 API 通过 CORS 只允许
+`https://poprako.com`。
 
 `/api/health` 只接受后端容器自身的 loopback 请求。跨容器请求即使来自同一
 Docker network 也不是 loopback，因此前端部署不得用该接口做健康检查。
