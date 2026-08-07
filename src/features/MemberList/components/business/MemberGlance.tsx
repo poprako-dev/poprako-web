@@ -28,6 +28,8 @@ export default function MemberGlance() {
   const [selectedMember, setSelectedMember] = useState<MemberInfo | null>(
     null,
   );
+  // 成员角色变更后自增，触发列表重新拉取
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const isAdmin =
     activeMember !== null && hasRole(activeMember, "admin");
@@ -86,7 +88,12 @@ export default function MemberGlance() {
 
   const handleUpdateRole = useCallback(
     async (id: string, roles: number): Promise<Result<void>> => {
-      return updateMemberRole({ id, roles });
+      const result = await updateMemberRole({ id, roles });
+      if (result.success) {
+        // 触发列表整体刷新，获取服务端最新角色
+        setRefreshKey((key) => key + 1);
+      }
+      return result;
     },
     [],
   );
@@ -94,6 +101,7 @@ export default function MemberGlance() {
   return (
     <div className="h-full w-full min-w-0 overflow-x-hidden p-4 sm:p-6">
       <MemberList
+        key={refreshKey}
         fuzzyName={fuzzyName}
         onChangeFuzzyName={setFuzzyName}
         activeRole={activeRole}
