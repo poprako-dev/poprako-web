@@ -603,37 +603,38 @@ export default function Workspace() {
 
           {/* swipeable content */}
           <div
-            className="flex-1 min-h-0 overflow-hidden"
+            className="flex-1 min-h-0 overflow-hidden relative"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
+            {/* panel 0: comic list */}
             <div
-              className="flex h-full transition-transform duration-300 ease-out"
-              style={{ transform: `translateX(-${mobileTab * 100}%)` }}
+              className="absolute inset-0 h-full overflow-y-auto"
+              style={{ visibility: mobileTab === 0 ? "visible" : "hidden" }}
             >
-              {/* panel 0: comic list */}
-              <div className="w-full shrink-0 h-full overflow-y-auto">
-                <ComicTranslationList
-                  key={comicListRefreshKey}
-                  onLoadComics={fetchMyAssignmentComicCards}
-                  onComicClick={openComicDetail}
+              <ComicTranslationList
+                key={comicListRefreshKey}
+                onLoadComics={fetchMyAssignmentComicCards}
+                onComicClick={openComicDetail}
+              />
+            </div>
+            {/* panel 1: chatbox */}
+            <div
+              className="absolute inset-0 h-full"
+              style={{ visibility: mobileTab === 1 ? "visible" : "hidden" }}
+            >
+              <div
+                className={clsx(
+                  "h-full",
+                  "rounded-md border border-border/50",
+                  "overflow-hidden",
+                )}
+              >
+                <CommentChatBox
+                  comments={comments}
+                  loading={commentsLoading}
+                  onSend={handleSendComment}
                 />
-              </div>
-              {/* panel 1: chatbox */}
-              <div className="w-full shrink-0 h-full">
-                <div
-                  className={clsx(
-                    "h-full",
-                    "rounded-md border border-border/50",
-                    "overflow-hidden",
-                  )}
-                >
-                  <CommentChatBox
-                    comments={comments}
-                    loading={commentsLoading}
-                    onSend={handleSendComment}
-                  />
-                </div>
               </div>
             </div>
           </div>
