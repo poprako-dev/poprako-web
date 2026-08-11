@@ -72,7 +72,7 @@ export default function SettingsPanel() {
   };
 
   return (
-    <div className="flex w-1/3 flex-col gap-4">
+    <div className="flex w-5/6 flex-col gap-4 sm:w-1/2 lg:w-1/3">
       <div
         className={clsx(
           "flex cursor-pointer items-center justify-between",
