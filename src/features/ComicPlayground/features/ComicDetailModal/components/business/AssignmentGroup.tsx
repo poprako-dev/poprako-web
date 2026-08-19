@@ -4,7 +4,7 @@ import { Plus, UserMinus, UserPlus } from "lucide-react";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import { canApplyWorkflowTransition, type ChapterInfo } from "@/types/chapter";
 import type { AssignmentInfo } from "@/types/assignment";
-import { hasRole, type Role } from "@/types/role";
+import type { Role } from "@/types/role";
 import type { Result } from "@/types/utils/result";
 import type { WorkflowStatus } from "@/types/workflow";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -119,9 +119,6 @@ export default function AssignmentGroup({
     useState<TransitionState | null>(null);
   const [removeState, setRemoveState] = useState<RemoveState | null>(null);
   const transitioningRef = useRef(false);
-  const admins = assignments.filter((assignment) =>
-    hasRole(assignment, "admin"),
-  );
 
   async function handleTransition(transition: WorkflowTransition) {
     if (transitioningRef.current) return;
@@ -138,21 +135,16 @@ export default function AssignmentGroup({
 
   return (
     <section
-      aria-labelledby="assignment-group-title"
-      className="relative border-b border-stone-200 bg-stone-50 px-4 pb-3 pt-2.5"
+      aria-label="章节分工"
+      className="relative bg-transparent p-4"
     >
-      <div className="mb-2 flex min-h-8 items-center gap-2">
-        <div className="h-px flex-1 bg-stone-200" />
-        <span className="shrink-0 text-sm font-medium text-stone-400">
-          总管
-        </span>
-        <AssignmentAvatarStack
-          assignments={admins}
-          isLoading={isAssignmentsLoading}
-          showEmpty={false}
-        />
-      </div>
-
+      <span
+        aria-hidden="true"
+        className={clsx(
+          "absolute bottom-0 left-1/2 h-[1.5px] w-4/5 -translate-x-1/2",
+          "bg-stone-200",
+        )}
+      />
       <div className="grid grid-cols-2 border-l border-t border-stone-200/80 rounded-sm">
         {ASSIGNMENT_ROLE_DEFS.map((roleDef) => {
           const roleAssignments = assignments.filter(roleDef.matches);

@@ -39,6 +39,7 @@ type Args = {
   onImportChapter?: ComicDetailModalProps["onImportChapter"];
   reloadCurrentPages: () => Promise<void>;
   reloadLoadedChapters: () => Promise<unknown>;
+  onWorkflowRecordsChanged?: () => void;
   showToast: ShowToast;
 };
 
@@ -125,6 +126,7 @@ export function useComicDetailExport({
   onImportChapter,
   reloadCurrentPages,
   reloadLoadedChapters,
+  onWorkflowRecordsChanged,
   showToast,
 }: Args) {
   const [isImportingData, setIsImportingData] = useState(false);
@@ -137,7 +139,9 @@ export function useComicDetailExport({
   const [localCoverUrl, setLocalCoverUrl] = useState<string | null>(null);
   const exportAbortControllerRef = useRef<AbortController | null>(null);
 
-  const canUploadCover = (activeMember !== null && hasRole(activeMember, "admin")) || canUploadRawPages;
+  const canUploadCover =
+    (activeMember !== null && hasRole(activeMember, "admin")) ||
+    canUploadRawPages;
 
   const buildExportBaseName = useCallback(() => {
     const normalizedComicIndex = (comicIndex ?? 0) + 1;
@@ -169,7 +173,10 @@ export function useComicDetailExport({
   }, []);
 
   const fetchImageFileWithRetry = useCallback(
-    async (imageUrl: string, maxAttempts = 3): Promise<{ blob: Blob; extension: string } | null> => {
+    async (
+      imageUrl: string,
+      maxAttempts = 3,
+    ): Promise<{ blob: Blob; extension: string } | null> => {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         assertExportNotAborted();
         try {
@@ -264,6 +271,8 @@ export function useComicDetailExport({
         return;
       }
 
+      onWorkflowRecordsChanged?.();
+
       const zip = new JSZip();
       let skippedImages = 0;
 
@@ -299,7 +308,9 @@ export function useComicDetailExport({
             assertExportNotAborted();
 
             if (imageFile && imageFolder) {
-              const imageFileName = `${String(page.pageIndex).padStart(3, "0")}.${imageFile.extension}`;
+              const imageFileName =
+                `${String(page.pageIndex).padStart(3, "0")}.` +
+                imageFile.extension;
               imageFolder.file(imageFileName, imageFile.blob);
               completedPages += 1;
               setExportProgressStep(
@@ -394,7 +405,8 @@ export function useComicDetailExport({
 
       if (includeImages && skippedImages > 0) {
         showToast(
-          `导出完成，已打包图片、translation.prk.json、translation.lp.txt、assignments.txt，${skippedImages} 张图片下载失败后已跳过`,
+          "导出完成，已打包图片、translation.prk.json、translation.lp.txt、" +
+            `assignments.txt，${skippedImages} 张图片下载失败后已跳过`,
           "error",
         );
         return;
@@ -417,7 +429,20 @@ export function useComicDetailExport({
       setIsExportingData(false);
       setExportProgress(DEFAULT_EXPORT_PROGRESS);
     }
-  }, [assertExportNotAborted, buildExportBaseName, fetchImageFileWithRetry, isExportingData, onExportChapter, onExportChapterLp, pages, selectedChapterId, setExportProgressStep, showToast, toAssignmentText]);
+  }, [
+    assertExportNotAborted,
+    buildExportBaseName,
+    fetchImageFileWithRetry,
+    isExportingData,
+    onExportChapter,
+    onExportChapterLp,
+    onWorkflowRecordsChanged,
+    pages,
+    selectedChapterId,
+    setExportProgressStep,
+    showToast,
+    toAssignmentText,
+  ]);
 
   const detectImportFormat = useCallback((file: File) => {
     const name = file.name.toLowerCase();
@@ -453,6 +478,7 @@ export function useComicDetailExport({
         }
 
         await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
+        onWorkflowRecordsChanged?.();
 
         showToast(
           `导入成功：${result.data.importedPageCount} 页，${result.data.importedUnitCount} 单元`,
@@ -465,7 +491,15 @@ export function useComicDetailExport({
         setIsImportingData(false);
       }
     },
-    [detectImportFormat, onImportChapter, reloadCurrentPages, reloadLoadedChapters, selectedChapterId, showToast],
+    [
+      detectImportFormat,
+      onImportChapter,
+      onWorkflowRecordsChanged,
+      reloadCurrentPages,
+      reloadLoadedChapters,
+      selectedChapterId,
+      showToast,
+    ],
   );
 
   const handleUploadCover = useCallback(

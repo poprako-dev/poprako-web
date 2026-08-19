@@ -31,6 +31,12 @@ export type ListChapterArgs = {
   limit: number;
 };
 
+export type ListChapterWorkflowRecordsArgs = {
+  chapterId: string;
+  offset: number;
+  limit: number;
+};
+
 export type RawListChapterArgs = {
   comic_id: string;
   incl?: ChapterInclude[];
@@ -64,7 +70,13 @@ export type RawUpdateChapterArgs = {
 
 export type RawUpdateChapterStageArgs = {
   id: string;
-  stage: "raw-provide" | "translate" | "proofread" | "typeset-redraw" | "review" | "publish";
+  stage:
+    | "raw_provide"
+    | "translate"
+    | "proofread"
+    | "typeset_redraw"
+    | "review"
+    | "publish";
   oper: "advance" | "revert";
 };
 
@@ -134,6 +146,8 @@ export type RawChapterExport = {
 
 export type ImportChapterFormat = "json" | "lp";
 
+export type RawImportChapterFormat = "poprako" | "label_plus";
+
 export type ImportChapterArgs = {
   chapterId: string;
   content: string;
@@ -143,7 +157,7 @@ export type ImportChapterArgs = {
 export type RawImportChapterArgs = {
   chapter_id: string;
   content: string;
-  format: ImportChapterFormat;
+  format: RawImportChapterFormat;
 };
 
 export type ImportChapterResult = {

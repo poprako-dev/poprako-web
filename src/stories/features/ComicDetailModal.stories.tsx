@@ -3,6 +3,7 @@ import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import ComicDetailModal from "@/features/ComicPlayground/features/ComicDetailModal";
 import type { ComicInfo } from "@/types/comic";
 import type { ChapterInfo } from "@/types/chapter";
+import type { ChapterWorkflowRecord } from "@/types/chapterWorkflowRecord";
 import type { PageInfo } from "@/types/page";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
@@ -305,6 +306,115 @@ function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
 
+function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
+  return [
+    {
+      id: `${chapterId}-record-10`,
+      chapterId,
+      actorUserId: "u-aki",
+      event: {
+        kind: "stage_transitioned",
+        data: {
+          stage: "translate",
+          previousPhase: "active",
+          nextPhase: "completed",
+          origin: "translation_import",
+        },
+      },
+      createdAt: now - 1_000 * 60 * 4,
+    },
+    {
+      id: `${chapterId}-record-9`,
+      chapterId,
+      actorUserId: "u-aki",
+      event: {
+        kind: "translation_exported",
+        data: { format: "label_plus" },
+      },
+      createdAt: now - 1_000 * 60 * 18,
+    },
+    {
+      id: `${chapterId}-record-8`,
+      chapterId,
+      actorUserId: "u-aki",
+      event: {
+        kind: "translation_imported",
+        data: {
+          format: "poprako",
+          importedPageCount: 25,
+          importedUnitCount: 186,
+        },
+      },
+      createdAt: now - 1_000 * 60 * 32,
+    },
+    {
+      id: `${chapterId}-record-7`,
+      chapterId,
+      actorUserId: "u-admin",
+      event: {
+        kind: "assignment_deleted",
+        data: { subjectUserId: "u-former", previousRoles: 4 },
+      },
+      createdAt: now - 1_000 * 60 * 51,
+    },
+    {
+      id: `${chapterId}-record-6`,
+      chapterId,
+      actorUserId: "u-admin",
+      event: {
+        kind: "assignment_roles_updated",
+        data: {
+          subjectUserId: "u-aki",
+          previousRoles: 2,
+          nextRoles: 6,
+        },
+      },
+      createdAt: now - 1_000 * 60 * 76,
+    },
+    {
+      id: `${chapterId}-record-5`,
+      chapterId,
+      actorUserId: "u-admin",
+      event: {
+        kind: "assignment_created",
+        data: { subjectUserId: "u-aki", roles: 2 },
+      },
+      createdAt: now - 1_000 * 60 * 105,
+    },
+    {
+      id: `${chapterId}-record-4`,
+      chapterId,
+      actorUserId: "u-admin",
+      event: { kind: "chapter_unpinned" },
+      createdAt: now - 1_000 * 60 * 144,
+    },
+    {
+      id: `${chapterId}-record-3`,
+      chapterId,
+      actorUserId: "u-admin",
+      event: { kind: "chapter_pinned" },
+      createdAt: now - 1_000 * 60 * 175,
+    },
+    {
+      id: `${chapterId}-record-2`,
+      chapterId,
+      actorUserId: "u-admin",
+      event: {
+        kind: "chapter_subtitle_updated",
+        data: { previousSubtitle: "", nextSubtitle: "深渊回响" },
+      },
+      createdAt: now - 1_000 * 60 * 220,
+    },
+    {
+      id: `${chapterId}-record-1`,
+      chapterId,
+      actorUserId: null,
+      event: { kind: "chapter_created" },
+      createdAt: now - 1_000 * 60 * 260,
+    },
+  ];
+}
+
 const removeCombinedTypesetAssignment = fn(
   async (_chapterId: string, _userId: string, _role: Role) => ({
     success: true as const,
@@ -351,6 +461,25 @@ export const Default: Story = {
       await delay(200);
       // 每个章节 25 页，足够测试页面列表滚动
       return { success: true, data: makePages(chapterId, 25) };
+    },
+    onLoadWorkflowRecords: async (args) => {
+      await delay(120);
+      const records = makeWorkflowRecords(args.chapterId);
+      return {
+        success: true,
+        data: records.slice(args.offset, args.offset + args.limit),
+      };
+    },
+    onResolveWorkflowRecordUser: async (userId) => {
+      const names: Record<string, string> = {
+        "u-admin": "Mori",
+        "u-aki": "Aki",
+        "u-former": "已退出成员",
+      };
+      return {
+        success: true,
+        data: makeUser(userId, names[userId] ?? userId),
+      };
     },
     onTransiteWorkflow: async (_chapterId, transition) => {
       await delay(300);
@@ -508,6 +637,9 @@ export const CombinedTypesetRemoval: Story = {
   play: async ({ canvasElement }) => {
     removeCombinedTypesetAssignment.mockClear();
     const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole("button", {
+      name: "工作流记录",
+    }));
     const avatar = await canvas.findByRole("button", {
       name: "移除Dual Artist的当前分工",
     });
@@ -532,6 +664,75 @@ export const CombinedTypesetRemoval: Story = {
       );
     });
   },
+};
+
+export const WorkflowTimeline: Story = {
+  name: "工作流时间线",
+  args: {
+    ...Default.args,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole("button", {
+      name: "工作流记录",
+    }));
+    const eventText = await canvas.findByText(
+      "因翻译导入，翻译阶段从“进行中”变为“已完成”",
+    );
+    const record = eventText.closest("li");
+
+    expect(record).toHaveTextContent(
+      "Aki 因翻译导入，翻译阶段从“进行中”变为“已完成”",
+    );
+    expect(record?.querySelectorAll("p")).toHaveLength(1);
+    expect(canvas.queryByText("总管")).not.toBeInTheDocument();
+  },
+};
+
+export const EmptyWorkflowRecords: Story = {
+  name: "工作流记录为空",
+  args: {
+    ...Default.args,
+    onLoadWorkflowRecords: async () => ({ success: true, data: [] }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole("button", {
+      name: "工作流记录",
+    }));
+    expect(await canvas.findByText("暂无活动记录")).toBeInTheDocument();
+  },
+};
+
+export const WorkflowRecordsLoadError: Story = {
+  name: "工作流记录加载失败",
+  args: {
+    ...Default.args,
+    onLoadWorkflowRecords: async () => ({
+      success: false,
+      error: "网络连接失败",
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole("button", {
+      name: "工作流记录",
+    }));
+    expect(
+      await canvas.findByText("活动记录加载失败"),
+    ).toBeInTheDocument();
+  },
+};
+
+export const MobileWorkflow: Story = {
+  name: "移动端完整分工与时间线",
+  args: {
+    ...Default.args,
+  },
+  parameters: {
+    viewport: { defaultViewport: "mobile1" },
+  },
+  play: WorkflowTimeline.play,
 };
 
 export const EmptyPages: Story = {

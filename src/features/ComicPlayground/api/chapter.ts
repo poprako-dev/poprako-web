@@ -3,8 +3,13 @@ import { appConfig } from "@/config/config";
 import { useAppStore } from "@/store/app";
 import { toChapterInfo } from "@/types/chapter";
 import type { ChapterInfo } from "@/types/chapter";
+import type { ChapterWorkflowRecord } from "@/types/chapterWorkflowRecord";
 import type { Result } from "@/types/utils/result";
 import type { RawChapterInfo } from "@/types/raw/chapter";
+import {
+  unwrapRawChapterWorkflowRecord,
+  type RawChapterWorkflowRecord,
+} from "@/types/raw/chapterWorkflowRecord";
 import type {
   ListChapterArgs,
   RawListChapterArgs,
@@ -19,7 +24,10 @@ import type {
   RawImportChapterArgs,
   ImportChapterResult,
   RawImportChapterResult,
+  ListChapterWorkflowRecordsArgs,
 } from "../types/chapter";
+
+export type { ListChapterWorkflowRecordsArgs } from "../types/chapter";
 
 type ExportRequestOptions = {
   signal?: AbortSignal;
@@ -32,7 +40,7 @@ function toStageUpdate(
   if (!transition) return null;
 
   if (transition.startsWith("upload_")) {
-    return { stage: "raw-provide", oper };
+    return { stage: "raw_provide", oper };
   }
   if (transition.startsWith("translate_")) {
     return { stage: "translate", oper };
@@ -41,7 +49,7 @@ function toStageUpdate(
     return { stage: "proofread", oper };
   }
   if (transition.startsWith("typeset_")) {
-    return { stage: "typeset-redraw", oper };
+    return { stage: "typeset_redraw", oper };
   }
   if (transition.startsWith("review_")) {
     return { stage: "review", oper };
@@ -77,6 +85,22 @@ export async function listChapters(
   const items = Array.isArray(res.data) ? res.data : [];
 
   return { success: true, data: items.map((raw) => toChapterInfo(raw)!) };
+}
+
+export async function listChapterWorkflowRecords(
+  args: ListChapterWorkflowRecordsArgs,
+): Promise<Result<ChapterWorkflowRecord[]>> {
+  const res = await api.get<RawChapterWorkflowRecord[]>(
+    `/chapters/${args.chapterId}/workflow-records`,
+    {
+      offset: args.offset,
+      limit: args.limit,
+    },
+  );
+  if (!res.success) return res;
+
+  const items = Array.isArray(res.data) ? res.data : [];
+  return { success: true, data: items.map(unwrapRawChapterWorkflowRecord) };
 }
 
 export async function createChapter(
@@ -231,7 +255,7 @@ export async function exportChapterLp(
 
   try {
     const response = await fetch(
-      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=label-plus`,
+      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=label_plus`,
       {
       method: "GET",
         headers: token
@@ -285,7 +309,7 @@ export async function importChapter(
   const rawArgs: RawImportChapterArgs = {
     chapter_id: args.chapterId,
     content: args.content,
-    format: args.format,
+    format: args.format === "json" ? "poprako" : "label_plus",
   };
 
   const res = await api.post<RawImportChapterResult, RawImportChapterArgs>(
