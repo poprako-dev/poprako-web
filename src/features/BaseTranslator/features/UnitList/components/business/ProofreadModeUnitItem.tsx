@@ -1,4 +1,8 @@
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import clsx from "clsx";
 import { Check, Copy, X } from "lucide-react";
 import {
@@ -19,6 +23,13 @@ type Props = {
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
+  onIndexPointerDown?: (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    unitId: string,
+  ) => void;
+  isDragging?: boolean;
+  isDragDimmed?: boolean;
+  showDropIndicator?: boolean;
   dataUnitId?: string;
   enableReadOnly?: boolean;
   specialCharInsertRequest?: SpecialCharInsertRequest;
@@ -30,6 +41,10 @@ export default function ProofreadModeUnitItem({
   isFocused,
   onSelect,
   onModifyUnit,
+  onIndexPointerDown,
+  isDragging,
+  isDragDimmed,
+  showDropIndicator,
   dataUnitId,
   enableReadOnly = false,
   specialCharInsertRequest,
@@ -84,7 +99,11 @@ export default function ProofreadModeUnitItem({
       unit={unit}
       isFocused={isFocused}
       onSelect={onSelect}
-      onModifyUnit={onModifyUnit}
+      onIndexPointerDown={onIndexPointerDown}
+      isDragging={isDragging}
+      isDragDimmed={isDragDimmed}
+      showDropIndicator={showDropIndicator}
+      enableReadOnly={enableReadOnly}
       dataUnitId={dataUnitId}
     >
       <div className="flex flex-col">

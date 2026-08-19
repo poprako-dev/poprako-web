@@ -1,11 +1,17 @@
 import clsx from "clsx";
 import { ListCheck } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import type { TranslatorMode } from "@/types/translatorMode";
-import { unitId, unitIsProofread, type UnitInfo, type UnitEdit } from "@/types/unit";
+import {
+  unitId,
+  unitIsProofread,
+  type UnitInfo,
+  type UnitEdit,
+} from "@/types/unit";
+import { useUnitReorder } from "../../hook/useUnitReorder";
 import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
-import { useToastStore } from "@/components/ui/NotificationToast/hooks";
-import { useEffect, useRef } from "react";
 
 export type SpecialCharInsertRequest = {
   id: number;
@@ -19,6 +25,7 @@ type Props = {
   onFocusUnit?: (unitId: string) => void;
   // 在 units 长度为 0 时，不存在这个字段
   onModifyUnit?: (unitId: string, unit: UnitEdit) => void;
+  onReorderUnit?: (unitId: string, targetIndex: number) => void;
   enableReadOnly?: boolean;
   specialCharInsertRequest?: SpecialCharInsertRequest;
   onSpecialCharUse?: (char: string) => void;
@@ -30,11 +37,21 @@ export default function UnitList({
   mode,
   onFocusUnit,
   onModifyUnit,
+  onReorderUnit,
   enableReadOnly = false,
   specialCharInsertRequest,
   onSpecialCharUse,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
+  const canReorder = !enableReadOnly && onReorderUnit !== undefined;
+  const { orderedUnits, draggingUnitId, handleIndexPointerDown } =
+    useUnitReorder({
+      units,
+      listRef,
+      enabled: canReorder,
+      onFocusUnit,
+      onReorderUnit,
+    });
 
   useEffect(() => {
     if (focusedUnitId && listRef.current) {
@@ -61,15 +78,27 @@ export default function UnitList({
   };
 
   return (
-    <div ref={listRef} className="w-full h-full flex flex-col bg-stone-50">
-      <div className="flex-1">
-        {units.map((unit) => (
+    <div className="flex h-full w-full flex-col overflow-hidden bg-stone-50">
+      <div
+        ref={listRef}
+        className={clsx(
+          "min-h-0 flex-1 overflow-y-auto",
+          draggingUnitId && "select-none",
+        )}
+      >
+        {orderedUnits.map((unit) => (
           <ItemComponent
             key={unitId(unit)}
             unit={unit}
             isFocused={focusedUnitId === unitId(unit)}
             onSelect={onFocusUnit}
             onModifyUnit={onModifyUnit}
+            onIndexPointerDown={canReorder ? handleIndexPointerDown : undefined}
+            isDragging={draggingUnitId === unitId(unit)}
+            isDragDimmed={
+              draggingUnitId !== null && draggingUnitId !== unitId(unit)
+            }
+            showDropIndicator={draggingUnitId === unitId(unit)}
             dataUnitId={unitId(unit)}
             enableReadOnly={enableReadOnly}
             specialCharInsertRequest={specialCharInsertRequest}
