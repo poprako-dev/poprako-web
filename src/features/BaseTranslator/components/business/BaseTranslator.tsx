@@ -126,6 +126,7 @@ export default function BaseTranslator({
 
   const canvasRef = useRef<CanvasHandle>(null);
   const lastSpecialCharRef = useRef<string | null>(null);
+  const relocationSuppressedUnitIdRef = useRef<string | null>(null);
 
   const showToast = useToastStore((s) => s.showToast);
   const { allChars, favoriteChars } = useSpecialChars();
@@ -180,6 +181,7 @@ export default function BaseTranslator({
       ]);
       setLoadedUnits(units, setUnitBuf);
       setImageUrl(img);
+      relocationSuppressedUnitIdRef.current = null;
       setFocusedUnitId(undefined);
     } finally {
       setIsLoadingPage(false);
@@ -332,7 +334,16 @@ export default function BaseTranslator({
 
     commitUnits([...unitBufRef.current, newUnit], setUnitBuf);
 
-    setFocusedUnitId(unitId(newUnit));
+    const newUnitId = unitId(newUnit);
+    relocationSuppressedUnitIdRef.current = newUnitId;
+    setFocusedUnitId(newUnitId);
+  }
+
+  function handleFocusUnit(targetUnitId: string) {
+    if (targetUnitId !== focusedUnitId) {
+      relocationSuppressedUnitIdRef.current = null;
+    }
+    setFocusedUnitId(targetUnitId);
   }
 
   function doDeleteUnit(targetUnitId: string) {
@@ -361,12 +372,14 @@ export default function BaseTranslator({
   // Relocation: when focused unit changes and relocation is on, center canvas on it
   useEffect(() => {
     if (!isRelocationEnabled || !focusedUnitId) return;
-    const unit = unitBuf.find((item) => unitId(item) === focusedUnitId);
+    if (relocationSuppressedUnitIdRef.current === focusedUnitId) return;
+
+    const unit = unitBufRef.current.find((item) => unitId(item) === focusedUnitId);
     if (!unit) return;
     const position = unitPosition(unit);
 
     canvasRef.current?.centerOn(position.xCoord, position.yCoord);
-  }, [focusedUnitId, isRelocationEnabled, unitBuf]);
+  }, [focusedUnitId, isRelocationEnabled, unitBufRef]);
 
   function handleSwitchView() {
     if (!canSwitchView) return;
@@ -388,13 +401,13 @@ export default function BaseTranslator({
         if (unitBuf.length === 0) return;
         const cur = unitBuf.findIndex((unit) => unitId(unit) === focusedUnitId);
         const next = cur >= unitBuf.length - 1 ? 0 : cur + 1;
-        setFocusedUnitId(unitId(unitBuf[next]));
+        handleFocusUnit(unitId(unitBuf[next]));
       },
       prevMarker: () => {
         if (unitBuf.length === 0) return;
         const cur = unitBuf.findIndex((unit) => unitId(unit) === focusedUnitId);
         const prev = cur <= 0 ? unitBuf.length - 1 : cur - 1;
-        setFocusedUnitId(unitId(unitBuf[prev]));
+        handleFocusUnit(unitId(unitBuf[prev]));
       },
       pageUp: () => {
         if (pageIndex > 0) handleNavigate(pageIndex - 1);
@@ -455,7 +468,7 @@ export default function BaseTranslator({
         isLoading={isLoadingPage}
         isUnitCreationEnabled={canEditView ? isUnitCreationEnabled : false}
         focusedUnitId={focusedUnitId}
-        onFocusUnit={setFocusedUnitId}
+        onFocusUnit={handleFocusUnit}
         onMoveUnit={canEditView ? handleMoveUnit : undefined}
         onAddUnit={canEditView ? handleAddUnit : undefined}
         onDeleteUnit={canEditView ? handleDeleteUnit : undefined}
@@ -559,7 +572,7 @@ export default function BaseTranslator({
           units={unitBuf}
           focusedUnitId={focusedUnitId}
           mode={view}
-          onFocusUnit={setFocusedUnitId}
+          onFocusUnit={handleFocusUnit}
           onModifyUnit={canEditView ? handleModifyUnit : undefined}
           onReorderUnit={canEditView ? handleReorderUnit : undefined}
           onResolveUser={onResolveUser}
