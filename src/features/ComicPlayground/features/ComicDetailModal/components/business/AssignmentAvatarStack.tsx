@@ -35,7 +35,7 @@ function AvatarTooltip({ name }: { name: string }) {
     <span
       role="tooltip"
       className={clsx(
-        "pointer-events-none absolute bottom-full right-0 z-50 mb-1.5",
+        "pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2",
         "whitespace-nowrap rounded-sm px-2 py-1",
         "bg-stone-700 text-[10px] font-medium text-stone-50 shadow-sm",
         "invisible opacity-0 transition-opacity duration-150",
