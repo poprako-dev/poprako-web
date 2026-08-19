@@ -676,13 +676,11 @@ export const WorkflowTimeline: Story = {
     await userEvent.click(await canvas.findByRole("button", {
       name: "工作流记录",
     }));
-    const eventText = await canvas.findByText(
-      "因翻译导入，翻译阶段从“进行中”变为“已完成”",
-    );
+    const eventText = await canvas.findByText("翻校数据导入推进");
     const record = eventText.closest("li");
 
     expect(record).toHaveTextContent(
-      "Aki 因翻译导入，翻译阶段从“进行中”变为“已完成”",
+      "翻译阶段已完成： Aki 翻校数据导入推进",
     );
     expect(record?.querySelectorAll("p")).toHaveLength(1);
     expect(canvas.queryByText("总管")).not.toBeInTheDocument();

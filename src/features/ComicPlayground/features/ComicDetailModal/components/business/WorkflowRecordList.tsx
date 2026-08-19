@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import clsx from "clsx";
 import { CircleAlert, History } from "lucide-react";
 import LoadingCircle from "@/components/ui/LoadingCircle";
@@ -7,8 +7,9 @@ import type {
   WorkflowRecordState,
 } from "../../hook/useComicDetailWorkflowRecords";
 import {
-  formatWorkflowRecordEvent,
   formatWorkflowRecordTime,
+  presentWorkflowRecordEvent,
+  type WorkflowRecordTextPart,
 } from "../../workflowRecord";
 
 type Props = {
@@ -16,7 +17,6 @@ type Props = {
   state: WorkflowRecordState;
   getUserLabel: (userId: string) => string;
   onLoadMore: () => void;
-  onRetryRefresh: () => void;
 };
 
 type RecordItemProps = {
@@ -24,25 +24,30 @@ type RecordItemProps = {
   getUserLabel: Props["getUserLabel"];
 };
 
-function RetryButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={clsx(
-        "rounded-sm border border-stone-200 px-2.5 py-1",
-        "text-xs font-medium text-stone-500",
-        "transition-colors hover:bg-stone-100 hover:text-stone-700",
-        "focus-visible:outline-2 focus-visible:outline-primary/60",
-      )}
-    >
-      重试
-    </button>
-  );
+type TextPartsProps = {
+  parts: WorkflowRecordTextPart[];
+};
+
+function TextParts({ parts }: TextPartsProps) {
+  return parts.map((part, index) => (
+    <Fragment key={`${index}-${part.text}`}>
+      {part.variable ? (
+        <span
+          data-workflow-variable="true"
+          className={clsx(
+            "underline decoration-stone-400 decoration-1",
+            "underline-offset-4",
+          )}
+        >
+          {part.text}
+        </span>
+      ) : part.text}
+    </Fragment>
+  ));
 }
 
 function RecordItem({ record, getUserLabel }: RecordItemProps) {
-  const text = formatWorkflowRecordEvent(record.event, getUserLabel);
+  const presentation = presentWorkflowRecordEvent(record.event, getUserLabel);
   const actor = record.actorUserId
     ? getUserLabel(record.actorUserId)
     : "系统";
@@ -57,12 +62,22 @@ function RecordItem({ record, getUserLabel }: RecordItemProps) {
           "transition-colors group-hover/record:bg-stone-400",
         )}
       />
-      <p
-        title={`${actor} ${text} · ${time}`}
-        className="text-sm leading-5 text-stone-600"
-      >
-        <span className="font-medium text-stone-700">{actor}</span>
-        <span> {text}</span>
+      <p className="text-sm font-normal leading-6 text-stone-600">
+        <span className="text-[15px] font-semibold text-stone-800">
+          <TextParts parts={presentation.title} />：
+        </span>
+        <span> </span>
+        <span
+          data-workflow-variable="true"
+          className={clsx(
+            "underline decoration-stone-400 decoration-1",
+            "underline-offset-4",
+          )}
+        >
+          {actor}
+        </span>
+        <span> </span>
+        <TextParts parts={presentation.detail} />
         <time
           dateTime={new Date(record.createdAt).toISOString()}
           className="ml-2 whitespace-nowrap text-xs text-stone-400"
@@ -79,7 +94,6 @@ export default function WorkflowRecordList({
   state,
   getUserLabel,
   onLoadMore,
-  onRetryRefresh,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -128,12 +142,9 @@ export default function WorkflowRecordList({
 
   if (state.error && state.records.length === 0) {
     return (
-      <div
-        className="flex h-full flex-col items-center justify-center gap-3"
-      >
+      <div className="flex h-full flex-col items-center justify-center gap-2">
         <CircleAlert size={24} className="text-stone-300" />
         <p className="text-sm text-stone-400">活动记录加载失败</p>
-        <RetryButton onClick={onRetryRefresh} />
       </div>
     );
   }
@@ -159,10 +170,7 @@ export default function WorkflowRecordList({
     >
       <div className="mx-auto w-full max-w-180">
         {state.error && (
-          <div className="mb-4 flex items-center justify-between gap-3 text-xs">
-            <span className="text-stone-400">最新记录刷新失败</span>
-            <RetryButton onClick={onRetryRefresh} />
-          </div>
+          <p className="mb-4 text-xs text-stone-400">最新记录刷新失败</p>
         )}
 
         <ol>
@@ -182,12 +190,9 @@ export default function WorkflowRecordList({
           </div>
         )}
         {state.loadMoreError && (
-          <div className="flex items-center justify-center gap-3 py-4">
-            <span className="text-xs text-stone-400">
-              更早记录加载失败
-            </span>
-            <RetryButton onClick={onLoadMore} />
-          </div>
+          <p className="py-4 text-center text-xs text-stone-400">
+            更早记录加载失败
+          </p>
         )}
       </div>
     </div>

@@ -469,7 +469,6 @@ export default function ComicDetailModal({
       state={workflowRecordState}
       getUserLabel={getWorkflowRecordUserLabel}
       onLoadMore={() => void loadMoreWorkflowRecords()}
-      onRetryRefresh={() => void refreshWorkflowRecords()}
     />
   );
 

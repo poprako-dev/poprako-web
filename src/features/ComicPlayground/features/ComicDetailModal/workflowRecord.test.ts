@@ -6,6 +6,7 @@ import type {
 import {
   formatWorkflowRecordEvent,
   formatWorkflowRecordTime,
+  presentWorkflowRecordEvent,
   shortWorkflowRecordUserId,
   workflowRecordUserIds,
 } from "./workflowRecord";
@@ -17,22 +18,22 @@ const userLabel = (userId: string) => ({
 
 describe("formatWorkflowRecordEvent", () => {
   test.each<[ChapterWorkflowRecordEvent, string]>([
-    [{ kind: "chapter_created" }, "创建了章节"],
+    [{ kind: "chapter_created" }, "章节创建：创建了章节"],
     [
       {
         kind: "chapter_subtitle_updated",
         data: { previousSubtitle: "", nextSubtitle: "终幕" },
       },
-      "将章节副标题从“无副标题”修改为“终幕”",
+      "章节副标题修改：将“无副标题”修改为“终幕”",
     ],
-    [{ kind: "chapter_pinned" }, "将章节设为置顶"],
-    [{ kind: "chapter_unpinned" }, "取消了章节置顶"],
+    [{ kind: "chapter_pinned" }, "章节置顶：设为置顶章节"],
+    [{ kind: "chapter_unpinned" }, "取消章节置顶：取消置顶"],
     [
       {
         kind: "assignment_created",
         data: { subjectUserId: "subject_1", roles: 2 },
       },
-      "为 Aki 分配了翻译分工",
+      "章节分工添加：为 Aki 添加了翻译分工",
     ],
     [
       {
@@ -43,14 +44,14 @@ describe("formatWorkflowRecordEvent", () => {
           nextRoles: 6,
         },
       },
-      "将 Aki 的分工从“翻译”调整为“翻译、校对”",
+      "章节分工调整：将 Aki 的分工由“翻译”调整为“翻译、校对”",
     ],
     [
       {
         kind: "assignment_deleted",
         data: { subjectUserId: "subject_1", previousRoles: 4 },
       },
-      "移除了 Aki 的校对分工",
+      "章节分工移除：移除了 Aki 的校对分工",
     ],
     [
       {
@@ -61,14 +62,14 @@ describe("formatWorkflowRecordEvent", () => {
           importedUnitCount: 120,
         },
       },
-      "导入了 PopRaKo 数据（32 页，120 个单元）",
+      "翻校数据导入：以 PopRaKo 格式导入了 32 页，共 120 个翻校单元",
     ],
     [
       {
         kind: "translation_exported",
         data: { format: "label_plus" },
       },
-      "导出了 LabelPlus 数据",
+      "翻校数据导出：以 LabelPlus 格式导出",
     ],
     [
       {
@@ -80,13 +81,13 @@ describe("formatWorkflowRecordEvent", () => {
           origin: "translation_import",
         },
       },
-      "因翻译导入，翻译阶段从“进行中”变为“已完成”",
+      "翻译阶段已完成：翻校数据导入推进",
     ],
   ])("formats $kind", (event, expected) => {
     expect(formatWorkflowRecordEvent(event, userLabel)).toBe(expected);
   });
 
-  test("omits the manual transition origin", () => {
+  test("formats a manual transition as an explicit action", () => {
     expect(formatWorkflowRecordEvent({
       kind: "stage_transitioned",
       data: {
@@ -95,7 +96,24 @@ describe("formatWorkflowRecordEvent", () => {
         nextPhase: "active",
         origin: "manual",
       },
-    })).toBe("嵌字阶段从“待开始”变为“进行中”");
+    })).toBe("嵌字阶段已开始：手动推进");
+  });
+
+  test("marks every displayed import payload value as variable", () => {
+    const presentation = presentWorkflowRecordEvent({
+      kind: "translation_imported",
+      data: {
+        format: "poprako",
+        importedPageCount: 32,
+        importedUnitCount: 120,
+      },
+    });
+
+    expect(presentation.detail.filter(({ variable }) => variable)).toEqual([
+      { text: "PopRaKo", variable: true },
+      { text: "32", variable: true },
+      { text: "120", variable: true },
+    ]);
   });
 });
 

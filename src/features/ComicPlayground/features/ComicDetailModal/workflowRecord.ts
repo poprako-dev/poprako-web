@@ -10,6 +10,16 @@ import { unmaskRoles, type Role } from "@/types/role";
 
 type UserLabel = (userId: string) => string;
 
+export type WorkflowRecordTextPart = {
+  text: string;
+  variable: boolean;
+};
+
+export type WorkflowRecordEventPresentation = {
+  title: WorkflowRecordTextPart[];
+  detail: WorkflowRecordTextPart[];
+};
+
 const ROLE_LABELS: Record<Role, string> = {
   rawProvider: "图源",
   translator: "翻译",
@@ -30,18 +40,10 @@ const STAGE_LABELS: Record<ChapterWorkflowRecordStage, string> = {
   publish: "发布",
 };
 
-const PHASE_LABELS: Record<ChapterWorkflowRecordPhase, string> = {
+const PHASE_TITLE_LABELS: Record<ChapterWorkflowRecordPhase, string> = {
   pending: "待开始",
-  active: "进行中",
+  active: "已开始",
   completed: "已完成",
-};
-
-const ORIGIN_LABELS: Record<ChapterWorkflowRecordOrigin, string> = {
-  manual: "",
-  unit_edit: "单元编辑",
-  translation_import: "翻译导入",
-  translation_export: "翻译导出",
-  raw_provide_check: "图源检查",
 };
 
 const FORMAT_LABELS: Record<ChapterWorkflowRecordTranslationFormat, string> = {
@@ -53,6 +55,14 @@ function assertNever(value: never): never {
   throw new Error(`Unsupported workflow record event: ${JSON.stringify(value)}`);
 }
 
+function fixed(text: string): WorkflowRecordTextPart {
+  return { text, variable: false };
+}
+
+function variable(text: string): WorkflowRecordTextPart {
+  return { text, variable: true };
+}
+
 function roleLabels(mask: number): string {
   const labels = unmaskRoles(mask).map((role) => ROLE_LABELS[role]);
   return labels.length > 0 ? labels.join("、") : "未分配角色";
@@ -62,16 +72,38 @@ function subtitleLabel(value: string): string {
   return value.trim() || "无副标题";
 }
 
-function stageTransitionText(
-  event: Extract<ChapterWorkflowRecordEvent, { kind: "stage_transitioned" }>,
+function stageOriginLabel(
+  origin: ChapterWorkflowRecordOrigin,
+  stage: ChapterWorkflowRecordStage,
 ): string {
-  const { stage, previousPhase, nextPhase, origin } = event.data;
-  const reason = ORIGIN_LABELS[origin];
-  const prefix = reason ? `因${reason}，` : "";
-  return (
-    `${prefix}${STAGE_LABELS[stage]}阶段从` +
-    `“${PHASE_LABELS[previousPhase]}”变为“${PHASE_LABELS[nextPhase]}”`
-  );
+  switch (origin) {
+    case "manual":
+      return "手动推进";
+    case "unit_edit":
+      return `${STAGE_LABELS[stage]}翻校单元推进`;
+    case "translation_import":
+      return "翻校数据导入推进";
+    case "translation_export":
+      return "翻校数据导出推进";
+    case "raw_provide_check":
+      return "图源完整性检查推进";
+    default:
+      return assertNever(origin);
+  }
+}
+
+function stageTransitionPresentation(
+  event: Extract<ChapterWorkflowRecordEvent, { kind: "stage_transitioned" }>,
+): WorkflowRecordEventPresentation {
+  const { stage, nextPhase, origin } = event.data;
+  return {
+    title: [
+      variable(STAGE_LABELS[stage]),
+      fixed("阶段"),
+      variable(PHASE_TITLE_LABELS[nextPhase]),
+    ],
+    detail: [variable(stageOriginLabel(origin, stage))],
+  };
 }
 
 export function shortWorkflowRecordUserId(userId: string): string {
@@ -79,51 +111,105 @@ export function shortWorkflowRecordUserId(userId: string): string {
   return `${userId.slice(0, 6)}…${userId.slice(-4)}`;
 }
 
+export function presentWorkflowRecordEvent(
+  event: ChapterWorkflowRecordEvent,
+  userLabel: UserLabel = shortWorkflowRecordUserId,
+): WorkflowRecordEventPresentation {
+  switch (event.kind) {
+    case "chapter_created":
+      return { title: [fixed("章节创建")], detail: [fixed("创建了章节")] };
+    case "chapter_subtitle_updated":
+      return {
+        title: [fixed("章节副标题修改")],
+        detail: [
+          fixed("将“"),
+          variable(subtitleLabel(event.data.previousSubtitle)),
+          fixed("”修改为“"),
+          variable(subtitleLabel(event.data.nextSubtitle)),
+          fixed("”"),
+        ],
+      };
+    case "chapter_pinned":
+      return { title: [fixed("章节置顶")], detail: [fixed("设为置顶章节")] };
+    case "chapter_unpinned":
+      return { title: [fixed("取消章节置顶")], detail: [fixed("取消置顶")] };
+    case "assignment_created":
+      return {
+        title: [fixed("章节分工添加")],
+        detail: [
+          fixed("为 "),
+          variable(userLabel(event.data.subjectUserId)),
+          fixed(" 添加了"),
+          variable(roleLabels(event.data.roles)),
+          fixed("分工"),
+        ],
+      };
+    case "assignment_roles_updated":
+      return {
+        title: [fixed("章节分工调整")],
+        detail: [
+          fixed("将 "),
+          variable(userLabel(event.data.subjectUserId)),
+          fixed(" 的分工由“"),
+          variable(roleLabels(event.data.previousRoles)),
+          fixed("”调整为“"),
+          variable(roleLabels(event.data.nextRoles)),
+          fixed("”"),
+        ],
+      };
+    case "assignment_deleted":
+      return {
+        title: [fixed("章节分工移除")],
+        detail: [
+          fixed("移除了 "),
+          variable(userLabel(event.data.subjectUserId)),
+          fixed(" 的"),
+          variable(roleLabels(event.data.previousRoles)),
+          fixed("分工"),
+        ],
+      };
+    case "translation_imported":
+      return {
+        title: [fixed("翻校数据导入")],
+        detail: [
+          fixed("以 "),
+          variable(FORMAT_LABELS[event.data.format]),
+          fixed(" 格式导入了 "),
+          variable(String(event.data.importedPageCount)),
+          fixed(" 页，共 "),
+          variable(String(event.data.importedUnitCount)),
+          fixed(" 个翻校单元"),
+        ],
+      };
+    case "translation_exported":
+      return {
+        title: [fixed("翻校数据导出")],
+        detail: [
+          fixed("以 "),
+          variable(FORMAT_LABELS[event.data.format]),
+          fixed(" 格式导出"),
+        ],
+      };
+    case "stage_transitioned":
+      return stageTransitionPresentation(event);
+    default:
+      return assertNever(event);
+  }
+}
+
+function textFromParts(parts: WorkflowRecordTextPart[]): string {
+  return parts.map(({ text }) => text).join("");
+}
+
 export function formatWorkflowRecordEvent(
   event: ChapterWorkflowRecordEvent,
   userLabel: UserLabel = shortWorkflowRecordUserId,
 ): string {
-  switch (event.kind) {
-    case "chapter_created":
-      return "创建了章节";
-    case "chapter_subtitle_updated":
-      return (
-        `将章节副标题从“${subtitleLabel(event.data.previousSubtitle)}”` +
-        `修改为“${subtitleLabel(event.data.nextSubtitle)}”`
-      );
-    case "chapter_pinned":
-      return "将章节设为置顶";
-    case "chapter_unpinned":
-      return "取消了章节置顶";
-    case "assignment_created":
-      return (
-        `为 ${userLabel(event.data.subjectUserId)} 分配了` +
-        `${roleLabels(event.data.roles)}分工`
-      );
-    case "assignment_roles_updated":
-      return (
-        `将 ${userLabel(event.data.subjectUserId)} 的分工从` +
-        `“${roleLabels(event.data.previousRoles)}”调整为` +
-        `“${roleLabels(event.data.nextRoles)}”`
-      );
-    case "assignment_deleted":
-      return (
-        `移除了 ${userLabel(event.data.subjectUserId)} 的` +
-        `${roleLabels(event.data.previousRoles)}分工`
-      );
-    case "translation_imported":
-      return (
-        `导入了 ${FORMAT_LABELS[event.data.format]} 数据（` +
-        `${event.data.importedPageCount} 页，` +
-        `${event.data.importedUnitCount} 个单元）`
-      );
-    case "translation_exported":
-      return `导出了 ${FORMAT_LABELS[event.data.format]} 数据`;
-    case "stage_transitioned":
-      return stageTransitionText(event);
-    default:
-      return assertNever(event);
-  }
+  const presentation = presentWorkflowRecordEvent(event, userLabel);
+  return (
+    `${textFromParts(presentation.title)}：` +
+    textFromParts(presentation.detail)
+  );
 }
 
 export function formatWorkflowRecordTime(
