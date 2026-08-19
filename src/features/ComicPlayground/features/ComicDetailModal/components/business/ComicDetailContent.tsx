@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { History, Images } from "lucide-react";
 
@@ -53,6 +53,28 @@ export default function ComicDetailContent({
   workflowPanel,
   onChangeView,
 }: Props) {
+  const [displayedView, setDisplayedView] =
+    useState<ComicDetailView>(activeView);
+  const [isFading, setIsFading] = useState(false);
+
+  useEffect(() => {
+    if (activeView === displayedView) {
+      const frameId = window.requestAnimationFrame(() => setIsFading(false));
+      return () => window.cancelAnimationFrame(frameId);
+    }
+
+    const frameId = window.requestAnimationFrame(() => setIsFading(true));
+    const timeoutId = window.setTimeout(() => {
+      setDisplayedView(activeView);
+      setIsFading(false);
+    }, 120);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [activeView, displayedView]);
+
   return (
     <section className="flex h-full min-h-0 w-full flex-col bg-stone-50">
       <div className="flex shrink-0 items-center gap-3 px-4 py-0.5">
@@ -86,24 +108,36 @@ export default function ComicDetailContent({
       </div>
 
       <div
-        key={`${activeView}-${chapterId ?? "none"}`}
         className={clsx(
           "min-h-0 flex-1 bg-stone-100",
           "shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]",
         )}
       >
-        {activeView === "pages" ? (
+        <div
+          className={clsx(
+            "h-full transition-opacity duration-150 ease-out",
+            "motion-reduce:transition-none",
+            isFading ? "opacity-0" : "opacity-100",
+          )}
+        >
           <div
-            className={clsx(
-              "h-full overflow-y-auto p-4",
-              "scrollbar-thin scrollbar-thumb-stone-300",
-            )}
+            key={`${displayedView}-${chapterId ?? "none"}`}
+            className="h-full"
           >
-            {pageList}
+            {displayedView === "pages" ? (
+              <div
+                className={clsx(
+                  "h-full overflow-y-auto p-4",
+                  "scrollbar-thin scrollbar-thumb-stone-300",
+                )}
+              >
+                {pageList}
+              </div>
+            ) : (
+              workflowPanel
+            )}
           </div>
-        ) : (
-          workflowPanel
-        )}
+        </div>
       </div>
     </section>
   );

@@ -121,7 +121,7 @@ export default function WorkflowRecordList({
   if (state.isLoading && !state.loadedOnce) {
     return (
       <div className="flex h-full items-center justify-center">
-        <LoadingCircle size={26} aria-label="正在加载活动记录" />
+        <LoadingCircle size={22} aria-label="正在加载活动记录" />
       </div>
     );
   }

@@ -9,6 +9,7 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useAppStore } from "@/store/app";
 import PageList from "@/features/PageList/components/business/PageList";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import AssignmentGroup from "./AssignmentGroup";
 import ComicDetailContent, { type ComicDetailView } from "./ComicDetailContent";
@@ -190,6 +191,7 @@ export default function ComicDetailModal({
 
   const {
     pages,
+    isPagesLoading,
     uploadProgressByPageId,
     uploadStatusByPageId,
     uploadErrorByPageId,
@@ -408,7 +410,11 @@ export default function ComicDetailModal({
     />
   );
 
-  const pageGrid = (
+  const pageGrid = isPagesLoading ? (
+    <div className="flex h-full items-center justify-center">
+      <LoadingCircle size={22} aria-label="正在加载页面" />
+    </div>
+  ) : (
     <PageList
       pages={pages}
       enableClick={canClickPage}
