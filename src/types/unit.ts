@@ -72,12 +72,20 @@ export function unitTranslatedText(unit: UnitInfo): string | null {
   return null;
 }
 
+export function unitTranslatorId(unit: UnitInfo): string | null {
+  return unit.translatorId ?? null;
+}
+
 export function unitProofreadText(unit: UnitInfo): string | null {
   if (unit.proofreadText && unit.proofreadText != "") {
     return unit.proofreadText;
   }
 
   return null;
+}
+
+export function unitProofreaderId(unit: UnitInfo): string | null {
+  return unit.proofreaderId ?? null;
 }
 
 export function unitTranslatorComment(unit: UnitInfo): string | null {

@@ -40,6 +40,7 @@ import { useSpecialChars } from "@/hook/useSpecialChars";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
 import type { SpecialCharInsertRequest } from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
 import type { UnitDiff } from "../../types/type";
+import type { UnitUserResolver } from "../../features/UnitList/hook/unitContributorCache";
 import { useUnitPersistence } from "../../hook/useUnitPersistence";
 import {
   availableTranslatorModes,
@@ -59,6 +60,7 @@ type Props = {
   onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
   // 懒加载的图片 URL 获取器，BaseTranslator 只负责在需要时调用它来获取图片 URL
   onLoadPageImage: (pageId: string) => Promise<string>;
+  onResolveUser: UnitUserResolver;
   onCompleteStage?: (stage: TranslatorCompletionStage) => Promise<void>;
   onExit: () => void;
   currentUserId?: string;
@@ -76,6 +78,7 @@ export default function BaseTranslator({
   onLoadUnits,
   onSaveUnits,
   onLoadPageImage,
+  onResolveUser,
   onCompleteStage,
   onExit,
   currentUserId,
@@ -559,6 +562,7 @@ export default function BaseTranslator({
           onFocusUnit={setFocusedUnitId}
           onModifyUnit={canEditView ? handleModifyUnit : undefined}
           onReorderUnit={canEditView ? handleReorderUnit : undefined}
+          onResolveUser={onResolveUser}
           enableReadOnly={!canEditView}
           specialCharInsertRequest={specialCharInsertRequest}
           onSpecialCharUse={handleSpecialCharUse}
