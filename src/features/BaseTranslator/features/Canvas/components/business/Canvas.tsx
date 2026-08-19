@@ -16,6 +16,8 @@ import LoadingCircle from "@/components/ui/LoadingCircle";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
 import { useCanvasInteraction } from "../../hook/useCanvasInteraction";
 
+const RELOCATION_DURATION_MS = 200;
+
 export type CanvasHandle = {
   centerOn: (xCoord: number, yCoord: number) => void;
 };
@@ -78,6 +80,8 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
   });
 
   const [hoveredUnitId, setHoveredUnitId] = useState<string | null>(null);
+  const [isRelocating, setIsRelocating] = useState(false);
+  const relocationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Keep a live ref to transform to avoid stale closures in imperative handle
   const transformRef = useRef(transform);
@@ -94,11 +98,28 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
         const scale = transformRef.current.scale;
         const offsetX = -(xCoord - 0.5) * img.offsetWidth * scale;
         const offsetY = -(yCoord - 0.5) * img.offsetHeight * scale;
+
+        if (relocationTimerRef.current) {
+          clearTimeout(relocationTimerRef.current);
+        }
+        setIsRelocating(true);
         setTransform((prev) => ({ ...prev, offsetX, offsetY }));
+        relocationTimerRef.current = setTimeout(() => {
+          setIsRelocating(false);
+          relocationTimerRef.current = null;
+        }, RELOCATION_DURATION_MS);
       },
     }),
     [imgRef, setTransform],
   );
+
+  useEffect(() => {
+    return () => {
+      if (relocationTimerRef.current) {
+        clearTimeout(relocationTimerRef.current);
+      }
+    };
+  }, []);
 
   // 用 ref-based listener 替代 React onWheel，因为需要 { passive: false } 来支持 preventDefault
   useEffect(() => {
@@ -124,7 +145,13 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
         </div>
       ) : imageSrc ? (
         <div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          className={clsx(
+            "absolute inset-0 flex items-center justify-center pointer-events-none",
+            isRelocating && [
+              "transition-transform duration-200 ease-out",
+              "motion-reduce:transition-none",
+            ],
+          )}
           style={{
             transform: `translate(${transform.offsetX}px, ${transform.offsetY}px)`,
           }}
