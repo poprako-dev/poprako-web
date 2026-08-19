@@ -1,13 +1,22 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ComponentProps } from "react";
 import BaseTranslator from "@/features/BaseTranslator/components/business/BaseTranslator";
-import type { UnitInfo } from "@/types/unit";
+import {
+  unitProofreadText,
+  unitTranslatedText,
+  type UnitInfo,
+} from "@/types/unit";
 import type { Project } from "@/types/project";
+import type { UserInfo } from "@/types/user";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 
 const DEMO_IMAGE =
   "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80";
 
-const mockUnits: UnitInfo[] = [
+const TRANSLATOR_ID = "mock-translator";
+const PROOFREADER_ID = "mock-proofreader";
+
+const mockUnits = ([
   {
     id: "1",
     index: 0,
@@ -270,7 +279,40 @@ const mockUnits: UnitInfo[] = [
     translatedText: "结束了。",
     proofreadText: "终于结束了。",
   },
-];
+] satisfies UnitInfo[]).map((unit): UnitInfo => ({
+  ...unit,
+  ...(unitTranslatedText(unit) ? { translatorId: TRANSLATOR_ID } : {}),
+  ...(unitProofreadText(unit) ? { proofreaderId: PROOFREADER_ID } : {}),
+}));
+
+const mockUsers = new Map<string, UserInfo>([
+  [
+    TRANSLATOR_ID,
+    {
+      id: TRANSLATOR_ID,
+      qq: "10001",
+      name: "森川秋",
+      avatarUrl: "",
+      isSuperAdmin: false,
+      lastActiveAt: Date.now(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    },
+  ],
+  [
+    PROOFREADER_ID,
+    {
+      id: PROOFREADER_ID,
+      qq: "10002",
+      name: "林澄",
+      avatarUrl: "",
+      isSuperAdmin: false,
+      lastActiveAt: Date.now(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    },
+  ],
+]);
 
 const mockProject: Project = {
   id: "project-1",
@@ -341,6 +383,7 @@ const meta: Meta<typeof BaseTranslator> = {
 
 export default meta;
 type Story = StoryObj<typeof BaseTranslator>;
+type BaseTranslatorProps = ComponentProps<typeof BaseTranslator>;
 
 async function mockSaveUnits(pageId: string, diff: UnitDiff) {
   console.log("[mock] onSaveUnits", pageId, diff);
@@ -350,47 +393,55 @@ async function mockCompleteStage(stage: "translate" | "proofread") {
   console.log("[mock] onCompleteStage", stage);
 }
 
-export const WithProofread: Story = {
-  args: {
+async function mockResolveUser(userId: string) {
+  const user = mockUsers.get(userId);
+  return user
+    ? { success: true as const, data: user }
+    : { success: false as const, error: `Unknown user: ${userId}` };
+}
+
+function createStoryArgs({
+  canTranslate,
+  canProofread,
+  units = mockUnits,
+}: {
+  canTranslate: boolean;
+  canProofread: boolean;
+  units?: UnitInfo[];
+}): BaseTranslatorProps {
+  return {
     project: mockProject,
-    canTranslate: true,
-    canProofread: true,
-    onLoadUnits: async (_pageId: string) => mockUnits,
+    canTranslate,
+    canProofread,
+    onLoadUnits: async (_pageId: string) => units,
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,
+    onResolveUser: mockResolveUser,
     onCompleteStage: mockCompleteStage,
     onExit: () => {
       console.log("[mock] onExit");
     },
-  },
+  };
+}
+
+export const WithProofread: Story = {
+  args: createStoryArgs({
+    canTranslate: true,
+    canProofread: true,
+  }),
 };
 
 export const TranslatorOnly: Story = {
-  args: {
-    project: mockProject,
+  args: createStoryArgs({
     canTranslate: true,
     canProofread: false,
-    onLoadUnits: async (_pageId: string) => mockUnits,
-    onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
-    onSaveUnits: mockSaveUnits,
-    onCompleteStage: mockCompleteStage,
-    onExit: () => {
-      console.log("[mock] onExit");
-    },
-  },
+  }),
 };
 
 export const EmptyUnits: Story = {
-  args: {
-    project: mockProject,
+  args: createStoryArgs({
     canTranslate: true,
     canProofread: true,
-    onLoadUnits: async (_pageId: string) => [],
-    onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
-    onSaveUnits: mockSaveUnits,
-    onCompleteStage: mockCompleteStage,
-    onExit: () => {
-      console.log("[mock] onExit");
-    },
-  },
+    units: [],
+  }),
 };

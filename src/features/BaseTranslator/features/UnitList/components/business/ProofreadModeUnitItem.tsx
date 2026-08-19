@@ -13,6 +13,7 @@ import {
   type UnitInfo,
   type UnitEdit,
 } from "@/types/unit";
+import type { UserInfo } from "@/types/user";
 import BaseUnitItem from "./BaseUnitItem";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
@@ -32,6 +33,8 @@ type Props = {
   showDropIndicator?: boolean;
   dataUnitId?: string;
   enableReadOnly?: boolean;
+  translator?: UserInfo;
+  proofreader?: UserInfo;
   specialCharInsertRequest?: SpecialCharInsertRequest;
   onSpecialCharUse?: (char: string) => void;
 };
@@ -47,12 +50,23 @@ export default function ProofreadModeUnitItem({
   showDropIndicator,
   dataUnitId,
   enableReadOnly = false,
+  translator,
+  proofreader,
   specialCharInsertRequest,
   onSpecialCharUse,
 }: Props) {
   const proofRef = useRef<HTMLTextAreaElement>(null);
   const hasProofreadText = !!unitProofreadText(unit);
   const hasTranslatedText = !!unitTranslatedText(unit);
+  const showProofreadField = enableReadOnly
+    ? hasProofreadText
+    : isFocused || hasProofreadText;
+  const contributors = [
+    ...(translator ? [{ role: "translator" as const, user: translator }] : []),
+    ...(showProofreadField && proofreader
+      ? [{ role: "proofreader" as const, user: proofreader }]
+      : []),
+  ];
 
   useEffect(() => {
     if (isFocused && proofRef.current) {
@@ -104,60 +118,66 @@ export default function ProofreadModeUnitItem({
       isDragDimmed={isDragDimmed}
       showDropIndicator={showDropIndicator}
       enableReadOnly={enableReadOnly}
+      contributors={contributors}
       dataUnitId={dataUnitId}
     >
       <div className="flex flex-col">
         {/* 初翻文本（只读展示） */}
         <div className="flex items-center gap-1">
-          <AutoResizeTextarea
-            value={unitTranslatedText(unit) ?? undefined}
-            readOnly
-            onChange={() => {}}
-            onFocus={() => onSelect?.(unitId(unit))}
-            placeholder="无翻译内容"
-            className={clsx(
-              "flex-1 text-base cursor-default leading-relaxed placeholder:text-gray-300",
-              hasProofreadText
-                ? "text-gray-400"
-                : isFocused
-                  ? "text-gray-900 font-medium"
-                  : "text-gray-700",
-            )}
-          />
+          <div data-unit-contributor-trigger className="min-w-0 flex-1">
+            <AutoResizeTextarea
+              value={unitTranslatedText(unit) ?? undefined}
+              readOnly
+              onChange={() => {}}
+              onFocus={() => onSelect?.(unitId(unit))}
+              placeholder="无翻译内容"
+              className={clsx(
+                "cursor-default text-base leading-relaxed placeholder:text-gray-300",
+                hasProofreadText
+                  ? "text-gray-400"
+                  : isFocused
+                    ? "text-gray-900 font-medium"
+                    : "text-gray-700",
+              )}
+            />
+          </div>
           <div className="shrink-0 w-7 h-7 p-1 rounded flex items-center justify-center">
             <div
               className={clsx(
                 "w-2 h-2 rounded-full",
-                unitIsProofread(unit) ? "bg-[var(--color-green-500)]" : "bg-gray-200",
+                unitIsProofread(unit)
+                  ? "bg-[var(--color-green-500)]"
+                  : "bg-gray-200",
               )}
             />
           </div>
         </div>
 
-        {/* 校对框：仅在聚焦或已有校对内容时显示；只读模式下有校对内容就始终显示 */}
-        {(enableReadOnly
-          ? hasProofreadText
-          : isFocused || hasProofreadText) && (
+        {/* 校对框仅在聚焦或已有内容时显示。 */}
+        {/* 只读模式下，有校对内容就始终显示。 */}
+        {showProofreadField && (
           <>
             <div className="h-[1.5px] bg-gray-300 my-1 mr-10" />
             <div className="flex items-start gap-1">
-              <AutoResizeTextarea
-                ref={proofRef}
-                value={unitProofreadText(unit) ?? undefined}
-                onChange={(val) =>
-                  onModifyUnit?.(unitId(unit), {
-                    proofreadText: val,
-                    isProofread: val.trim().length > 0,
-                  })
-                }
-                onFocus={() => onSelect?.(unitId(unit))}
-                placeholder="输入校对..."
-                readOnly={enableReadOnly}
-                className={clsx(
-                  "flex-1 text-base leading-relaxed placeholder:text-gray-300",
-                  isFocused ? "text-gray-900 font-medium" : "text-gray-700",
-                )}
-              />
+              <div data-unit-contributor-trigger className="min-w-0 flex-1">
+                <AutoResizeTextarea
+                  ref={proofRef}
+                  value={unitProofreadText(unit) ?? undefined}
+                  onChange={(val) =>
+                    onModifyUnit?.(unitId(unit), {
+                      proofreadText: val,
+                      isProofread: val.trim().length > 0,
+                    })
+                  }
+                  onFocus={() => onSelect?.(unitId(unit))}
+                  placeholder="输入校对..."
+                  readOnly={enableReadOnly}
+                  className={clsx(
+                    "text-base leading-relaxed placeholder:text-gray-300",
+                    isFocused ? "text-gray-900 font-medium" : "text-gray-700",
+                  )}
+                />
+              </div>
               {!enableReadOnly && !hasProofreadText && hasTranslatedText && (
                 <button
                   title="从初翻复制"
@@ -195,7 +215,11 @@ export default function ProofreadModeUnitItem({
                     "transition-colors",
                   )}
                 >
-                  {unitIsProofread(unit) ? <X size={20} strokeWidth={2} /> : <Check size={20} strokeWidth={2} />}
+                  {unitIsProofread(unit) ? (
+                    <X size={20} strokeWidth={2} />
+                  ) : (
+                    <Check size={20} strokeWidth={2} />
+                  )}
                 </button>
               )}
             </div>

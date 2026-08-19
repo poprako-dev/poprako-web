@@ -13,6 +13,7 @@ import {
   completeChapterStage,
 } from "../../api/translator";
 import { listAssignmentsByChapter } from "@/api/assignment";
+import { getUser } from "@/api/user";
 
 import type { TranslatorMode } from "@/types/translatorMode";
 import type {
@@ -73,6 +74,15 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
   const [state, setState] = useState<LoadingState>({ status: "loading" });
   const { showToast } = useToastStore();
   const currentUserId = useAppStore((state) => state.loginState?.userInfo?.id);
+
+  const handleResolveUser = useCallback(async (userId: string) => {
+    const currentUser = useAppStore.getState().loginState?.userInfo;
+    if (currentUser?.id === userId) {
+      return { success: true as const, data: currentUser };
+    }
+
+    return getUser(userId);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -268,6 +278,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       onLoadUnits={handleLoadUnits}
       onSaveUnits={handleSaveUnits}
       onLoadPageImage={handleLoadPageImage}
+      onResolveUser={handleResolveUser}
       onCompleteStage={handleCompleteStage}
       onExit={onExit}
       currentUserId={currentUserId}

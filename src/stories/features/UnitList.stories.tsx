@@ -7,6 +7,65 @@ import {
   type UnitInfo,
 } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
+import type { UserInfo } from "@/types/user";
+import type { Result } from "@/types/utils/result";
+
+const STORY_AVATAR_URL = "data:image/svg+xml," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">' +
+    '<rect width="40" height="40" fill="#a8a29e"/>' +
+    '<circle cx="20" cy="16" r="8" fill="#f5f5f4"/>' +
+    '<path d="M7 40c1-10 6-15 13-15s12 5 13 15" fill="#f5f5f4"/>' +
+    "</svg>",
+);
+
+const storyUsers = new Map<string, UserInfo>([
+  [
+    "translator-1",
+    {
+      id: "translator-1",
+      qq: "",
+      name: "森川秋",
+      avatarUrl: STORY_AVATAR_URL,
+      isSuperAdmin: false,
+      lastActiveAt: 0,
+      createdAt: 0,
+      updatedAt: 0,
+    },
+  ],
+  [
+    "translator-2",
+    {
+      id: "translator-2",
+      qq: "",
+      name: "没有头像但用户名很长的翻译成员",
+      avatarUrl: "",
+      isSuperAdmin: false,
+      lastActiveAt: 0,
+      createdAt: 0,
+      updatedAt: 0,
+    },
+  ],
+  [
+    "proofreader-1",
+    {
+      id: "proofreader-1",
+      qq: "",
+      name: "林澄",
+      avatarUrl: "",
+      isSuperAdmin: false,
+      lastActiveAt: 0,
+      createdAt: 0,
+      updatedAt: 0,
+    },
+  ],
+]);
+
+async function resolveStoryUser(userId: string): Promise<Result<UserInfo>> {
+  const user = storyUsers.get(userId);
+  return user
+    ? { success: true, data: user }
+    : { success: false, error: "Story user not found" };
+}
 
 const meta: Meta<typeof UnitList> = {
   title: "Features/UnitList",
@@ -29,6 +88,7 @@ const initialUnits: UnitInfo[] = [
     yCoord: 0,
     isProofread: false,
     translatedText: "早安，今天的天气看起来非常不错。",
+    translatorId: "translator-1",
   },
   {
     id: "2",
@@ -38,7 +98,9 @@ const initialUnits: UnitInfo[] = [
     yCoord: 0.1,
     isProofread: true,
     translatedText: "这是原本的初翻文本。",
+    translatorId: "translator-1",
     proofreadText: "这一行有校对文本，所以始终显示。",
+    proofreaderId: "proofreader-1",
   },
   {
     id: "3",
@@ -48,6 +110,7 @@ const initialUnits: UnitInfo[] = [
     yCoord: 0.2,
     isProofread: false,
     translatedText: "（远处传来的螺旋桨轰鸣声）",
+    translatorId: "missing-user",
   },
   {
     id: "4",
@@ -57,6 +120,7 @@ const initialUnits: UnitInfo[] = [
     yCoord: 0.3,
     isProofread: false,
     translatedText: "这一行没有校对文本且未选中，校对框已隐藏。",
+    translatorId: "translator-2",
   },
   {
     id: "5",
@@ -66,6 +130,7 @@ const initialUnits: UnitInfo[] = [
     yCoord: 0.4,
     isProofread: false,
     translatedText: "",
+    translatorId: "translator-2",
   },
   ...Array.from({ length: 7 }, (_, offset): UnitInfo => {
     const index = offset + 5;
@@ -152,6 +217,7 @@ function UnitListWrapper({
           onFocusUnit={setFocusedUnitId}
           onModifyUnit={readOnly ? undefined : handleModifyUnit}
           onReorderUnit={readOnly ? undefined : handleReorderUnit}
+          onResolveUser={resolveStoryUser}
           enableReadOnly={readOnly}
         />
       </main>

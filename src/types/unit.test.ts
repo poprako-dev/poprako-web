@@ -4,6 +4,8 @@ import {
   moveUnitToIndex,
   unitId,
   unitIndex,
+  unitProofreaderId,
+  unitTranslatorId,
   type UnitInfo,
 } from "./unit";
 
@@ -64,5 +66,25 @@ describe("moveUnitToIndex", () => {
     const units = makeUnits();
 
     expect(moveUnitToIndex(units, "missing", 1)).toBe(units);
+  });
+});
+
+describe("unit contributor ids", () => {
+  test("returns contributor ids through the unit accessors", () => {
+    const unit = {
+      ...makeUnits()[0],
+      translatorId: "translator_1",
+      proofreaderId: "proofreader_1",
+    };
+
+    expect(unitTranslatorId(unit)).toBe("translator_1");
+    expect(unitProofreaderId(unit)).toBe("proofreader_1");
+  });
+
+  test("returns null when a contributor id is absent", () => {
+    const unit = makeUnits()[0];
+
+    expect(unitTranslatorId(unit)).toBeNull();
+    expect(unitProofreaderId(unit)).toBeNull();
   });
 });

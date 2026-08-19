@@ -10,6 +10,7 @@ import {
   type UnitInfo,
   type UnitEdit,
 } from "@/types/unit";
+import type { UserInfo } from "@/types/user";
 import BaseUnitItem from "./BaseUnitItem";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
@@ -29,6 +30,8 @@ type Props = {
   showDropIndicator?: boolean;
   dataUnitId?: string;
   enableReadOnly?: boolean;
+  translator?: UserInfo;
+  proofreader?: UserInfo;
   specialCharInsertRequest?: SpecialCharInsertRequest;
   onSpecialCharUse?: (char: string) => void;
 };
@@ -44,6 +47,7 @@ export default function TranslateModeUnitItem({
   showDropIndicator,
   dataUnitId,
   enableReadOnly = false,
+  translator,
   specialCharInsertRequest,
   onSpecialCharUse,
 }: Props) {
@@ -96,22 +100,25 @@ export default function TranslateModeUnitItem({
       isDragDimmed={isDragDimmed}
       showDropIndicator={showDropIndicator}
       enableReadOnly={enableReadOnly}
+      contributors={translator ? [{ role: "translator", user: translator }] : []}
       dataUnitId={dataUnitId}
     >
       <div className="flex items-center gap-1">
-        <AutoResizeTextarea
-          ref={inputRef}
-          value={unitTranslatedText(unit) ?? undefined}
-          onChange={(val) =>
-            onModifyUnit?.(unitId(unit), { translatedText: val })
-          }
-          onFocus={() => onSelect?.(unitId(unit))}
-          placeholder="点击输入翻译..."
-          readOnly={enableReadOnly}
-          className={`flex-1 text-base leading-relaxed ${
-            isFocused ? "text-gray-900 font-medium" : "text-gray-700"
-          } placeholder:text-gray-300`}
-        />
+        <div data-unit-contributor-trigger className="min-w-0 flex-1">
+          <AutoResizeTextarea
+            ref={inputRef}
+            value={unitTranslatedText(unit) ?? undefined}
+            onChange={(val) =>
+              onModifyUnit?.(unitId(unit), { translatedText: val })
+            }
+            onFocus={() => onSelect?.(unitId(unit))}
+            placeholder="点击输入翻译..."
+            readOnly={enableReadOnly}
+            className={`text-base leading-relaxed ${
+              isFocused ? "text-gray-900 font-medium" : "text-gray-700"
+            } placeholder:text-gray-300`}
+          />
+        </div>
         <div className="shrink-0 w-7 h-7 p-1 rounded flex items-center justify-center">
           <div
             className={clsx(

@@ -6,6 +6,9 @@ import {
   unitIsBubble,
   type UnitInfo,
 } from "@/types/unit";
+import UnitContributorTooltip, {
+  type UnitContributor,
+} from "./UnitContributorTooltip";
 
 type Props = {
   unit: UnitInfo;
@@ -19,6 +22,7 @@ type Props = {
   isDragDimmed?: boolean;
   showDropIndicator?: boolean;
   enableReadOnly?: boolean;
+  contributors: UnitContributor[];
   children: React.ReactNode;
   dataUnitId?: string;
 };
@@ -32,6 +36,7 @@ export default function BaseUnitItem({
   isDragDimmed = false,
   showDropIndicator = false,
   enableReadOnly = false,
+  contributors,
   children,
   dataUnitId,
 }: Props) {
@@ -123,7 +128,9 @@ export default function BaseUnitItem({
       </button>
 
       <div className="flex flex-1 flex-col justify-center px-2 py-2">
-        {children}
+        <UnitContributorTooltip contributors={contributors}>
+          {children}
+        </UnitContributorTooltip>
       </div>
     </div>
   );
