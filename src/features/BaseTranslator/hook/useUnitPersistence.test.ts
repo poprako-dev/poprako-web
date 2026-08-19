@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import { buildUnitDiff, persistDirtyUnits } from "./useUnitPersistence";
 import type { UnitInfo } from "@/types/unit";
-import { normalizeUnitIndexes } from "@/types/unit";
+import { moveUnitToIndex, normalizeUnitIndexes } from "@/types/unit";
 
 const localUnit: UnitInfo = {
   id: "local_1",
@@ -119,5 +119,51 @@ describe("unit save persistence", () => {
         },
       ],
     });
+  });
+
+  test("persists a pure move through nextId patches and reloads its order", async () => {
+    const baseline = normalizeUnitIndexes([
+      { ...localUnit, id: "unit_a" },
+      { ...localUnit, id: "unit_b" },
+      { ...localUnit, id: "unit_c" },
+    ]);
+    const current = moveUnitToIndex(baseline, "unit_c", 0);
+    const onSaveUnits = vi.fn();
+    const onReloadUnits = vi.fn(async () => current);
+
+    const result = await persistDirtyUnits({
+      pageId: "page_1",
+      currentUnits: current,
+      baselineUnits: baseline,
+      onSaveUnits,
+      onReloadUnits,
+    });
+
+    expect(onSaveUnits).toHaveBeenCalledWith("page_1", {
+      ops: [
+        {
+          edit: "patch",
+          id: "unit_b",
+          nextId: { type: "clear" },
+          translation: { type: "skip" },
+          revision: { type: "skip" },
+        },
+        {
+          edit: "patch",
+          id: "unit_a",
+          nextId: { type: "assign", value: "unit_b" },
+          translation: { type: "skip" },
+          revision: { type: "skip" },
+        },
+        {
+          edit: "patch",
+          id: "unit_c",
+          nextId: { type: "assign", value: "unit_a" },
+          translation: { type: "skip" },
+          revision: { type: "skip" },
+        },
+      ],
+    });
+    expect(result).toEqual({ status: "saved", units: current });
   });
 });

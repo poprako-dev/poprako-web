@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import UnitList from "@/features/BaseTranslator/features/UnitList";
-import type { UnitInfo } from "@/types/unit";
+import {
+  moveUnitToIndex,
+  type UnitEdit,
+  type UnitInfo,
+} from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 
 const meta: Meta<typeof UnitList> = {
@@ -63,17 +67,41 @@ const initialUnits: UnitInfo[] = [
     isProofread: false,
     translatedText: "",
   },
+  ...Array.from({ length: 7 }, (_, offset): UnitInfo => {
+    const index = offset + 5;
+    return {
+      id: String(index + 1),
+      index,
+      isBubble: index % 3 !== 0,
+      xCoord: 0,
+      yCoord: index / 12,
+      isProofread: index % 4 === 0,
+      translatedText: `用于验证长列表自动滚动的 Unit ${index + 1}。`,
+    };
+  }),
 ];
 
-function UnitListWrapper({ initialMode }: { initialMode: TranslatorMode }) {
+type UnitListWrapperProps = {
+  initialMode: TranslatorMode;
+  readOnly?: boolean;
+};
+
+function UnitListWrapper({
+  initialMode,
+  readOnly = false,
+}: UnitListWrapperProps) {
   const [mode, setMode] = useState<TranslatorMode>(initialMode);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>("2");
   const [units, setUnits] = useState<UnitInfo[]>(initialUnits);
 
-  const handleModifyUnit = (unitId: string, updates: Partial<UnitInfo>) => {
+  const handleModifyUnit = (unitId: string, updates: UnitEdit) => {
     setUnits((prev) =>
       prev.map((u) => (u.id === unitId ? { ...u, ...updates } : u)),
     );
+  };
+
+  const handleReorderUnit = (unitId: string, targetIndex: number) => {
+    setUnits((prev) => moveUnitToIndex(prev, unitId, targetIndex));
   };
 
   return (
@@ -82,7 +110,9 @@ function UnitListWrapper({ initialMode }: { initialMode: TranslatorMode }) {
         <div>
           <h1 className="text-lg font-bold text-gray-800">UnitList 交互演示</h1>
           <p className="text-xs text-gray-500 mt-0.5">
-            点击行切换聚焦 · 支持输入和模式切换
+            {readOnly
+              ? "只读模式 · 点击序号仍可聚焦"
+              : "拖动序号排序 · 点击序号聚焦 · 支持输入和模式切换"}
           </p>
         </div>
         <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
@@ -109,13 +139,20 @@ function UnitListWrapper({ initialMode }: { initialMode: TranslatorMode }) {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto max-w-3xl mx-auto w-full bg-white border-x border-gray-100 shadow-inner p-4">
+      <main
+        className={
+          "mx-auto flex-1 w-full max-w-3xl overflow-hidden border-x "
+          + "border-gray-100 bg-white p-4 shadow-inner"
+        }
+      >
         <UnitList
           units={units}
           focusedUnitId={focusedUnitId}
           mode={mode}
           onFocusUnit={setFocusedUnitId}
-          onModifyUnit={handleModifyUnit}
+          onModifyUnit={readOnly ? undefined : handleModifyUnit}
+          onReorderUnit={readOnly ? undefined : handleReorderUnit}
+          enableReadOnly={readOnly}
         />
       </main>
     </div>
@@ -128,4 +165,8 @@ export const TranslateMode: Story = {
 
 export const ProofreadMode: Story = {
   render: () => <UnitListWrapper initialMode="proofread" />,
+};
+
+export const ReadOnly: Story = {
+  render: () => <UnitListWrapper initialMode="proofread" readOnly />,
 };

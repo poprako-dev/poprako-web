@@ -13,6 +13,7 @@ import ToolboxDropdown from "@/features/ToolboxDropdown";
 import {
   applyUnitUpdates,
   createUnit,
+  moveUnitToIndex,
   modifyUnitPosition,
   unitPosition,
   unitId,
@@ -312,6 +313,13 @@ export default function BaseTranslator({
     );
   }
 
+  function handleReorderUnit(targetUnitId: string, targetIndex: number) {
+    commitUnits(
+      moveUnitToIndex(unitBufRef.current, targetUnitId, targetIndex),
+      setUnitBuf,
+    );
+  }
+
   function handleAddUnit(xCoord: number, yCoord: number, isBubble: boolean) {
     const newUnit = createUnit(
       xCoord,
@@ -550,6 +558,7 @@ export default function BaseTranslator({
           mode={view}
           onFocusUnit={setFocusedUnitId}
           onModifyUnit={canEditView ? handleModifyUnit : undefined}
+          onReorderUnit={canEditView ? handleReorderUnit : undefined}
           enableReadOnly={!canEditView}
           specialCharInsertRequest={specialCharInsertRequest}
           onSpecialCharUse={handleSpecialCharUse}

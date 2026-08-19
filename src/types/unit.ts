@@ -149,6 +149,22 @@ export function normalizeUnitIndexes(units: UnitInfo[]): UnitInfo[] {
   );
 }
 
+export function moveUnitToIndex(
+  units: UnitInfo[],
+  targetUnitId: string,
+  targetIndex: number,
+): UnitInfo[] {
+  const sourceIndex = units.findIndex((unit) => unitId(unit) === targetUnitId);
+  if (sourceIndex < 0) return units;
+
+  const nextUnits = [...units];
+  const [targetUnit] = nextUnits.splice(sourceIndex, 1);
+  const boundedIndex = Math.max(0, Math.min(targetIndex, nextUnits.length));
+  nextUnits.splice(boundedIndex, 0, targetUnit);
+
+  return normalizeUnitIndexes(nextUnits);
+}
+
 export function modifyUnitIsBubble(unit: UnitInfo, isBubble: boolean) {
   return {
     ...unit,
