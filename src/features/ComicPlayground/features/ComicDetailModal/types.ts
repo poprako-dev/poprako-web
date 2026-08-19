@@ -14,8 +14,11 @@ import type {
   ImportChapterFormat,
   ImportChapterResult,
   ListChapterArgs,
+  ListChapterWorkflowRecordsArgs,
   WorkflowTransition,
 } from "@/features/ComicPlayground/types/chapter";
+import type { ChapterWorkflowRecord } from "@/types/chapterWorkflowRecord";
+import type { UserInfo } from "@/types/user";
 
 export type ExportProgressState = {
   title: string;
@@ -48,6 +51,12 @@ export type ComicDetailModalProps = {
   onLoadChapters: (args: ListChapterArgs) => Promise<Result<ChapterInfo[]>>;
   onLoadAssignments: (chapterId: string) => Promise<Result<AssignmentInfo[]>>;
   onLoadPages: (chapterId: string) => Promise<Result<PageInfo[]>>;
+  onLoadWorkflowRecords: (
+    args: ListChapterWorkflowRecordsArgs,
+  ) => Promise<Result<ChapterWorkflowRecord[]>>;
+  onResolveWorkflowRecordUser: (
+    userId: string,
+  ) => Promise<Result<UserInfo>>;
   onTransiteWorkflow: (
     chapterId: string,
     transition: WorkflowTransition,

@@ -9,19 +9,26 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useAppStore } from "@/store/app";
 import PageList from "@/features/PageList/components/business/PageList";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import AssignmentGroup from "./AssignmentGroup";
-import AssignmentFooter from "./AssignmentFooter";
+import ComicDetailContent, { type ComicDetailView } from "./ComicDetailContent";
 import ComicDetailHeader from "./ComicDetailHeader";
 import ComicDetailSidebar from "./ComicDetailSidebar";
 import ComicModifierModal from "./ComicModifierModal";
 import ChapterModifierModal from "./ChapterModifierModal";
 import ExportProgressDialog from "./ExportProgressDialog";
 import MemberSelectorModal from "./MemberSelectorModal";
+import WorkflowPanel from "./WorkflowPanel";
+import WorkflowRecordList from "./WorkflowRecordList";
 import { useComicDetailAssignments } from "../../hook/useComicDetailAssignments";
 import { useComicDetailChapters } from "../../hook/useComicDetailChapters";
 import { useComicDetailExport } from "../../hook/useComicDetailExport";
 import { useComicDetailPages } from "../../hook/useComicDetailPages";
+import {
+  useComicDetailWorkflowRecords,
+} from "../../hook/useComicDetailWorkflowRecords";
+import { useWorkflowRecordUsers } from "../../hook/useWorkflowRecordUsers";
 import { ROLE_TITLE_LABEL, type ComicDetailModalProps } from "../../types";
 import { applyWorkflowTransition } from "../../utils";
 
@@ -33,6 +40,8 @@ export default function ComicDetailModal({
   onLoadChapters,
   onLoadAssignments,
   onLoadPages,
+  onLoadWorkflowRecords,
+  onResolveWorkflowRecordUser,
   onTransiteWorkflow,
   onRemoveAssignment,
   onLoadAssignableMembers,
@@ -58,6 +67,7 @@ export default function ComicDetailModal({
   const { showToast } = useToastStore();
   const accessToken = useAppStore((s) => s.accessToken);
   const [activeMember, setActiveMember] = useState<MemberInfo | null>(null);
+  const [activeView, setActiveView] = useState<ComicDetailView>("pages");
   const [pendingConfirmAction, setPendingConfirmAction] = useState<
     "delete-pages" | "archive-comic" | "delete-comic" | "export-data" | null
   >(null);
@@ -122,6 +132,20 @@ export default function ComicDetailModal({
   });
 
   const {
+    state: workflowRecordState,
+    refreshLatest: refreshWorkflowRecords,
+    loadMore: loadMoreWorkflowRecords,
+  } = useComicDetailWorkflowRecords({
+    chapterId: selectedChapterId,
+    enabled: activeView === "workflow",
+    onLoadWorkflowRecords,
+  });
+
+  const handleWorkflowRecordsChanged = useCallback(() => {
+    if (activeView === "workflow") void refreshWorkflowRecords();
+  }, [activeView, refreshWorkflowRecords]);
+
+  const {
     assignments,
     isAssignmentsLoading,
     memberSelectorRole,
@@ -155,11 +179,19 @@ export default function ComicDetailModal({
     onAddAssignment,
     onRemoveAssignment,
     onJoinChapterRole,
+    onWorkflowRecordsChanged: handleWorkflowRecordsChanged,
     showToast,
+  });
+
+  const getWorkflowRecordUserLabel = useWorkflowRecordUsers({
+    records: workflowRecordState.records,
+    assignments,
+    onResolveUser: onResolveWorkflowRecordUser,
   });
 
   const {
     pages,
+    isPagesLoading,
     uploadProgressByPageId,
     uploadStatusByPageId,
     uploadErrorByPageId,
@@ -210,6 +242,7 @@ export default function ComicDetailModal({
     onImportChapter,
     reloadCurrentPages,
     reloadLoadedChapters,
+    onWorkflowRecordsChanged: handleWorkflowRecordsChanged,
     showToast,
   });
 
@@ -252,6 +285,7 @@ export default function ComicDetailModal({
           : chapter,
       ),
     );
+    handleWorkflowRecordsChanged();
 
     return res;
   };
@@ -376,7 +410,11 @@ export default function ComicDetailModal({
     />
   );
 
-  const pageGrid = (
+  const pageGrid = isPagesLoading ? (
+    <div className="flex h-full items-center justify-center">
+      <LoadingCircle size={22} aria-label="正在加载页面" />
+    </div>
+  ) : (
     <PageList
       pages={pages}
       enableClick={canClickPage}
@@ -418,12 +456,36 @@ export default function ComicDetailModal({
     canManageAssignments: canManageChapterAssignments,
   };
 
-  const footer = <AssignmentFooter {...sharedAssignmentProps} />;
-
   const assignmentGroup = (
     <AssignmentGroup
       {...sharedAssignmentProps}
       isAssignmentsLoading={isAssignmentsLoading}
+    />
+  );
+
+  const recordList = (
+    <WorkflowRecordList
+      chapterId={selectedChapterId}
+      state={workflowRecordState}
+      getUserLabel={getWorkflowRecordUserLabel}
+      onLoadMore={() => void loadMoreWorkflowRecords()}
+    />
+  );
+
+  const workflowPanel = (
+    <WorkflowPanel
+      assignmentPanel={assignmentGroup}
+      recordList={recordList}
+    />
+  );
+
+  const content = (
+    <ComicDetailContent
+      activeView={activeView}
+      chapterId={selectedChapterId}
+      pageList={pageGrid}
+      workflowPanel={workflowPanel}
+      onChangeView={setActiveView}
     />
   );
 
@@ -439,9 +501,7 @@ export default function ComicDetailModal({
       <ComicDetailModalLayout
         header={header}
         sidebar={sidebar}
-        pageGrid={pageGrid}
-        footer={footer}
-        assignmentGroup={assignmentGroup}
+        content={content}
       />
       {memberSelectorRole && (
         <MemberSelectorModal
@@ -556,6 +616,7 @@ export default function ComicDetailModal({
             const res = await onUpdateChapter(chapterToModify.id, args.subtitle);
             if (res.success) {
               handleUpdateChapterLocal(chapterToModify.id, args.subtitle);
+              handleWorkflowRecordsChanged();
             }
             return res;
           }}

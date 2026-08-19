@@ -19,6 +19,7 @@ type Args = {
   onAddAssignment?: ComicDetailModalProps["onAddAssignment"];
   onRemoveAssignment?: ComicDetailModalProps["onRemoveAssignment"];
   onJoinChapterRole?: ComicDetailModalProps["onJoinChapterRole"];
+  onWorkflowRecordsChanged?: () => void;
   showToast: ShowToast;
 };
 
@@ -33,6 +34,7 @@ export function useComicDetailAssignments({
   onAddAssignment,
   onRemoveAssignment,
   onJoinChapterRole,
+  onWorkflowRecordsChanged,
   showToast,
 }: Args) {
   const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
@@ -198,6 +200,7 @@ export function useComicDetailAssignments({
         }
 
         await reloadAssignments();
+        onWorkflowRecordsChanged?.();
         return true;
       } catch (err) {
         console.error("[ComicDetailModal] 移除角色异常:", err);
@@ -206,7 +209,13 @@ export function useComicDetailAssignments({
         return false;
       }
     },
-    [onRemoveAssignment, reloadAssignments, selectedChapterId, showToast],
+    [
+      onRemoveAssignment,
+      onWorkflowRecordsChanged,
+      reloadAssignments,
+      selectedChapterId,
+      showToast,
+    ],
   );
 
   const handleRemoveAssignment = useCallback(
@@ -238,9 +247,17 @@ export function useComicDetailAssignments({
       }
 
       await reloadAssignments();
+      onWorkflowRecordsChanged?.();
       setMemberSelectorRole(null);
     },
-    [memberSelectorRole, onAddAssignment, reloadAssignments, selectedChapterId, showToast],
+    [
+      memberSelectorRole,
+      onAddAssignment,
+      onWorkflowRecordsChanged,
+      reloadAssignments,
+      selectedChapterId,
+      showToast,
+    ],
   );
 
   const isRoleAlreadyJoined = useCallback(
@@ -291,6 +308,7 @@ export function useComicDetailAssignments({
         }
 
         await reloadAssignments();
+        onWorkflowRecordsChanged?.();
         showToast("加入分工成功", "success");
       } catch (err) {
         console.error("[ComicDetailModal] 加入章节分工异常:", err);
@@ -299,7 +317,14 @@ export function useComicDetailAssignments({
         setJoiningRoles((prev) => ({ ...prev, [role]: false }));
       }
     },
-    [joiningRoles, onJoinChapterRole, reloadAssignments, selectedChapterId, showToast],
+    [
+      joiningRoles,
+      onJoinChapterRole,
+      onWorkflowRecordsChanged,
+      reloadAssignments,
+      selectedChapterId,
+      showToast,
+    ],
   );
 
   const handleLeaveRole = useCallback(

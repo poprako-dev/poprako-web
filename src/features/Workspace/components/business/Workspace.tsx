@@ -5,7 +5,8 @@ import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
 import ComicTranslationList from "@/features/ComcList/components/business/ComicTranslationList";
-import ComicDetailModal from "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailModal";
+import ComicDetailModal from
+  "@/features/ComicPlayground/features/ComicDetailModal";
 import AnnouncementTable from "./AnnouncementTable";
 import CommentChatBox from "./CommentChatBox";
 import OnlineUserPopover from "./OnlineUserPopover";
@@ -27,6 +28,7 @@ import {
   exportChapterLp,
   importChapter,
   joinChapter,
+  listChapterWorkflowRecords,
 } from "@/features/ComicPlayground/api/chapter";
 import {
   listPages,
@@ -44,9 +46,12 @@ import type {
 } from "@/features/ComicPlayground/types/chapter";
 import { roleMask, type Role } from "@/types/role";
 import { listMembers } from "@/api/member";
+import { getUser } from "@/api/user";
 import clsx from "clsx";
 import { addChapterPages } from "@/features/ComicPlayground/features/ComicDetailModal/pageUpload";
-import { useComicDetailHost } from "@/features/ComicPlayground/features/ComicDetailModal/hook/useComicDetailHost";
+import {
+  useComicDetailHost,
+} from "@/features/ComicPlayground/features/ComicDetailModal/hook/useComicDetailHost";
 import { listComments, createComment } from "@/api/comment";
 import type { CommentInfo } from "@/types/comment";
 import { useOnlineUserIds, useOnlineUsers } from "@/hooks/useTeamOnline";
@@ -655,6 +660,8 @@ export default function Workspace() {
           onLoadChapters={handleLoadDetailChapters}
           onLoadAssignments={handleLoadAssignmentsForChapter}
           onLoadPages={handleLoadPages}
+          onLoadWorkflowRecords={listChapterWorkflowRecords}
+          onResolveWorkflowRecordUser={getUser}
           onTransiteWorkflow={handleTransiteWorkflow}
           onRemoveAssignment={handleRemoveRole}
           onLoadAssignableMembers={handleLoadAssignableMembers}

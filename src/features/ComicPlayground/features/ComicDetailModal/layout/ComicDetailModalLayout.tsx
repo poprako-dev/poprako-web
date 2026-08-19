@@ -4,17 +4,13 @@ import clsx from "clsx";
 type Props = {
   header: ReactNode;
   sidebar: ReactNode;
-  pageGrid: ReactNode;
-  footer: ReactNode;
-  assignmentGroup?: ReactNode;
+  content: ReactNode;
 };
 
 export default function ComicDetailModalLayout({
   header,
   sidebar,
-  pageGrid,
-  footer,
-  assignmentGroup,
+  content,
 }: Props) {
   return (
     <div className={clsx(
@@ -61,29 +57,16 @@ export default function ComicDetailModalLayout({
               {sidebar}
             </div>
 
-            {/* Content – persistent progress workspace above the page canvas */}
+            {/* Main chapter workspace */}
             <div
               className={clsx(
                 "w-full",
                 "sm:flex sm:min-w-0 sm:min-h-0 sm:flex-1 sm:flex-col",
               )}
             >
-              <div className="hidden shrink-0 md:block">{assignmentGroup}</div>
-              <div
-                className={clsx(
-                  "bg-stone-100 p-4",
-                  "shadow-[inset_0_2px_6px_rgba(0,0,0,0.06)]",
-                  "sm:min-h-0 sm:flex-1 sm:overflow-y-auto",
-                  "scrollbar-thin scrollbar-thumb-stone-300",
-                )}
-              >
-                {pageGrid}
-              </div>
+              {content}
             </div>
           </div>
-
-          {/* Footer – assignment footer for sm screens only */}
-          <div className="absolute bottom-0 left-0 right-0 z-10 md:hidden">{footer}</div>
         </div>
       </div>
     </div>

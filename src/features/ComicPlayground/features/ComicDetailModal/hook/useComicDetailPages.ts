@@ -65,6 +65,7 @@ export function useComicDetailPages({
   showToast,
 }: Args) {
   const [serverPages, setServerPages] = useState<PageInfo[]>([]);
+  const [isPagesLoading, setIsPagesLoading] = useState(false);
   const [isDeletingChapterPages, setIsDeletingChapterPages] = useState(false);
   const uploadTasks = usePageUploadTaskStore((state) => state.tasks);
   const taskByPageId = useMemo(
@@ -76,16 +77,20 @@ export function useComicDetailPages({
     if (chapterId && isSelectedChapterAvailable) return;
     /* eslint-disable react-hooks/set-state-in-effect */
     setServerPages([]);
+    setIsPagesLoading(false);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [chapterId, isSelectedChapterAvailable]);
 
   useEffect(() => {
     if (!chapterId || !isSelectedChapterAvailable) return;
+    let cancelled = false;
     /* eslint-disable react-hooks/set-state-in-effect */
     setServerPages([]);
+    setIsPagesLoading(true);
     /* eslint-enable react-hooks/set-state-in-effect */
     onLoadPages(chapterId)
       .then((res) => {
+        if (cancelled) return;
         if (!res.success) {
           console.error("[ComicDetailModal] 加载页面失败:", res);
           showToast("加载页面失败", "error");
@@ -94,9 +99,17 @@ export function useComicDetailPages({
         setServerPages(res.data);
       })
       .catch((error) => {
+        if (cancelled) return;
         console.error("[ComicDetailModal] 加载页面异常:", error);
         showToast("加载页面失败", "error");
+      })
+      .finally(() => {
+        if (!cancelled) setIsPagesLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [chapterId, isSelectedChapterAvailable, onLoadPages, showToast]);
 
   const fetchedTaskIdsRef = useRef<Set<string>>(new Set());
@@ -294,6 +307,7 @@ export function useComicDetailPages({
 
   return {
     pages,
+    isPagesLoading,
     uploadProgressByPageId,
     uploadStatusByPageId,
     uploadErrorByPageId,

@@ -23,6 +23,7 @@ import {
   exportChapterLp,
   importChapter,
   joinChapter,
+  listChapterWorkflowRecords,
 } from "../../api/chapter";
 import { updateWorkset } from "../../api/workset";
 import {
@@ -44,6 +45,7 @@ import type { ListChapterArgs, WorkflowTransition } from "../../types/chapter";
 import type { Role } from "@/types/role";
 import { roleMask, hasRole } from "@/types/role";
 import { listMembers } from "@/api/member";
+import { getUser } from "@/api/user";
 import { addChapterPages } from "../../features/ComicDetailModal/pageUpload";
 import { useComicDetailHost } from "../../features/ComicDetailModal/hook/useComicDetailHost";
 import { useComicPlaygroundFilters } from "../../hook/useComicPlaygroundFilters";
@@ -467,6 +469,8 @@ export default function ComicPlayground() {
           onLoadChapters={handleLoadDetailChapters}
           onLoadAssignments={handleLoadAssignments}
           onLoadPages={handleLoadPages}
+          onLoadWorkflowRecords={listChapterWorkflowRecords}
+          onResolveWorkflowRecordUser={getUser}
           onTransiteWorkflow={handleTransiteWorkflow}
           onRemoveAssignment={handleRemoveRole}
           onLoadAssignableMembers={handleLoadAssignableMembers}
