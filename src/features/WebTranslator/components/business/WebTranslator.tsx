@@ -16,8 +16,18 @@ import {
 import { listAssignmentsByChapter } from "@/api/assignment";
 import { getUser } from "@/api/user";
 import { getChapter } from "@/features/ComicPlayground/api/chapter";
-import { listTerms } from "@/features/ComicPlayground/api/term";
-import { listComicTermbases } from "@/features/ComicPlayground/api/termbase";
+import {
+  createTerm,
+  deleteTerm,
+  listTerms,
+  updateTerm,
+} from "@/features/ComicPlayground/api/term";
+import {
+  createComicTermbase,
+  deleteTermbase,
+  listComicTermbases,
+  updateTermbase,
+} from "@/features/ComicPlayground/api/termbase";
 
 import type { TranslatorMode } from "@/types/translatorMode";
 import type {
@@ -269,6 +279,12 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     return {
       listTermbases: (args) => listComicTermbases({ comicId, ...args }),
       listTerms,
+      createTermbase: (args) => createComicTermbase({ comicId, ...args }),
+      updateTermbase,
+      deleteTermbase,
+      createTerm,
+      updateTerm,
+      deleteTerm,
     };
   }, [comicId]);
 

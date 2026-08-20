@@ -34,7 +34,7 @@ type Props = {
     mode: ViewMode,
   ) => Promise<ComicInfo[] | string>;
   onComicClick?: (comicInfo: ComicInfo) => void;
-  onCreateComic: () => void;
+  onCreateComic?: () => void;
   onChangeFuzzyTitle: (title: string) => void;
   activeFuzzyTitle?: string;
   activeUploadStatus: BinaryFilter;

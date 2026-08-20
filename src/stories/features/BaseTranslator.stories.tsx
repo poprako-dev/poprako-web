@@ -10,6 +10,7 @@ import type { Project } from "@/types/project";
 import type { UserInfo } from "@/types/user";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 import type { TerminologyDataSource } from "@/features/BaseTranslator";
+import { expect, within } from "storybook/test";
 
 const DEMO_IMAGE =
   "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80";
@@ -431,6 +432,12 @@ const mockTerminology: TerminologyDataSource = {
       },
     ],
   }),
+  createTermbase: async () => ({ success: true, data: "termbase-new" }),
+  updateTermbase: async () => ({ success: true, data: undefined }),
+  deleteTermbase: async () => ({ success: true, data: undefined }),
+  createTerm: async () => ({ success: true, data: "term-new" }),
+  updateTerm: async () => ({ success: true, data: undefined }),
+  deleteTerm: async () => ({ success: true, data: undefined }),
 };
 
 function createStoryArgs({
@@ -486,5 +493,18 @@ export const WithTerminology: Story = {
       canProofread: true,
     }),
     terminology: mockTerminology,
+  },
+};
+
+export const ReadOnlyWithoutTerminology: Story = {
+  args: {
+    ...createStoryArgs({
+      canTranslate: false,
+      canProofread: false,
+    }),
+    terminology: mockTerminology,
+  },
+  play: async ({ canvasElement }) => {
+    expect(within(canvasElement).queryByTestId("terminology-lookup")).toBeNull();
   },
 };

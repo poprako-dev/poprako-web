@@ -3,16 +3,26 @@ import { Search } from "lucide-react";
 import clsx from "clsx";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import type { TermbaseInfo } from "@/types/termbase";
-import type { TerminologyDataSource } from "@/features/BaseTranslator/types/terminology";
+import type { TermInfo } from "@/types/term";
+import type {
+  TerminologyDataSource,
+  UpdateTermArgs,
+  UpdateTermbaseArgs,
+} from "@/features/BaseTranslator/types/terminology";
 import { useDebouncedValue } from "../../hook/useDebouncedValue";
 import TermbasePanel from "./TermbasePanel";
 import TermPanel from "./TermPanel";
+import TermbaseEditorDialog from "./TermbaseEditorDialog";
+import TermEditorDialog from "./TermEditorDialog";
 
 const DEBOUNCE_MS = 300;
 const PANEL_ANIMATION_MS = 150;
 
 type Panel = "closed" | "termbases" | "terms";
 type OpenPanel = Exclude<Panel, "closed">;
+type EditorState =
+  | { kind: "termbase"; termbase?: TermbaseInfo }
+  | { kind: "term"; term?: TermInfo };
 
 type Props = {
   dataSource: TerminologyDataSource;
@@ -36,6 +46,9 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
   const [selectedTermbase, setSelectedTermbase] = useState<TermbaseInfo>();
   const [termbaseQuery, setTermbaseQuery] = useState("");
   const [sourceQuery, setSourceQuery] = useState("");
+  const [termbaseRevision, setTermbaseRevision] = useState(0);
+  const [termRevision, setTermRevision] = useState(0);
+  const [editor, setEditor] = useState<EditorState>();
   const rootRef = useRef<HTMLDivElement>(null);
   const popoverId = useId();
   const showToast = useToastStore((state) => state.showToast);
@@ -55,6 +68,10 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("[data-terminology-dialog]")
+      ) return;
       if (!rootRef.current?.contains(event.target as Node)) {
         setPanel("closed");
       }
@@ -68,6 +85,90 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
     console.error("[TerminologyLookup] 加载术语数据失败", { error });
     showToast(error, "error");
   }, [showToast]);
+
+  const handleMutationError = (action: string, error: string) => {
+    console.error(`[TerminologyLookup] ${action}失败`, { error });
+    showToast(error, "error");
+    return false;
+  };
+
+  const handleSaveTermbase = async (
+    termbase: TermbaseInfo | undefined,
+    args: UpdateTermbaseArgs,
+  ) => {
+    if (!termbase) {
+      const result = await dataSource.createTermbase(args);
+      if (!result.success) return handleMutationError("创建术语库", result.error);
+      setTermbaseQuery("");
+      setTermbaseRevision((revision) => revision + 1);
+      showToast("术语库已创建", "success");
+      return true;
+    }
+
+    const result = await dataSource.updateTermbase(termbase.id, args);
+    if (!result.success) return handleMutationError("更新术语库", result.error);
+    setSelectedTermbase((current) => current?.id === termbase.id
+      ? { ...current, ...args, description: args.description ?? "" }
+      : current);
+    setTermbaseRevision((revision) => revision + 1);
+    showToast("术语库已更新", "success");
+    return true;
+  };
+
+  const handleDeleteTermbase = async (termbase: TermbaseInfo) => {
+    const result = await dataSource.deleteTermbase(termbase.id);
+    if (!result.success) return handleMutationError("删除术语库", result.error);
+    if (selectedTermbase?.id === termbase.id) {
+      setSelectedTermbase(undefined);
+      setSourceQuery("");
+      setRenderedPanel("termbases");
+      setPanel("termbases");
+    }
+    setTermbaseRevision((revision) => revision + 1);
+    setTermRevision((revision) => revision + 1);
+    showToast("术语库已删除", "success");
+    return true;
+  };
+
+  const handleSaveTerm = async (
+    term: TermInfo | undefined,
+    args: UpdateTermArgs,
+  ) => {
+    if (!selectedTermbase) return false;
+    if (!term) {
+      const result = await dataSource.createTerm({
+        termbaseId: selectedTermbase.id,
+        ...args,
+      });
+      if (!result.success) return handleMutationError("创建术语", result.error);
+      setSourceQuery("");
+      setSelectedTermbase((current) => current
+        ? { ...current, termCount: current.termCount + 1 }
+        : current);
+      setTermbaseRevision((revision) => revision + 1);
+      setTermRevision((revision) => revision + 1);
+      showToast("术语已创建", "success");
+      return true;
+    }
+
+    const result = await dataSource.updateTerm(term.id, args);
+    if (!result.success) return handleMutationError("更新术语", result.error);
+    setTermRevision((revision) => revision + 1);
+    showToast("术语已更新", "success");
+    return true;
+  };
+
+  const handleDeleteTerm = async (term: TermInfo) => {
+    const result = await dataSource.deleteTerm(term.id);
+    if (!result.success) return handleMutationError("删除术语", result.error);
+    setSelectedTermbase((current) => current
+      ? { ...current, termCount: Math.max(0, current.termCount - 1) }
+      : current);
+    setTermbaseRevision((revision) => revision + 1);
+    setTermRevision((revision) => revision + 1);
+    showToast("术语已删除", "success");
+    return true;
+  };
 
   const handleSelectTermbase = (termbase: TermbaseInfo) => {
     setSelectedTermbase(termbase);
@@ -91,20 +192,21 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
   };
 
   return (
-    <div
-      ref={rootRef}
-      data-testid="terminology-lookup"
-      className={clsx(
-        "absolute bottom-2 left-2 z-40 max-w-[calc(100%-1rem)]",
-        "transition-[width] duration-300 ease-out motion-reduce:transition-none",
-        isExpanded
-          ? [
-              "w-[calc(100%-1rem)]",
-              "@[40rem]:w-[max(max(9rem,20%),min(40%,24rem))]",
-            ]
-          : "w-[min(max(9rem,20%),calc(100%-1rem))]",
-      )}
-    >
+    <>
+      <div
+        ref={rootRef}
+        data-testid="terminology-lookup"
+        className={clsx(
+          "absolute bottom-2 left-2 z-40 max-w-[calc(100%-1rem)]",
+          "transition-[width] duration-300 ease-out motion-reduce:transition-none",
+          isExpanded
+            ? [
+                "w-[calc(100%-1rem)]",
+                "@[40rem]:w-[max(max(9rem,20%),min(40%,24rem))]",
+              ]
+            : "w-[min(max(9rem,20%),calc(100%-1rem))]",
+        )}
+      >
       {renderedPanel && (
         <div
           id={popoverId}
@@ -131,8 +233,11 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
               query={termbaseQuery}
               searchQuery={debouncedTermbaseQuery}
               selectedTermbase={selectedTermbase}
+              revision={termbaseRevision}
               onQueryChange={setTermbaseQuery}
               onSelect={handleSelectTermbase}
+              onCreate={() => setEditor({ kind: "termbase" })}
+              onEdit={(termbase) => setEditor({ kind: "termbase", termbase })}
               onError={handleError}
             />
           ) : selectedTermbase ? (
@@ -140,6 +245,9 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
               dataSource={dataSource}
               termbase={selectedTermbase}
               query={debouncedSourceQuery}
+              revision={termRevision}
+              onCreate={() => setEditor({ kind: "term" })}
+              onEdit={(term) => setEditor({ kind: "term", term })}
               onError={handleError}
             />
           ) : null}
@@ -201,6 +309,25 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
           />
         </label>
       </div>
-    </div>
+      </div>
+      {editor?.kind === "termbase" && (
+        <TermbaseEditorDialog
+          termbase={editor.termbase}
+          onSave={(args) => handleSaveTermbase(editor.termbase, args)}
+          onDelete={editor.termbase
+            ? () => handleDeleteTermbase(editor.termbase!)
+            : undefined}
+          onClose={() => setEditor(undefined)}
+        />
+      )}
+      {editor?.kind === "term" && (
+        <TermEditorDialog
+          term={editor.term}
+          onSave={(args) => handleSaveTerm(editor.term, args)}
+          onDelete={editor.term ? () => handleDeleteTerm(editor.term!) : undefined}
+          onClose={() => setEditor(undefined)}
+        />
+      )}
+    </>
   );
 }

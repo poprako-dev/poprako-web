@@ -25,7 +25,7 @@ type Props = {
   onChangePublishStatus: (status: BinaryFilter) => void;
 
   // 通知父组件显示创建漫画的 modal
-  onCreateComic: () => void;
+  onCreateComic?: () => void;
   // 切换侧边栏展开/收起
   onToggleSidebar?: () => void;
 };
@@ -92,19 +92,21 @@ export default function FilterHeader({
           />
         </div>
 
-        <button
-          type="button"
-          onClick={onCreateComic}
-          title="创建漫画"
-          className={clsx(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
-            "border border-slate-200 bg-white text-slate-500",
-            "hover:border-slate-300 hover:shadow-sm hover:bg-gray-100",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          )}
-        >
-          <CirclePlus className="h-5 w-5" strokeWidth={2} />
-        </button>
+        {onCreateComic && (
+          <button
+            type="button"
+            onClick={onCreateComic}
+            title="创建漫画"
+            className={clsx(
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
+              "border border-slate-200 bg-white text-slate-500",
+              "hover:border-slate-300 hover:shadow-sm hover:bg-gray-100",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            )}
+          >
+            <CirclePlus className="h-5 w-5" strokeWidth={2} />
+          </button>
+        )}
 
         {onToggleSidebar && (
           <button

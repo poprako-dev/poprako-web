@@ -82,20 +82,71 @@ function createDataSource({
   termbaseItems?: TermbaseInfo[];
   termItems?: TermInfo[];
 } = {}): TerminologyDataSource {
+  const currentTermbases = [...termbaseItems];
+  const currentTerms = [...termItems];
+
   return {
     listTermbases: async ({ fuzzyName, offset, limit }) => {
       const query = fuzzyName?.toLocaleLowerCase();
       const filtered = query
-        ? termbaseItems.filter((item) => item.name.toLocaleLowerCase().includes(query))
-        : termbaseItems;
+        ? currentTermbases.filter((item) => item.name.toLocaleLowerCase().includes(query))
+        : currentTermbases;
       return { success: true, data: filterPage(filtered, offset, limit) };
     },
     listTerms: async ({ fuzzySource, offset, limit }) => {
       const query = fuzzySource?.toLocaleLowerCase();
       const filtered = query
-        ? termItems.filter((item) => item.source.toLocaleLowerCase().includes(query))
-        : termItems;
+        ? currentTerms.filter((item) => item.source.toLocaleLowerCase().includes(query))
+        : currentTerms;
       return { success: true, data: filterPage(filtered, offset, limit) };
+    },
+    createTermbase: async (args) => {
+      const id = `termbase-created-${currentTermbases.length + 1}`;
+      currentTermbases.unshift({
+        id,
+        comicId: "comic-1",
+        name: args.name,
+        description: args.description ?? "",
+        termCount: 0,
+        creatorId: "user-1",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      return { success: true, data: id };
+    },
+    updateTermbase: async (id, args) => {
+      const item = currentTermbases.find((termbase) => termbase.id === id);
+      if (item) Object.assign(item, args, { description: args.description ?? "" });
+      return { success: true, data: undefined };
+    },
+    deleteTermbase: async (id) => {
+      const index = currentTermbases.findIndex((termbase) => termbase.id === id);
+      if (index >= 0) currentTermbases.splice(index, 1);
+      return { success: true, data: undefined };
+    },
+    createTerm: async (args) => {
+      const id = `term-created-${currentTerms.length + 1}`;
+      currentTerms.unshift({
+        id,
+        termbaseId: args.termbaseId,
+        source: args.source,
+        targets: args.targets,
+        comment: args.comment,
+        creatorId: "user-1",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      return { success: true, data: id };
+    },
+    updateTerm: async (id, args) => {
+      const item = currentTerms.find((term) => term.id === id);
+      if (item) Object.assign(item, args);
+      return { success: true, data: undefined };
+    },
+    deleteTerm: async (id) => {
+      const index = currentTerms.findIndex((term) => term.id === id);
+      if (index >= 0) currentTerms.splice(index, 1);
+      return { success: true, data: undefined };
     },
   };
 }
@@ -130,6 +181,12 @@ function lookupWidth(canvasElement: HTMLElement) {
     .getByTestId("terminology-lookup")
     .getBoundingClientRect()
     .width;
+}
+
+async function longPress(element: HTMLElement) {
+  await userEvent.pointer([{ target: element, keys: "[MouseLeft>]" }]);
+  await new Promise((resolve) => setTimeout(resolve, 550));
+  await userEvent.pointer([{ target: element, keys: "[/MouseLeft]" }]);
 }
 
 const meta: Meta<typeof TerminologyLookupBar> = {
@@ -193,6 +250,70 @@ export const DebouncedSearch: Story = {
     await waitFor(() => {
       expect(canvas.getByRole("option", { name: /地名/ })).toBeVisible();
       expect(canvas.queryByRole("option", { name: /角色称谓/ })).toBeNull();
+    }, { timeout: 3000 });
+  },
+};
+
+export const CreateTermbase: Story = {
+  args: { dataSource: createDataSource() },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
+    await userEvent.click(await canvas.findByRole("button", { name: "新建术语库" }));
+    await userEvent.type(page.getByRole("textbox", { name: "名称" }), "战斗用语");
+    await userEvent.click(page.getByRole("button", { name: "保存" }));
+    await waitFor(() => {
+      expect(canvas.getByRole("option", { name: /战斗用语/ })).toBeVisible();
+    }, { timeout: 3000 });
+  },
+};
+
+export const EditTermbaseByLongPress: Story = {
+  args: { dataSource: createDataSource() },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
+    const option = await canvas.findByRole("option", { name: /角色称谓/ });
+    await longPress(option);
+    await waitFor(() => {
+      expect(page.getByRole("dialog", { name: "编辑术语库" })).toBeVisible();
+    });
+    await userEvent.click(page.getByRole("button", { name: "删除术语库" }));
+    expect(page.getByRole("dialog", { name: "删除术语库" })).toBeVisible();
+    expect(page.getByText("删除后，其中全部术语也会一并删除。")).toBeVisible();
+  },
+};
+
+export const CreateTerm: Story = {
+  args: { dataSource: createDataSource() },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
+    await userEvent.click(await canvas.findByRole("option", { name: /角色称谓/ }));
+    await userEvent.click(canvas.getByRole("textbox", { name: "搜索术语原文" }));
+    await userEvent.click(await canvas.findByRole("button", { name: "新建术语" }));
+    await userEvent.type(page.getByRole("textbox", { name: "原文" }), "副団長");
+    await userEvent.type(page.getByRole("textbox", { name: "译名 1" }), "副团长");
+    await userEvent.click(page.getByRole("button", { name: "保存" }));
+    await waitFor(() => {
+      expect(canvas.getByText("副団長")).toBeVisible();
+    }, { timeout: 3000 });
+  },
+};
+
+export const TeamTermbaseReadOnly: Story = {
+  args: { dataSource: createDataSource() },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
+    await userEvent.click(await canvas.findByRole("option", { name: /奇幻世界共用词/ }));
+    await userEvent.click(canvas.getByRole("textbox", { name: "搜索术语原文" }));
+    await waitFor(() => {
+      expect(canvas.getByText("奇幻世界共用词")).toBeVisible();
+      expect(canvas.queryByRole("button", { name: "新建术语" })).toBeNull();
     }, { timeout: 3000 });
   },
 };

@@ -484,7 +484,9 @@ export default function BaseTranslator({
         enableReadOnly={!canEditView}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
-      {terminology && <TerminologyLookupBar dataSource={terminology} />}
+      {!readOnly && terminology && (
+        <TerminologyLookupBar dataSource={terminology} />
+      )}
       <div className="absolute top-2 left-2 flex items-center gap-2">
         {!readOnly && (
           <ToolboxDropdown options={toolboxOptions} direction="down" />

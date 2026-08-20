@@ -57,7 +57,7 @@ export default function ComicPlayground() {
   const showToast = useToastStore((s) => s.showToast);
 
   const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
-  const [showComicCreatorModal, setShowComicCreatorModal] = useState(false);
+  const [comicCreatorTeamId, setComicCreatorTeamId] = useState<string | null>(null);
   const [showWorksetCreatorModal, setShowWorksetCreatorModal] = useState(false);
   const isAdmin = activeMember !== null && hasRole(activeMember, "admin");
   const {
@@ -443,7 +443,7 @@ export default function ComicPlayground() {
         onUpdateWorkset={isAdmin ? handleUpdateWorkset : undefined}
         onLoadComics={handleLoadComics}
         onComicClick={openComicDetail}
-        onCreateComic={() => setShowComicCreatorModal(true)}
+        onCreateComic={isAdmin ? () => setComicCreatorTeamId(teamId) : undefined}
         onChangeFuzzyTitle={setActiveFuzzyTitle}
         activeFuzzyTitle={activeFuzzyTitle}
         activeUploadStatus={activeUploadStatus}
@@ -494,11 +494,11 @@ export default function ComicPlayground() {
           onClose={() => clearComicDetail(true)}
         />
       )}
-      {showComicCreatorModal && activeWorkset && (
+      {comicCreatorTeamId === teamId && isAdmin && activeWorkset && (
         <ComicCreatorModal
           currWorkset={activeWorkset}
           onCreateComic={handleCreateComic}
-          onClose={() => setShowComicCreatorModal(false)}
+          onClose={() => setComicCreatorTeamId(null)}
         />
       )}
       {showWorksetCreatorModal && teamId && (
