@@ -87,6 +87,18 @@ export async function listChapters(
   return { success: true, data: items.map((raw) => toChapterInfo(raw)!) };
 }
 
+export async function getChapter(id: string): Promise<Result<ChapterInfo>> {
+  const res = await api.get<RawChapterInfo>(`/chapters/${id}`);
+  if (!res.success) return res;
+
+  const chapter = toChapterInfo(res.data);
+  if (!chapter) {
+    return { success: false, error: "章节数据无效" };
+  }
+
+  return { success: true, data: chapter };
+}
+
 export async function listChapterWorkflowRecords(
   args: ListChapterWorkflowRecordsArgs,
 ): Promise<Result<ChapterWorkflowRecord[]>> {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, within } from "storybook/test";
 import ComicList from "@/features/ComcList/components/business/ComicList";
 import type { ComicInfo } from "@/types/comic";
 import type { WorksetInfo } from "@/types/workset";
@@ -101,7 +102,11 @@ type Story = StoryObj<typeof ComicList>;
 
 // ── Interactive (full-featured) ───────────────────
 
-function InteractiveComicList() {
+type InteractiveComicListProps = {
+  canCreateComic?: boolean;
+};
+
+function InteractiveComicList({ canCreateComic = true }: InteractiveComicListProps) {
   const [worksets, setWorksets] = useState(mockWorksets);
   const [activeWsId, setActiveWsId] = useState("ws-1");
   const [title, setTitle] = useState("");
@@ -145,7 +150,7 @@ function InteractiveComicList() {
         onDeleteWorkset={handleDeleteWorkset}
         onLoadComics={makePagedLoader(FULL_COMICS, 400)}
         onComicClick={(c) => console.log("click comic:", c.title)}
-        onCreateComic={() => console.log("create comic")}
+        onCreateComic={canCreateComic ? () => console.log("create comic") : undefined}
         activeFuzzyTitle={title}
         onChangeFuzzyTitle={setTitle}
         activeUploadStatus={upload}
@@ -168,6 +173,19 @@ function InteractiveComicList() {
 export const Interactive: Story = {
   name: "交互式 (完整功能)",
   render: () => <InteractiveComicList />,
+  play: async ({ canvasElement }) => {
+    expect(
+      within(canvasElement).getByRole("button", { name: "创建漫画" }),
+    ).toBeVisible();
+  },
+};
+
+export const NonAdmin: Story = {
+  name: "非管理员",
+  render: () => <InteractiveComicList canCreateComic={false} />,
+  play: async ({ canvasElement }) => {
+    expect(within(canvasElement).queryByRole("button", { name: "创建漫画" })).toBeNull();
+  },
 };
 
 // ── Reviewer Mode ─────────────────────────────────

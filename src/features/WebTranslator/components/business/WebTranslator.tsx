@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import BaseTranslator from "@/features/BaseTranslator";
+import type { TerminologyDataSource } from "@/features/BaseTranslator";
 import type { Project } from "@/types/project";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 import type { Page } from "@/types/page";
@@ -14,6 +15,19 @@ import {
 } from "../../api/translator";
 import { listAssignmentsByChapter } from "@/api/assignment";
 import { getUser } from "@/api/user";
+import { getChapter } from "@/features/ComicPlayground/api/chapter";
+import {
+  createTerm,
+  deleteTerm,
+  listTerms,
+  updateTerm,
+} from "@/features/ComicPlayground/api/term";
+import {
+  createComicTermbase,
+  deleteTermbase,
+  listComicTermbases,
+  updateTermbase,
+} from "@/features/ComicPlayground/api/termbase";
 
 import type { TranslatorMode } from "@/types/translatorMode";
 import type {
@@ -33,6 +47,7 @@ type LoadingState =
   | {
       status: "ready";
       project: Project;
+      comicId: string;
       canTranslate: boolean;
       canProofread: boolean;
     };
@@ -90,8 +105,17 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     async function load() {
       setState({ status: "loading" });
 
-      // 1. Fetch pages
-      const pagesResult = await listPages(chapterId);
+      // 1. Fetch the chapter context and pages together.
+      const [chapterResult, pagesResult] = await Promise.all([
+        getChapter(chapterId),
+        listPages(chapterId),
+      ]);
+      if (!chapterResult.success) {
+        if (!cancelled) {
+          setState({ status: "error", message: chapterResult.error });
+        }
+        return;
+      }
       if (!pagesResult.success) {
         if (!cancelled) {
           setState({ status: "error", message: pagesResult.error });
@@ -160,7 +184,13 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       };
 
       if (!cancelled) {
-        setState({ status: "ready", project, canTranslate, canProofread });
+        setState({
+          status: "ready",
+          project,
+          comicId: chapterResult.data.comicId,
+          canTranslate,
+          canProofread,
+        });
       }
     }
 
@@ -242,6 +272,22 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     [chapterId],
   );
 
+  const comicId = state.status === "ready" ? state.comicId : undefined;
+  const terminology = useMemo<TerminologyDataSource | undefined>(() => {
+    if (!comicId) return undefined;
+
+    return {
+      listTermbases: (args) => listComicTermbases({ comicId, ...args }),
+      listTerms,
+      createTermbase: (args) => createComicTermbase({ comicId, ...args }),
+      updateTermbase,
+      deleteTermbase,
+      createTerm,
+      updateTerm,
+      deleteTerm,
+    };
+  }, [comicId]);
+
   if (state.status === "loading") {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -284,6 +330,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       currentUserId={currentUserId}
       canTranslate={state.canTranslate}
       canProofread={state.canProofread}
+      terminology={terminology}
       startPageId={startPageId}
       startMode={startMode}
     />
