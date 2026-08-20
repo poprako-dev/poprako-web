@@ -9,6 +9,7 @@ import {
 import type { Project } from "@/types/project";
 import type { UserInfo } from "@/types/user";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
+import type { TerminologyDataSource } from "@/features/BaseTranslator";
 
 const DEMO_IMAGE =
   "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80";
@@ -400,6 +401,38 @@ async function mockResolveUser(userId: string) {
     : { success: false as const, error: `Unknown user: ${userId}` };
 }
 
+const mockTerminology: TerminologyDataSource = {
+  listTermbases: async () => ({
+    success: true,
+    data: [
+      {
+        id: "termbase-1",
+        comicId: "comic-1",
+        name: "角色称谓",
+        description: "本作角色姓名与敬称",
+        termCount: 2,
+        creatorId: "mock-user",
+        createdAt: 10,
+        updatedAt: 20,
+      },
+    ],
+  }),
+  listTerms: async () => ({
+    success: true,
+    data: [
+      {
+        id: "term-1",
+        termbaseId: "termbase-1",
+        source: "団長",
+        targets: ["团长"],
+        creatorId: "mock-user",
+        createdAt: 10,
+        updatedAt: 20,
+      },
+    ],
+  }),
+};
+
 function createStoryArgs({
   canTranslate,
   canProofread,
@@ -444,4 +477,14 @@ export const EmptyUnits: Story = {
     canProofread: true,
     units: [],
   }),
+};
+
+export const WithTerminology: Story = {
+  args: {
+    ...createStoryArgs({
+      canTranslate: true,
+      canProofread: true,
+    }),
+    terminology: mockTerminology,
+  },
 };

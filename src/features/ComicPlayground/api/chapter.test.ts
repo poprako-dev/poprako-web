@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
   exportChapter,
   exportChapterLp,
+  getChapter,
   importChapter,
   listChapterWorkflowRecords,
   updateChapter,
 } from "./chapter";
+import { useAppStore } from "@/store/app";
 
 type FetchCall = {
   url: string;
@@ -59,6 +61,54 @@ function bodyOf(call: FetchCall): unknown {
 describe("chapter API", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    useAppStore.getState().setAccessToken(null);
+  });
+
+  test("gets a chapter with auth and unwraps its comic context", async () => {
+    useAppStore.getState().setAccessToken("chapter-token");
+    const fetchMock = installFetch(okJson({
+      id: "chapter_1",
+      comic_id: "comic_1",
+      creator_id: "user_1",
+      index: 2,
+      subtitle: "雨夜",
+      page_count: 12,
+      total_unit_count: 90,
+      translated_unit_count: 60,
+      proofread_unit_count: 30,
+      is_pinned: true,
+      stages: 21,
+      created_at: 10,
+      updated_at: 20,
+    }));
+
+    const result = await getChapter("chapter_1");
+    const call = lastFetchCall(fetchMock);
+
+    expect(call.url).toBe("/api/v1/chapters/chapter_1");
+    expect(new Headers(call.init?.headers).get("Authorization")).toBe(
+      "Bearer chapter-token",
+    );
+    expect(result).toEqual({
+      success: true,
+      data: {
+        id: "chapter_1",
+        comicId: "comic_1",
+        comic: undefined,
+        creatorId: "user_1",
+        creator: undefined,
+        index: 2,
+        subtitle: "雨夜",
+        isPinned: true,
+        pageCount: 12,
+        totalUnitCount: 90,
+        translatedUnitCount: 60,
+        proofreadUnitCount: 30,
+        stages: 21,
+        createdAt: 10,
+        updatedAt: 20,
+      },
+    });
   });
 
   test("lists and unwraps every adjacent-tagged workflow event", async () => {

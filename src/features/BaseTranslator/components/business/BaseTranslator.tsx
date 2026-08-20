@@ -32,6 +32,7 @@ import UnitList from "@/features/BaseTranslator/features/UnitList";
 import BaseTranslatorLayout from "@/features/BaseTranslator/layout/BaseTranslatorLayout";
 import ShortcutPanel from "@/features/BaseTranslator/features/ShortcutPanel";
 import SpecialCharPanel from "@/features/BaseTranslator/features/SpecialCharPanel";
+import TerminologyLookupBar from "@/features/BaseTranslator/features/TerminologyLookup";
 import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
@@ -40,6 +41,7 @@ import { useSpecialChars } from "@/hook/useSpecialChars";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
 import type { SpecialCharInsertRequest } from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
 import type { UnitDiff } from "../../types/type";
+import type { TerminologyDataSource } from "../../types/terminology";
 import type { UnitUserResolver } from "../../features/UnitList/hook/unitContributorCache";
 import { useUnitPersistence } from "../../hook/useUnitPersistence";
 import {
@@ -66,6 +68,7 @@ type Props = {
   currentUserId?: string;
   canTranslate: boolean;
   canProofread: boolean;
+  terminology?: TerminologyDataSource;
   // 初始页码索引，默认为 0
   startPageIndex?: number;
   // 初始页 ID，优先级高于 startPageIndex
@@ -84,6 +87,7 @@ export default function BaseTranslator({
   currentUserId,
   canTranslate,
   canProofread,
+  terminology,
   startPageIndex,
   startPageId,
   startMode,
@@ -459,7 +463,7 @@ export default function BaseTranslator({
   });
 
   const canvas = (
-    <div className="relative w-full h-full bg-stone-700">
+    <div className="@container relative w-full h-full bg-stone-700">
       <Canvas
         ref={canvasRef}
         imageSrc={imageUrl}
@@ -480,6 +484,7 @@ export default function BaseTranslator({
         enableReadOnly={!canEditView}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
+      {terminology && <TerminologyLookupBar dataSource={terminology} />}
       <div className="absolute top-2 left-2 flex items-center gap-2">
         {!readOnly && (
           <ToolboxDropdown options={toolboxOptions} direction="down" />
