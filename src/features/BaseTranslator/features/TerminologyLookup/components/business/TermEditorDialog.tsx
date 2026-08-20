@@ -213,7 +213,10 @@ export default function TermEditorDialog({
                   onClick={() => setTargets((current) => (
                     moveTermTarget(current, index, index - 1)
                   ))}
-                  className="flex size-7 items-center justify-center text-stone-400 disabled:opacity-20"
+                  className={clsx(
+                    "flex size-7 items-center justify-center text-stone-400",
+                    "disabled:opacity-20",
+                  )}
                 >
                   <ChevronUp size={13} />
                 </button>
@@ -224,7 +227,10 @@ export default function TermEditorDialog({
                   onClick={() => setTargets((current) => (
                     moveTermTarget(current, index, index + 1)
                   ))}
-                  className="flex size-7 items-center justify-center text-stone-400 disabled:opacity-20"
+                  className={clsx(
+                    "flex size-7 items-center justify-center text-stone-400",
+                    "disabled:opacity-20",
+                  )}
                 >
                   <ChevronDown size={13} />
                 </button>
@@ -235,7 +241,10 @@ export default function TermEditorDialog({
                   onClick={() => setTargets((current) => (
                     current.filter((_, targetIndex) => targetIndex !== index)
                   ))}
-                  className="flex size-7 items-center justify-center text-stone-400 hover:text-red-500 disabled:opacity-20"
+                  className={clsx(
+                    "flex size-7 items-center justify-center text-stone-400",
+                    "hover:text-red-500 disabled:opacity-20",
+                  )}
                 >
                   <X size={13} />
                 </button>
