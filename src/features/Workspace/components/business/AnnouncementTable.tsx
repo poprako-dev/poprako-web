@@ -155,7 +155,15 @@ export default function AnnouncementTable({
                       "text-[10px] font-bold text-slate-500",
                     )}
                   >
-                    {avatarChar(ann.user?.name)}
+                    {ann.user?.avatarThumbnailUrl ? (
+                      <img
+                        src={ann.user.avatarThumbnailUrl}
+                        alt={`${ann.user.name} 的头像`}
+                        className="w-full h-full object-cover rounded-[inherit]"
+                      />
+                    ) : (
+                      avatarChar(ann.user?.name)
+                    )}
                   </div>
                 </div>
                 <p
@@ -252,7 +260,15 @@ export default function AnnouncementTable({
                     "text-[9px] font-bold text-slate-500",
                   )}
                 >
-                  {avatarChar(selected.user?.name)}
+                  {selected.user?.avatarThumbnailUrl ? (
+                    <img
+                      src={selected.user.avatarThumbnailUrl}
+                      alt={`${selected.user.name} 的头像`}
+                      className="w-full h-full object-cover rounded-[inherit]"
+                    />
+                  ) : (
+                    avatarChar(selected.user?.name)
+                  )}
                 </span>
                 {selected.user?.name ?? "未知用户"}
               </span>
