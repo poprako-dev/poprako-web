@@ -56,3 +56,32 @@ export async function createAnnouncement(
   if (!result.success) return result;
   return { success: true, data: result.data!.id };
 }
+
+type UpdateAnnouncementArgs = {
+  title: string;
+  content: string;
+};
+
+type RawUpdateAnnouncementArgs = UpdateAnnouncementArgs & {
+  id: string;
+};
+
+export async function updateAnnouncement(
+  announcementId: string,
+  args: UpdateAnnouncementArgs,
+): Promise<Result<void>> {
+  const result = await api.put<void, RawUpdateAnnouncementArgs>(
+    `/announcements/${announcementId}`,
+    { id: announcementId, ...args },
+  );
+  if (!result.success) return result;
+  return { success: true, data: undefined };
+}
+
+export async function deleteAnnouncement(
+  announcementId: string,
+): Promise<Result<void>> {
+  const result = await api.delete<void>(`/announcements/${announcementId}`);
+  if (!result.success) return result;
+  return { success: true, data: undefined };
+}

@@ -1,10 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, X } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import clsx from "clsx";
 import type { AnnouncementInfo } from "@/types/announcement";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import LoadingCircle from "@/components/ui/LoadingCircle";
-import { listAnnouncements, createAnnouncement } from "@/api/announcement";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import {
+  createAnnouncement,
+  deleteAnnouncement,
+  listAnnouncements,
+  updateAnnouncement,
+} from "@/api/announcement";
 import AnnouncementCreatorModal from "./AnnouncementCreatorModal";
 
 type Props = {
@@ -35,6 +41,11 @@ export default function AnnouncementTable({
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<AnnouncementInfo | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState({ title: "", content: "" });
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -70,6 +81,79 @@ export default function AnnouncementTable({
     },
     [teamId, showToast, load],
   );
+
+  const handleOpenDetail = (announcement: AnnouncementInfo) => {
+    setSelected(announcement);
+    setIsEditing(false);
+    setIsDeleteConfirmOpen(false);
+  };
+
+  const handleCloseDetail = () => {
+    setSelected(null);
+    setIsEditing(false);
+    setIsDeleteConfirmOpen(false);
+  };
+
+  const handleStartEditing = () => {
+    if (!selected) return;
+    setDraft({ title: selected.title, content: selected.content });
+    setIsEditing(true);
+  };
+
+  const handleCancelEditing = () => {
+    setIsEditing(false);
+  };
+
+  const handleUpdate = async () => {
+    if (!selected) return;
+
+    const title = draft.title.trim();
+    const content = draft.content.trim();
+    if (!title || !content) return;
+
+    setIsSaving(true);
+    const result = await updateAnnouncement(selected.id, { title, content });
+    setIsSaving(false);
+    if (!result.success) {
+      console.error("[AnnouncementTable] 修改公告失败:", result.error);
+      showToast("修改公告失败", "error");
+      return;
+    }
+
+    const updatedAnnouncement = { ...selected, title, content };
+    setSelected(updatedAnnouncement);
+    setAnnouncements((current) =>
+      current.map((announcement) =>
+        announcement.id === updatedAnnouncement.id
+          ? updatedAnnouncement
+          : announcement,
+      ),
+    );
+    setIsEditing(false);
+    await load();
+  };
+
+  const handleDelete = async () => {
+    if (!selected) return;
+
+    setIsDeleting(true);
+    const result = await deleteAnnouncement(selected.id);
+    setIsDeleting(false);
+    if (!result.success) {
+      console.error("[AnnouncementTable] 删除公告失败:", result.error);
+      showToast("删除公告失败", "error");
+      return;
+    }
+
+    handleCloseDetail();
+    await load();
+  };
+
+  const isDraftDirty =
+    selected !== null &&
+    (draft.title !== selected.title || draft.content !== selected.content);
+  const isDraftValid = draft.title.trim().length > 0 && draft.content.trim().length > 0;
+  const canPublish = isDraftDirty && isDraftValid && !isSaving;
 
   return (
     <div className="mb-4">
@@ -127,7 +211,7 @@ export default function AnnouncementTable({
           {announcements.map((ann, i) => (
             <button
               key={ann.id}
-              onClick={() => setSelected(ann)}
+              onClick={() => handleOpenDetail(ann)}
               className={clsx(
                 i > 0 && "hidden sm:block",
                 "group w-full text-left px-3 py-2.5",
@@ -199,7 +283,7 @@ export default function AnnouncementTable({
             "bg-black/5 backdrop-blur-[1px]",
           )}
         >
-          <div className="fixed inset-0" onClick={() => setSelected(null)} />
+          <div className="fixed inset-0" onClick={handleCloseDetail} />
           <div
             className={clsx(
               "relative w-full max-w-xs bg-stone-50 h-full",
@@ -219,7 +303,7 @@ export default function AnnouncementTable({
                 ANNOUNCEMENT DETAIL
               </span>
               <button
-                onClick={() => setSelected(null)}
+                onClick={handleCloseDetail}
                 className={clsx(
                   "p-1 rounded hover:bg-slate-50",
                   "text-slate-400 hover:text-slate-600",
@@ -229,22 +313,55 @@ export default function AnnouncementTable({
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <h2
-              className={clsx(
-                "text-sm font-bold text-slate-700",
-                "leading-relaxed mb-3",
-              )}
-            >
-              {selected.title}
-            </h2>
-            <p
-              className={clsx(
-                "text-xs text-slate-500 leading-relaxed",
-                "whitespace-pre-wrap flex-1",
-              )}
-            >
-              {selected.content}
-            </p>
+            {isEditing ? (
+              <textarea
+                aria-label="公告标题"
+                rows={2}
+                className={clsx(
+                  "w-full resize-none rounded-md px-2 py-1.5 mb-3",
+                  "text-sm font-bold text-slate-700 leading-relaxed",
+                  "border border-slate-200 bg-white",
+                  "focus:border-slate-300 focus:outline-none",
+                )}
+                value={draft.title}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, title: event.target.value }))
+                }
+              />
+            ) : (
+              <h2
+                className={clsx(
+                  "text-sm font-bold text-slate-700",
+                  "leading-relaxed mb-3",
+                )}
+              >
+                {selected.title}
+              </h2>
+            )}
+            {isEditing ? (
+              <textarea
+                aria-label="公告内容"
+                className={clsx(
+                  "w-full flex-1 min-h-24 resize-none rounded-md px-2 py-1.5",
+                  "text-xs text-slate-500 leading-relaxed",
+                  "border border-slate-200 bg-white",
+                  "focus:border-slate-300 focus:outline-none",
+                )}
+                value={draft.content}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, content: event.target.value }))
+                }
+              />
+            ) : (
+              <p
+                className={clsx(
+                  "text-xs text-slate-500 leading-relaxed",
+                  "whitespace-pre-wrap flex-1",
+                )}
+              >
+                {selected.content}
+              </p>
+            )}
             <div
               className={clsx(
                 "pt-3 border-t border-slate-100",
@@ -274,7 +391,78 @@ export default function AnnouncementTable({
               </span>
               <span>{formatDate(selected.createdAt)}</span>
             </div>
+            {isAdmin && (
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={() => {
+                    if (isEditing) {
+                      handleCancelEditing();
+                      return;
+                    }
+                    setIsDeleteConfirmOpen(true);
+                  }}
+                  className={clsx(
+                    "flex-1 py-2 text-xs font-semibold rounded-lg",
+                    "transition-all duration-200 active:scale-[0.98]",
+                    isEditing
+                      ? [
+                          "text-slate-400 bg-slate-50 hover:bg-slate-100",
+                          "border border-slate-100",
+                        ]
+                      : [
+                          "text-red-500 bg-red-50 hover:bg-red-100",
+                          "border border-(--color-border-red-200)",
+                        ],
+                    isSaving && "opacity-60 cursor-not-allowed",
+                  )}
+                >
+                  {isEditing ? "取消" : "删除"}
+                </button>
+                <button
+                  type="button"
+                  disabled={isEditing && !canPublish}
+                  onClick={() => {
+                    if (isEditing) {
+                      void handleUpdate();
+                      return;
+                    }
+                    handleStartEditing();
+                  }}
+                  className={clsx(
+                    "flex-1 py-2 text-xs font-semibold rounded-lg",
+                    "flex items-center justify-center gap-1",
+                    "transition-all duration-200 active:scale-[0.98]",
+                    isEditing && !canPublish
+                      ? "bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100"
+                      : [
+                          "bg-green-50 text-green-500 hover:bg-green-100",
+                          "border border-(--color-border-green-200)",
+                        ],
+                )}
+              >
+                  {isSaving ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : isEditing ? (
+                    "发布"
+                  ) : (
+                    "修改"
+                  )}
+                </button>
+              </div>
+            )}
           </div>
+          {isDeleteConfirmOpen && (
+            <ConfirmDialog
+              title="删除公告"
+              description="删除后无法恢复，确定删除该公告吗？"
+              confirmLabel="删除"
+              loading={isDeleting}
+              onConfirm={() => void handleDelete()}
+              onCancel={() => setIsDeleteConfirmOpen(false)}
+            />
+          )}
         </div>
       )}
 
