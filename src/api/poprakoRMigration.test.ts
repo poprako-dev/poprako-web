@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { listAnnouncements } from "@/api/announcement";
+import {
+  deleteAnnouncement,
+  listAnnouncements,
+  updateAnnouncement,
+} from "@/api/announcement";
 import { upsertAssignment } from "@/api/assignment";
 import { listAssignmentInvitations } from "@/api/assignmentInvitation";
 import { listComments } from "@/api/comment";
@@ -126,6 +130,23 @@ describe("poprako-r API migration", () => {
     expect(lastFetchCall(fetchMock).url).toBe(
       "/api/v1/teams/team_1/announcements?offset=5&limit=60&incl=user",
     );
+
+    await updateAnnouncement("announcement_1", { title: "T", content: "C" });
+    expect(lastFetchCall(fetchMock)).toMatchObject({
+      url: "/api/v1/announcements/announcement_1",
+      init: { method: "PUT" },
+    });
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+      id: "announcement_1",
+      title: "T",
+      content: "C",
+    });
+
+    await deleteAnnouncement("announcement_1");
+    expect(lastFetchCall(fetchMock)).toMatchObject({
+      url: "/api/v1/announcements/announcement_1",
+      init: { method: "DELETE" },
+    });
 
     await listInvitations({
       teamId: "team_1",
