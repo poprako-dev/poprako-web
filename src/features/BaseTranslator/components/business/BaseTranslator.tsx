@@ -36,6 +36,8 @@ import TerminologyLookupBar from "@/features/BaseTranslator/features/Terminology
 import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
+import { useRelocationPreference } from
+  "@/features/BaseTranslator/hook/useRelocationPreference";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { useSpecialChars } from "@/hook/useSpecialChars";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
@@ -115,7 +117,7 @@ export default function BaseTranslator({
   );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
-  const [isRelocationEnabled, setIsRelocationEnabled] = useState(false);
+  const { isRelocationEnabled, toggleRelocation } = useRelocationPreference();
   const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
   const [isSpecialCharPanelOpen, setIsSpecialCharPanelOpen] = useState(false);
@@ -393,9 +395,7 @@ export default function BaseTranslator({
   useShortcutActions(
     {
       toggleMode: handleSwitchView,
-      toggleRelocation: () => {
-        setIsRelocationEnabled((v) => !v);
-      },
+      toggleRelocation,
       toggleProofreadPreview: () => {
         setProofreadPreviewVisibility((v) =>
           v === "visible" ? "dimmed" : "visible",
@@ -557,7 +557,7 @@ export default function BaseTranslator({
             isUnitCreationEnabled={isUnitCreationEnabled}
             proofreadPreviewVisibility={proofreadPreviewVisibility}
             onSwitchView={handleSwitchView}
-            onRelocationClick={() => setIsRelocationEnabled((v) => !v)}
+            onRelocationClick={toggleRelocation}
             onUnitCreationClick={() => setIsUnitCreationEnabled((v) => !v)}
             onToggleProofreadPreviewClick={() =>
               setProofreadPreviewVisibility((v) =>
