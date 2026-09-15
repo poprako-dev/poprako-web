@@ -20,6 +20,7 @@ run_deno task test:unit
 run_deno task build
 sh scripts/test-deployment.sh
 run_deno task build-storybook
+run_deno task test:storybook-start
 
 if [ -n "${LINE_LENGTH_BASE_SHA:-}" ]; then
     sh scripts/ci-line-length.sh "$LINE_LENGTH_BASE_SHA"

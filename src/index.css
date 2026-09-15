@@ -103,6 +103,9 @@
   --color-red-100: #fbe5e5;
   --color-border-red-200: #fce8e8;
   /* Translator diff colors: distinct but restrained for long-form proofreading. */
+  --color-unit-stats-translate: var(--color-orange-400);
+  --color-unit-stats-edit: var(--color-pink-400);
+  --color-unit-stats-append: var(--color-green-500);
   --color-diff-delete-text: #9f6262;
   --color-diff-delete-bg: #f0d2d2;
   --color-diff-replaced-text: #6f6a64;

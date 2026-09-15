@@ -3,6 +3,14 @@ import type { ImageUploadSlot } from "./image";
 
 export type PageImageQuality = "optimized" | "original";
 
+export interface PageUnitDiffStats {
+  pageId: string;
+  index: number;
+  translatedUnitCount: number;
+  editedUnitCount: number;
+  proofreaderAppendUnitCount: number;
+}
+
 export interface Page {
   id: string;
 

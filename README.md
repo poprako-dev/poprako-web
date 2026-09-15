@@ -35,11 +35,16 @@ deno task lint
 deno task test:unit
 deno task build
 deno task build-storybook
+deno task storybook
+deno task test:storybook-start
 sh scripts/ci-check.sh
 ```
 
 `scripts/ci-check.sh` 是仓库和 CI 共用的权威检查入口；`justfile` 仅提供本地快捷
 命令，不是 CI/CD 接口。
+
+Storybook 开发服务通过 `scripts/storybook-deno.mjs` 适配 Deno 的依赖读取和命令执行，
+无需安装其他包管理器。CI 同时检查静态构建和开发服务启动。
 
 生产构建由 GitHub Actions `production` environment 的 `API_BASE_URL` secret
 注入 API 基址；其值必须是 `https://api.poprako.com/api/v1`。这个值会映射为仅供

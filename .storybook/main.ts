@@ -17,6 +17,11 @@ const config: StorybookConfig = {
   ],
   "framework": "@storybook/react-vite",
   viteFinal(viteConfig) {
+    // The development inspector still calls ReactDOM.render, removed in React 19.
+    viteConfig.plugins = viteConfig.plugins?.filter((plugin) =>
+      !plugin || typeof plugin !== "object" || !("name" in plugin)
+      || plugin.name !== "vite-plugin-react-inspector",
+    );
     return mergeConfig(viteConfig, {
       build: {
         chunkSizeWarningLimit: STORYBOOK_CHUNK_SIZE_WARNING_LIMIT,

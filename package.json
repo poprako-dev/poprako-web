@@ -20,7 +20,8 @@
     "check": "tsc -b && eslint . --max-warnings 0",
     "preview": "vite preview",
     "test:unit": "vitest run --config vitest.unit.config.ts",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "deno run -A scripts/storybook-deno.mjs dev -p 6006",
+    "test:storybook-start": "sh scripts/test-storybook-start.sh",
     "build-storybook": "storybook build"
   },
   "dependencies": {

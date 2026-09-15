@@ -14,7 +14,7 @@ import type {
   TerminologyDataSource,
   UnitSearchTransformDataSource,
 } from "@/features/BaseTranslator";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 
 const DEMO_IMAGE =
   "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80";
@@ -538,7 +538,13 @@ function createStoryArgs({
     onResolveUser: mockResolveUser,
     onCompleteStage: mockCompleteStage,
     // eslint-disable-next-line @typescript-eslint/require-await
-    onListEditedPageIds: async () => ["page-2", "page-3"],
+    onListPageUnitDiffStats: async () => ["page-2", "page-3"].map((pageId, index) => ({
+      pageId,
+      index: index + 1,
+      translatedUnitCount: 10,
+      editedUnitCount: 3,
+      proofreaderAppendUnitCount: 2,
+    })),
     currentUserId: "mock-user",
     terminology: mockTerminology,
     unitSearchTransform: createUnitSearchTransform(unitsByPage),
@@ -641,5 +647,43 @@ export const ReadOnlyWithoutTerminology: Story = {
     await expect(canvas.getByRole("button", {
       name: "前进到下一个修改",
     })).toBeVisible();
+  },
+};
+
+export const ReadOnlyPageStatistics: Story = {
+  args: {
+    ...createStoryArgs({ canTranslate: true, canProofread: true }),
+    onLoadPageImage: () => Promise.resolve(
+      "data:image/svg+xml," + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"/>',
+      ),
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    await expect(canvas.queryByRole("button", { name: "页面 unit 统计" })).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "切换到翻译模式" }));
+    await expect(canvas.queryByRole("button", { name: "页面 unit 统计" })).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "切换到只读模式" }));
+
+    const trigger = canvas.getByRole("button", { name: "页面 unit 统计" });
+    await waitFor(async () => { await expect(trigger).toBeEnabled(); });
+    await userEvent.click(trigger);
+    await userEvent.click(await page.findByRole("button", {
+      name: "第 2 页，翻译 10，编辑 3，追加 2",
+    }));
+    await expect(page.queryByRole("dialog")).toBeNull();
+    await waitFor(async () => { await expect(trigger).toBeEnabled(); });
+    await userEvent.click(trigger);
+    await expect(await page.findByRole("button", {
+      name: "第 2 页，翻译 10，编辑 3，追加 2",
+    })).toHaveAttribute("aria-current", "page");
+    await userEvent.keyboard("{Escape}");
+    await expect(trigger).toHaveFocus();
+    await userEvent.click(trigger);
+    await expect(await page.findByRole("button", {
+      name: "第 2 页，翻译 10，编辑 3，追加 2",
+    })).toHaveAttribute("aria-current", "page");
   },
 };

@@ -1,10 +1,29 @@
 import type {
   PageInfo,
+  PageUnitDiffStats,
   AllocatedPage,
   AllocChapterPagesArgs,
   AllocChapterPagesResult,
 } from "../page";
 import { ensureHttpsUrl } from "@/utils/url";
+
+export interface RawPageUnitDiffStats {
+  page_id: string;
+  index: number;
+  translated_unit_count: number;
+  editted_unit_count: number;
+  proofreader_append_unit_count: number;
+}
+
+export function unwrapRawPageUnitDiffStats(raw: RawPageUnitDiffStats): PageUnitDiffStats {
+  return {
+    pageId: raw.page_id,
+    index: raw.index,
+    translatedUnitCount: raw.translated_unit_count,
+    editedUnitCount: raw.editted_unit_count,
+    proofreaderAppendUnitCount: raw.proofreader_append_unit_count,
+  };
+}
 
 export interface RawPageInfo {
   id: string;
