@@ -1,9 +1,9 @@
 import { api } from "@/api/util";
 import type { UnitInfo } from "@/types/unit";
-import type { PageInfo } from "@/types/page";
+import type { PageInfo, PageUnitDiffStats } from "@/types/page";
 import type { Result } from "@/types/utils/result";
-import type { RawPageInfo } from "@/types/raw/page";
-import { unwrapRawPageInfo } from "@/types/raw/page";
+import type { RawPageInfo, RawPageUnitDiffStats } from "@/types/raw/page";
+import { unwrapRawPageInfo, unwrapRawPageUnitDiffStats } from "@/types/raw/page";
 import {
   unwrapRawUnitSearchMatch,
   unwrapRawListPageUnitsResult,
@@ -29,10 +29,6 @@ export interface ListPageUnitsResult {
   totalUnitCount: number;
   translatedUnitCount: number;
   proofreadUnitCount: number;
-}
-
-interface RawListEdittedDiffPageIdsResult {
-  page_ids: string[];
 }
 
 export async function listUnits(
@@ -79,15 +75,15 @@ export async function listPages(
   return { success: true, data: items.map((item) => unwrapRawPageInfo(item)) };
 }
 
-export async function listEdittedDiffPageIds(
+export async function listPageUnitDiffStats(
   chapterId: string,
-): Promise<Result<string[]>> {
-  const res = await api.get<RawListEdittedDiffPageIdsResult>(
-    `/chapters/${chapterId}/pages/editted-diffs`,
+): Promise<Result<PageUnitDiffStats[]>> {
+  const res = await api.get<RawPageUnitDiffStats[]>(
+    `/chapters/${chapterId}/pages/unit-diff-stats`,
   );
   if (!res.success) {return res;}
 
-  return { success: true, data: res.data.page_ids };
+  return { success: true, data: res.data.map((item) => unwrapRawPageUnitDiffStats(item)) };
 }
 
 export async function completeChapterStage(

@@ -13,7 +13,6 @@ import {
   Command,
   CaseSensitive,
   Check,
-  CircleArrowRight,
   Loader2,
   ReplaceAll,
 } from "lucide-react";
@@ -35,7 +34,7 @@ import {
 } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 import type { Project } from "@/types/project";
-import type { PageImageQuality } from "@/types/page";
+import type { PageImageQuality, PageUnitDiffStats } from "@/types/page";
 import Canvas, {
   type CanvasHandle,
 } from "@/features/BaseTranslator/features/Canvas";
@@ -67,7 +66,8 @@ import {
   resolveInitialPageIndex,
   usePageImagePreloader,
 } from "../../hook/usePageImagePreloader";
-import { findNextEditedPageIndex } from "../../editedPageNavigation";
+import ReadOnlyPageActions from
+  "../../features/PageUnitStats/components/business/ReadOnlyPageActions";
 import {
   availableTranslatorModes,
   initialTranslatorMode,
@@ -91,7 +91,7 @@ interface Props {
   ) => Promise<string>;
   onResolveUser: UnitUserResolver;
   onCompleteStage: (stage: TranslatorCompletionStage) => Promise<void>;
-  onListEditedPageIds: () => Promise<string[]>;
+  onListPageUnitDiffStats: () => Promise<PageUnitDiffStats[]>;
   onExit: () => void;
   currentUserId: string;
   canTranslate: boolean;
@@ -121,7 +121,7 @@ export default function BaseTranslator({
   onLoadPageImage,
   onResolveUser,
   onCompleteStage,
-  onListEditedPageIds,
+  onListPageUnitDiffStats,
   onExit,
   currentUserId,
   canTranslate,
@@ -189,13 +189,12 @@ export default function BaseTranslator({
   const [isCompletingStage, setIsCompletingStage] = useState(false);
   const [hasCompletedStage, setHasCompletedStage] = useState(false);
   const [isCompleteConfirmOpen, setIsCompleteConfirmOpen] = useState(false);
-  const [isLoadingEditedPages, setIsLoadingEditedPages] = useState(false);
+  const [isPageStatsOpen, setIsPageStatsOpen] = useState(false);
 
   const canvasRef = useRef<CanvasHandle>(null);
   const lastSpecialCharRef = useRef<string | null>(null);
   const relocationSuppressedUnitIdRef = useRef<string | null>(null);
   const pendingCenteredUnitIdRef = useRef<string | null>(null);
-  const editedPageIdsRef = useRef<string[] | undefined>(undefined);
 
   const showToast = useToastStore((s) => s.showToast);
   const { allChars, favoriteChars } = useSpecialChars();
@@ -326,39 +325,6 @@ export default function BaseTranslator({
       showLocalCaughtError(error, showToast, "推进阶段失败，请重试");
     } finally {
       setIsCompletingStage(false);
-    }
-  }
-
-  async function handleNavigateToNextEditedPage() {
-    if (isLoadingEditedPages || isLoadingPage) {return;}
-
-    setIsLoadingEditedPages(true);
-    try {
-      const editedPageIds = editedPageIdsRef.current
-        ?? await onListEditedPageIds();
-      editedPageIdsRef.current = editedPageIds;
-
-      const nextPageIndex = findNextEditedPageIndex(
-        project.pages,
-        pageIndex,
-        editedPageIds,
-      );
-      if (nextPageIndex < 0) {
-        showToast(
-          editedPageIds.length === 0
-            ? "当前章节没有修改页面"
-            : "后面没有修改页面了",
-          "info",
-        );
-        return;
-      }
-
-      await handleNavigate(nextPageIndex);
-    } catch (error) {
-      console.error("[BaseTranslator] 加载修改页面失败", error);
-      showLocalCaughtError(error, showToast, "获取修改页面失败，请重试");
-    } finally {
-      setIsLoadingEditedPages(false);
     }
   }
 
@@ -541,6 +507,7 @@ export default function BaseTranslator({
 
   function handleSwitchView() {
     if (!canSwitchView) {return;}
+    setIsPageStatsOpen(false);
     setViewState((current) => {
       const currentIndex = availableModes.indexOf(current.view);
       const next = availableModes[(currentIndex + 1) % availableModes.length]!;
@@ -589,11 +556,15 @@ export default function BaseTranslator({
       },
     },
     activeShortcuts,
-    isShortcutPanelOpen || isSpecialCharPanelOpen || isUnitSearchTransformOpen,
+    isShortcutPanelOpen || isSpecialCharPanelOpen || isUnitSearchTransformOpen
+      || (isReadOnly && isPageStatsOpen),
   );
 
   useEffect(() => {
-    if (isShortcutPanelOpen || isSpecialCharPanelOpen || isUnitSearchTransformOpen) {
+    if (
+      isShortcutPanelOpen || isSpecialCharPanelOpen || isUnitSearchTransformOpen
+      || (isReadOnly && isPageStatsOpen)
+    ) {
       return;
     }
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -603,7 +574,10 @@ export default function BaseTranslator({
     };
     globalThis.addEventListener("keydown", handleKeyDown);
     return () => { globalThis.removeEventListener("keydown", handleKeyDown); };
-  }, [isShortcutPanelOpen, isSpecialCharPanelOpen, isUnitSearchTransformOpen]);
+  }, [
+    isShortcutPanelOpen, isSpecialCharPanelOpen, isUnitSearchTransformOpen,
+    isReadOnly, isPageStatsOpen,
+  ]);
 
   const toolboxOptions = isReadOnly ? [] : [
     {
@@ -706,25 +680,16 @@ export default function BaseTranslator({
       )}
       {isReadOnly && (
         <div className="absolute bottom-2 right-2">
-          <button
-            type="button"
-            title="前进到下一个修改"
-            aria-label="前进到下一个修改"
-            disabled={isLoadingEditedPages || isLoadingPage || saving}
-            onClick={() => void handleNavigateToNextEditedPage()}
-            className={clsx(
-              "flex size-8 items-center justify-center rounded-md border",
-              "border-gray-200 bg-white/85 text-gray-700 shadow-sm",
-              "transition-colors hover:border-stone-300 hover:bg-white",
-              "hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-60",
-            )}
-          >
-            {isLoadingEditedPages ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <CircleArrowRight size={20} strokeWidth={2.25} />
-            )}
-          </button>
+          <ReadOnlyPageActions
+            key={project.id}
+            pages={project.pages}
+            currentPageId={project.pages[pageIndex]!.id}
+            isDisabled={isLoadingPage || saving}
+            isOpen={isPageStatsOpen}
+            onOpenChange={setIsPageStatsOpen}
+            onListPageUnitDiffStats={onListPageUnitDiffStats}
+            onNavigate={handleNavigate}
+          />
         </div>
       )}
       <div className="absolute top-2 right-2">

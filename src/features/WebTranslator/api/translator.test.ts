@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
-  listEdittedDiffPageIds,
+  listPageUnitDiffStats,
   searchChapterUnits,
   transformChapterUnits,
 } from "./translator";
@@ -17,23 +17,60 @@ describe("chapter unit search and transform API", () => {
     vi.restoreAllMocks();
   });
 
-  test("unwraps editted diff page IDs in server page order", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(okJson({
-      page_ids: ["page-2", "page-5"],
-    }));
+  test("unwraps page diff statistics with original page indexes", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okJson([{
+      page_id: "page-2",
+      index: 1,
+      translated_unit_count: 10,
+      editted_unit_count: 3,
+      proofreader_append_unit_count: 2,
+    }, {
+      page_id: "page-5",
+      index: 4,
+      translated_unit_count: 0,
+      editted_unit_count: 0,
+      proofreader_append_unit_count: 1,
+    }]));
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await listEdittedDiffPageIds("chapter-1");
+    const result = await listPageUnitDiffStats("chapter-1");
 
     const firstCall = fetchMock.mock.calls[0];
     if (!firstCall) {throw new Error("fetch 未被调用");}
     expect(String(firstCall[0])).toBe(
-      "/api/v1/chapters/chapter-1/pages/editted-diffs",
+      "/api/v1/chapters/chapter-1/pages/unit-diff-stats",
     );
     expect(result).toEqual({
       success: true,
-      data: ["page-2", "page-5"],
+      data: [{
+        pageId: "page-2",
+        index: 1,
+        translatedUnitCount: 10,
+        editedUnitCount: 3,
+        proofreaderAppendUnitCount: 2,
+      }, {
+        pageId: "page-5",
+        index: 4,
+        translatedUnitCount: 0,
+        editedUnitCount: 0,
+        proofreaderAppendUnitCount: 1,
+      }],
     });
+  });
+
+  test("keeps an empty diff response empty", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(okJson([])));
+    expect(await listPageUnitDiffStats("chapter-1"))
+      .toEqual({ success: true, data: [] });
+  });
+
+  test("does not turn a failed statistics request into zero differences", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json(
+      { message: "无权访问章节" },
+      { status: 403 },
+    )));
+    expect(await listPageUnitDiffStats("chapter-1"))
+      .toMatchObject({ success: false, httpStatus: 403 });
   });
 
   test("maps search query fields and unwraps page ownership", async () => {

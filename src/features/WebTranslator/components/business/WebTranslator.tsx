@@ -14,7 +14,7 @@ import {
   listUnits,
   saveUnits,
   listPages,
-  listEdittedDiffPageIds,
+  listPageUnitDiffStats,
   searchChapterUnits,
   completeChapterStage,
   transformChapterUnits,
@@ -305,8 +305,8 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     [chapterId],
   );
 
-  const handleListEditedPageIds = useCallback(async () => {
-    const result = await listEdittedDiffPageIds(chapterId);
+  const handleListPageUnitDiffStats = useCallback(async () => {
+    const result = await listPageUnitDiffStats(chapterId);
     if (!result.success) {throw toApiRequestError(result);}
     return result.data;
   }, [chapterId]);
@@ -373,13 +373,14 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
 
   return (
     <BaseTranslator
+      key={chapterId}
       project={state.project}
       onLoadUnits={handleLoadUnits}
       onSaveUnits={handleSaveUnits}
       onLoadPageImage={handleLoadPageImage}
       onResolveUser={handleResolveUser}
       onCompleteStage={handleCompleteStage}
-      onListEditedPageIds={handleListEditedPageIds}
+      onListPageUnitDiffStats={handleListPageUnitDiffStats}
       onExit={onExit}
       currentUserId={currentUserId}
       canTranslate={state.canTranslate}
