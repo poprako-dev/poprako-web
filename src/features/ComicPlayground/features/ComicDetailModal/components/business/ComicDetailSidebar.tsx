@@ -42,7 +42,7 @@ interface Props {
   isImportingData?: boolean | undefined;
   onNavigateReadOnly?: (() => void) | undefined;
   onExport?: (() => void) | undefined;
-  onImportFileChange?: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined;
+  onImportFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onDeletePages: () => void;
   onArchiveComic: () => void;
   onDeleteComic: () => void;

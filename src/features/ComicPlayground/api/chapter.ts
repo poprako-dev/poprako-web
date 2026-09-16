@@ -109,6 +109,12 @@ export async function getChapter(id: string): Promise<Result<ChapterInfo>> {
   return { success: true, data: chapter };
 }
 
+export async function getPinnedChapter(comicId: string): Promise<Result<ChapterInfo | null>> {
+  const result = await api.get<RawChapterInfo | null>(`/comics/${comicId}/chapters/pinned`);
+  if (!result.success) {return result;}
+  return { success: true, data: toChapterInfo(result.data ?? undefined) ?? null };
+}
+
 export async function listChapterWorkflowRecords(
   args: ListChapterWorkflowRecordsArgs,
 ): Promise<Result<ChapterWorkflowRecord[]>> {
@@ -289,9 +295,9 @@ export async function importChapter(
   args: ImportChapterArgs,
 ): Promise<Result<ImportChapterResult>> {
   const rawArgs: RawImportChapterArgs = {
-    chapter_id: args.chapterId,
     content: args.content,
     format: args.format === "json" ? "poprako" : "label_plus",
+    mode: args.mode,
   };
 
   const res = await api.post<RawImportChapterResult, RawImportChapterArgs>(

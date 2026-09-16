@@ -12,7 +12,7 @@ import type { Role } from "@/types/role";
 import type { Result } from "@/types/utils/result";
 import type {
   ChapterExports,
-  ImportChapterFormat,
+  ImportChapterArgs,
   ImportChapterResult,
   ListChapterArgs,
   ListChapterWorkflowRecordsArgs,
@@ -107,11 +107,7 @@ export interface ComicDetailModalProps {
     extension: string;
   }) => Promise<Result<AllocatedPage>>) | undefined;
   onJoinChapterRole?: ((chapterId: string, role: Role) => Promise<Result<void>>) | undefined;
-  onImportChapter?: ((args: {
-    chapterId: string;
-    content: string;
-    format: ImportChapterFormat;
-  }) => Promise<Result<ImportChapterResult>>) | undefined;
+  onImportChapter: (args: ImportChapterArgs) => Promise<Result<ImportChapterResult>>;
   onExportChapter?: ((
     chapterId: string,
     options?: {
@@ -127,7 +123,7 @@ export interface ComicDetailModalProps {
     description?: string | undefined;
   }) => Promise<Result<void>>) | undefined;
   onUpdateChapter?: ((chapterId: string, subtitle?: string) => Promise<Result<void>>) | undefined;
-  onResolveActiveMember: () => MemberInfo | null | Promise<MemberInfo | null>;
+  activeMember: MemberInfo | null;
   onClose: () => void;
 }
 

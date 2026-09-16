@@ -1,156 +1,139 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
+import { useAppStore } from "@/store/app";
 import type { ToastType } from "@/components/ui/NotificationToast";
-import type { ChapterInfo, ComicInfo } from "@/types";
+import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
-
-type ShowToast = (message: string, type: ToastType) => void;
+import {
+  findComicMember,
+  listComicMembers,
+  loadComicDetail,
+  type AssignableMemberArgs,
+  type ComicDetailData,
+} from "../api/detail";
 
 interface Args {
   returnTo: string;
-  logPrefix: string;
-  showToast: ShowToast;
-  restoreComic: (comicId: string) => Promise<Result<ComicInfo>>;
+  showToast: (message: string, type: ToastType) => void;
 }
 
-export function useComicDetailHost({
-  returnTo,
-  logPrefix,
-  showToast,
-  restoreComic,
-}: Args) {
+interface LoadedDetail { comicId: string; result: Result<ComicDetailData> }
+
+export function useComicDetailHost({ returnTo, showToast }: Args) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedComic, setSelectedComic] = useState<ComicInfo | null>(null);
-  const userClosedRef = useRef(false);
-
+  const [loadedDetail, setLoadedDetail] = useState<LoadedDetail | null>(null);
+  const [loadRevision, setLoadRevision] = useState(0);
+  const memberInfos = useAppStore((s) => s.loginState?.memberInfos);
   const urlComicId = searchParams.get("comicId");
   const urlChapterId = searchParams.get("chapterId");
-
-  const selectedComicPinnedChapter: ChapterInfo | null =
-    selectedComic?.pinnedChapter ?? null;
+  const result = loadedDetail?.comicId === urlComicId ? loadedDetail.result : undefined;
+  const detail = result?.success ? result.data : null;
+  const selectedComic = detail?.comicInfo ?? null;
+  const detailActiveMember = selectedComic
+    ? findComicMember(selectedComic, memberInfos ?? [])
+    : null;
 
   const setComicDetailSearchParams = useCallback(
     (comicId: string | null, chapterId: string | null) => {
-      const next = new URLSearchParams(searchParams);
-
-      if (comicId) {
-        next.set("comicId", comicId);
-      } else {
-        next.delete("comicId");
-      }
-
-      if (comicId && chapterId) {
-        next.set("chapterId", chapterId);
-      } else {
-        next.delete("chapterId");
-      }
-
-      setSearchParams(next, { replace: true });
+      setSearchParams((current) => {
+        const next = new URLSearchParams(current);
+        if (comicId) {next.set("comicId", comicId);}
+        else {next.delete("comicId");}
+        if (comicId && chapterId) {next.set("chapterId", chapterId);}
+        else {next.delete("chapterId");}
+        return next;
+      }, { replace: true });
     },
-    [searchParams, setSearchParams],
+    [setSearchParams],
   );
 
   const openComicDetail = useCallback(
-    (comicInfo: ComicInfo, desiredChapterId?: string | null) => {
-      setSelectedComic(comicInfo);
-      setComicDetailSearchParams(
-        comicInfo.id,
-        desiredChapterId ?? comicInfo.pinnedChapter?.id ?? null,
-      );
+    (comicId: string, chapterId?: string | null) => {
+      setComicDetailSearchParams(comicId, chapterId ?? null);
     },
     [setComicDetailSearchParams],
   );
 
-  const clearComicDetail = useCallback(
-    (isUserClosed = false) => {
-      userClosedRef.current = isUserClosed;
-      setSelectedComic(null);
-      setComicDetailSearchParams(null, null);
-    },
-    [setComicDetailSearchParams],
-  );
+  const clearComicDetail = useCallback(() => {
+    setLoadedDetail(null);
+    setComicDetailSearchParams(null, null);
+  }, [setComicDetailSearchParams]);
+
+  const retryComicDetail = useCallback(() => {
+    setLoadedDetail(null);
+    setLoadRevision((revision) => revision + 1);
+  }, []);
 
   useEffect(() => {
-    if (!urlComicId || selectedComic?.id === urlComicId || userClosedRef.current) {
-      userClosedRef.current = false;
-      return;
-    }
-
+    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
+    setLoadedDetail(null);
+    if (!urlComicId) {return;}
     let isCancelled = false;
 
-    const restoreSelectedComic = async () => {
+    const loadDetail = async () => {
       try {
-        const result = await restoreComic(urlComicId);
-        if (!result.success) {
-          showLocalApiFailure(result, showToast);
-          if (!isCancelled) {
-            setComicDetailSearchParams(null, null);
-          }
-          return;
-        }
-
-        if (!isCancelled) {
-          openComicDetail(result.data, urlChapterId);
+        const nextResult = await loadComicDetail(urlComicId);
+        if (isCancelled) {return;}
+        setLoadedDetail({ comicId: urlComicId, result: nextResult });
+        if (!nextResult.success) {
+          // eslint-disable-next-line no-console
+          console.error("[ComicDetail] 加载详情失败:", nextResult.error);
+          showLocalApiFailure(nextResult, showToast);
         }
       } catch (error) {
-        console.error(`[${logPrefix}] 恢复漫画详情失败:`, error); // eslint-disable-line no-console
-        showLocalCaughtError(error, showToast, "恢复漫画详情失败");
-        if (!isCancelled) {
-          setComicDetailSearchParams(null, null);
-        }
+        if (isCancelled) {return;}
+        console.error("[ComicDetail] 加载详情异常:", error); // eslint-disable-line no-console
+        setLoadedDetail({
+          comicId: urlComicId,
+          result: { success: false, error: "加载漫画详情失败，请重试" },
+        });
+        showLocalCaughtError(error, showToast, "加载漫画详情失败");
       }
     };
-    void restoreSelectedComic();
+    void loadDetail();
+    return () => { isCancelled = true; };
+  }, [loadRevision, showToast, urlComicId]);
 
-    return () => {
-      isCancelled = true;
-    };
-  }, [
-    logPrefix,
-    openComicDetail,
-    restoreComic,
-    selectedComic?.id,
-    setComicDetailSearchParams,
-    showToast,
-    urlChapterId,
-    urlComicId,
-  ]);
+  const loadAssignableMembers = useCallback(
+    (_chapterId: string, args: AssignableMemberArgs): Promise<Result<MemberInfo[]>> => {
+      if (!selectedComic) {
+        return Promise.resolve({ success: false, error: "漫画详情尚未加载完成" });
+      }
+      return listComicMembers(selectedComic, args);
+    },
+    [selectedComic],
+  );
 
-  /* eslint-disable react-hooks/preserve-manual-memoization */
   const navigateToTranslator = useCallback(
     (chapterId: string, pageId: string, isReadOnly?: boolean) => {
-      if (!selectedComic?.id) {
-        void navigate(`/translator/${chapterId}/${pageId}`);
-        return;
-      }
-
+      if (!urlComicId) {return;}
       const nextSearchParams = new URLSearchParams({
         returnTo,
-        comicId: selectedComic.id,
+        comicId: urlComicId,
         chapterId,
       });
-
-      if (isReadOnly) {
-        nextSearchParams.set("readOnly", "true");
-      }
-
+      if (isReadOnly) {nextSearchParams.set("readOnly", "true");}
       void navigate({
         pathname: `/translator/${chapterId}/${pageId}`,
         search: `?${nextSearchParams.toString()}`,
       });
     },
-    [navigate, returnTo, selectedComic?.id],
+    [navigate, returnTo, urlComicId],
   );
-  /* eslint-enable react-hooks/preserve-manual-memoization */
 
   return {
     selectedComic,
-    selectedComicPinnedChapter,
+    selectedComicPinnedChapter: detail?.pinnedChapter ?? null,
+    detailActiveMember,
+    loadAssignableMembers,
+    isDetailOpen: Boolean(urlComicId),
+    detailError: result && !result.success ? result.error : null,
     urlChapterId,
     openComicDetail,
     clearComicDetail,
+    retryComicDetail,
     navigateToTranslator,
   };
 }

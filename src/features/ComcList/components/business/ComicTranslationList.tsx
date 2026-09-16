@@ -12,7 +12,7 @@ interface Props {
     offset: number,
     limit: number,
   ) => Promise<Result<ComicTranslationListItem[]>>;
-  onComicClick?: ((comicInfo: ComicTranslationListItem["comicInfo"]) => void) | undefined;
+  onComicClick?: ((comicId: string, chapterId?: string | null) => void) | undefined;
 }
 
 export default function ComicTranslationList({
@@ -145,7 +145,7 @@ export default function ComicTranslationList({
               key={`${comicInfo.id}:${chapter?.id ?? "pinned"}`}
               comicInfo={comicInfo}
               chapter={chapter}
-              onClick={() => onComicClick?.(comicInfo)}
+              onClick={() => onComicClick?.(comicInfo.id, chapter?.id)}
             />
           ))}
         </div>

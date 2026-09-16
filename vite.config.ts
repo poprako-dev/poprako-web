@@ -12,8 +12,9 @@ import { playwright } from "@vitest/browser-playwright";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
-export default defineConfig({
-  plugins: [react(), tailwindcss(), ReactInspector()],
+export default defineConfig(({ mode }) => ({
+  // The development inspector uses ReactDOM.render, which React 19 removed.
+  plugins: [react(), tailwindcss(), mode !== "test" && ReactInspector()],
   optimizeDeps: {
     include: [
       "@zip.js/zip.js",
@@ -66,4 +67,4 @@ export default defineConfig({
       }
     }
   }
-});
+}));

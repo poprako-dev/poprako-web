@@ -474,6 +474,10 @@ type Story = StoryObj<typeof ComicDetailModal>;
 export const Default: Story = {
   name: "默认（有置顶章节 + 200章无限滚动）",
   args: {
+    onImportChapter: fn(() => Promise.resolve({
+      success: true as const,
+      data: { importedPageCount: 1, importedUnitCount: 2 },
+    })),
     comicInfo: mockComic,
     pinnedChapter,
     pinnedChapterAssignments: makeAssignments("chapter-42"),
@@ -532,8 +536,7 @@ export const Default: Story = {
       console.log("remove assignment:", userId); // eslint-disable-line no-console
       return { success: true, data: undefined };
     },
-    onResolveActiveMember: () =>
-      makeMember("u-aki", "Aki", { assignedTranslatorAt: now }),
+    activeMember: makeMember("u-aki", "Aki", { assignedTranslatorAt: now }),
     onClose: () => { console.log("closed"); }, // eslint-disable-line no-console
   },
 };
@@ -566,7 +569,7 @@ export const EmptyAssignments: Story = {
       await delay(150);
       return { success: true, data: [] };
     },
-    onResolveActiveMember: () => makeMember("u-viewer", "Viewer"),
+    activeMember: makeMember("u-viewer", "Viewer"),
   },
 };
 
@@ -602,8 +605,7 @@ export const AdminAssignmentControls: Story = {
         }],
       };
     },
-    onResolveActiveMember: () =>
-      makeMember("u-admin", "Mori", {
+    activeMember: makeMember("u-admin", "Mori", {
         assignedAdminAt: now,
         assignedTranslatorAt: now,
       }),
@@ -622,8 +624,7 @@ export const SelfServiceControls: Story = {
   args: {
     ...Default.args,
     currentUserId: "u-aki",
-    onResolveActiveMember: () =>
-      makeMember("u-aki", "Aki", {
+    activeMember: makeMember("u-aki", "Aki", {
         assignedTranslatorAt: now,
         assignedProofreaderAt: now,
       }),
@@ -665,8 +666,7 @@ export const CombinedTypesetRemoval: Story = {
         },
       ],
     }),
-    onResolveActiveMember: () =>
-      makeMember("u-admin", "Mori", { assignedAdminAt: now }),
+    activeMember: makeMember("u-admin", "Mori", { assignedAdminAt: now }),
     onRemoveAssignment: removeCombinedTypesetAssignment,
   },
   play: async ({ canvasElement }) => {
@@ -837,7 +837,7 @@ export const ArtworkActions: Story = {
   args: {
     ...Default.args,
     currentUserId: "u-admin",
-    onResolveActiveMember: () => makeMember("u-admin", "Mori", { assignedAdminAt: now }),
+    activeMember: makeMember("u-admin", "Mori", { assignedAdminAt: now }),
     onLoadAssignments: (chapterId) => Promise.resolve({
       success: true,
       data: [{

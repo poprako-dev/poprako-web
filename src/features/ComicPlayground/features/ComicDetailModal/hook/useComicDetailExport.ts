@@ -23,6 +23,7 @@ import { DEFAULT_EXPORT_PROGRESS } from "../types";
 import { getFileExtension } from "../utils";
 import { resolveComicDetailCoverUrl } from "../coverUrl";
 import { resolveArchiveImageNames } from "../exportImageNames";
+import type { ImportChapterMode } from "../../../types/chapter";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -44,7 +45,7 @@ interface Args {
   activeMember: MemberInfo | null;
   canUploadRawPages: boolean;
   onExportChapter?: ComicDetailModalProps["onExportChapter"] | undefined;
-  onImportChapter?: ComicDetailModalProps["onImportChapter"] | undefined;
+  onImportChapter: ComicDetailModalProps["onImportChapter"];
   reloadCurrentPages: () => Promise<void>;
   reloadLoadedChapters: () => Promise<unknown>;
   onWorkflowRecordsChanged?: (() => void) | undefined;
@@ -149,6 +150,11 @@ export function useComicDetailExport({
   showToast,
 }: Args) {
   const [isImportingData, setIsImportingData] = useState(false);
+  const [pendingImport, setPendingImport] = useState<{
+    file: File;
+    chapterId: string;
+  } | null>(null);
+  const importInFlightRef = useRef(false);
   const [isExportingData, setIsExportingData] = useState(false);
   const [exportProgress, setExportProgress] = useState<ExportProgressState>(
     DEFAULT_EXPORT_PROGRESS,
@@ -500,10 +506,11 @@ export function useComicDetailExport({
   }, []);
 
   const handleImportFileChange = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
+    (event: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFile = event.target.files?.[0];
       event.target.value = "";
-      if (!selectedFile || !selectedChapterId || !onImportChapter) {return;}
+      if (!selectedFile || !selectedChapterId) {return;}
+      if (importInFlightRef.current) {return;}
 
       const format = detectImportFormat(selectedFile);
       if (!format) {
@@ -511,13 +518,29 @@ export function useComicDetailExport({
         return;
       }
 
+      setPendingImport({ file: selectedFile, chapterId: selectedChapterId });
+    },
+    [detectImportFormat, selectedChapterId, showToast],
+  );
+
+  const cancelImport = useCallback(() => {
+    if (!importInFlightRef.current) {setPendingImport(null);}
+  }, []);
+
+  const confirmImport = useCallback(
+    async (mode: ImportChapterMode) => {
+      if (!pendingImport || importInFlightRef.current) {return;}
+      const format = detectImportFormat(pendingImport.file);
+      if (!format) {return;}
+      importInFlightRef.current = true;
       setIsImportingData(true);
       try {
-        const content = await selectedFile.text();
+        const content = await pendingImport.file.text();
         const result = await onImportChapter({
-          chapterId: selectedChapterId,
+          chapterId: pendingImport.chapterId,
           content,
           format,
+          mode,
         });
 
         if (!result.success) {
@@ -525,6 +548,7 @@ export function useComicDetailExport({
           return;
         }
 
+        setPendingImport(null);
         await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
         onWorkflowRecordsChanged?.();
 
@@ -537,6 +561,7 @@ export function useComicDetailExport({
         console.error("[ComicDetailModal] 导入章节数据异常:", error); // eslint-disable-line no-console
         showLocalCaughtError(error, showToast, "导入失败");
       } finally {
+        importInFlightRef.current = false;
         setIsImportingData(false);
       }
     },
@@ -546,7 +571,7 @@ export function useComicDetailExport({
       onWorkflowRecordsChanged,
       reloadCurrentPages,
       reloadLoadedChapters,
-      selectedChapterId,
+      pendingImport,
       showToast,
     ],
   );
@@ -629,6 +654,9 @@ export function useComicDetailExport({
   );
 
   return {
+    pendingImport,
+    confirmImport,
+    cancelImport,
     isImportingData,
     isExportingData,
     exportProgress,

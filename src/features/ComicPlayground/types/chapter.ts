@@ -170,16 +170,19 @@ export type ImportChapterFormat = "json" | "lp";
 
 export type RawImportChapterFormat = "poprako" | "label_plus";
 
+export type ImportChapterMode = "keep" | "overwrite";
+
 export interface ImportChapterArgs {
   chapterId: string;
   content: string;
   format: ImportChapterFormat;
+  mode: ImportChapterMode;
 }
 
 export interface RawImportChapterArgs {
-  chapter_id: string;
   content: string;
   format: RawImportChapterFormat;
+  mode: ImportChapterMode;
 }
 
 export interface ImportChapterResult {

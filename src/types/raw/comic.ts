@@ -5,7 +5,9 @@ import type {
   UpdateComicArgs,
 } from "../comic";
 import { toWorksetInfo } from "../workset";
-import type { RawUserInfo } from "./user";
+import { unwrapRawUserInfo, type RawUserInfo } from "./user";
+import type { RawTeamInfo } from "./team";
+import { toTeamInfo } from "../team";
 import type { RawWorksetInfo } from "./workset";
 import type { RawAssignmentInfo } from "./assignment";
 import type { RawChapterInfo } from "./chapter";
@@ -16,6 +18,7 @@ export interface RawComicInfo {
 
   workset_id: string;
   workset?: RawWorksetInfo | undefined;
+  team?: RawTeamInfo | undefined;
 
   title: string;
   author: string;
@@ -45,11 +48,13 @@ export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
     id: raw.id,
     worksetId: raw.workset_id,
     workset: toWorksetInfo(raw.workset),
+    team: toTeamInfo(raw.team),
     title: raw.title,
     author: raw.author,
     description: raw.description ?? "",
     isCoverUploaded: Boolean(raw.cover_url),
     creatorId: raw.creator_id,
+    creator: raw.creator ? unwrapRawUserInfo(raw.creator) : undefined,
     index: raw.index,
     chapterCount: raw.chapter_count,
     coverUrl: ensureHttpsUrl(raw.cover_url),

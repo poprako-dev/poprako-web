@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { Search, Loader2, Plus } from "lucide-react";
 import AppDialog from "@/components/ui/AppDialog";
+import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
 import {
@@ -50,62 +52,53 @@ export default function MemberSelectorModal({
   onClose,
 }: Props) {
   const [keyword, setKeyword] = useState("");
-  const [members, setMembers] = useState<MemberInfo[]>([]);
-  const [isFetching, setIsFetching] = useState(false);
-  const latestRequestIdRef = useRef(0);
+  const showToast = useToastStore((state) => state.showToast);
+  const queryKey = JSON.stringify([chapterId, role, keyword.trim()]);
+  const [loaded, setLoaded] = useState<{
+    queryKey: string;
+    result: Result<MemberInfo[]>;
+  } | null>(null);
+  const result = loaded?.queryKey === queryKey ? loaded.result : null;
+  const members = result?.success ? result.data : [];
+  const loadError = result && !result.success ? result.error : null;
+  const isFetching = Boolean(chapterId && onLoadMembers && !result);
 
   useEffect(() => {
-    if (!chapterId || !onLoadMembers) {
-      // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
-      setMembers([]);
-      setIsLoading(false);
-      return;
-    }
-
-    const requestId = latestRequestIdRef.current + 1;
-    latestRequestIdRef.current = requestId;
-    const timer = setTimeout(() => {
-      setIsFetching(true);
-      setIsLoading(true);
-      const loadMembers = async () => {
-        try {
-          const result = await onLoadMembers(chapterId, {
-            role,
-            keyword: keyword.trim() || undefined,
-            offset: 0,
-            limit: 20,
-          });
-          if (latestRequestIdRef.current !== requestId) {return;}
-          if (!result.success) {
-            // eslint-disable-next-line no-console
-            console.error(
-              "[MemberSelectorModal] 加载成员失败:", result.error,
-            );
-
-            setMembers([]);
-            return;
-          }
-
-          setMembers(result.data);
-        } catch (error) {
-          if (latestRequestIdRef.current !== requestId) {return;}
-          console.error("[MemberSelectorModal] 加载成员异常:", error); // eslint-disable-line no-console
-
-          setMembers([]);
-        } finally {
-          if (latestRequestIdRef.current === requestId) {
-            setIsFetching(false);
-            setIsLoading(false);
-          }
+    if (!chapterId || !onLoadMembers) {return;}
+    let isCancelled = false;
+    setIsLoading(true);
+    const loadMembers = async () => {
+      try {
+        const nextResult = await onLoadMembers(chapterId, {
+          role,
+          keyword: keyword.trim() || undefined,
+          offset: 0,
+          limit: 20,
+        });
+        if (isCancelled) {return;}
+        setLoaded({ queryKey, result: nextResult });
+        if (!nextResult.success) {
+          // eslint-disable-next-line no-console
+          console.error("[MemberSelectorModal] 加载成员失败:", nextResult.error);
+          showLocalApiFailure(nextResult, showToast);
         }
-      };
-      void loadMembers();
-    }, 250);
+      } catch (error) {
+        if (isCancelled) {return;}
+        console.error("[MemberSelectorModal] 加载成员异常:", error); // eslint-disable-line no-console
+        setLoaded({ queryKey, result: { success: false, error: "加载成员失败，请重试" } });
+        showLocalCaughtError(error, showToast, "加载成员失败");
+      } finally {
+        if (!isCancelled) {setIsLoading(false);}
+      }
+    };
+    const timer = setTimeout(() => { void loadMembers(); }, 250);
 
     return () => {
+      isCancelled = true;
       clearTimeout(timer);
+      setIsLoading(false);
     };
-  }, [chapterId, keyword, onLoadMembers, role, setIsLoading]);
+  }, [chapterId, keyword, onLoadMembers, queryKey, role, setIsLoading, showToast]);
 
   return (
     <AppDialog
@@ -215,7 +208,13 @@ export default function MemberSelectorModal({
               </div>
             )}
 
-            {!isFetching && members.length === 0 && (
+            {loadError && (
+              <p role="alert" className="py-6 text-center text-sm text-muted-foreground">
+                {loadError}
+              </p>
+            )}
+
+            {!isFetching && !loadError && members.length === 0 && (
               <div className="flex h-24 items-center justify-center text-sm text-slate-400">
                 没有可添加的成员
               </div>

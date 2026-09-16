@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { FileArchive, Image as ImageIcon, Images } from "lucide-react";
 import { Switch } from "radix-ui";
 import { canApplyWorkflowTransition, type ChapterInfo } from "@/types/chapter";
-import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
 import type { Role } from "@/types/role";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
@@ -23,6 +22,7 @@ import ComicDetailSidebar from "./ComicDetailSidebar";
 import ComicModifierModal from "./ComicModifierModal";
 import ChapterModifierModal from "./ChapterModifierModal";
 import ExportProgressDialog from "./ExportProgressDialog";
+import ImportTranslationDialog from "./ImportDialog";
 import MemberSelectorModal from "./MemberSelectorModal";
 import WorkflowPanel from "./WorkflowPanel";
 import WorkflowRecordList from "./WorkflowRecordList";
@@ -65,13 +65,12 @@ export default function ComicDetailModal({
   onDeleteComic,
   onUpdateComic,
   onUpdateChapter,
-  onResolveActiveMember,
+  activeMember,
   onClose,
 }: ComicDetailModalProps) {
   const { showToast } = useToastStore();
   const [artworkChapter, setArtworkChapter] = useState<ChapterInfo | null>(null);
   const accessToken = useAppStore((s) => s.accessToken);
-  const [activeMember, setActiveMember] = useState<MemberInfo | null>(null);
   const [activeView, setActiveView] = useState<ComicDetailView>("pages");
   const [pendingConfirmAction, setPendingConfirmAction] = useState<
     "delete-pages" | "archive-comic" | "delete-comic" | "export-data" | null
@@ -82,35 +81,6 @@ export default function ComicDetailModal({
   const [showComicModifier, setShowComicModifier] = useState(false);
   const [chapterToModify, setChapterToModify] = useState<ChapterInfo | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const resolveActiveMemberRef = useRef(onResolveActiveMember);
-  useLayoutEffect(() => {
-    resolveActiveMemberRef.current = onResolveActiveMember;
-  });
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    const loadActiveMember = async () => {
-      try {
-        const resolvedMember = await resolveActiveMemberRef.current();
-        if (!isCancelled) {
-          setActiveMember(resolvedMember ?? null);
-        }
-      } catch (error) {
-        console.error("[ComicDetailModal] 解析团队成员信息异常:", error); // eslint-disable-line no-console
-        if (!isCancelled) {
-          setActiveMember(null);
-        }
-      }
-    };
-
-    void loadActiveMember();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
-
   // Preload translator chunk so navigation to the translator page feels instant.
   useEffect(() => {
     void import("@/pages/TranslatorPage");
@@ -224,6 +194,9 @@ export default function ComicDetailModal({
 
   const {
     isImportingData,
+    pendingImport,
+    confirmImport,
+    cancelImport,
     isExportingData,
     exportProgress,
     canUploadCover,
@@ -406,11 +379,7 @@ export default function ComicDetailModal({
       onExport={
         onExportChapter ? () => { setPendingConfirmAction("export-data"); } : undefined
       }
-      onImportFileChange={
-        onImportChapter
-          ? (event) => { void handleImportFileChange(event); }
-          : undefined
-      }
+      onImportFileChange={handleImportFileChange}
       onDeletePages={() => { setPendingConfirmAction("delete-pages"); }}
       onArchiveComic={() => { setPendingConfirmAction("archive-comic"); }}
       onDeleteComic={() => { setPendingConfirmAction("delete-comic"); }}
@@ -522,6 +491,14 @@ export default function ComicDetailModal({
         progress={exportProgress.progress}
         onCancel={cancelExport}
       />
+      {pendingImport && (
+        <ImportTranslationDialog
+          fileName={pendingImport.file.name}
+          loading={isImportingData}
+          onConfirm={(mode) => { void confirmImport(mode); }}
+          onCancel={cancelImport}
+        />
+      )}
       <ComicDetailModalLayout
         header={header}
         sidebar={sidebar}

@@ -1,5 +1,6 @@
 import type { RawComicInfo, RawListComicInfosPayload } from "@/types/raw/comic";
 import type {
+  ComicInclude,
   ListComicArgs,
   RawListComicArgs,
   CreateComicArgs,
@@ -63,8 +64,11 @@ export async function listComics(
   };
 }
 
-export async function getComic(id: string): Promise<Result<ComicInfo>> {
-  const res = await api.get<RawComicInfo>(`/comics/${id}`);
+export async function getComic(
+  id: string,
+  includes: ComicInclude[] = [],
+): Promise<Result<ComicInfo>> {
+  const res = await api.get<RawComicInfo>(`/comics/${id}`, { incl: includes });
   if (!res.success) {return res;}
 
   const comic = toComicInfo(res.data);
