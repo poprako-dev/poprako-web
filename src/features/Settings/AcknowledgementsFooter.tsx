@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { ExternalLink } from "lucide-react";
 
 const acknowledgments = {
@@ -22,7 +23,10 @@ export default function AcknowledgementsFooter() {
   return (
     <footer className="mt-8 w-full max-w-md text-center">
       <span className="text-xs tracking-wide text-slate-400">致谢</span>
-      <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-[11px] text-slate-400">
+      <div className={clsx(
+        "mt-1.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5",
+        "text-[11px] text-slate-400",
+      )}>
         {acknowledgments.people.map((p, i) => (
           <span key={p.name}>
             {p.link ? (
@@ -30,7 +34,10 @@ export default function AcknowledgementsFooter() {
                 href={p.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-0.5 font-medium text-slate-500 transition-colors hover:text-emerald-700 hover:underline"
+                className={clsx(
+                  "inline-flex items-center gap-0.5 font-medium text-slate-500",
+                  "transition-colors hover:text-emerald-700 hover:underline",
+                )}
               >
                 {p.name}
                 <ExternalLink size={9} className="opacity-60" />

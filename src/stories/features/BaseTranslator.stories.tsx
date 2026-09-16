@@ -9,7 +9,7 @@ import {
 import type { Project } from "@/types/project";
 import type { PageImageQuality } from "@/types/page";
 import type { UserInfo } from "@/types/user";
-import type { UnitDiff } from "@/features/BaseTranslator/types/type";
+import { createUnitSaveFixture } from "./unitSaveFixture";
 import type {
   TerminologyDataSource,
   UnitSearchTransformDataSource,
@@ -395,11 +395,6 @@ type Story = StoryObj<typeof BaseTranslator>;
 type BaseTranslatorProps = ComponentProps<typeof BaseTranslator>;
 
 // eslint-disable-next-line @typescript-eslint/require-await
-async function mockSaveUnits(pageId: string, diff: UnitDiff) {
-  console.log("[mock] onSaveUnits", pageId, diff); // eslint-disable-line no-console
-}
-
-// eslint-disable-next-line @typescript-eslint/require-await
 async function mockCompleteStage(stage: "translate" | "proofread") {
   console.log("[mock] onCompleteStage", stage); // eslint-disable-line no-console
 }
@@ -534,7 +529,7 @@ function createStoryArgs({
     onLoadPageImage: async (_pageId: string, _quality: PageImageQuality) => {
       return DEMO_IMAGE;
     },
-    onSaveUnits: mockSaveUnits,
+    onSaveUnits: createUnitSaveFixture(unitsByPage),
     onResolveUser: mockResolveUser,
     onCompleteStage: mockCompleteStage,
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -686,4 +681,38 @@ export const ReadOnlyPageStatistics: Story = {
       name: "第 2 页，翻译 10，编辑 3，追加 2",
     })).toHaveAttribute("aria-current", "page");
   },
+};
+
+export const AutoSaveRace: Story = {
+  args: (() => {
+    const args = createStoryArgs({
+      canTranslate: true,
+      canProofread: false,
+      units: Array.from({ length: 100 }, (_, index) => ({
+        id: `autosave-${String(index)}`,
+        index,
+        xCoord: 0.1 + (index % 10) * 0.08,
+        yCoord: 0.1 + Math.floor(index / 10) * 0.08,
+        isBubble: true,
+        isProofread: false,
+        translatedText: `文本 ${String(index)}`,
+      })),
+    });
+    const save = args.onSaveUnits;
+    return {
+      ...args,
+      startMode: "translate",
+      onSaveUnits: async (pageId, diff, saveId) => {
+        dispatchEvent(new CustomEvent("translator-save", {
+          detail: { phase: "start", pageId, diff, saveId },
+        }));
+        await new Promise<void>((resolve) => { setTimeout(resolve, 5000); });
+        const result = await save(pageId, diff, saveId);
+        dispatchEvent(new CustomEvent("translator-save", {
+          detail: { phase: "done", pageId, saveId },
+        }));
+        return result;
+      },
+    };
+  })(),
 };

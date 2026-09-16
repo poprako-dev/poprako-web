@@ -3,7 +3,8 @@ import clsx from "clsx";
 import { ChevronRight, Plus, BookText } from "lucide-react";
 import type { WorksetInfo } from "@/types/workset";
 import type { Result } from "@/types/utils/result";
-import WorksetModifierModal from "@/features/ComicPlayground/components/business/WorksetModifierModal";
+import WorksetModifierModal from
+  "@/features/ComicPlayground/components/business/WorksetModifierModal";
 
 interface UpdateWorksetArgs {
   name: string;
@@ -130,7 +131,10 @@ export default function WorksetSidebar({
                   <span className="text-[12px] font-bold truncate pr-2">
                     #{ws.index + 1} {ws.name}
                   </span>
-                  <span className="text-[11px] font-semibold text-slate-400 shrink-0 flex items-center gap-0.5">
+                  <span className={clsx(
+                    "text-[11px] font-semibold text-slate-400 shrink-0 flex",
+                    "items-center gap-0.5",
+                  )}>
                     <BookText className="w-3 h-3" strokeWidth={2.5} />
                     {ws.comicCount}
                   </span>
@@ -151,7 +155,10 @@ export default function WorksetSidebar({
                   <span className="text-[12px] font-bold truncate pr-2">
                     #{ws.index + 1} {ws.name}
                   </span>
-                  <span className="text-[11px] font-semibold text-slate-400 shrink-0 flex items-center gap-0.5">
+                  <span className={clsx(
+                    "text-[11px] font-semibold text-slate-400 shrink-0 flex",
+                    "items-center gap-0.5",
+                  )}>
                     <BookText className="w-3 h-3" strokeWidth={2.5} />
                     {ws.comicCount}
                   </span>

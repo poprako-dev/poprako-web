@@ -281,7 +281,10 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                       + `scale(${String(1 / transform.scale)})`,
                   }}
                 >
-                  <div className="px-2 py-1 rounded-sm bg-slate-800/90 text-slate-50 text-xs backdrop-blur-md shadow-xl border border-white/10 whitespace-pre">
+                  <div className={clsx(
+                    "px-2 py-1 rounded-sm bg-slate-800/90 text-slate-50 text-xs",
+                    "backdrop-blur-md shadow-xl border border-white/10 whitespace-pre",
+                  )}>
                     {unitFinalText(previewUnit)}
                   </div>
                 </div>

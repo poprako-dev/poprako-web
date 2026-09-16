@@ -214,7 +214,10 @@ function SectionLabel({ label, hasTopMargin }: SectionLabelProps) {
       )}
     >
       {/* dot — vertically centered with section text */}
-      <div className="absolute -left-4.75 top-1/2 -translate-y-1/2 w-2.75 h-2.75 rounded-full border-2 border-stone-300 bg-[#FEFDF9] z-10" />
+      <div className={clsx(
+        "absolute -left-4.75 top-1/2 -translate-y-1/2 w-2.75 h-2.75 rounded-full",
+        "border-2 border-stone-300 bg-[#FEFDF9] z-10",
+      )} />
       {/* line from below-dot to bottom, connecting to next items */}
       <div className="absolute -left-3.5 top-[calc(50%+6px)] bottom-0 w-px bg-stone-200" />
       <span className="block py-2 text-md font-semibold text-stone-500">

@@ -25,8 +25,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
 
       - name: Set up Deno
         uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
@@ -35,8 +33,6 @@ jobs:
           cache: true
 
       - name: Run required checks
-        env:
-          LINE_LENGTH_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: sh scripts/ci-check.sh
 
   security:

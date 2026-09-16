@@ -1,14 +1,13 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import BaseTranslator from "@/features/BaseTranslator";
 import type {
   TerminologyDataSource,
   UnitSearchTransformDataSource,
 } from "@/features/BaseTranslator";
 import type { Project } from "@/types/project";
-import type { UnitDiff } from "@/features/BaseTranslator/types/type";
+import type { UnitDiff, UnitSaveResult } from "@/features/BaseTranslator/types/type";
 import type { Page, PageImageQuality } from "@/types/page";
 import { useAppStore } from "@/store/app";
-import { useToastStore } from "@/components/ui/NotificationToast";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import {
   listUnits,
@@ -22,7 +21,7 @@ import {
 import { listAssignmentsByChapter } from "@/api/assignment";
 import { getUser } from "@/api/user";
 import { getChapter } from "@/features/ComicPlayground/api/chapter";
-import { showLocalApiFailure, toApiRequestError } from "@/api/util";
+import { toApiRequestError } from "@/api/util";
 import {
   createTerm,
   deleteTerm,
@@ -95,7 +94,13 @@ function mergePageCounters(
 
 export default function WebTranslator({ chapterId, startPageId, onExit, startMode }: Props) {
   const [state, setState] = useState<LoadingState>({ status: "loading" });
-  const { showToast } = useToastStore();
+  const activeRef = useRef(false);
+  const latestLoadsRef = useRef(new Map<string, symbol>());
+  useEffect(() => {
+    activeRef.current = true;
+    const loads = latestLoadsRef.current;
+    return () => { activeRef.current = false; loads.clear(); };
+  }, [chapterId]);
   const currentUserId = useAppStore((state) => state.loginState?.userInfo.id ?? "");
 
   const handleResolveUser = useCallback(async (userId: string) => {
@@ -211,11 +216,14 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
 
   const handleFetchUnits = useCallback(
     async (pageId: string) => {
+      const generation = Symbol();
+      latestLoadsRef.current.set(pageId, generation);
       const result = await listUnits(pageId);
       if (!result.success) {return result;}
 
       setState((prev) => {
-        if (prev.status !== "ready") {return prev;}
+        if (!activeRef.current || prev.status !== "ready" || prev.project.id !== chapterId
+          || latestLoadsRef.current.get(pageId) !== generation) {return prev;}
 
         const nextPages = mergePageCounters(prev.project.pages, pageId, {
           totalUnitCount: result.data.totalUnitCount,
@@ -240,7 +248,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
         data: [...result.data.units].sort((lhs, rhs) => lhs.index - rhs.index),
       };
     },
-    [],
+    [chapterId],
   );
 
   const handleLoadUnits = useCallback(
@@ -251,18 +259,17 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
           pageId,
           error: result.error,
         });
-        showLocalApiFailure(result, showToast);
-        return [];
+        throw toApiRequestError(result);
       }
 
       return result.data;
     },
-    [handleFetchUnits, showToast],
+    [handleFetchUnits],
   );
 
   const handleSaveUnits = useCallback(
-    async (pageId: string, diff: UnitDiff): Promise<void> => {
-      const result = await saveUnits(pageId, diff);
+    async (pageId: string, diff: UnitDiff, saveId: string): Promise<UnitSaveResult> => {
+      const result = await saveUnits(pageId, diff, saveId);
       if (!result.success) {
         // eslint-disable-next-line no-console
         console.error(
@@ -270,7 +277,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
         );
         throw toApiRequestError(result);
       }
-
+      return result.data;
     },
     [],
   );

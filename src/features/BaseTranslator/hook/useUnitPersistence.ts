@@ -1,368 +1,177 @@
 /* eslint-disable no-console -- persistence failures are diagnostic. */
-/* eslint-disable @eslint-react/naming-convention-ref-name -- refs track persistence snapshots. */
-/* eslint-disable unicorn/prefer-simple-condition-first */
-/* eslint-disable unicorn/no-computed-property-existence-check */
-/* eslint-disable unicorn/no-array-callback-reference, unicorn/max-nested-calls */
-/* eslint-disable unicorn/consistent-boolean-name, @typescript-eslint/no-non-null-assertion */
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { showLocalCaughtError } from "@/api/util";
-import { normalizeUnitIndexes, unitId, type UnitInfo } from "@/types/unit";
+import type { UnitInfo } from "@/types/unit";
 import type { ToastType } from "@/components/ui/NotificationToast";
-import type {
-  UnitCreateOp,
-  UnitDiff,
-  UnitOp,
-  UnitPatchOp,
-  Patch,
-} from "../types/type";
-
-type ShowToast = (message: string, type: ToastType) => void;
+import type { SaveUnits } from "../types/type";
+import { createUnitSaveController, type SaveSnapshot } from "./unitSaveController";
+import { startAutoSaveSchedule } from "./autoSaveSchedule";
 
 export type PendingAction =
   | { type: "navigate"; newIndex: number; targetUnitId?: string | undefined }
   | { type: "exit" };
 
 interface Args {
-  getPageId: () => string;
-  onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
+  onSaveUnits: SaveUnits;
   onReloadUnits: (pageId: string) => Promise<UnitInfo[]>;
   onExit: () => void;
-  showToast: ShowToast;
+  showToast: (message: string, type: ToastType) => void;
   loadPage: (index: number, targetUnitId?: string) => Promise<void>;
   setUnitBuf: (units: UnitInfo[]) => void;
+  autoSaveEnabled: boolean;
 }
 
-function normalizedText(val?: string): string | null {
-  return val && val !== "" ? val : null;
-}
-
-function buildUnitCoord(unit: UnitInfo) {
-  return {
-    xCoord: unit.xCoord,
-    yCoord: unit.yCoord,
-  };
-}
-
-function buildUnitTranslation(unit: UnitInfo) {
-  const translatedText = normalizedText(unit.translatedText);
-  return translatedText === null ? undefined : { translatedText };
-}
-
-function buildUnitRevision(unit: UnitInfo) {
-  const proofreadText = normalizedText(unit.proofreadText);
-  // 新建 unit 未设置校对状态且没有文本时可省略 revision；这不是两者的耦合。
-  if (!unit.isProofread && proofreadText === null) {return;}
-
-  return {
-    isProofread: unit.isProofread,
-    proofreadText: proofreadText ?? undefined,
-  };
-}
-
-function skipPatch<T>(): Patch<T> {
-  return { type: "skip" };
-}
-
-function clearPatch<T>(): Patch<T> {
-  return { type: "clear" };
-}
-
-function assignPatch<T>(value: T): Patch<T> {
-  return { type: "assign", value };
-}
-
-function buildCreateUnitOp(
-  unit: UnitInfo,
-  nextId: string | null,
-): UnitCreateOp {
-  return {
-    edit: "create",
-    localId: unitId(unit),
-    nextId: nextId ?? undefined,
-    isBubble: unit.isBubble,
-    coord: buildUnitCoord(unit),
-    translation: buildUnitTranslation(unit),
-    revision: buildUnitRevision(unit),
-  };
-}
-
-function buildPatchUnitOp(
-  unit: UnitInfo,
-  baseline: UnitInfo,
-  nextId: string | null | undefined,
-): UnitPatchOp {
-  const edit: UnitPatchOp = {
-    edit: "patch",
-    id: unitId(unit),
-    nextId: skipPatch(),
-    translation: skipPatch(),
-    revision: skipPatch(),
-  };
-
-  if (nextId !== undefined) {
-    edit.nextId = nextId === null ? clearPatch() : assignPatch(nextId);
-  }
-  if (unit.isBubble !== baseline.isBubble) {edit.isBubble = unit.isBubble;}
-  if (unit.xCoord !== baseline.xCoord || unit.yCoord !== baseline.yCoord) {
-    edit.coord = buildUnitCoord(unit);
-  }
-
-  if (normalizedText(unit.translatedText) !== normalizedText(baseline.translatedText)) {
-    const translation = buildUnitTranslation(unit);
-    edit.translation = translation ? assignPatch(translation) : clearPatch();
-  }
-
-  if (
-    unit.isProofread !== baseline.isProofread
-    || normalizedText(unit.proofreadText) !== normalizedText(baseline.proofreadText)
-  ) {
-    // 协议将状态与文本放在同一 revision payload，但二者完全独立。
-    // 任一值变化时必须保留另一值，绝不能从文本推导状态或反之。
-    edit.revision = assignPatch({
-      isProofread: unit.isProofread,
-      proofreadText: normalizedText(unit.proofreadText) ?? undefined,
-    });
-  }
-
-  return edit;
-}
-
-function nextUnitId(
-  units: UnitInfo[],
-  index: number,
-): string | null {
-  return units[index + 1] ? unitId(units[index + 1]!) : null;
-}
-
-function isEmptyPatch(edit: UnitPatchOp): boolean {
-  return edit.nextId.type === "skip"
-    && edit.isBubble === undefined
-    && edit.coord === undefined
-    && edit.translation.type === "skip"
-    && edit.revision.type === "skip";
-}
-
-function existingOrderChanged(
-  current: UnitInfo[],
-  baseline: UnitInfo[],
-): boolean {
-  const currentById = new Set(current.map(unitId));
-  const baselineById = new Set(baseline.map(unitId));
-  const baselineSurvivors = baseline
-    .filter((unit) => currentById.has(unitId(unit)))
-    .map(unitId);
-  const currentExisting = current
-    .filter((unit) => baselineById.has(unitId(unit)))
-    .map(unitId);
-
-  if (baselineSurvivors.length !== currentExisting.length) {return true;}
-
-  return baselineSurvivors.some((id, index) => id !== currentExisting[index]);
-}
-
-export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDiff {
-  current = normalizeUnitIndexes(current);
-  baseline = normalizeUnitIndexes(baseline);
-
-  const baselineById = new Map(baseline.map((unit) => [unitId(unit), unit]));
-  const currentById = new Map(current.map((unit) => [unitId(unit), unit]));
-  const ops: UnitOp[] = [];
-
-  for (const unit of baseline) {
-    if (currentById.has(unitId(unit))) {
-      continue;
-    }
-
-      ops.push({ edit: "delete", id: unitId(unit) });
-  }
-
-  const isOrderChanged = existingOrderChanged(current, baseline);
-
-  if (isOrderChanged) {
-    for (let index = current.length - 1; index >= 0; index--) {
-      const unit = current[index]!;
-      if (!baselineById.has(unitId(unit))) {continue;}
-
-      ops.push(buildPatchUnitOp(
-        unit,
-        baselineById.get(unitId(unit))!,
-        nextUnitId(current, index),
-      ));
-    }
-  } else {
-    for (const unit of current) {
-      const baselineUnit = baselineById.get(unitId(unit));
-      if (!baselineUnit) {continue;}
-      const edit = buildPatchUnitOp(unit, baselineUnit, undefined);
-      if (!isEmptyPatch(edit)) {ops.push(edit);}
-    }
-  }
-
-  for (let index = 0; index < current.length; index++) {
-    const unit = current[index]!;
-    if (baselineById.has(unitId(unit))) {continue;}
-
-    ops.push(buildCreateUnitOp(
-      unit,
-      nextUnitId(current, index),
-    ));
-  }
-
-  return { ops };
-}
-
-export async function persistDirtyUnits({
-  pageId,
-  currentUnits,
-  baselineUnits,
-  onSaveUnits,
-  onReloadUnits,
-}: {
-  pageId: string;
-  currentUnits: UnitInfo[];
-  baselineUnits: UnitInfo[];
-  onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
-  onReloadUnits: (pageId: string) => Promise<UnitInfo[]>;
-}): Promise<{ status: "clean" } | { status: "saved"; units: UnitInfo[] }> {
-  const diff = buildUnitDiff(currentUnits, baselineUnits);
-  if (diff.ops.length === 0) {return { status: "clean" };}
-
-  await onSaveUnits(pageId, diff);
-
-  return {
-    status: "saved",
-    units: normalizeUnitIndexes(await onReloadUnits(pageId)),
-  };
-}
-
-export function useUnitPersistence({
-  getPageId,
-  onSaveUnits,
-  onReloadUnits,
-  onExit,
-  showToast,
-  loadPage,
-  setUnitBuf,
-}: Args) {
-  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
-  const [saving, setSaving] = useState(false);
+export function useUnitPersistence(args: Args) {
+  const latestRef = useRef(args);
+  useLayoutEffect(() => {
+    latestRef.current = args;
+  });
   const unitBufRef = useRef<UnitInfo[]>([]);
-  const baselineUnitsRef = useRef<UnitInfo[]>([]);
-  const isNavigating = useRef(false);
-  const isSaving = useRef(false);
-
-  const commitUnits = useCallback((nextUnits: UnitInfo[], setUnitBuf: (units: UnitInfo[]) => void) => {
-    const normalizedUnits = normalizeUnitIndexes(nextUnits);
-    unitBufRef.current = normalizedUnits;
-    setUnitBuf(normalizedUnits);
-  }, []);
-
-  const setLoadedUnits = useCallback((units: UnitInfo[], setUnitBuf: (units: UnitInfo[]) => void) => {
-    const normalizedUnits = normalizeUnitIndexes(units);
-    baselineUnitsRef.current = normalizedUnits;
-    unitBufRef.current = normalizedUnits;
-    setUnitBuf(normalizedUnits);
-  }, []);
-
-  const flushIfDirty = useCallback(async (showSuccess = true) => {
-    if (isSaving.current) {return;}
-    const diff = buildUnitDiff(unitBufRef.current, baselineUnitsRef.current);
-    if (diff.ops.length === 0) {return;}
-
-    isSaving.current = true;
-    setSaving(true);
-    try {
-      const result = await persistDirtyUnits({
-        pageId: getPageId(),
-        currentUnits: unitBufRef.current,
-        baselineUnits: baselineUnitsRef.current,
-        onSaveUnits,
-        onReloadUnits,
-      });
-      if (result.status === "saved") {
-        baselineUnitsRef.current = result.units;
-        unitBufRef.current = result.units;
-        setUnitBuf(result.units);
-      }
-      if (showSuccess) {showToast("保存成功", "success");}
-    } catch (error) {
-      const summary = `ops:${String(diff.ops.length)}`;
-      console.error(`[BaseTranslator] 保存失败 pageId=${getPageId()} diff=${summary}`, error);
-      showLocalCaughtError(error, showToast, "保存失败，请重试");
-      throw error;
-    } finally {
-      isSaving.current = false;
-      setSaving(false);
-    }
-  }, [getPageId, onReloadUnits, onSaveUnits, setUnitBuf, showToast]);
-
-  const handleNavigate = useCallback(
-    async (newIndex: number, targetUnitId?: string) => {
-      if (isNavigating.current) {return;}
-      isNavigating.current = true;
-      setPendingAction(null);
-      try {
-        await flushIfDirty();
-        await loadPage(newIndex, targetUnitId);
-      } catch {
-        setPendingAction({ type: "navigate", newIndex, targetUnitId });
-      } finally {
-        isNavigating.current = false;
-      }
-    },
-    [flushIfDirty, loadPage],
+  const navigatingRef = useRef(false);
+  const exclusiveRef = useRef(false);
+  const pendingRef = useRef<PendingAction | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [state, setState] = useState<SaveSnapshot>({
+    units: [],
+    dirty: false,
+    saving: false,
+    error: null,
+    refreshError: false,
+    lastSavedAt: null,
+  });
+  // The constructor stores callbacks; refs are read only when those callbacks run.
+  // eslint-disable-next-line react-hooks/refs
+  const [controller] = useState(() =>
+    createUnitSaveController({
+      save: (pageId, diff, saveId) => latestRef.current.onSaveUnits(pageId, diff, saveId),
+      reload: (pageId) => latestRef.current.onReloadUnits(pageId),
+      changed: (next) => {
+        if (unitBufRef.current !== next.units) {
+          unitBufRef.current = next.units;
+          latestRef.current.setUnitBuf(next.units);
+        }
+        setState(next);
+      },
+      failed: (error, phase) => {
+        console.error(`[BaseTranslator] ${phase} failed`, error);
+        showLocalCaughtError(
+          error,
+          latestRef.current.showToast,
+          phase === "refresh" ? "保存已完成，但刷新失败；本地修改已保留" : "保存失败，修改已保留",
+          true,
+        );
+      },
+    })
   );
 
-  const handleExit = useCallback(async () => {
-    setPendingAction(null);
-    try {
-      await flushIfDirty();
-      onExit();
-    } catch {
-      setPendingAction({ type: "exit" });
+  useEffect(() => {
+    controller.setActive(true);
+    const schedule = startAutoSaveSchedule(() => {
+      if (
+        !latestRef.current.autoSaveEnabled || navigatingRef.current ||
+        exclusiveRef.current || pendingRef.current
+      ) {return;}
+      void controller.saveOnce().catch(() => {/* Reported by the controller. */});
+    });
+    function visible() {
+      if (document.visibilityState === "visible") {schedule.check();}
     }
-  }, [flushIfDirty, onExit]);
+    function beforeUnload(event: BeforeUnloadEvent) {
+      const snapshot = controller.getSnapshot();
+      if (!snapshot.dirty && !snapshot.saving) {return;}
+      event.preventDefault();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy beforeunload support.
+      event.returnValue = "";
+    }
+    document.addEventListener("visibilitychange", visible);
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => {
+      schedule.stop();
+      document.removeEventListener("visibilitychange", visible);
+      window.removeEventListener("beforeunload", beforeUnload);
+      controller.setActive(false);
+    };
+  }, [controller]);
 
-  const handleRetryPendingAction = useCallback(async () => {
-    if (!pendingAction || isNavigating.current) {return;}
-    isNavigating.current = true;
+  const commitUnits = useCallback((units: UnitInfo[], _setter: Args["setUnitBuf"]) => {
+    controller.commit(units);
+  }, [controller]);
 
+  const setLoadedUnits = useCallback((pageId: string, units: UnitInfo[]) => {
+    controller.load(pageId, units);
+  }, [controller]);
+
+  const flushIfDirty = useCallback(async (shouldShowSuccess = true) => {
+    const hasChanges = controller.getSnapshot().dirty;
+    await controller.flush();
+    if (shouldShowSuccess && hasChanges && !controller.getSnapshot().refreshError) {
+      latestRef.current.showToast("保存成功", "success");
+    }
+  }, [controller]);
+
+  const runExclusive = useCallback(async (operation: () => Promise<void>) => {
+    if (exclusiveRef.current || navigatingRef.current || pendingRef.current) {
+      throw new Error("请等待当前操作完成后重试");
+    }
+    exclusiveRef.current = true;
     try {
-      await flushIfDirty();
-
-      if (pendingAction.type === "navigate") {
-        await loadPage(pendingAction.newIndex, pendingAction.targetUnitId);
-      } else {
-        onExit();
-      }
-
-      setPendingAction(null);
-    } catch {
-      // no-op
+      await controller.flush();
+      controller.setSuspended(true);
+      await operation();
     } finally {
-      isNavigating.current = false;
+      controller.setSuspended(false);
+      exclusiveRef.current = false;
     }
-  }, [flushIfDirty, loadPage, onExit, pendingAction]);
+  }, [controller]);
 
-  const handleDiscardPendingAction = useCallback(() => {
-    if (!pendingAction || isNavigating.current) {return;}
-
-    const action = pendingAction;
+  const perform = useCallback(async (action: PendingAction, shouldDiscard = false) => {
+    if (navigatingRef.current || exclusiveRef.current) {return;}
+    navigatingRef.current = true;
+    pendingRef.current = null;
     setPendingAction(null);
-
-    if (action.type === "navigate") {
-      void loadPage(action.newIndex, action.targetUnitId);
+    try {
+      if (!shouldDiscard) {await controller.flush();}
+    } catch {
+      pendingRef.current = action;
+      setPendingAction(action);
+      navigatingRef.current = false;
       return;
     }
+    controller.setSuspended(true);
+    try {
+      if (action.type === "navigate") {
+        await latestRef.current.loadPage(action.newIndex, action.targetUnitId);
+      } else {
+        latestRef.current.onExit();
+      }
+    } catch (error) {
+      console.error("[BaseTranslator] 页面切换失败", error);
+      showLocalCaughtError(error, latestRef.current.showToast, "页面加载失败，请重试");
+    } finally {
+      controller.setSuspended(false);
+      navigatingRef.current = false;
+    }
+  }, [controller]);
 
-    onExit();
-  }, [loadPage, onExit, pendingAction]);
+  const handleNavigate = useCallback(async (newIndex: number, targetUnitId?: string) => {
+    if (pendingRef.current) {return;}
+    await perform({ type: "navigate", newIndex, targetUnitId });
+  }, [perform]);
+  const handleExit = useCallback(async () => {
+    if (!pendingRef.current) {await perform({ type: "exit" });}
+  }, [perform]);
+  const handleRetryPendingAction = useCallback(async () => {
+    if (pendingRef.current) {await perform(pendingRef.current);}
+  }, [perform]);
+  const handleDiscardPendingAction = useCallback(async () => {
+    if (pendingRef.current) {await perform(pendingRef.current, true);}
+  }, [perform]);
 
   return {
     unitBufRef,
-    baselineUnitsRef,
     pendingAction,
-    saving,
+    saving: state.saving,
+    saveState: state,
     commitUnits,
     setLoadedUnits,
     flushIfDirty,
@@ -370,5 +179,7 @@ export function useUnitPersistence({
     handleExit,
     handleRetryPendingAction,
     handleDiscardPendingAction,
+    runExclusive,
+    refreshUnits: controller.refresh,
   };
 }

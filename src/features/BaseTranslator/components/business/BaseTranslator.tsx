@@ -7,7 +7,7 @@
 /* eslint-disable @eslint-react/use-state, @eslint-react/exhaustive-deps */
 import { useState, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
-import { showLocalCaughtError, toApiRequestError } from "@/api/util";
+import { showLocalCaughtError } from "@/api/util";
 import {
   SquareArrowRight,
   Command,
@@ -53,8 +53,10 @@ import { useRelocationPreference } from
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { useSpecialChars } from "@/hook/useSpecialChars";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
-import type { SpecialCharInsertRequest } from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
-import type { UnitDiff } from "../../types/type";
+import type {
+  SpecialCharInsertRequest,
+} from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
+import type { SaveUnits } from "../../types/type";
 import type { TerminologyDataSource } from "../../types/terminology";
 import type {
   UnitSearchTransformDataSource,
@@ -83,7 +85,7 @@ interface Props {
   // BaseTranslator 为了减少 IO，采用内置 buffer 来缓存当前页的 units 的修改
   // onUpsertUnits 的默认调用时机是：翻页时、退出 BaseTranslator 时，
   // 以及一个手动的 "保存" 按钮被按下时
-  onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
+  onSaveUnits: SaveUnits;
   // 懒加载的图片 URL 获取器，BaseTranslator 只负责在需要时调用它来获取图片 URL
   onLoadPageImage: (
     pageId: string,
@@ -171,7 +173,7 @@ export default function BaseTranslator({
   );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isHighResolution, setIsHighResolution] = useState(false);
-  const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const [isLoadingPage, setIsLoadingPage] = useState(true);
   const imageQuality: PageImageQuality = isHighResolution
     ? "original"
     : "optimized";
@@ -227,6 +229,9 @@ export default function BaseTranslator({
     unitBufRef,
     pendingAction,
     saving,
+    saveState,
+    runExclusive,
+    refreshUnits,
     commitUnits,
     setLoadedUnits,
     flushIfDirty,
@@ -235,33 +240,39 @@ export default function BaseTranslator({
     handleRetryPendingAction,
     handleDiscardPendingAction,
   } = useUnitPersistence({
-    getPageId: () => project.pages[pageIndex]!.id,
     onSaveUnits,
     onReloadUnits: onLoadUnits,
     onExit,
     showToast,
     loadPage,
     setUnitBuf,
+    autoSaveEnabled: !isLoadingPage && !isReadOnly && !isUnitSearchTransformOpen
+      && !isCompletingStage,
   });
+
+  const pageLoadGenerationRef = useRef(0);
+
+  useEffect(() => () => { pageLoadGenerationRef.current += 1; }, []);
 
   async function loadPage(idx: number, targetUnitId?: string) {
     const page = project.pages[idx];
     if (!page) {return;}
-    setPageIndex(idx);
+    const generation = ++pageLoadGenerationRef.current;
     setIsLoadingPage(true);
-    setImageUrl(null);
     try {
       const [units, img] = await Promise.all([
         onLoadUnits(page.id),
         onLoadPageImage(page.id, imageQuality),
       ]);
-      setLoadedUnits(units, setUnitBuf);
+      if (generation !== pageLoadGenerationRef.current) {return;}
+      setPageIndex(idx);
+      setLoadedUnits(page.id, units);
       setImageUrl(img);
       relocationSuppressedUnitIdRef.current = null;
       pendingCenteredUnitIdRef.current = targetUnitId ?? null;
       setFocusedUnitId(targetUnitId);
     } finally {
-      setIsLoadingPage(false);
+      if (generation === pageLoadGenerationRef.current) {setIsLoadingPage(false);}
     }
   }
 
@@ -269,13 +280,18 @@ export default function BaseTranslator({
     if (project.pages.length > 0) {
       void loadPage(initialPageIndex).catch((error) => {
         console.error("[BaseTranslator] 初始页面加载失败", error);
+        showLocalCaughtError(error, showToast, "页面加载失败，请重试");
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSave() {
-    await flushIfDirty();
+    try {
+      await flushIfDirty();
+    } catch {
+      // The persistence coordinator already reports and retains failed saves.
+    }
   }
 
   async function handleToggleImageQuality() {
@@ -283,6 +299,7 @@ export default function BaseTranslator({
     const page = project.pages[pageIndex];
     if (!page) {return;}
 
+    const generation = ++pageLoadGenerationRef.current;
     setIsHighResolution(isNextIsHighResolution);
     setIsLoadingPage(true);
     setImageUrl(null);
@@ -291,16 +308,18 @@ export default function BaseTranslator({
         page.id,
         isNextIsHighResolution ? "original" : "optimized",
       );
-      setImageUrl(nextImageUrl);
+      if (generation === pageLoadGenerationRef.current) {setImageUrl(nextImageUrl);}
+    } catch (error) {
+      console.error("[BaseTranslator] 图片加载失败", error);
+      showLocalCaughtError(error, showToast, "图片加载失败，请重试");
     } finally {
-      setIsLoadingPage(false);
+      if (generation === pageLoadGenerationRef.current) {setIsLoadingPage(false);}
     }
   }
 
   async function handleCompleteStage() {
     if (
       !completionStage ||
-      saving ||
       isCompletingStage ||
       hasCompletedStage
     ) {
@@ -309,8 +328,7 @@ export default function BaseTranslator({
 
     setIsCompletingStage(true);
     try {
-      await flushIfDirty();
-      await onCompleteStage(completionStage);
+      await runExclusive(() => onCompleteStage(completionStage));
       setHasCompletedStage(true);
       setIsCompleteConfirmOpen(false);
       showToast(
@@ -364,6 +382,7 @@ export default function BaseTranslator({
   }
 
   function handleModifyUnit(targetUnitId: string, updates: UnitEdit) {
+    if (isLoadingPage || isCompletingStage) {return;}
     const nextUpdates = { ...updates };
     const currentUnit = unitBufRef.current.find(
       (unit) => unitId(unit) === targetUnitId,
@@ -417,6 +436,11 @@ export default function BaseTranslator({
   }
 
   function handleAddUnit(xCoord: number, yCoord: number, isBubble: boolean) {
+    if (isLoadingPage || isCompletingStage) {return;}
+    if (unitBufRef.current.length >= 100) {
+      showToast("每页最多 100 个文本块", "error");
+      return;
+    }
     const newUnit = createUnit(
       xCoord,
       yCoord,
@@ -450,10 +474,7 @@ export default function BaseTranslator({
   }
 
   async function handleRefreshCurrentPage() {
-    const currentPageId = project.pages[pageIndex]!.id;
-    const result = await unitSearchTransform.reloadPage(currentPageId);
-    if (!result.success) {throw toApiRequestError(result);}
-    setLoadedUnits(result.data, setUnitBuf);
+    await refreshUnits();
   }
 
   async function handleSearchResultNavigate(
@@ -471,6 +492,7 @@ export default function BaseTranslator({
   }
 
   function doDeleteUnit(targetUnitId: string) {
+    if (isLoadingPage || isCompletingStage) {return;}
     const filteredUnits = unitBufRef.current
       .filter((unit) => unitId(unit) !== targetUnitId);
 
@@ -631,7 +653,7 @@ export default function BaseTranslator({
             : undefined
         }
         onImageLoad={handlePageImageLoad}
-        enableReadOnly={!canEditView}
+        enableReadOnly={!canEditView || isLoadingPage || isCompletingStage}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
       {!isReadOnly && (
@@ -661,7 +683,7 @@ export default function BaseTranslator({
             type="button"
             title={completionStage === "proofread" ? "完成校对" : "完成翻译"}
             aria-label={completionStage === "proofread" ? "完成校对" : "完成翻译"}
-            disabled={saving || isCompletingStage || hasCompletedStage}
+            disabled={isLoadingPage || isCompletingStage || hasCompletedStage}
             onClick={() => { setIsCompleteConfirmOpen(true); }}
             className={clsx(
               "flex size-8 items-center justify-center rounded-md border",
@@ -709,6 +731,14 @@ export default function BaseTranslator({
     </div>
   );
 
+  function saveStatusLabel() {
+    if (saveState.error) {
+      return saveState.refreshError ? "已保存，刷新失败" : "保存失败，修改已保留";
+    }
+    if (saving) {return "保存中";}
+    return saveState.dirty ? "待保存" : "已保存";
+  }
+
   const sidebar = (
     <>
       <div className="flex items-center border-b-2 border-stone-200 shrink-0 bg-stone-50">
@@ -734,6 +764,7 @@ export default function BaseTranslator({
             onToggleImageQualityClick={handleToggleImageQuality}
             onSaveClick={handleSave}
             saving={saving}
+            saveStatus={saveStatusLabel()}
           />
         </div>
       </div>
@@ -751,7 +782,7 @@ export default function BaseTranslator({
           onModifyUnit={canEditView ? handleModifyUnit : undefined}
           onReorderUnit={canEditView ? handleReorderUnit : undefined}
           onResolveUser={onResolveUser}
-          enableReadOnly={!canEditView}
+          enableReadOnly={!canEditView || isLoadingPage || isCompletingStage}
           specialCharInsertRequest={specialCharInsertRequest}
           onSpecialCharUse={handleSpecialCharUse}
           onSpecialCharInserted={handleSpecialCharInserted}
@@ -781,6 +812,7 @@ export default function BaseTranslator({
           currentPageId={project.pages[pageIndex]!.id}
           dataSource={unitSearchTransform}
           onBeforeSearch={() => flushIfDirty(false)}
+          runExclusive={runExclusive}
           onRefreshCurrentPage={handleRefreshCurrentPage}
           onNavigate={handleSearchResultNavigate}
           onClose={() => { setIsUnitSearchTransformOpen(false); }}

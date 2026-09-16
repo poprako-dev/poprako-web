@@ -200,7 +200,8 @@ export default function HoverSelect({
                 key={option.id}
                 onClick={() => { handleSelect(option); }}
                 className={clsx(
-                  "flex transform-gpu cursor-pointer items-center justify-between px-4 py-2.5 transition-colors duration-300 ease-in-out",
+                  "flex transform-gpu cursor-pointer items-center justify-between",
+                  "px-4 py-2.5 transition-colors duration-300 ease-in-out",
                   "text-slate-600",
                   "w-full text-left",
                   {

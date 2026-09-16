@@ -300,7 +300,12 @@ export const api = {
     url: string,
     queryParams?: QueryParams,
     requiresAuth = true,
-  ) => request<T>(buildQueryUrl(url, queryParams), { method: "GET" }, requiresAuth),
+    signal?: AbortSignal,
+  ) => request<T>(
+    buildQueryUrl(url, queryParams),
+    { method: "GET", signal: signal ?? null },
+    requiresAuth,
+  ),
 
   // B is retained to preserve the public API's explicit request-body typing.
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
@@ -309,11 +314,12 @@ export const api = {
     body: B,
     queryParamsOrNeedAuth?: QueryParams | boolean,
     requiresAuth = true,
+    signal?: AbortSignal,
   ) => {
     const options = resolveQueryAndAuth(queryParamsOrNeedAuth, requiresAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
-      { method: "POST", body: JSON.stringify(stripNulls(body)) },
+      { method: "POST", signal: signal ?? null, body: JSON.stringify(stripNulls(body)) },
       options.requiresAuth,
     );
   },

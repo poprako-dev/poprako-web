@@ -64,6 +64,7 @@ function InteractiveWrapper({
         }}
         onSaveClick={() => Promise.resolve()}
         saving={false}
+        saveStatus="已保存"
       />
     </div>
   );

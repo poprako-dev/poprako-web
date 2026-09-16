@@ -14,7 +14,9 @@ import { updateMemberRole, joinMember, listMembers, listMyMembers } from "@/api/
 import { markSysMailRead, listSysMails } from "@/api/sysMail";
 import { allocTeamAvatarUpload, confirmTeamAvatarUploaded } from "@/api/team";
 import { allocUserAvatarUpload, confirmUserAvatarUploaded } from "@/api/user";
-import { listChapters, updateChapter, importChapter, exportChapter } from "@/features/ComicPlayground/api/chapter";
+import {
+  listChapters, updateChapter, importChapter, exportChapter,
+} from "@/features/ComicPlayground/api/chapter";
 import {
   archiveComic,
   listComics,
@@ -105,7 +107,8 @@ describe("poprako-r API migration", () => {
       limit: 30,
     });
     expect(lastFetchCall(fetchMock).url).toBe(
-      "/api/v1/worksets/workset_1/comics?incl=workset.team&fuzzy_title=foo&stages=3903&offset=2&limit=30",
+      "/api/v1/worksets/workset_1/comics"
+      + "?incl=workset.team&fuzzy_title=foo&stages=3903&offset=2&limit=30",
     );
 
     await listMembers({
@@ -348,7 +351,9 @@ describe("poprako-r API migration", () => {
   });
 
   test("saves units with sparse create-patch-delete edits", async () => {
-    const fetchMock = installFetch(noContent());
+    const fetchMock = installFetch(okJson({
+      created_unit_ids: [{ local_id: "local_1", unit_id: "permanent_1" }],
+    }));
     const diff: UnitDiff = {
       ops: [
         {
@@ -375,10 +380,12 @@ describe("poprako-r API migration", () => {
       ],
     };
 
-    const result = await saveUnits("page_1", diff);
+    const result = await saveUnits("page_1", diff, "save_1");
 
-    expect(result).toEqual({ success: true, data: undefined });
-    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/units/save");
+    expect(result).toEqual({ success: true, data: {
+      createdUnitIds: [{ localId: "local_1", unitId: "permanent_1" }],
+    } });
+    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/units/save?save_id=save_1");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual([
           {
             edit: "create",

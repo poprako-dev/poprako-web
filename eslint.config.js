@@ -37,6 +37,7 @@ export default defineConfig([
       reportUnusedInlineConfigs: "error",
     },
     rules: {
+      "max-len": ["error", { code: 100, tabWidth: 2 }],
       eqeqeq: ["error", "always"],
       curly: ["error", "all"],
       "no-alert": "error",

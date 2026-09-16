@@ -339,9 +339,7 @@
             "description": "Maximum number of results per page.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -667,6 +665,133 @@
         }
       }
     },
+    "/api/v1/chapters/{chapter_id}/artwork/alloc": {
+      "post": {
+        "tags": [
+          "chapter-port"
+        ],
+        "summary": "Allocates a direct chapter artwork upload; an available duplicate has no slot.",
+        "operationId": "alloc_artwork",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocChapterArtworkInstr"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Current artwork version and optional PUT capability",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_AllocChapterArtworkVal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Chapter artwork role required"
+          },
+          "422": {
+            "description": "Invalid allocation or frozen chapter"
+          }
+        }
+      }
+    },
+    "/api/v1/chapters/{chapter_id}/artwork/export": {
+      "get": {
+        "tags": [
+          "chapter-port"
+        ],
+        "summary": "Returns the original object URL of the current available artwork.",
+        "operationId": "export_artwork",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artwork identity and original download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_ExportChapterArtworkVal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Chapter export access required"
+          },
+          "422": {
+            "description": "Chapter artwork is unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/chapters/{chapter_id}/artwork/mark-uploaded": {
+      "post": {
+        "tags": [
+          "chapter-port"
+        ],
+        "summary": "Optimistically confirms artwork and atomically completes typesetting/redraw.",
+        "operationId": "mark_artwork_uploaded",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkChapterArtworkUploadedInstr"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Current artwork confirmed and typesetting completed"
+          },
+          "403": {
+            "description": "Chapter artwork role required"
+          },
+          "422": {
+            "description": "Missing or stale artwork version, or frozen chapter"
+          }
+        }
+      }
+    },
     "/api/v1/chapters/{chapter_id}/assignment-invitations": {
       "get": {
         "tags": [
@@ -711,9 +836,7 @@
             "description": "Maximum number of items to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -930,6 +1053,44 @@
         }
       }
     },
+    "/api/v1/chapters/{chapter_id}/pages/unit-diff-stats": {
+      "get": {
+        "tags": [
+          "pages"
+        ],
+        "summary": "`GET /api/v1/chapters/{chapter_id}/pages/unit-diff-stats` — list Unit text statistics for Pages with revision differences.",
+        "operationId": "list_unit_diff_stats",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Visible Unit text counts for Pages with edits or revision-only additions, in original Page order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_Vec_PageUnitDiffStatsVal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No perm to list Pages in this Chapter"
+          },
+          "422": {
+            "description": "Chapter not found"
+          }
+        }
+      }
+    },
     "/api/v1/chapters/{chapter_id}/stage/advance": {
       "post": {
         "tags": [
@@ -978,7 +1139,7 @@
         ],
         "summary": "`GET /api/v1/chapters/{chapter_id}/translations/export` — export response body.",
         "description": "`format` selects one or both generated documents as a comma-separated value.",
-        "operationId": "export",
+        "operationId": "export_translation",
         "parameters": [
           {
             "name": "chapter_id",
@@ -996,6 +1157,15 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "with_raw_ident",
+            "in": "query",
+            "description": "Use original filenames in LabelPlus; defaults to false",
+            "required": false,
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -1023,7 +1193,7 @@
         ],
         "summary": "`GET /api/v1/chapters/{chapter_id}/translations/export/download` — export as file download.",
         "description": "The downloaded JSON contains every document selected by `format`.",
-        "operationId": "export_download",
+        "operationId": "export_translation_download",
         "parameters": [
           {
             "name": "chapter_id",
@@ -1041,6 +1211,15 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "with_raw_ident",
+            "in": "query",
+            "description": "Use original filenames in LabelPlus; defaults to false",
+            "required": false,
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -1067,7 +1246,7 @@
           "chapter-port"
         ],
         "summary": "`POST /api/v1/chapters/{chapter_id}/translations/import` — import translations.",
-        "operationId": "import",
+        "operationId": "import_translation",
         "parameters": [
           {
             "name": "chapter_id",
@@ -1243,9 +1422,7 @@
             "description": "Maximum number of items to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -1500,9 +1677,7 @@
             "description": "Maximum number of items to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -1690,9 +1865,7 @@
             "description": "Maximum number of records to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -2006,9 +2179,7 @@
             "description": "Maximum number of results per page.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -2144,9 +2315,7 @@
             "description": "Maximum number of items to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -2429,6 +2598,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "save_id",
+            "in": "query",
+            "description": "Client-generated save UUID, reused only for the identical batch.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -2445,8 +2623,15 @@
           "required": true
         },
         "responses": {
-          "204": {
-            "description": "Unit edits saved"
+          "200": {
+            "description": "Unit edits saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_SavePageUnitEditsVal"
+                }
+              }
+            }
           },
           "403": {
             "description": "No perm to save units in this page"
@@ -2494,9 +2679,7 @@
             "description": "Maximum number of results per page.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -2579,9 +2762,7 @@
             "description": "Maximum number of results per page.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -2796,9 +2977,7 @@
             "description": "Maximum number of items to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -3005,9 +3184,7 @@
             "description": "Maximum number of items to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -3033,7 +3210,7 @@
         "tags": [
           "teams"
         ],
-        "summary": "`PUT /api/v1/teams/{team_id}/mark-self-online` — refresh own lease.",
+        "summary": "`PUT /api/v1/teams/{team_id}/mark-self-online` — refresh own activity and lease.",
         "operationId": "mark_self_online",
         "parameters": [
           {
@@ -3048,7 +3225,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Online lease refreshed"
+            "description": "User and membership activity updated and online lease refreshed"
           },
           "401": {
             "description": "Authentication required"
@@ -3115,9 +3292,7 @@
             "description": "Maximum number of items to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -3219,9 +3394,7 @@
             "description": "Maximum number of records to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -3343,9 +3516,7 @@
             "description": "Maximum number of items to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -3631,9 +3802,7 @@
             "description": "Maximum number of records to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -4300,9 +4469,7 @@
             "description": "Maximum number of items to return.",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "$ref": "#/components/schemas/ListLimit200"
             }
           }
         ],
@@ -4329,6 +4496,57 @@
   },
   "components": {
     "schemas": {
+      "AllocChapterArtworkInstr": {
+        "type": "object",
+        "description": "Request to allocate the chapter's single artwork file.",
+        "required": [
+          "artwork_hash",
+          "new_byte_len",
+          "ext"
+        ],
+        "properties": {
+          "artwork_hash": {
+            "$ref": "#/components/schemas/ArtworkHash",
+            "description": "Canonical Base64 SHA-256 identity of the exact uploaded bytes."
+          },
+          "ext": {
+            "type": "string",
+            "description": "File extension without a leading dot."
+          },
+          "new_byte_len": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Exact upload length, also bound into the PUT signature.",
+            "minimum": 0
+          }
+        }
+      },
+      "AllocChapterArtworkVal": {
+        "type": "object",
+        "description": "Chapter artwork allocation result, including the version on a deduplication hit.",
+        "required": [
+          "artwork_version"
+        ],
+        "properties": {
+          "artwork_version": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Current artwork generation to confirm.",
+            "minimum": 0
+          },
+          "slot": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ChapterArtworkUploadSlotView",
+                "description": "Absent when the requested content is already available."
+              }
+            ]
+          }
+        }
+      },
       "AllocChapterPagesInstr": {
         "type": "object",
         "description": "Input parameters for reserving all page images of a chapter.",
@@ -4430,6 +4648,13 @@
             "format": "int64",
             "description": "Size of the page image in bytes.",
             "minimum": 0
+          },
+          "raw_ident": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Complete original filename. Omission or null replaces it with no name."
           }
         }
       },
@@ -4628,6 +4853,10 @@
           }
         }
       },
+      "ArtworkHash": {
+        "type": "string",
+        "description": "SHA-256 identity using the same canonical Base64 encoding as image uploads."
+      },
       "AssignmentInclOpt": {
         "type": "string",
         "description": "Incl opts for assignment info queries.\n\nEach opt embeds additional related data into the returned\n`AssignmentInfoView`. Dotted opts implicitly pull in the segments before\nthe dot (e.g. `chapter.comic.workset.team` also embeds `chapter`,\n`chapter.comic`, and `chapter.comic.workset`).",
@@ -4758,6 +4987,30 @@
           }
         }
       },
+      "ChapterArtworkUploadSlotView": {
+        "type": "object",
+        "description": "A direct artwork upload capability.",
+        "required": [
+          "put_url",
+          "headers"
+        ],
+        "properties": {
+          "headers": {
+            "type": "object",
+            "description": "Headers bound into the upload signature.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "type": "string"
+            }
+          },
+          "put_url": {
+            "type": "string",
+            "description": "Presigned PUT URL."
+          }
+        }
+      },
       "ChapterInclOpt": {
         "type": "string",
         "description": "Incl opts for chapter info queries.\n\nEach opt embeds additional related data into the returned\n`ChapterInfoView`. Dotted opts implicitly pull in the segments before the\ndot (e.g. `comic.workset.team` also embeds `comic` and `comic.workset`).",
@@ -4871,6 +5124,24 @@
           }
         }
       },
+      "ChapterPageRawIdentVal": {
+        "type": "object",
+        "description": "One exported Page's original filename mapping.",
+        "required": [
+          "page_id",
+          "raw_ident"
+        ],
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "description": "Stable Page identifier."
+          },
+          "raw_ident": {
+            "type": "string",
+            "description": "Complete original image filename."
+          }
+        }
+      },
       "ChapterStageInstr": {
         "type": "string",
         "description": "Input parameters for updating a chapter's workflow stage.\n\nEncodes a single operation on a specific stage, e.g. \"start translating\"\non the `translate` stage. The use case layer validates that the\ntransition is legal for the current stage phase before applying it.",
@@ -4897,6 +5168,14 @@
         "enum": [
           "label_plus",
           "poprako"
+        ]
+      },
+      "ChapterTranslationImportModeInstr": {
+        "type": "string",
+        "description": "Page-content strategy selected by a chapter translation import request.",
+        "enum": [
+          "keep",
+          "overwrite"
         ]
       },
       "ChapterTranslationPortView": {
@@ -5154,12 +5433,12 @@
                   },
                   "imported_page_count": {
                     "type": "integer",
-                    "description": "Number of imported pages.",
+                    "description": "Number of pages whose visible Unit content changed.",
                     "minimum": 0
                   },
                   "imported_unit_count": {
                     "type": "integer",
-                    "description": "Number of imported units.",
+                    "description": "Number of Units created from the imported source.",
                     "minimum": 0
                   }
                 }
@@ -5197,6 +5476,37 @@
                 "type": "string",
                 "enum": [
                   "translation_exported"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Chapter artwork was successfully exported.",
+            "required": [
+              "data",
+              "kind"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "Chapter artwork was successfully exported.",
+                "required": [
+                  "artwork_version"
+                ],
+                "properties": {
+                  "artwork_version": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Exported artwork generation.",
+                    "minimum": 0
+                  }
+                }
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "artwork_exported"
                 ]
               }
             }
@@ -5292,7 +5602,8 @@
           "unit_edit",
           "translation_import",
           "translation_export",
-          "raw_provide_check"
+          "raw_provide_check",
+          "artwork_upload"
         ]
       },
       "ChapterWorkflowRecordStagePhaseView": {
@@ -5975,6 +6286,54 @@
           }
         }
       },
+      "CreatedUnitIdVal": {
+        "type": "object",
+        "description": "One explicit identity pair returned for a newly created Unit.",
+        "required": [
+          "local_id",
+          "unit_id"
+        ],
+        "properties": {
+          "local_id": {
+            "type": "string",
+            "description": "Client identity from the create operation."
+          },
+          "unit_id": {
+            "type": "string",
+            "description": "Permanent Unit identity."
+          }
+        }
+      },
+      "ExportChapterArtworkVal": {
+        "type": "object",
+        "description": "Current available artwork and its direct object-storage download address.",
+        "required": [
+          "artwork_version",
+          "artwork_hash",
+          "ext",
+          "download_url"
+        ],
+        "properties": {
+          "artwork_hash": {
+            "$ref": "#/components/schemas/ArtworkHash",
+            "description": "Canonical Base64 SHA-256 identity supplied by the uploader."
+          },
+          "artwork_version": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Current available object generation.",
+            "minimum": 0
+          },
+          "download_url": {
+            "type": "string",
+            "description": "Original object URL; file bytes never pass through the API server."
+          },
+          "ext": {
+            "type": "string",
+            "description": "Original file suffix."
+          }
+        }
+      },
       "ExportChapterTranslationsVal": {
         "type": "object",
         "description": "Translation documents generated together by one chapter export.",
@@ -5996,6 +6355,16 @@
                 "description": "Native `PopRaKo` document, absent when that format was not selected."
               }
             ]
+          },
+          "raw_idents": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ChapterPageRawIdentVal"
+            },
+            "description": "Page-to-original-filename mappings, absent unless requested."
           }
         }
       },
@@ -6055,6 +6424,49 @@
               "$ref": "#/components/schemas/TermbaseTermView"
             },
             "description": "Portable terminology entries ordered deterministically."
+          }
+        }
+      },
+      "HttpBody_AllocChapterArtworkVal": {
+        "type": "object",
+        "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Application-level success code, 0 for normal success.",
+            "example": 0,
+            "minimum": 0
+          },
+          "data": {
+            "type": "object",
+            "description": "Chapter artwork allocation result, including the version on a deduplication hit.",
+            "required": [
+              "artwork_version"
+            ],
+            "properties": {
+              "artwork_version": {
+                "type": "integer",
+                "format": "int32",
+                "description": "Current artwork generation to confirm.",
+                "minimum": 0
+              },
+              "slot": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ChapterArtworkUploadSlotView",
+                    "description": "Absent when the requested content is already available."
+                  }
+                ]
+              }
+            }
           }
         }
       },
@@ -6941,6 +7353,53 @@
           }
         }
       },
+      "HttpBody_ExportChapterArtworkVal": {
+        "type": "object",
+        "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Application-level success code, 0 for normal success.",
+            "example": 0,
+            "minimum": 0
+          },
+          "data": {
+            "type": "object",
+            "description": "Current available artwork and its direct object-storage download address.",
+            "required": [
+              "artwork_version",
+              "artwork_hash",
+              "ext",
+              "download_url"
+            ],
+            "properties": {
+              "artwork_hash": {
+                "$ref": "#/components/schemas/ArtworkHash",
+                "description": "Canonical Base64 SHA-256 identity supplied by the uploader."
+              },
+              "artwork_version": {
+                "type": "integer",
+                "format": "int32",
+                "description": "Current available object generation.",
+                "minimum": 0
+              },
+              "download_url": {
+                "type": "string",
+                "description": "Original object URL; file bytes never pass through the API server."
+              },
+              "ext": {
+                "type": "string",
+                "description": "Original file suffix."
+              }
+            }
+          }
+        }
+      },
       "HttpBody_ExportComicArchivesVal": {
         "type": "object",
         "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
@@ -6996,12 +7455,12 @@
             "properties": {
               "imported_page_count": {
                 "type": "integer",
-                "description": "Number of pages that were imported.",
+                "description": "Number of pages whose visible Unit content changed.",
                 "minimum": 0
               },
               "imported_unit_count": {
                 "type": "integer",
-                "description": "Number of translation units that were imported.",
+                "description": "Number of Units created from the imported source.",
                 "minimum": 0
               }
             }
@@ -7548,6 +8007,39 @@
               "user_id": {
                 "type": "string",
                 "description": "Unique user identifier."
+              }
+            }
+          }
+        }
+      },
+      "HttpBody_SavePageUnitEditsVal": {
+        "type": "object",
+        "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Application-level success code, 0 for normal success.",
+            "example": 0,
+            "minimum": 0
+          },
+          "data": {
+            "type": "object",
+            "description": "Result of every successful Unit save, including replayed saves.",
+            "required": [
+              "created_unit_ids"
+            ],
+            "properties": {
+              "created_unit_ids": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreatedUnitIdVal"
+                },
+                "description": "Explicit identity pairs; empty when the batch creates no Units."
               }
             }
           }
@@ -8589,6 +9081,63 @@
           }
         }
       },
+      "HttpBody_Vec_PageUnitDiffStatsVal": {
+        "type": "object",
+        "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Application-level success code, 0 for normal success.",
+            "example": 0,
+            "minimum": 0
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "Visible Unit text statistics for a Page with revision differences.\nCounts are independent of revision approval and cover all visible Units.",
+              "required": [
+                "page_id",
+                "index",
+                "translated_unit_count",
+                "editted_unit_count",
+                "proofreader_append_unit_count"
+              ],
+              "properties": {
+                "editted_unit_count": {
+                  "type": "integer",
+                  "description": "Units with non-whitespace translation and revision texts that differ exactly.",
+                  "minimum": 0
+                },
+                "index": {
+                  "type": "integer",
+                  "description": "Original zero-based Chapter position, preserved after filtering.",
+                  "minimum": 0
+                },
+                "page_id": {
+                  "type": "string",
+                  "description": "Permanent Page identifier."
+                },
+                "proofreader_append_unit_count": {
+                  "type": "integer",
+                  "description": "Units with non-whitespace revision text and absent or whitespace-only translation.",
+                  "minimum": 0
+                },
+                "translated_unit_count": {
+                  "type": "integer",
+                  "description": "Units with non-whitespace translation text; revision-only Units are excluded.",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      },
       "HttpBody_Vec_String": {
         "type": "object",
         "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
@@ -9213,6 +9762,7 @@
         "description": "Request body for importing chapter translations.",
         "required": [
           "format",
+          "mode",
           "content"
         ],
         "properties": {
@@ -9223,6 +9773,10 @@
           "format": {
             "$ref": "#/components/schemas/ChapterTranslationFormatInstr",
             "description": "The translation format (e.g., JSON, SRT)."
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ChapterTranslationImportModeInstr",
+            "description": "Page-content strategy used while applying the imported source."
           }
         }
       },
@@ -9236,12 +9790,12 @@
         "properties": {
           "imported_page_count": {
             "type": "integer",
-            "description": "Number of pages that were imported.",
+            "description": "Number of pages whose visible Unit content changed.",
             "minimum": 0
           },
           "imported_unit_count": {
             "type": "integer",
-            "description": "Number of translation units that were imported.",
+            "description": "Number of Units created from the imported source.",
             "minimum": 0
           }
         }
@@ -9485,6 +10039,21 @@
           "user_id": {
             "type": "string",
             "description": "Unique user identifier."
+          }
+        }
+      },
+      "MarkChapterArtworkUploadedInstr": {
+        "type": "object",
+        "description": "Confirmation of one exact current artwork generation.",
+        "required": [
+          "artwork_version"
+        ],
+        "properties": {
+          "artwork_version": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Version returned by allocation, including deduplicated allocation.",
+            "minimum": 0
           }
         }
       },
@@ -9810,6 +10379,13 @@
               "null"
             ],
             "description": "Existing page identifier, if updating an existing page."
+          },
+          "raw_ident": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Complete original filename. Omission or null replaces it with no name."
           }
         }
       },
@@ -9937,6 +10513,43 @@
           }
         }
       },
+      "PageUnitDiffStatsVal": {
+        "type": "object",
+        "description": "Visible Unit text statistics for a Page with revision differences.\nCounts are independent of revision approval and cover all visible Units.",
+        "required": [
+          "page_id",
+          "index",
+          "translated_unit_count",
+          "editted_unit_count",
+          "proofreader_append_unit_count"
+        ],
+        "properties": {
+          "editted_unit_count": {
+            "type": "integer",
+            "description": "Units with non-whitespace translation and revision texts that differ exactly.",
+            "minimum": 0
+          },
+          "index": {
+            "type": "integer",
+            "description": "Original zero-based Chapter position, preserved after filtering.",
+            "minimum": 0
+          },
+          "page_id": {
+            "type": "string",
+            "description": "Permanent Page identifier."
+          },
+          "proofreader_append_unit_count": {
+            "type": "integer",
+            "description": "Units with non-whitespace revision text and absent or whitespace-only translation.",
+            "minimum": 0
+          },
+          "translated_unit_count": {
+            "type": "integer",
+            "description": "Units with non-whitespace translation text; revision-only Units are excluded.",
+            "minimum": 0
+          }
+        }
+      },
       "RegisterAuthInstr": {
         "type": "object",
         "description": "Input parameters for user registration.",
@@ -9996,6 +10609,22 @@
         "description": "A composite bitmask combining multiple role perm flags.\n\nBits are OR-ed together from the following role values:\n\n| Value | Name          | Description             |\n|-------|---------------|-------------------------|\n| 1     | `RAW_PROVIDER` | Raw provider            |\n| 2     | `TRANSLATOR`   | Translator              |\n| 4     | `PROOFREADER`  | Proofreader             |\n| 8     | `TYPESETTER`   | Typesetter              |\n| 16    | `REDRAWER`     | Redrawer                |\n| 32    | `REVIEWER`     | Reviewer                |\n| 64    | `PUBLISHER`    | Publisher               |\n| 128   | `ADMIN`        | Admin                   |\n| 256   | `BOT`          | Bot                     |\n\n**Examples:** `1` = `RAW_PROVIDER`, `6` = TRANSLATOR | PROOFREADER, `255` = all roles except BOT.",
         "example": 34,
         "minimum": 0
+      },
+      "SavePageUnitEditsVal": {
+        "type": "object",
+        "description": "Result of every successful Unit save, including replayed saves.",
+        "required": [
+          "created_unit_ids"
+        ],
+        "properties": {
+          "created_unit_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreatedUnitIdVal"
+            },
+            "description": "Explicit identity pairs; empty when the batch creates no Units."
+          }
+        }
       },
       "StageMask": {
         "type": "integer",
@@ -11118,7 +11747,7 @@
     },
     {
       "name": "chapter-port",
-      "description": "Chapter translation import/export endpoints"
+      "description": "Chapter translation and artwork import/export endpoints"
     },
     {
       "name": "pages",

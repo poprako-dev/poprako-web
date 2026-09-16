@@ -454,7 +454,10 @@ function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProp
           </span>
         </div>
 
-        <div className="flex items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+        <div className={clsx(
+          "flex items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50",
+          "px-2 py-1",
+        )}>
           <code className="font-mono text-[11px] font-bold tracking-tight text-slate-400">
             {invitation.invitationCode}
           </code>

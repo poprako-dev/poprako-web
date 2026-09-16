@@ -48,3 +48,18 @@ export type UnitOp = UnitCreateOp | UnitPatchOp | UnitDeleteOp;
 export interface UnitDiff {
   ops: UnitOp[];
 }
+
+export interface CreatedUnitId {
+  localId: string;
+  unitId: string;
+}
+
+export interface UnitSaveResult {
+  createdUnitIds: CreatedUnitId[];
+}
+
+export type SaveUnits = (
+  pageId: string,
+  diff: UnitDiff,
+  saveId: string,
+) => Promise<UnitSaveResult>;
