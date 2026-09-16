@@ -426,18 +426,20 @@ describe("chapter API", () => {
       imported_unit_count: 2,
     }));
 
-    await importChapter({ chapterId: "chapter_1", content: "{}", format: "json" });
-    await importChapter({ chapterId: "chapter_1", content: "text", format: "lp" });
+    await importChapter({ chapterId: "chapter_1", content: "{}", format: "json", mode: "keep" });
+    await importChapter({
+      chapterId: "chapter_1", content: "text", format: "lp", mode: "overwrite",
+    });
 
     expect(bodyOf(fetchCallAt(importFetch, 0))).toEqual({
-      chapter_id: "chapter_1",
       content: "{}",
       format: "poprako",
+      mode: "keep",
     });
     expect(bodyOf(fetchCallAt(importFetch, 1))).toEqual({
-      chapter_id: "chapter_1",
       content: "text",
       format: "label_plus",
+      mode: "overwrite",
     });
 
     const exportFetch = installFetch(Promise.resolve(

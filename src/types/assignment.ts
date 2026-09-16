@@ -32,6 +32,7 @@ const ASSIGNMENT_ROLES: Role[] = [
   "redrawer",
   "reviewer",
   "publisher",
+  "admin",
 ];
 
 export function assignmentRoles(assignment: AssignmentInfo): Role[] {

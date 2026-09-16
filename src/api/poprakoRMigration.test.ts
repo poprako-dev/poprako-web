@@ -522,8 +522,13 @@ describe("poprako-r API migration", () => {
       imported_page_count: 1,
       imported_unit_count: 2,
     }).clone());
-    await importChapter({ chapterId: "chapter_1", content: "x", format: "lp" });
+    await importChapter({ chapterId: "chapter_1", content: "x", format: "lp", mode: "keep" });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/translations/import");
+    expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+      content: "x",
+      format: "label_plus",
+      mode: "keep",
+    });
 
     const exportFetchMock = installFetch(okJson({}));
     await exportChapter("chapter_1");

@@ -1,9 +1,10 @@
+import ComicDetailLoadState from
+  "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailLoadState";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type { ChapterInfo, UploadProgressCallbacks } from "@/types";
 import type { Result } from "@/types/utils/result";
 import { showLocalApiFailure } from "@/api/util";
 import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
-import type { MemberInfo } from "@/types/member";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
 import ComicTranslationList from "@/features/ComcList/components/business/ComicTranslationList";
 import ComicDetailModal from
@@ -17,7 +18,6 @@ import { fetchMyAssignmentComicCards } from "../../api/workspace";
 import {
   archiveComic,
   deleteComic,
-  getComic,
   updateComic,
 } from "@/features/ComicPlayground/api/comic";
 import {
@@ -41,11 +41,11 @@ import {
   upsertAssignment,
 } from "@/api/assignment";
 import type {
+  ImportChapterArgs,
   ListChapterArgs,
   WorkflowTransition,
 } from "@/features/ComicPlayground/types/chapter";
 import { roleMask, type Role } from "@/types/role";
-import { listMembers } from "@/api/member";
 import { getUser } from "@/api/user";
 import clsx from "clsx";
 import { addChapterPages } from "@/features/ComicPlayground/features/ComicDetailModal/pageUpload";
@@ -90,22 +90,24 @@ export default function Workspace() {
   const {
     selectedComic,
     selectedComicPinnedChapter,
+    detailActiveMember,
+    loadAssignableMembers,
+    isDetailOpen,
+    detailError,
+    retryComicDetail,
     urlChapterId,
     openComicDetail,
     clearComicDetail,
     navigateToTranslator,
   } = useComicDetailHost({
     returnTo: "/workspace",
-    logPrefix: "Workspace",
     showToast,
-    restoreComic: getComic,
   });
 
   const username = loginState?.userInfo.name ?? "用户";
   const selectedTeamId = useAppStore((s) => s.selectedTeamId);
   const onlineUserIds = useOnlineUserIds(selectedTeamId);
   const onlineUsers = useOnlineUsers(selectedTeamId, onlineUserIds);
-  const selectedComicTeamId = selectedComic?.workset?.teamId ?? null;
 
   const activeMember = useMemo(() => {
     if (!selectedTeamId) {return null;}
@@ -159,25 +161,6 @@ export default function Workspace() {
     [selectedTeamId, currentUserId, loginState?.userInfo, showToast],
   );
 
-  const resolveActiveMember = useCallback(() => {
-    // 1. 优先匹配漫画所属的作品集团队
-    if (selectedComicTeamId) {
-      const member = loginState?.memberInfos.find(
-        (m) => m.teamId === selectedComicTeamId,
-      );
-      if (member) {return member;}
-    }
-    // 2. fallback：全局选中的团队
-    if (selectedTeamId) {
-      const member = loginState?.memberInfos.find(
-        (m) => m.teamId === selectedTeamId,
-      );
-      if (member) {return member;}
-    }
-    // 3. 最终兜底：任一可用成员身份
-    return loginState?.memberInfos[0] ?? null;
-  }, [loginState?.memberInfos, selectedComicTeamId, selectedTeamId]);
-
   const handleLoadDetailChapters = useCallback(
     async (args: ListChapterArgs): Promise<Result<ChapterInfo[]>> => {
       return listChapters(args);
@@ -220,27 +203,6 @@ export default function Workspace() {
       return result;
     },
     [],
-  );
-
-  const handleLoadAssignableMembers = useCallback(
-    async (
-      _chapterId: string,
-      args: { role: Role; keyword?: string | undefined; offset: number; limit: number },
-    ): Promise<Result<MemberInfo[]>> => {
-      if (!selectedComicTeamId) {
-        return { success: true, data: [] };
-      }
-
-      return listMembers({
-        teamId: selectedComicTeamId,
-        offset: args.offset,
-        limit: args.limit,
-        includes: ["user"],
-        userNicknameKeyword: args.keyword,
-        role: roleMask([args.role]),
-      });
-    },
-    [selectedComicTeamId],
   );
 
   const handleAddAssignment = useCallback(
@@ -354,11 +316,7 @@ export default function Workspace() {
   );
 
   const handleImportChapter = useCallback(
-    async (args: {
-      chapterId: string;
-      content: string;
-      format: "json" | "lp";
-    }) => {
+    async (args: ImportChapterArgs) => {
       return importChapter(args);
     },
     [],
@@ -429,7 +387,7 @@ export default function Workspace() {
         return result;
       }
 
-      clearComicDetail(true);
+      clearComicDetail();
       setComicListRefreshKey((prev) => prev + 1);
 
       return result;
@@ -445,7 +403,7 @@ export default function Workspace() {
         return result;
       }
 
-      clearComicDetail(true);
+      clearComicDetail();
       setComicListRefreshKey((prev) => prev + 1);
 
       return result;
@@ -655,6 +613,13 @@ export default function Workspace() {
   return (
     <>
       <WorkspaceLayout>{workspaceBody}</WorkspaceLayout>
+      {isDetailOpen && !selectedComic && (
+        <ComicDetailLoadState
+          error={detailError}
+          onRetry={retryComicDetail}
+          onClose={clearComicDetail}
+        />
+      )}
       {selectedComic && (
         <ComicDetailModal
           key={selectedComic.id}
@@ -668,7 +633,7 @@ export default function Workspace() {
           onResolveWorkflowRecordUser={getUser}
           onTransiteWorkflow={handleTransiteWorkflow}
           onRemoveAssignment={handleRemoveRole}
-          onLoadAssignableMembers={handleLoadAssignableMembers}
+          onLoadAssignableMembers={loadAssignableMembers}
           onAddAssignment={handleAddAssignment}
           onCreateChapter={handleCreateChapter}
           onDeleteChapter={handleDeleteChapter}
@@ -684,8 +649,8 @@ export default function Workspace() {
           onDeleteComic={handleDeleteComic}
           onUpdateComic={handleUpdateComic}
           onUpdateChapter={handleUpdateChapter}
-          onResolveActiveMember={resolveActiveMember}
-          onClose={() => { clearComicDetail(true); }}
+          activeMember={detailActiveMember}
+          onClose={() => { clearComicDetail(); }}
         />
       )}
     </>

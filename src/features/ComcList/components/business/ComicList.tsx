@@ -32,7 +32,7 @@ interface Props {
     limit: number,
     mode: ViewMode,
   ) => Promise<Result<ComicInfo[]>>;
-  onComicClick?: ((comicInfo: ComicInfo) => void) | undefined;
+  onComicClick?: ((comicId: string, chapterId?: string | null) => void) | undefined;
   onCreateComic?: (() => void) | undefined;
   onChangeFuzzyTitle: (title: string) => void;
   activeFuzzyTitle?: string | undefined;
@@ -185,9 +185,9 @@ export default function ComicList({
             <ComicTranslationList
               key={`translator-${String(refreshKey)}`}
               onLoadComics={loadComicCards}
-              onComicClick={(comicInfo) => {
+              onComicClick={(comicId, chapterId) => {
                 if (window.innerWidth < 768) {setIsSidebarOpen(false);}
-                onComicClick?.(comicInfo);
+                onComicClick?.(comicId, chapterId);
               }}
             />
           )}
@@ -197,7 +197,7 @@ export default function ComicList({
               onLoadComics={loadComicProgress}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) {setIsSidebarOpen(false);}
-                onComicClick?.(comicInfo);
+                onComicClick?.(comicInfo.id, comicInfo.pinnedChapter?.id);
               }}
             />
           )}

@@ -1,3 +1,5 @@
+import ComicDetailLoadState from
+  "@/features/ComicPlayground/features/ComicDetailModal/components/business/ComicDetailLoadState";
 import { useState, useCallback } from "react";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { showLocalApiFailure } from "@/api/util";
@@ -12,7 +14,6 @@ import {
   listComics,
   createComic,
   deleteComic,
-  getComic,
   updateComic,
 } from "../../api/comic";
 import {
@@ -39,12 +40,10 @@ import {
 import type { ComicInfo, ChapterInfo, UploadProgressCallbacks } from "@/types";
 import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
 import type { Result } from "@/types/utils/result";
-import type { MemberInfo } from "@/types/member";
 import type { CreateComicArgs } from "../../types/comic";
-import type { ListChapterArgs, WorkflowTransition } from "../../types/chapter";
+import type { ImportChapterArgs, ListChapterArgs, WorkflowTransition } from "../../types/chapter";
 import type { Role } from "@/types/role";
 import { roleMask, hasRole } from "@/types/role";
-import { listMembers } from "@/api/member";
 import { getUser } from "@/api/user";
 import { addChapterPages } from "../../features/ComicDetailModal/pageUpload";
 import { useComicDetailHost } from "../../features/ComicDetailModal/hook/useComicDetailHost";
@@ -111,15 +110,18 @@ export default function ComicPlayground() {
   const {
     selectedComic,
     selectedComicPinnedChapter,
+    detailActiveMember,
+    loadAssignableMembers,
+    isDetailOpen,
+    detailError,
+    retryComicDetail,
     urlChapterId,
     openComicDetail,
     clearComicDetail,
     navigateToTranslator,
   } = useComicDetailHost({
     returnTo: "/comic-playground",
-    logPrefix: "ComicPlayground",
     showToast,
-    restoreComic: getComic,
   });
 
   const handleLoadDetailChapters = useCallback(
@@ -178,27 +180,6 @@ export default function ComicPlayground() {
   const handleLoadPages = useCallback(async (chapterId: string) => {
     return listPages({ chapterId });
   }, []);
-
-  const handleLoadAssignableMembers = useCallback(
-    async (
-      _chapterId: string,
-      args: { role: Role; keyword?: string | undefined; offset: number; limit: number },
-    ): Promise<Result<MemberInfo[]>> => {
-      if (!teamId) {
-        return { success: true, data: [] };
-      }
-
-      return listMembers({
-        teamId,
-        offset: args.offset,
-        limit: args.limit,
-        includes: ["user"],
-        userNicknameKeyword: args.keyword,
-        role: roleMask([args.role]),
-      });
-    },
-    [teamId],
-  );
 
   const handleAddAssignment = useCallback(
     async (
@@ -287,7 +268,7 @@ export default function ComicPlayground() {
   );
 
   const handleImportChapter = useCallback(
-    async (args: { chapterId: string; content: string; format: "json" | "lp" }) => {
+    async (args: ImportChapterArgs) => {
       return importChapter(args);
     },
     [],
@@ -382,7 +363,7 @@ export default function ComicPlayground() {
         return result;
       }
 
-      clearComicDetail(true);
+      clearComicDetail();
       await loadWorksets();
       setComicListRefreshKey((k) => k + 1);
 
@@ -399,7 +380,7 @@ export default function ComicPlayground() {
         return result;
       }
 
-      clearComicDetail(true);
+      clearComicDetail();
       await loadWorksets();
       setComicListRefreshKey((k) => k + 1);
 
@@ -437,10 +418,6 @@ export default function ComicPlayground() {
     return result;
   };
 
-  const resolveActiveMember = useCallback(() => {
-    return activeMember;
-  }, [activeMember]);
-
   return (
     <>
       <ComicList
@@ -470,12 +447,18 @@ export default function ComicPlayground() {
         onChangeReviewStatus={setActiveReviewStatus}
         onChangePublishStatus={setActivePublishStatus}
       />
+      {isDetailOpen && !selectedComic && (
+        <ComicDetailLoadState
+          error={detailError}
+          onRetry={retryComicDetail}
+          onClose={clearComicDetail}
+        />
+      )}
       {selectedComic && (
         <ComicDetailModal
           key={selectedComic.id}
           comicInfo={selectedComic}
           pinnedChapter={selectedComicPinnedChapter}
-          pinnedChapterAssignments={selectedComic.pinnedChapterAssignments}
           initialChapterId={urlChapterId}
           onLoadChapters={handleLoadDetailChapters}
           onLoadAssignments={handleLoadAssignments}
@@ -484,7 +467,7 @@ export default function ComicPlayground() {
           onResolveWorkflowRecordUser={getUser}
           onTransiteWorkflow={handleTransiteWorkflow}
           onRemoveAssignment={handleRemoveRole}
-          onLoadAssignableMembers={handleLoadAssignableMembers}
+          onLoadAssignableMembers={loadAssignableMembers}
           onAddAssignment={handleAddAssignment}
           onCreateChapter={handleCreateChapter}
           onDeleteChapter={handleDeleteChapter}
@@ -500,8 +483,8 @@ export default function ComicPlayground() {
           onDeleteComic={handleDeleteComic}
           onUpdateComic={handleUpdateComic}
           onUpdateChapter={handleUpdateChapter}
-          onResolveActiveMember={resolveActiveMember}
-          onClose={() => { clearComicDetail(true); }}
+          activeMember={detailActiveMember}
+          onClose={() => { clearComicDetail(); }}
         />
       )}
       {comicCreatorTeamId === teamId && isAdmin && activeWorkset && (
