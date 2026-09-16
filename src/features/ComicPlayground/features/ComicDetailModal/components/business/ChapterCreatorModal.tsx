@@ -6,7 +6,8 @@ import { useActiveTeam } from "@/hooks/useActiveTeam";
 import { roleMask, type Role } from "@/types/role";
 import type { Result } from "@/types/utils/result";
 import type { ComicInfo } from "@/types";
-import PresetAssignmentRoleSwitchGroup from "../../../../components/business/PresetAssignmentRoleSwitchGroup";
+import PresetAssignmentRoleSwitchGroup from
+  "../../../../components/business/PresetAssignmentRoleSwitchGroup";
 
 interface Props {
   comicInfo: ComicInfo;

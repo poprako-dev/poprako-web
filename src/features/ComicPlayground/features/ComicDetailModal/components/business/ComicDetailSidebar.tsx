@@ -120,7 +120,10 @@ export default function ComicDetailSidebar({
         )}
 
         {/* Hover dim overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.07] transition-colors duration-200 pointer-events-none z-1" />
+        <div className={clsx(
+          "absolute inset-0 bg-black/0 group-hover:bg-black/[0.07] transition-colors",
+          "duration-200 pointer-events-none z-1",
+        )} />
 
         {coverUpload.isUploadingCover && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
@@ -169,7 +172,10 @@ export default function ComicDetailSidebar({
               className="hidden"
               onChange={coverUpload.handleCoverFileChange}
             />
-            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+            <div className={clsx(
+              "absolute inset-0 z-10 flex items-center justify-center",
+              "pointer-events-none",
+            )}>
               <button
                 type="button"
                 onClick={() => coverInputRef.current?.click()}

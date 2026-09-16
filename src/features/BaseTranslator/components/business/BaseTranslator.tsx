@@ -53,7 +53,9 @@ import { useRelocationPreference } from
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { useSpecialChars } from "@/hook/useSpecialChars";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
-import type { SpecialCharInsertRequest } from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
+import type {
+  SpecialCharInsertRequest,
+} from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
 import type { SaveUnits } from "../../types/type";
 import type { TerminologyDataSource } from "../../types/terminology";
 import type {

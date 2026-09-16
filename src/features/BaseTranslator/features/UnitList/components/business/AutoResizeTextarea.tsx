@@ -40,7 +40,8 @@ const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, Props>(
         rows={1}
         readOnly={readOnly}
         className={cn(
-          "w-full resize-none overflow-hidden bg-transparent focus:outline-none transition-colors block",
+          "w-full resize-none overflow-hidden bg-transparent focus:outline-none",
+          "transition-colors block",
           className,
         )}
         style={{ minHeight: "1.2em" }}

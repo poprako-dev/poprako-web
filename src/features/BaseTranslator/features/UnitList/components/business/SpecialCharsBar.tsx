@@ -1,3 +1,4 @@
+import clsx from "clsx";
 /* eslint-disable @eslint-react/dom-no-missing-button-type */
 /* eslint-disable @eslint-react/no-array-index-key -- fixed symbol palette. */
 import { useSpecialChars } from "@/hook/useSpecialChars";
@@ -20,7 +21,12 @@ export default function SpecialCharsBar({ onInsert, onUseChar }: Props) {
             onUseChar?.(char);
             onInsert(char);
           }}
-          className="px-1 py-0.5 text-xs bg-gray-100 hover:bg-green-50 text-gray-500 hover:text-green-500 rounded border border-gray-200 hover:border-(--color-border-green-200) transition-colors font-mono min-w-6 text-center"
+          className={clsx(
+            "px-1 py-0.5 text-xs bg-gray-100 hover:bg-green-50 text-gray-500",
+            "hover:text-green-500 rounded border border-gray-200",
+            "hover:border-(--color-border-green-200) transition-colors font-mono",
+            "min-w-6 text-center",
+          )}
         >
           {char}
         </button>

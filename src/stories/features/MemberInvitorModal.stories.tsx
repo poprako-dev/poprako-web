@@ -242,7 +242,11 @@ export const SubmitError: Story = {
             onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
-            onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); setInvitations(prev => prev.filter(inv => inv.id !== id)); return { success: true, data: undefined }; }}
+            onDeleteInvitation={async (id) => {
+              await new Promise(r => setTimeout(r, 400));
+              setInvitations(prev => prev.filter(inv => inv.id !== id));
+              return { success: true, data: undefined };
+            }}
           />
         )}
       </div>
@@ -290,7 +294,11 @@ export const AllRoles: Story = {
             onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
-            onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); setInvitations(prev => prev.filter(inv => inv.id !== id)); return { success: true, data: undefined }; }}
+            onDeleteInvitation={async (id) => {
+              await new Promise(r => setTimeout(r, 400));
+              setInvitations(prev => prev.filter(inv => inv.id !== id));
+              return { success: true, data: undefined };
+            }}
           />
         )}
       </div>
@@ -340,7 +348,11 @@ export const LongList: Story = {
             onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
-            onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); setInvitations(prev => prev.filter(inv => inv.id !== id)); return { success: true, data: undefined }; }}
+            onDeleteInvitation={async (id) => {
+              await new Promise(r => setTimeout(r, 400));
+              setInvitations(prev => prev.filter(inv => inv.id !== id));
+              return { success: true, data: undefined };
+            }}
           />
         )}
       </div>

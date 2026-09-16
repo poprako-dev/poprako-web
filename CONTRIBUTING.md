@@ -16,9 +16,9 @@ sh scripts/ci-check.sh
 ```
 
 该入口会锁定安装依赖、执行 ESLint、运行单元测试、构建应用和 Storybook。
-修改 TypeScript/TSX 时还须遵守 100 字符行长限制；CI 对本次变更新增的行执行
-检查。`scripts/line-length-baseline.txt` 只冻结启用 CI 前的既有债务；修改基线
-需要独立说明和审查，不能用于放过新代码。
+ESLint 对全部 TypeScript/TSX 文件执行 100 字符行长检查，包括未提交的修改。
+本地运行 `deno task lint` 即可检查；完整检查与 CI 都使用同一规则，
+无需 Git 历史、基准 SHA 或额外环境变量，也没有历史代码豁免清单。
 
 Deno 2.9 是受支持的运行时和包管理工具。`AGENTS.md` 与
 `.agents/skills/` 中仍在使用的项目规则对所有变更生效。

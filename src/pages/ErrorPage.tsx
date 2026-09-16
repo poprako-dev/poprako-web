@@ -82,7 +82,8 @@ export default function ErrorPage({
       "border-2 border-emerald-300/50 px-8 py-3",
       "text-sm font-medium text-emerald-400",
       "transition-colors duration-200",
-      "hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2",
+      "hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500",
+      "focus:ring-offset-2",
     ),
 
     // 次要按钮（重试）：透明背景，简单的文字链接感

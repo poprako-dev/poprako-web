@@ -114,7 +114,8 @@ export default function ComicTranslationCard({
           </h3>
           <div
             className={clsx(
-              "flex items-center justify-center px-1.5 h-[14px] rounded-xs text-[10px] font-mono font-medium leading-none shrink-0",
+              "flex items-center justify-center px-1.5 h-[14px] rounded-xs",
+              "text-[10px] font-mono font-medium leading-none shrink-0",
               getActivityStatusColor(comicInfo.lastActiveAt),
             )}
           >

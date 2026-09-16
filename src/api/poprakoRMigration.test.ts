@@ -14,7 +14,9 @@ import { updateMemberRole, joinMember, listMembers, listMyMembers } from "@/api/
 import { markSysMailRead, listSysMails } from "@/api/sysMail";
 import { allocTeamAvatarUpload, confirmTeamAvatarUploaded } from "@/api/team";
 import { allocUserAvatarUpload, confirmUserAvatarUploaded } from "@/api/user";
-import { listChapters, updateChapter, importChapter, exportChapter } from "@/features/ComicPlayground/api/chapter";
+import {
+  listChapters, updateChapter, importChapter, exportChapter,
+} from "@/features/ComicPlayground/api/chapter";
 import {
   archiveComic,
   listComics,
@@ -105,7 +107,8 @@ describe("poprako-r API migration", () => {
       limit: 30,
     });
     expect(lastFetchCall(fetchMock).url).toBe(
-      "/api/v1/worksets/workset_1/comics?incl=workset.team&fuzzy_title=foo&stages=3903&offset=2&limit=30",
+      "/api/v1/worksets/workset_1/comics"
+      + "?incl=workset.team&fuzzy_title=foo&stages=3903&offset=2&limit=30",
     );
 
     await listMembers({

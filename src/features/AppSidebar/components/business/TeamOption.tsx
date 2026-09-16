@@ -542,7 +542,10 @@ export default function TeamOption({
           activeId={activeTeam.id}
           onSelect={onSelectTeam}
           onJoin={() => { void onJoinTeam(); }}
-          onLongPressTeam={onUpdateTeam ? (t) => { setTeamToModify(t); onToggleList(false); } : undefined}
+          onLongPressTeam={onUpdateTeam ? (t) => {
+            setTeamToModify(t);
+            onToggleList(false);
+          } : undefined}
         />
       )}
 

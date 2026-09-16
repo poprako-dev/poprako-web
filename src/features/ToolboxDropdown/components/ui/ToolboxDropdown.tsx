@@ -42,7 +42,8 @@ export default function ToolboxDropdown({ options, direction = "down" }: Props) 
           type="button"
           onClick={() => { setIsOpen(!isOpen); }}
           className={clsx(
-            "w-8 h-8 flex items-center justify-center rounded-md transition-all duration-300 border",
+            "w-8 h-8 flex items-center justify-center rounded-md transition-all",
+            "duration-300 border",
             isOpen
               ? "bg-green-50 text-gray-800 shadow-lg"
               : "bg-white border-gray-200 text-gray-700 shadow-sm",
@@ -79,7 +80,10 @@ export default function ToolboxDropdown({ options, direction = "down" }: Props) 
                   }}
                   title={item.title}
                 >
-                  <div className="transform group-hover:scale-110 group-active:scale-95 transition-transform">
+                  <div className={clsx(
+                    "transform group-hover:scale-110 group-active:scale-95",
+                    "transition-transform",
+                  )}>
                     {item.icon}
                   </div>
                 </button>
