@@ -33,6 +33,7 @@ interface Props {
   currentPageId: string;
   dataSource: UnitSearchTransformDataSource;
   onBeforeSearch: () => Promise<void>;
+  runExclusive: (operation: () => Promise<void>) => Promise<void>;
   onRefreshCurrentPage: () => Promise<void>;
   onNavigate: (pageId: string, unitId?: string) => Promise<void>;
   onClose: () => void;
@@ -50,6 +51,7 @@ export default function UnitSearchTransformDialog({
   currentPageId,
   dataSource,
   onBeforeSearch,
+  runExclusive,
   onRefreshCurrentPage,
   onNavigate,
   onClose,
@@ -148,6 +150,7 @@ export default function UnitSearchTransformDialog({
     setIsTransforming(true);
 
     try {
+      await runExclusive(async () => {
       const result = await dataSource.transform({
         part,
         origin: searchState.phrase,
@@ -184,6 +187,7 @@ export default function UnitSearchTransformDialog({
       }
 
       showToast("替换请求已完成", "success");
+      });
     } catch (error) {
       console.error("[UnitSearchTransformDialog] 替换请求异常", error);
       showLocalCaughtError(error, showToast, "替换失败，请重试");

@@ -43,6 +43,7 @@ const meta: Meta<typeof UnitSearchTransformDialog> = {
   component: UnitSearchTransformDialog,
   parameters: { layout: "fullscreen" },
   args: {
+    runExclusive: async (operation) => { await operation(); },
     pages,
     part: "translatedText",
     currentPageId: "page-1",

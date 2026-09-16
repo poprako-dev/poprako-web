@@ -26,6 +26,7 @@ interface Props {
   isHighResolution: boolean;
   isLoadingPage: boolean;
   saving: boolean;
+  saveStatus: string;
   onSwitchView: () => void;
   onRelocationClick: () => void;
   onUnitCreationClick: () => void;
@@ -57,6 +58,7 @@ export default function StatusOptionBar({
   isHighResolution,
   isLoadingPage,
   saving,
+  saveStatus,
   onSwitchView,
   onRelocationClick,
   onUnitCreationClick,
@@ -109,13 +111,14 @@ export default function StatusOptionBar({
             <CircleSlash size={18} />
           </button>
           <button
-            title="保存"
-            disabled={saving}
+            title={`保存 · ${saveStatus}`}
+            aria-label={`保存 · ${saveStatus}`}
+            disabled={isLoadingPage}
             onClick={onSaveClick}
             className={clsx(
               btnBase,
               "bg-white",
-              saving
+              isLoadingPage
                 ? "opacity-40 cursor-not-allowed"
                 : "hover:bg-stone-100",
             )}

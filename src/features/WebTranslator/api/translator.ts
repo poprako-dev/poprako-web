@@ -1,3 +1,4 @@
+import { UnitSaveProtocolError } from "@/features/BaseTranslator/hook/unitSaveMerge";
 import { api } from "@/api/util";
 import type { UnitInfo } from "@/types/unit";
 import type { PageInfo, PageUnitDiffStats } from "@/types/page";
@@ -13,7 +14,7 @@ import {
   type RawUnitEdit,
   type RawUnitInfo,
 } from "@/types/raw/unit";
-import type { UnitDiff } from "@/features/BaseTranslator/types/type";
+import type { UnitDiff, UnitSaveResult } from "@/features/BaseTranslator/types/type";
 import type {
   TranslatorCompletionStage,
 } from "@/features/BaseTranslator/types/access";
@@ -35,7 +36,7 @@ export async function listUnits(
   pageId: string,
 ): Promise<Result<ListPageUnitsResult>> {
   const res = await api.get<RawListPageUnitsResult>(
-    `/pages/${pageId}/units`,
+    `/pages/${pageId}/units`, undefined, true, AbortSignal.timeout(30_000),
   );
   if (!res.success) {return res;}
 
@@ -54,13 +55,28 @@ export async function listUnits(
 export async function saveUnits(
   pageId: string,
   diff: UnitDiff,
-): Promise<Result<undefined>> {
-  const payload = wrapUnitDiff(diff);
-
-  return api.post<undefined, RawUnitEdit[]>(
-    `/pages/${pageId}/units/save`,
-    payload,
+  saveId: string,
+): Promise<Result<UnitSaveResult>> {
+  const result = await api.post<{
+    created_unit_ids: { local_id: string; unit_id: string }[];
+  } | undefined, RawUnitEdit[]>(
+    `/pages/${pageId}/units/save`, wrapUnitDiff(diff), { save_id: saveId },
+    true, AbortSignal.timeout(30_000),
   );
+  if (!result.success) {return result;}
+  if (!Array.isArray(result.data?.created_unit_ids)) {
+    throw new UnitSaveProtocolError("保存响应缺少创建结果，请检查服务器协议");
+  }
+  return { success: true, data: {
+    createdUnitIds: result.data.created_unit_ids.map((pair: unknown) => {
+      if (typeof pair !== "object" || pair === null || !("local_id" in pair)
+        || !("unit_id" in pair) || typeof pair.local_id !== "string"
+        || typeof pair.unit_id !== "string") {
+        throw new UnitSaveProtocolError("保存响应包含无效的创建结果");
+      }
+      return { localId: pair.local_id, unitId: pair.unit_id };
+    }),
+  } };
 }
 
 export async function listPages(
