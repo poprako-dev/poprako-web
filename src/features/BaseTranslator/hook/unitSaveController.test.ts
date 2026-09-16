@@ -124,7 +124,7 @@ describe("Unit save coordination", () => {
     expect(pages.get("p1")).toHaveLength(1);
   });
 
-  test("deleting an in-flight creation deletes its permanent ID after acknowledgement", async () => {
+  test("deleting an in-flight creation deletes its acknowledged permanent ID", async () => {
     const { controller, save, backend, pages } = setup([]);
     const wait = deferred();
     save.mockImplementationOnce(async (...args) => {
@@ -215,7 +215,7 @@ describe("Unit save coordination", () => {
     expect(controller.getSnapshot().dirty).toBe(false);
   });
 
-  test("a 200-operation replacement acknowledges deletion separately before retrying creation", async () => {
+  test("a 200-op replacement acknowledges deletes before retrying creates", async () => {
     const initial = Array.from(
       { length: 100 },
       (_, index) => ({ ...unit(`old-${String(index)}`), index }),
