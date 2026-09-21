@@ -10,6 +10,7 @@ import {
   hasConflict,
 } from "../../types/types";
 import { useToastStore } from "@/components/ui/NotificationToast";
+import { isKeyboardComposing } from "@/lib/keyboard";
 
 interface Props {
   fixedShortcuts: FixedShortcut[];
@@ -32,13 +33,21 @@ export default function ShortcutPanel({
     if (recordingIndex === null) {return;}
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isKeyboardComposing(e)) {
+        recordedKeysRef.current.clear();
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
       const key = e.code.startsWith("Digit") ? e.code.slice(-1) : e.key;
       recordedKeysRef.current.add(key);
     };
 
-    const handleKeyUp = () => {
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (isKeyboardComposing(e)) {
+        recordedKeysRef.current.clear();
+        return;
+      }
       const keysArray = [...recordedKeysRef.current];
       if (keysArray.length > 0) {
         const isConflict = hasConflict(
@@ -75,6 +84,7 @@ export default function ShortcutPanel({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || isKeyboardComposing(e)) {return;}
       if (recordingIndex === null && e.key === "Escape") {
         onClose();
       }
@@ -95,7 +105,10 @@ export default function ShortcutPanel({
       onClick={onClose}
       role="button"
       tabIndex={0}
-      onKeyDown={(event) => { if (event.key === "Enter") {onClose();} }}
+      onKeyDown={(event) => {
+        if (isKeyboardComposing(event.nativeEvent)) {return;}
+        if (event.key === "Enter") {onClose();}
+      }}
     >
       <div
         className={clsx(
@@ -171,6 +184,7 @@ export default function ShortcutPanel({
                   tabIndex={0}
                   onClick={() => { setRecordingIndex(index); }}
                   onKeyDown={(event) => {
+                    if (isKeyboardComposing(event.nativeEvent)) {return;}
                     if (event.key === "Enter" || event.key === " ") {
                       setRecordingIndex(index);
                     }

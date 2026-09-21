@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { CirclePlus, Search } from "lucide-react";
 import IconInputRow from "@/components/ui/IconInputRow";
 import type { RoleFilter } from "../../types/types";
+import { isKeyboardComposing } from "@/lib/keyboard";
 
 interface Props {
   activeFuzzyName: string;
@@ -71,7 +72,7 @@ export default function MemberListFilterHeader({
   }, [activeFuzzyName]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== "Enter") {return;}
+    if (e.key !== "Enter" || isKeyboardComposing(e.nativeEvent)) {return;}
     onChangeFuzzyName(inputValue.trim());
   };
 

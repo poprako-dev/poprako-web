@@ -27,32 +27,40 @@ export default function TermEditorDialog({
   onClose,
 }: Props) {
   const [source, setSource] = useState(term?.source ?? "");
-  const [targets, setTargets] = useState(
-    term && term.targets.length > 0 ? term.targets : [""],
-  );
+  const [targets, setTargets] = useState(() => (
+    term && term.targets.length > 0 ? term.targets : [""]
+  ).map((value) => ({ id: crypto.randomUUID(), value })));
   const [comment, setComment] = useState(term?.comment ?? "");
   const [hasTouchedTargets, setHasTouchedTargets] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = term !== undefined;
 
-  const targetError = useMemo(() => validateTermTargets(targets), [targets]);
+  const targetError = useMemo(
+    () => validateTermTargets(targets.map((target) => target.value)),
+    [targets],
+  );
   const visibleTargetError = hasTouchedTargets ? targetError : undefined;
   const isValid = source.trim().length > 0 && !targetError;
 
-  const handleTargetChange = (index: number, value: string) => {
+  function handleTargetChange(id: string, value: string) {
     setHasTouchedTargets(true);
-    setTargets((current) => current.map((target, targetIndex) => (
-      targetIndex === index ? value : target
+    setTargets((current) => current.map((target) => (
+      target.id === id ? { ...target, value } : target
     )));
-  };
+  }
+
+  function handleAddTarget() {
+    const target = { id: crypto.randomUUID(), value: "" };
+    setTargets((current) => [...current, target]);
+  }
 
   const handleSave = async () => {
     if (!isValid || isSubmitting) {return;}
     setIsSubmitting(true);
     const isSuccess = await onSave({
       source: source.trim(),
-      targets: targets.map((target) => target.trim()),
+      targets: targets.map((target) => target.value.trim()),
       comment: comment.trim() || undefined,
     });
     setIsSubmitting(false);
@@ -161,7 +169,7 @@ export default function TermEditorDialog({
             <button
               type="button"
               disabled={isSubmitting}
-              onClick={() => { setTargets((current) => [...current, ""]); }}
+              onClick={handleAddTarget}
               className={clsx(
                 "flex h-6 items-center gap-1 rounded-md px-1.5",
                 "text-[10px] text-slate-400 hover:bg-green-50 hover:text-green-600",
@@ -173,17 +181,17 @@ export default function TermEditorDialog({
           </div>
           <div className="space-y-1.5">
             {targets.map((target, index) => (
-              <div key={`${target}-${String(index)}`} className="flex items-center gap-1">
+              <div key={target.id} className="flex items-center gap-1">
                 <input
                   aria-label={`译名 ${String(index + 1)}`}
-                  value={target}
+                  value={target.value}
                   disabled={isSubmitting}
-                  onChange={(event) => { handleTargetChange(index, event.target.value); }}
+                  onChange={(event) => { handleTargetChange(target.id, event.target.value); }}
                   onBlur={() => { setHasTouchedTargets(true); }}
                   className={clsx(
                     "h-8 min-w-0 flex-1 rounded-md border bg-white px-2.5",
                     "text-sm text-slate-700 shadow-sm shadow-slate-100 outline-none",
-                    visibleTargetError && target.trim().length === 0
+                    visibleTargetError && target.value.trim().length === 0
                       ? "border-red-200"
                       : "border-slate-200 focus:border-slate-300",
                   )}
@@ -223,7 +231,7 @@ export default function TermEditorDialog({
                   aria-label={`删除译名 ${String(index + 1)}`}
                   disabled={isSubmitting || targets.length === 1}
                   onClick={() => { setTargets((current) => (
-                    current.filter((_, targetIndex) => targetIndex !== index)
+                    current.filter((item) => item.id !== target.id)
                   )); }}
                   className={clsx(
                     "flex size-7 items-center justify-center rounded-md text-slate-400",

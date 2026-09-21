@@ -290,7 +290,7 @@ export const EditTermbaseByLongPress: Story = {
     await waitFor(async () => {
       await expect(page.getByRole("dialog", { name: "编辑术语库" })).toBeVisible();
     });
-    await userEvent.click(page.getByRole("button", { name: "删除术语库" }));
+    await userEvent.click(page.getByRole("button", { name: "删除" }));
     await expect(page.getByRole("dialog", { name: "删除术语库" })).toBeVisible();
     await expect(page.getByText("删除后，其中全部术语也会一并删除。")).toBeVisible();
   },
@@ -307,10 +307,16 @@ export const CreateTerm: Story = {
     await userEvent.click(await canvas.findByRole("button", { name: "新建术语" }));
     await userEvent.type(page.getByRole("textbox", { name: "原文" }), "副団長");
     await userEvent.type(page.getByRole("textbox", { name: "译名 1" }), "副团长");
+    await expect(page.getByRole("textbox", { name: "译名 1" })).toHaveValue("副团长");
+    await userEvent.type(page.getByRole("textbox", { name: "备注" }), "完整备注");
     await userEvent.click(page.getByRole("button", { name: "保存" }));
     await waitFor(async () => {
       await expect(canvas.getByText("副団長")).toBeVisible();
+      await expect(canvas.getByText("副团长")).toBeVisible();
     }, { timeout: 3000 });
+    await longPress(canvas.getByText("副団長"));
+    await expect(page.getByRole("textbox", { name: "译名 1" })).toHaveValue("副团长");
+    await expect(page.getByRole("textbox", { name: "备注" })).toHaveValue("完整备注");
   },
 };
 

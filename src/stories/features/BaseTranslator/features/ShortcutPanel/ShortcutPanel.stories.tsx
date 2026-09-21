@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, userEvent, within } from "storybook/test";
+import { expect, fireEvent, fn, userEvent, within } from "storybook/test";
 import ShortcutPanel from "@/features/BaseTranslator/features/ShortcutPanel";
 
 const meta: Meta<typeof ShortcutPanel> = {
@@ -45,5 +45,26 @@ export const RecordEnter: Story = {
       args.configurableShortcuts[1],
     ]);
     await expect(args.onClose).not.toHaveBeenCalled();
+  },
+};
+
+export const IgnoreComposition: Story = {
+  play: async ({ args, canvasElement }) => {
+    const panel = within(canvasElement.ownerDocument.body);
+    const shortcut = panel.getByRole("button", { name: "CTRL + S" });
+    await userEvent.click(shortcut);
+    for (const key of ["a", "Enter", "Escape"]) {
+      await fireEvent.keyDown(shortcut, { key, isComposing: true });
+      await fireEvent.keyUp(shortcut, { key, isComposing: true });
+      await fireEvent.keyDown(shortcut, { key, keyCode: 229 });
+      await fireEvent.keyUp(shortcut, { key, keyCode: 229 });
+    }
+    await expect(args.onUpdateConfigurableShortcuts).not.toHaveBeenCalled();
+    await expect(args.onClose).not.toHaveBeenCalled();
+    await userEvent.keyboard("{Control>}k{/Control}");
+    await expect(args.onUpdateConfigurableShortcuts).toHaveBeenCalledWith([
+      { action: "save", label: "保存", keys: ["Control", "k"] },
+      args.configurableShortcuts[1],
+    ]);
   },
 };

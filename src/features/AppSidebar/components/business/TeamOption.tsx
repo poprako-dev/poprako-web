@@ -13,6 +13,7 @@ import { useActiveTeam } from "@/hooks/useActiveTeam";
 import { hasRole } from "@/types/role";
 import TeamModifierModal from "./TeamModifierModal";
 import type { Result } from "@/types/utils/result";
+import { isKeyboardComposing } from "@/lib/keyboard";
 
 interface Props {
   teams: TeamConfig[];
@@ -202,6 +203,7 @@ function TeamList({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (isKeyboardComposing(e.nativeEvent)) {return;}
     if (e.key === "Enter") {void handleJoin();}
   };
 

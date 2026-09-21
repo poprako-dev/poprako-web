@@ -8,7 +8,7 @@ export function validateTermTargets(targets: string[]) {
   return unique.size === normalized.length ? undefined : "译名不能重复";
 }
 
-export function moveTermTarget(items: string[], from: number, to: number) {
+export function moveTermTarget<T>(items: T[], from: number, to: number) {
   const next = [...items];
   const [item] = next.splice(from, 1);
   if (item === undefined) {return items;}

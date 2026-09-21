@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import clsx from "clsx";
+import { isKeyboardComposing } from "@/lib/keyboard";
 
 export interface PageStat {
   pageId: string;
@@ -164,7 +165,7 @@ export default function Paginator({
                   )}
                   onBlur={(e) => { commitInput(e.target.value); }}
                   onKeyDown={(e) => {
-                    if (e.key !== "Enter") {
+                    if (e.key !== "Enter" || isKeyboardComposing(e.nativeEvent)) {
                       return;
                     }
 

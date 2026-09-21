@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { expect, fireEvent, fn, userEvent, within } from "storybook/test";
 import CommentChatBox from
   "../../features/Workspace/components/business/CommentChatBox";
 import type { CommentInfo } from "../../types/comment";
@@ -92,6 +92,21 @@ const meta: Meta<typeof CommentChatBox> = {
 
 export default meta;
 type Story = StoryObj<typeof CommentChatBox>;
+
+export const CompositionDoesNotSend: Story = {
+  args: { comments: [], loading: false, onSend: fn().mockResolvedValue(undefined) },
+  play: async ({ args, canvasElement }) => {
+    const input = within(canvasElement).getByRole("textbox");
+    await userEvent.type(input, "输入中的留言");
+    await fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+    await fireEvent.keyDown(input, { key: "Enter", keyCode: 229 });
+    await expect(args.onSend).not.toHaveBeenCalled();
+    await expect(input).toHaveValue("输入中的留言");
+    await expect(input).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(args.onSend).toHaveBeenCalledWith("输入中的留言");
+  },
+};
 
 export const WithMessages: Story = {
   args: {
