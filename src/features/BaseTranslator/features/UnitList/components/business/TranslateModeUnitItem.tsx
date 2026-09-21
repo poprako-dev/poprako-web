@@ -123,7 +123,7 @@ export default function TranslateModeUnitItem({
       contributors={translator ? [{ role: "translator", user: translator }] : []}
       dataUnitId={dataUnitId}
     >
-      <div className="flex items-center gap-1">
+      <div className="flex items-start gap-1">
         <div data-unit-contributor-trigger className="min-w-0 flex-1">
           <AutoResizeTextarea
             ref={inputRef}

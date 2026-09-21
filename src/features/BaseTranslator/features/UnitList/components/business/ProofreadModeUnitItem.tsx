@@ -143,7 +143,7 @@ export default function ProofreadModeUnitItem({
     >
       <div className="flex flex-col">
         {/* 初翻文本（只读展示） */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-start gap-1">
           <div data-unit-contributor-trigger className="min-w-0 flex-1">
             <AutoResizeTextarea
               value={unitTranslatedText(unit) ?? undefined}
