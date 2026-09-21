@@ -53,6 +53,7 @@ function mergeUnit(base: UnitInfo, local: UnitInfo, remote: UnitInfo): UnitInfo 
     xCoord: local.xCoord === base.xCoord ? remote.xCoord : local.xCoord,
     yCoord: local.yCoord === base.yCoord ? remote.yCoord : local.yCoord,
     isBubble: local.isBubble === base.isBubble ? remote.isBubble : local.isBubble,
+    isFlagged: local.isFlagged === base.isFlagged ? remote.isFlagged : local.isFlagged,
     isProofread: local.isProofread === base.isProofread ? remote.isProofread : local.isProofread,
     translatedText: hasTranslationChanged ? local.translatedText : remote.translatedText,
     translatorId: hasTranslationChanged ? local.translatorId : remote.translatorId,

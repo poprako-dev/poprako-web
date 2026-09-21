@@ -16,6 +16,7 @@ const localUnit: UnitInfo = {
   yCoord: 0.2,
   index: 0,
   isBubble: true,
+  isFlagged: false,
   isProofread: false,
 };
 
@@ -109,6 +110,7 @@ describe("unit diff", () => {
           localId: "local_new",
           nextId: "unit_a",
           isBubble: true,
+          isFlagged: false,
           coord: { xCoord: 0.1, yCoord: 0.2 },
         },
       ],

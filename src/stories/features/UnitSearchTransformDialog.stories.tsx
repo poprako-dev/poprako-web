@@ -27,6 +27,7 @@ function makeMatch(index: number): UnitSearchMatch {
     xCoord: 0.2,
     yCoord: 0.3,
     isBubble: index % 2 === 0,
+    isFlagged: false,
     isProofread: false,
     translatedText: index % 2 === 0
       ? "这是一段需要替换的旧词，旧词会被逐处标出。"

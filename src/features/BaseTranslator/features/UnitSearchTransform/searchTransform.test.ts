@@ -41,6 +41,7 @@ function makeMatch(
     xCoord: 0.5,
     yCoord: 0.5,
     isBubble: true,
+    isFlagged: false,
     isProofread: false,
     translatedText,
   };

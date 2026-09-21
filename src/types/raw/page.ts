@@ -1,11 +1,26 @@
 import type {
   PageInfo,
   PageUnitDiffStats,
+  PageUnitFlaggedStats,
   AllocatedPage,
   AllocChapterPagesArgs,
   AllocChapterPagesResult,
 } from "../page";
 import { ensureHttpsUrl } from "@/utils/url";
+
+export interface RawPageUnitFlaggedStats {
+  page_id: string;
+  index: number;
+  flagged_unit_count: number;
+}
+
+export function unwrapRawPageUnitFlaggedStats(raw: RawPageUnitFlaggedStats): PageUnitFlaggedStats {
+  return {
+    pageId: raw.page_id,
+    index: raw.index,
+    flaggedUnitCount: raw.flagged_unit_count,
+  };
+}
 
 export interface RawPageUnitDiffStats {
   page_id: string;

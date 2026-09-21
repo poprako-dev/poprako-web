@@ -12,6 +12,7 @@ function unit(id = "existing", text = "before"): UnitInfo {
     xCoord: 0.1,
     yCoord: 0.2,
     isBubble: true,
+    isFlagged: false,
     isProofread: false,
     translatedText: text,
   };

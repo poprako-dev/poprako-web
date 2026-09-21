@@ -16,7 +16,8 @@ import {
   Loader2,
   ReplaceAll,
 } from "lucide-react";
-import Paginator from "@/components/ui/Paginator";
+import TranslatorPaginator from
+  "../../features/PageUnitStats/components/business/TranslatorPaginator";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import ToolboxDropdown from "@/features/ToolboxDropdown";
 import {
@@ -34,7 +35,7 @@ import {
 } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 import type { Project } from "@/types/project";
-import type { PageImageQuality, PageUnitDiffStats } from "@/types/page";
+import type { PageImageQuality, PageUnitDiffStats, PageUnitFlaggedStats } from "@/types/page";
 import Canvas, {
   type CanvasHandle,
 } from "@/features/BaseTranslator/features/Canvas";
@@ -94,6 +95,7 @@ interface Props {
   onResolveUser: UnitUserResolver;
   onCompleteStage: (stage: TranslatorCompletionStage) => Promise<void>;
   onListPageUnitDiffStats: () => Promise<PageUnitDiffStats[]>;
+  onListPageUnitFlaggedStats: () => Promise<PageUnitFlaggedStats[]>;
   onExit: () => void;
   currentUserId: string;
   canTranslate: boolean;
@@ -124,6 +126,7 @@ export default function BaseTranslator({
   onResolveUser,
   onCompleteStage,
   onListPageUnitDiffStats,
+  onListPageUnitFlaggedStats,
   onExit,
   currentUserId,
   canTranslate,
@@ -383,6 +386,15 @@ export default function BaseTranslator({
 
   function handleModifyUnit(targetUnitId: string, updates: UnitEdit) {
     if (isLoadingPage || isCompletingStage) {return;}
+    if (updates.isFlagged !== undefined && Object.keys(updates).length === 1) {
+      commitUnits(
+        unitBufRef.current.map((unit) =>
+          unitId(unit) === targetUnitId ? applyUnitUpdates(unit, updates) : unit,
+        ),
+        setUnitBuf,
+      );
+      return;
+    }
     const nextUpdates = { ...updates };
     const currentUnit = unitBufRef.current.find(
       (unit) => unitId(unit) === targetUnitId,
@@ -715,17 +727,14 @@ export default function BaseTranslator({
         </div>
       )}
       <div className="absolute top-2 right-2">
-        <Paginator
-          currPageIndex={pageIndex}
-          totalPageCount={project.pages.length}
-          onPageIndexChange={handleNavigate}
-          onPageUp={() => handleNavigate(pageIndex - 1)}
-          onPageDown={() => handleNavigate(pageIndex + 1)}
-          pageStats={project.pages.map((p) => ({
-            totalUnits: p.totalUnitCount,
-            translatedUnits: p.translatedUnitCount,
-            proofreadUnits: p.proofreadUnitCount,
-          }))}
+        <TranslatorPaginator
+          key={`${project.id}-${String(isReadOnly)}`}
+          pages={project.pages}
+          currentPageIndex={pageIndex}
+          currentUnits={isLoadingPage ? undefined : unitBuf}
+          isEnabled={!isReadOnly}
+          onLoad={onListPageUnitFlaggedStats}
+          onNavigate={handleNavigate}
         />
       </div>
     </div>

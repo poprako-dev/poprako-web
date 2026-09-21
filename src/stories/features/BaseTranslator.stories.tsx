@@ -14,7 +14,7 @@ import type {
   TerminologyDataSource,
   UnitSearchTransformDataSource,
 } from "@/features/BaseTranslator";
-import { expect, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 
 const DEMO_IMAGE =
   "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80";
@@ -27,6 +27,7 @@ const mockUnits = ([
     id: "1",
     index: 0,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.22,
     yCoord: 0.18,
     isProofread: false,
@@ -36,6 +37,7 @@ const mockUnits = ([
     id: "2",
     index: 1,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.65,
     yCoord: 0.28,
     isProofread: false,
@@ -44,6 +46,7 @@ const mockUnits = ([
     id: "3",
     index: 2,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.38,
     yCoord: 0.52,
     isProofread: true,
@@ -54,6 +57,7 @@ const mockUnits = ([
     id: "4",
     index: 3,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.72,
     yCoord: 0.62,
     isProofread: false,
@@ -63,6 +67,7 @@ const mockUnits = ([
     id: "5",
     index: 4,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.48,
     yCoord: 0.8,
     isProofread: false,
@@ -71,6 +76,7 @@ const mockUnits = ([
     id: "6",
     index: 5,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.12,
     yCoord: 0.12,
     isProofread: false,
@@ -80,6 +86,7 @@ const mockUnits = ([
     id: "7",
     index: 6,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.28,
     yCoord: 0.2,
     isProofread: false,
@@ -88,6 +95,7 @@ const mockUnits = ([
     id: "8",
     index: 7,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.54,
     yCoord: 0.33,
     isProofread: false,
@@ -97,6 +105,7 @@ const mockUnits = ([
     id: "9",
     index: 8,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.41,
     yCoord: 0.45,
     isProofread: true,
@@ -107,6 +116,7 @@ const mockUnits = ([
     id: "10",
     index: 9,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.62,
     yCoord: 0.5,
     isProofread: false,
@@ -115,6 +125,7 @@ const mockUnits = ([
     id: "11",
     index: 10,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.33,
     yCoord: 0.6,
     isProofread: false,
@@ -124,6 +135,7 @@ const mockUnits = ([
     id: "12",
     index: 11,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.7,
     yCoord: 0.22,
     isProofread: false,
@@ -132,6 +144,7 @@ const mockUnits = ([
     id: "13",
     index: 12,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.18,
     yCoord: 0.7,
     isProofread: true,
@@ -142,6 +155,7 @@ const mockUnits = ([
     id: "14",
     index: 13,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.9,
     yCoord: 0.4,
     isProofread: false,
@@ -151,6 +165,7 @@ const mockUnits = ([
     id: "15",
     index: 14,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.44,
     yCoord: 0.88,
     isProofread: false,
@@ -159,6 +174,7 @@ const mockUnits = ([
     id: "16",
     index: 15,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.2,
     yCoord: 0.3,
     isProofread: false,
@@ -167,6 +183,7 @@ const mockUnits = ([
     id: "17",
     index: 16,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.6,
     yCoord: 0.12,
     isProofread: false,
@@ -176,6 +193,7 @@ const mockUnits = ([
     id: "18",
     index: 17,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.27,
     yCoord: 0.44,
     isProofread: false,
@@ -184,6 +202,7 @@ const mockUnits = ([
     id: "19",
     index: 18,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.5,
     yCoord: 0.5,
     isProofread: true,
@@ -194,6 +213,7 @@ const mockUnits = ([
     id: "20",
     index: 19,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.66,
     yCoord: 0.66,
     isProofread: false,
@@ -202,6 +222,7 @@ const mockUnits = ([
     id: "21",
     index: 20,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.11,
     yCoord: 0.2,
     isProofread: false,
@@ -211,6 +232,7 @@ const mockUnits = ([
     id: "22",
     index: 21,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.35,
     yCoord: 0.27,
     isProofread: false,
@@ -219,6 +241,7 @@ const mockUnits = ([
     id: "23",
     index: 22,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.46,
     yCoord: 0.32,
     isProofread: false,
@@ -228,6 +251,7 @@ const mockUnits = ([
     id: "24",
     index: 23,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.58,
     yCoord: 0.42,
     isProofread: true,
@@ -238,6 +262,7 @@ const mockUnits = ([
     id: "25",
     index: 24,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.78,
     yCoord: 0.55,
     isProofread: false,
@@ -246,6 +271,7 @@ const mockUnits = ([
     id: "26",
     index: 25,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.49,
     yCoord: 0.74,
     isProofread: false,
@@ -254,6 +280,7 @@ const mockUnits = ([
     id: "27",
     index: 26,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.36,
     yCoord: 0.82,
     isProofread: false,
@@ -263,6 +290,7 @@ const mockUnits = ([
     id: "28",
     index: 27,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.82,
     yCoord: 0.2,
     isProofread: false,
@@ -271,6 +299,7 @@ const mockUnits = ([
     id: "29",
     index: 28,
     isBubble: true,
+    isFlagged: false,
     xCoord: 0.14,
     yCoord: 0.58,
     isProofread: false,
@@ -279,6 +308,7 @@ const mockUnits = ([
     id: "30",
     index: 29,
     isBubble: false,
+    isFlagged: false,
     xCoord: 0.95,
     yCoord: 0.92,
     isProofread: true,
@@ -532,6 +562,11 @@ function createStoryArgs({
     onSaveUnits: createUnitSaveFixture(unitsByPage),
     onResolveUser: mockResolveUser,
     onCompleteStage: mockCompleteStage,
+    onListPageUnitFlaggedStats: () => Promise.resolve(mockProject.pages.map((page) => ({
+      pageId: page.id,
+      index: page.index,
+      flaggedUnitCount: (unitsByPage.get(page.id) ?? []).filter((unit) => unit.isFlagged).length,
+    })).filter((stat) => stat.flaggedUnitCount > 0)),
     // eslint-disable-next-line @typescript-eslint/require-await
     onListPageUnitDiffStats: async () => ["page-2", "page-3"].map((pageId, index) => ({
       pageId,
@@ -694,6 +729,7 @@ export const AutoSaveRace: Story = {
         xCoord: 0.1 + (index % 10) * 0.08,
         yCoord: 0.1 + Math.floor(index / 10) * 0.08,
         isBubble: true,
+        isFlagged: false,
         isProofread: false,
         translatedText: `文本 ${String(index)}`,
       })),
@@ -715,4 +751,54 @@ export const AutoSaveRace: Story = {
       },
     };
   })(),
+};
+
+export const FlaggedSave: Story = {
+  args: (() => {
+    const args = createStoryArgs({
+      canTranslate: true,
+      canProofread: false,
+      units: [{
+        id: "flag-test", index: 0, xCoord: 0.2, yCoord: 0.3,
+        isBubble: true, isFlagged: false, isProofread: false,
+        translatedText: "需要确认的译文",
+      }],
+    });
+    return {
+      ...args,
+      onSaveUnits: fn(args.onSaveUnits),
+      onLoadPageImage: () => Promise.resolve(
+        "data:image/svg+xml," + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"/>',
+        ),
+      ),
+    };
+  })(),
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const star = await canvas.findByRole("button", { name: "标记待回看" });
+    await waitFor(async () => {await expect(star).toBeEnabled();});
+    await userEvent.click(star);
+    await expect(canvas.getByRole("button", { name: "保存 · 待保存" })).toBeEnabled();
+    await userEvent.click(canvas.getByRole("button", { name: "Next page" }));
+    await waitFor(async () => {
+      await expect(args.onSaveUnits).toHaveBeenCalledTimes(1);
+      await expect(canvas.getByRole("button", { name: "Previous page" })).toBeEnabled();
+    });
+    await userEvent.click(canvas.getByRole("button", { name: "Open page list" }));
+    await expect(await canvas.findByLabelText("1 个待回看的标记")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Close page list" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Previous page" }));
+    const restored = await canvas.findByRole("button", { name: "取消标记" });
+    await waitFor(async () => {await expect(restored).toBeEnabled();});
+    await userEvent.click(restored);
+    await userEvent.click(canvas.getByRole("button", { name: "保存 · 待保存" }));
+    await waitFor(async () => {
+      await expect(canvas.getByRole("button", { name: "保存 · 已保存" })).toBeEnabled();
+    });
+    const units = await args.onLoadUnits("page-1");
+    await expect(units[0]).toMatchObject({ isFlagged: false, translatedText: "需要确认的译文" });
+    await expect(units[0]?.translatorId).toBeUndefined();
+    await expect(units[0]?.proofreaderId).toBeUndefined();
+  },
 };

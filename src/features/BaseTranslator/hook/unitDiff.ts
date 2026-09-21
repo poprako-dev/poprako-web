@@ -50,6 +50,7 @@ function buildCreateUnitOp(
     localId: unitId(unit),
     nextId: nextId ?? undefined,
     isBubble: unit.isBubble,
+    isFlagged: unit.isFlagged,
     coord: buildUnitCoord(unit),
     translation: buildUnitTranslation(unit),
     revision: buildUnitRevision(unit),
@@ -72,6 +73,7 @@ function buildPatchUnitOp(
   if (nextId !== undefined) {
     edit.nextId = nextId === null ? clearPatch() : assignPatch(nextId);
   }
+  if (unit.isFlagged !== baseline.isFlagged) {edit.isFlagged = unit.isFlagged;}
   if (unit.isBubble !== baseline.isBubble) {edit.isBubble = unit.isBubble;}
   if (unit.xCoord !== baseline.xCoord || unit.yCoord !== baseline.yCoord) {
     edit.coord = buildUnitCoord(unit);
@@ -108,6 +110,7 @@ function nextUnitId(
 function isEmptyPatch(edit: UnitPatchOp): boolean {
   return edit.nextId.type === "skip" &&
     edit.isBubble === undefined &&
+    edit.isFlagged === undefined &&
     edit.coord === undefined &&
     edit.translation.type === "skip" &&
     edit.revision.type === "skip";

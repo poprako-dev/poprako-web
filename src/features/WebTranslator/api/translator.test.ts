@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
   listPageUnitDiffStats,
+  listPageUnitFlaggedStats,
   searchChapterUnits,
   transformChapterUnits,
 } from "./translator";
@@ -15,6 +16,29 @@ function okJson(data: unknown) {
 describe("chapter unit search and transform API", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+  });
+
+  test("unwraps sparse flag statistics without changing page identity or index", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okJson([
+      { page_id: "page-5", index: 4, flagged_unit_count: 3 },
+    ]));
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await listPageUnitFlaggedStats("chapter-1")).toEqual({
+      success: true,
+      data: [{ pageId: "page-5", index: 4, flaggedUnitCount: 3 }],
+    });
+    expect(String(fetchMock.mock.calls[0]?.[0]))
+      .toBe("/api/v1/chapters/chapter-1/pages/unit-flagged-stats");
+  });
+
+  test("keeps empty and failed flag statistics distinct", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(okJson([])));
+    expect(await listPageUnitFlaggedStats("chapter-1")).toEqual({ success: true, data: [] });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json(
+      { message: "无权访问章节" }, { status: 403 },
+    )));
+    expect(await listPageUnitFlaggedStats("chapter-1"))
+      .toMatchObject({ success: false, httpStatus: 403 });
   });
 
   test("unwraps page diff statistics with original page indexes", async () => {
@@ -78,6 +102,7 @@ describe("chapter unit search and transform API", () => {
       id: "unit-1",
       page_id: "page-2",
       is_bubble: true,
+      is_flagged: false,
       is_proofread: false,
       x_coord: 0.1,
       y_coord: 0.2,

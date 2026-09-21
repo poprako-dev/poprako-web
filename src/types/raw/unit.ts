@@ -18,6 +18,7 @@ export interface RawUnitInfo {
   y_coord: number;
 
   is_bubble: boolean;
+  is_flagged: boolean;
 
   translated_text?: string | undefined;
   last_translator_id?: string | undefined;
@@ -39,6 +40,7 @@ export function unwrapRawUnitInfo(raw: RawUnitInfo): UnitInfo {
     yCoord: raw.y_coord,
     index: 0,
     isBubble: raw.is_bubble,
+    isFlagged: raw.is_flagged,
     translatedText: raw.translated_text,
     translatorId: raw.last_translator_id,
     isProofread: raw.is_proofread,
@@ -120,6 +122,7 @@ export interface RawUnitCreateEdit {
   local_id: string;
   next_id?: string | undefined;
   is_bubble: boolean;
+  is_flagged: boolean;
   coord: RawUnitCoord;
   translation?: RawUnitTranslation | undefined;
   revision?: RawUnitRevision | undefined;
@@ -130,6 +133,7 @@ export interface RawUnitPatchEdit {
   id: string;
   next_id?: RawPatch<string> | undefined;
   is_bubble?: boolean | undefined;
+  is_flagged?: boolean | undefined;
   coord?: RawUnitCoord | undefined;
   translation?: RawPatch<RawUnitTranslation> | undefined;
   revision?: RawPatch<RawUnitRevision> | undefined;
@@ -172,6 +176,7 @@ function wrapCreateUnitEdit(op: UnitCreateOp): RawUnitCreateEdit {
     local_id: op.localId,
     next_id: op.nextId,
     is_bubble: op.isBubble,
+    is_flagged: op.isFlagged,
     coord: wrapUnitCoord(op.coord),
     translation: op.translation && { translated_text: op.translation.translatedText },
     revision: op.revision && {
@@ -187,6 +192,7 @@ function wrapPatchUnitEdit(op: UnitPatchOp): RawUnitPatchEdit {
     id: op.id,
     next_id: wrapPatch(op.nextId, (value) => value),
     is_bubble: op.isBubble,
+    is_flagged: op.isFlagged,
     coord: op.coord && wrapUnitCoord(op.coord),
     translation: wrapPatch(
       op.translation,

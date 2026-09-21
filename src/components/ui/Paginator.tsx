@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState, useCallback, useRef, type ReactNode } from "react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import clsx from "clsx";
 
 export interface PageStat {
+  pageId: string;
+  flaggedUnits?: number | undefined;
   totalUnits: number;
   translatedUnits: number;
   proofreadUnits: number;
@@ -19,6 +21,8 @@ interface Props {
   onPageDown: () => void;
   // 每页的 unit 统计，提供后中间区域变为可点击并展开页列表下拉
   pageStats?: PageStat[] | undefined;
+  onPageListOpenChange?: ((isOpen: boolean) => void) | undefined;
+  pageListFooter?: ReactNode;
 }
 
 export default function Paginator({
@@ -28,6 +32,8 @@ export default function Paginator({
   onPageUp,
   onPageDown,
   pageStats,
+  onPageListOpenChange,
+  pageListFooter,
 }: Props) {
   const displayPage = Math.max(0, Math.min(totalPageCount, currPageIndex + 1));
   const isFirst = currPageIndex <= 0;
@@ -35,6 +41,10 @@ export default function Paginator({
 
   const [inputValue, setInputValue] = useState(displayPage.toString());
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const changeOpen = useCallback((isOpen: boolean) => {
+    setIsDropdownOpen(isOpen);
+    onPageListOpenChange?.(isOpen);
+  }, [onPageListOpenChange]);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -50,12 +60,12 @@ export default function Paginator({
         containerRef.current &&
         !containerRef.current.contains(e.target as Node)
       ) {
-        setIsDropdownOpen(false);
+        changeOpen(false);
       }
     };
     document.addEventListener("pointerdown", handlePointerDown);
     return () => { document.removeEventListener("pointerdown", handlePointerDown); };
-  }, [isDropdownOpen]);
+  }, [isDropdownOpen, changeOpen]);
 
   useEffect(() => {
     if (!isDropdownOpen || !dropdownRef.current) {return;}
@@ -122,7 +132,7 @@ export default function Paginator({
             {pageStats ? (
               <button
                 type="button"
-                onClick={() => { setIsDropdownOpen((v) => !v); }}
+                onClick={() => { changeOpen(!isDropdownOpen); }}
                 aria-label="Open page list"
                 aria-expanded={isDropdownOpen}
                 className={clsx(
@@ -213,7 +223,8 @@ export default function Paginator({
               "bg-white/95 backdrop-blur-md",
               "rounded-sm shadow-2xl border border-black/5",
               "max-h-60 overflow-y-auto",
-              "w-44",
+              "max-w-[calc(100vw-1rem)]",
+              pageStats.some((stat) => stat.flaggedUnits !== undefined) ? "w-56" : "w-44",
             )}
           >
             {pageStats.map((stat, idx) => {
@@ -226,10 +237,10 @@ export default function Paginator({
               return (
               <button
                 type="button"
-                key={JSON.stringify(stat)}
+                key={stat.pageId}
                 onClick={() => {
                   onPageIndexChange?.(idx);
-                  setIsDropdownOpen(false);
+                  changeOpen(false);
                 }}
                 className={clsx(
                   "w-full flex items-center justify-between px-3 py-1.5",
@@ -241,6 +252,16 @@ export default function Paginator({
                 <span className="flex items-center gap-1.5">
                   <span className={clsx("w-1.5 h-1.5 rounded-full shrink-0", dotColor)} />
                   <span className="text-stone-700 font-medium">P{idx + 1}</span>
+                  {stat.flaggedUnits !== undefined && stat.flaggedUnits > 0 && (
+                    <span
+                      title={`${String(stat.flaggedUnits)} 个待回看的标记`}
+                      aria-label={`${String(stat.flaggedUnits)} 个待回看的标记`}
+                      className="flex items-center gap-0.5 text-[var(--color-yellow-500)]"
+                    >
+                      <Star size={12} fill="currentColor" aria-hidden="true" />
+                      {stat.flaggedUnits}
+                    </span>
+                  )}
                 </span>
                 <span className="flex items-center font-mono text-[11px]">
                   <span className="text-stone-400">{stat.totalUnits}</span>
@@ -252,6 +273,7 @@ export default function Paginator({
               </button>
               );
             })}
+            {pageListFooter}
           </div>
         )}
       </div>
@@ -260,7 +282,7 @@ export default function Paginator({
           type="button"
           aria-label="Close page list"
           className="fixed inset-0 z-40 bg-black/25"
-          onClick={() => { setIsDropdownOpen(false); }}
+          onClick={() => { changeOpen(false); }}
         />
       )}
     </>
