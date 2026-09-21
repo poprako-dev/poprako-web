@@ -31,6 +31,7 @@ function makeUnit(
     xCoord: 0,
     yCoord: 0,
     isBubble: true,
+    isFlagged: false,
     isProofread: false,
     translatorId,
     proofreaderId,

@@ -23,6 +23,7 @@ export interface UnitCreateOp {
   localId: string;
   nextId?: string | undefined;
   isBubble: boolean;
+  isFlagged: boolean;
   coord: UnitCoord;
   translation?: UnitTranslation | undefined;
   revision?: UnitRevision | undefined;
@@ -33,6 +34,7 @@ export interface UnitPatchOp {
   id: string;
   nextId: Patch<string>;
   isBubble?: boolean | undefined;
+  isFlagged?: boolean | undefined;
   coord?: UnitCoord | undefined;
   translation: Patch<UnitTranslation>;
   revision: Patch<UnitRevision>;

@@ -17,6 +17,7 @@ function makeUnits(): UnitInfo[] {
     yCoord: index / 10,
     index,
     isBubble: true,
+    isFlagged: false,
     isProofread: false,
   }));
 }

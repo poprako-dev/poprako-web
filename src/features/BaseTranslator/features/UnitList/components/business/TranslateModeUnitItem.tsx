@@ -7,12 +7,14 @@ import {
 import clsx from "clsx";
 import {
   unitId,
+  isUnitFlagged,
   unitTranslatedText,
   type UnitInfo,
   type UnitEdit,
 } from "@/types/unit";
 import type { UserInfo } from "@/types/user";
 import BaseUnitItem from "./BaseUnitItem";
+import UnitFlagButton from "./UnitFlagButton";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
 import type { SpecialCharInsertRequest } from "./UnitList";
@@ -137,6 +139,11 @@ export default function TranslateModeUnitItem({
             } placeholder:text-gray-300`}
           />
         </div>
+        <UnitFlagButton
+          isFlagged={isUnitFlagged(unit)}
+          isDisabled={enableReadOnly || onModifyUnit === undefined}
+          onToggle={() => onModifyUnit?.(unitId(unit), { isFlagged: !isUnitFlagged(unit) })}
+        />
         <div className="shrink-0 w-7 h-7 p-1 rounded flex items-center justify-center">
           <div
             className={clsx(

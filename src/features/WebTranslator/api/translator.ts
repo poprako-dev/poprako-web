@@ -1,10 +1,13 @@
 import { UnitSaveProtocolError } from "@/features/BaseTranslator/hook/unitSaveMerge";
 import { api } from "@/api/util";
 import type { UnitInfo } from "@/types/unit";
-import type { PageInfo, PageUnitDiffStats } from "@/types/page";
+import type { PageInfo, PageUnitDiffStats, PageUnitFlaggedStats } from "@/types/page";
 import type { Result } from "@/types/utils/result";
 import type { RawPageInfo, RawPageUnitDiffStats } from "@/types/raw/page";
-import { unwrapRawPageInfo, unwrapRawPageUnitDiffStats } from "@/types/raw/page";
+import {
+  unwrapRawPageInfo, unwrapRawPageUnitDiffStats, unwrapRawPageUnitFlaggedStats,
+  type RawPageUnitFlaggedStats,
+} from "@/types/raw/page";
 import {
   unwrapRawUnitSearchMatch,
   unwrapRawListPageUnitsResult,
@@ -89,6 +92,16 @@ export async function listPages(
 
   const items = Array.isArray(res.data) ? res.data : [];
   return { success: true, data: items.map((item) => unwrapRawPageInfo(item)) };
+}
+
+export async function listPageUnitFlaggedStats(
+  chapterId: string,
+): Promise<Result<PageUnitFlaggedStats[]>> {
+  const result = await api.get<RawPageUnitFlaggedStats[]>(
+    `/chapters/${chapterId}/pages/unit-flagged-stats`,
+  );
+  if (!result.success) {return result;}
+  return { success: true, data: result.data.map((item) => unwrapRawPageUnitFlaggedStats(item)) };
 }
 
 export async function listPageUnitDiffStats(

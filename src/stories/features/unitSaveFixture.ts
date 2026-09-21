@@ -20,6 +20,7 @@ export function createUnitSaveFixture(pages: Map<string, UnitInfo[]>): SaveUnits
           index: units.length,
           ...op.coord,
           isBubble: op.isBubble,
+          isFlagged: op.isFlagged,
           isProofread: op.revision?.isProofread ?? false,
           translatedText: op.translation?.translatedText,
           proofreadText: op.revision?.proofreadText,
@@ -40,6 +41,7 @@ export function createUnitSaveFixture(pages: Map<string, UnitInfo[]>): SaveUnits
           ...unit,
           ...op.coord,
           isBubble: op.isBubble ?? unit.isBubble,
+          isFlagged: op.isFlagged ?? unit.isFlagged,
           translatedText: op.translation.type === "skip"
             ? unit.translatedText
             : (op.translation.type === "clear" ? undefined : op.translation.value.translatedText),

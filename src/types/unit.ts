@@ -13,6 +13,7 @@ export interface UnitInfo {
 
   // 是否为框内文本，否则是框外文本
   isBubble: boolean;
+  isFlagged: boolean;
 
   translatedText?: string | undefined;
   translatorId?: string | undefined;
@@ -29,6 +30,7 @@ export interface UnitEdit {
   xCoord?: number | undefined;
   yCoord?: number | undefined;
   isBubble?: boolean | undefined;
+  isFlagged?: boolean | undefined;
   translatedText?: string | undefined;
   translatorId?: string | undefined;
   translatorCommnet?: string | undefined;
@@ -41,6 +43,10 @@ export interface UnitEdit {
 
 export function unitId(unit: Pick<UnitInfo, "id">): string {
   return unit.id;
+}
+
+export function isUnitFlagged(unit: UnitInfo): boolean {
+  return unit.isFlagged;
 }
 
 export function unitIndex(unit: UnitInfo): number {
@@ -120,6 +126,7 @@ export function createUnit(
     yCoord,
     index: 0,
     isBubble,
+    isFlagged: false,
     isProofread: false,
   };
 }
@@ -262,6 +269,10 @@ export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
     );
   }
 
+  if (updates.isFlagged !== undefined) {
+    nextUnit = { ...nextUnit, isFlagged: updates.isFlagged };
+  }
+
   if ("isBubble" in updates) {
     nextUnit = modifyUnitIsBubble(
       nextUnit,
@@ -336,6 +347,9 @@ export function createUnitPatch(
   if (currentPosition.yCoord !== baselinePosition.yCoord) {
     patch.yCoord = currentPosition.yCoord;
   }
+  if (isUnitFlagged(current) !== isUnitFlagged(baseline)) {
+    patch.isFlagged = isUnitFlagged(current);
+  }
   if (unitIsBubble(current) !== unitIsBubble(baseline)) {
     patch.isBubble = unitIsBubble(current);
   }
@@ -373,6 +387,9 @@ export function isUnitSame(rhs: UnitInfo, lhs: UnitInfo): boolean {
   if (rhs.xCoord !== lhs.xCoord || rhs.yCoord !== lhs.yCoord) {
     return false;
   }
+  if (isUnitFlagged(rhs) !== isUnitFlagged(lhs)) {
+    return false;
+  }
   if (rhs.isBubble !== lhs.isBubble) {
     return false;
   }
@@ -408,6 +425,7 @@ export interface UnitPatch {
   yCoord?: number | undefined;
 
   isBubble?: boolean | undefined;
+  isFlagged?: boolean | undefined;
 
   translatedText?: string | null | undefined;
   translatorId?: string | null | undefined;
