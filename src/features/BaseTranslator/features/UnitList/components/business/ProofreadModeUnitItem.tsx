@@ -152,11 +152,11 @@ export default function ProofreadModeUnitItem({
               onFocus={() => onSelect?.(unitId(unit))}
               placeholder="无翻译内容"
               className={clsx(
-                "cursor-default text-base leading-relaxed placeholder:text-gray-300",
+                "cursor-default text-base font-normal leading-relaxed placeholder:text-gray-300",
                 hasProofreadText
                   ? "text-gray-400"
                   : (isFocused
-                    ? "text-gray-900 font-medium"
+                    ? "text-gray-900"
                     : "text-gray-700"),
               )}
             />
@@ -189,67 +189,71 @@ export default function ProofreadModeUnitItem({
                   ref={proofRef}
                   value={unitProofreadText(unit) ?? undefined}
                   onChange={(val) =>
-                  onModifyUnit?.(unitId(unit), {
-                    // 校对文本与校对状态完全独立：编辑文本不得切换 isProofread。
-                    proofreadText: val,
-                  })
+                    onModifyUnit?.(unitId(unit), {
+                      // 校对文本与校对状态完全独立：编辑文本不得切换 isProofread。
+                      proofreadText: val,
+                    })
                   }
                   onFocus={() => onSelect?.(unitId(unit))}
                   placeholder="输入校对..."
                   readOnly={enableReadOnly}
                   className={clsx(
-                    "text-base leading-relaxed placeholder:text-gray-300",
-                    isFocused ? "text-gray-900 font-medium" : "text-gray-700",
+                    "text-base font-normal leading-relaxed placeholder:text-gray-300",
+                    isFocused ? "text-gray-900" : "text-gray-700",
                   )}
                 />
               </div>
-              {!enableReadOnly && !hasProofreadText && hasTranslatedText && (
-                <button
-                  type="button"
-                  title="从初翻复制"
-                  onClick={() => {
-                    const text = unitTranslatedText(unit);
-                    if (text) {
+              <div className="size-7 shrink-0">
+                {!enableReadOnly && !hasProofreadText && hasTranslatedText && (
+                  <button
+                    type="button"
+                    title="从初翻复制"
+                    onClick={() => {
+                      const text = unitTranslatedText(unit);
+                      if (text) {
+                        onModifyUnit?.(unitId(unit), {
+                          // 校对文本与校对状态完全独立：复制文本不得切换 isProofread。
+                          proofreadText: text,
+                        });
+                      }
+                    }}
+                    className={clsx(
+                      "shrink-0 p-1 rounded",
+                      "text-gray-400 hover:text-green-600",
+                      "transition-colors",
+                    )}
+                  >
+                    <Copy size={20} strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+              <div className="size-7 shrink-0">
+                {!enableReadOnly && isFocused && (
+                  <button
+                    type="button"
+                    title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
+                    onClick={() =>
+                      // 校对状态与校对文本完全独立：此操作不得修改 proofreadText。
                       onModifyUnit?.(unitId(unit), {
-                        // 校对文本与校对状态完全独立：复制文本不得切换 isProofread。
-                        proofreadText: text,
-                      });
+                        isProofread: !unitIsProofread(unit),
+                      })
                     }
-                  }}
-                  className={clsx(
-                    "shrink-0 p-1 rounded",
-                    "text-gray-400 hover:text-green-600",
-                    "transition-colors",
-                  )}
-                >
-                  <Copy size={20} strokeWidth={2} />
-                </button>
-              )}
-              {!enableReadOnly && isFocused && (
-                <button
-                  type="button"
-                  title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
-                  onClick={() =>
-                    // 校对状态与校对文本完全独立：此操作不得修改 proofreadText。
-                    onModifyUnit?.(unitId(unit), {
-                      isProofread: !unitIsProofread(unit),
-                    })
-                  }
-                  className={clsx(
-                    "shrink-0 p-1 rounded",
-                    unitIsProofread(unit)
-                      ? "text-gray-400 hover:text-red-500"
-                      : "text-gray-400 hover:text-green-600",
-                    "transition-colors",
-                  )}
-                >
-                  {unitIsProofread(unit) ? (
-                    <X size={20} strokeWidth={2} />
-                  ) : (
-                    <Check size={20} strokeWidth={2} />
-                  )}
-                </button>
-              )}
+                    className={clsx(
+                      "shrink-0 p-1 rounded",
+                      unitIsProofread(unit)
+                        ? "text-gray-400 hover:text-red-500"
+                        : "text-gray-400 hover:text-green-600",
+                      "transition-colors",
+                    )}
+                  >
+                    {unitIsProofread(unit) ? (
+                      <X size={20} strokeWidth={2} />
+                    ) : (
+                      <Check size={20} strokeWidth={2} />
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
             {isFocused && !enableReadOnly && (
               <>

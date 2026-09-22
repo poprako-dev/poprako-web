@@ -277,11 +277,12 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     top: `${String(pos.yCoord * 100)}%`,
                     transformOrigin: "0 0",
                     transform: `translate(${String((CIRCLE_SIZE / 2 + 12) / transform.scale)}px, `
-                      + `${String(-PIN_OFFSET / transform.scale)}px) `
+                      + `${String((CIRCLE_SIZE - PIN_OFFSET) / transform.scale)}px) `
                       + `scale(${String(1 / transform.scale)})`,
                   }}
                 >
                   <div className={clsx(
+                    "-translate-y-full",
                     "px-2 py-1 rounded-sm bg-slate-800/90 text-slate-50 text-xs",
                     "backdrop-blur-md shadow-xl border border-white/10 whitespace-pre",
                   )}>

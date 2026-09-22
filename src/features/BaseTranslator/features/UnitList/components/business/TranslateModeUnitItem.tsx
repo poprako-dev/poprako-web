@@ -134,8 +134,8 @@ export default function TranslateModeUnitItem({
             onFocus={() => onSelect?.(unitId(unit))}
             placeholder="点击输入翻译..."
             readOnly={enableReadOnly}
-            className={`text-base leading-relaxed ${
-              isFocused ? "text-gray-900 font-medium" : "text-gray-700"
+            className={`text-base font-normal leading-relaxed ${
+              isFocused ? "text-gray-900" : "text-gray-700"
             } placeholder:text-gray-300`}
           />
         </div>
