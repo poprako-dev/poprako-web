@@ -97,7 +97,6 @@ export default function BaseUnitItem({
         className={clsx(
           "transition-all duration-150 shrink-0",
           "border-l-4",
-          isFocused && "border-l-[5px]",
           isBubble ? "border-pink-300" : "border-amber-300",
         )}
       />
@@ -136,7 +135,7 @@ export default function BaseUnitItem({
         {unitIndex(unit) + 1}
       </button>
 
-      <div className="flex flex-1 flex-col justify-center px-2 py-2">
+      <div className="flex min-w-0 flex-1 flex-col justify-center px-2 py-2">
         <UnitContributorTooltip contributors={contributors}>
           {children}
         </UnitContributorTooltip>
