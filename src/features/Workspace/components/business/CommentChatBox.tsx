@@ -3,6 +3,7 @@ import { Send } from "lucide-react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import type { CommentInfo } from "@/types/comment";
+import { isKeyboardComposing } from "@/lib/keyboard";
 
 interface Props {
   comments: CommentInfo[];
@@ -44,7 +45,7 @@ export default function CommentChatBox({ comments, loading, onSend }: Props) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key !== "Enter" || e.shiftKey) {
+      if (e.key !== "Enter" || e.shiftKey || isKeyboardComposing(e.nativeEvent)) {
         return;
       }
 

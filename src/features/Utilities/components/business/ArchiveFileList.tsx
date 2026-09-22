@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { ChevronLeft, ChevronRight, File, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatSize } from "../../archive";
+import { isKeyboardComposing } from "@/lib/keyboard";
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type Props = {
@@ -94,6 +95,7 @@ export default function ArchiveFileList({ files, isBusy, onChange }: Props) {
             aria-label="文件页码"
             onBlur={(event) => { commitPage(event.currentTarget.value, event.currentTarget); }}
             onKeyDown={(event) => {
+              if (isKeyboardComposing(event.nativeEvent)) {return;}
               if (event.key === "Enter") {event.currentTarget.blur();}
             }}
             className={clsx(

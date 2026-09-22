@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { shouldIgnoreTranslatorKey } from "./keyboardScope";
 /* eslint-disable @eslint-react/web-api-no-leaked-event-listener -- cleanup is paired below. */
 import {
   type ConfigurableShortcut,
@@ -22,6 +23,7 @@ export function useShortcutActions(
     if (isDisabled) {return;}
 
     function handleKeyDown(e: KeyboardEvent) {
+      if (shouldIgnoreTranslatorKey(e)) {return;}
       for (const shortcut of shortcuts) {
         if (matchesShortcut(e, shortcut.keys)) {
           e.preventDefault();

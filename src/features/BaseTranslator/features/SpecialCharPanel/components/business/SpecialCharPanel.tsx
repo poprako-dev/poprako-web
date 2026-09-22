@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { X, Plus } from "lucide-react";
 import clsx from "clsx";
 import { useSpecialChars } from "@/hook/useSpecialChars";
+import { isKeyboardComposing } from "@/lib/keyboard";
 
 type Mode = "select" | "delete";
 
@@ -33,6 +34,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || isKeyboardComposing(e)) {return;}
       if (!isAdding && e.key === "Escape") {onClose();}
     };
     globalThis.addEventListener("keydown", handleKeyDown);
@@ -48,6 +50,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
   const handleTextareaKeyDown = (
     e: React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
+    if (isKeyboardComposing(e.nativeEvent)) {return;}
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       submitNewChar();
@@ -228,6 +231,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
                   />
                 ) : (
                   <button type="button"
+                    aria-label="添加特殊符号"
                     onClick={() => { setIsAdding(true); }}
                     className={clsx(
                       "w-full h-full flex items-center justify-center",

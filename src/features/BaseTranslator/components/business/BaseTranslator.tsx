@@ -49,6 +49,7 @@ import UnitSearchTransformDialog from
 import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
+import { shouldIgnoreTranslatorKey } from "@/features/BaseTranslator/hook/keyboardScope";
 import { useRelocationPreference } from
   "@/features/BaseTranslator/hook/useRelocationPreference";
 import { useToastStore } from "@/components/ui/NotificationToast";
@@ -602,6 +603,7 @@ export default function BaseTranslator({
       return;
     }
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (shouldIgnoreTranslatorKey(e)) {return;}
       if (e.key === "Escape") {
         setFocusedUnitId(undefined);
       }

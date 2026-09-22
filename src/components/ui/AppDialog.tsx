@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { X } from "lucide-react";
 import { Dialog } from "radix-ui";
 import clsx from "clsx";
+import { isKeyboardComposing } from "@/lib/keyboard";
 
 type Size = "compact" | "default" | "large" | "wide";
 type Tone = "brand" | "warning";
@@ -56,8 +57,12 @@ export default function AppDialog({
         />
         <Dialog.Content
           data-app-dialog
+          onKeyDown={(event) => { event.stopPropagation(); }}
+          onKeyUp={(event) => { event.stopPropagation(); }}
           onEscapeKeyDown={(event) => {
-            if (locked || !closeOnEscape) {event.preventDefault();}
+            if (locked || !closeOnEscape || isKeyboardComposing(event)) {
+              event.preventDefault();
+            }
           }}
           onPointerDownOutside={(event) => {
             if (locked || !closeOnBackdrop) {event.preventDefault();}

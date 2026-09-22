@@ -10,6 +10,7 @@ import type { Project } from "@/types/project";
 import type { PageImageQuality } from "@/types/page";
 import type { UserInfo } from "@/types/user";
 import { createUnitSaveFixture } from "./unitSaveFixture";
+import { configureKeyboardFixture, verifyTranslatorKeyboard } from "./translatorKeyboardPlay";
 import type {
   TerminologyDataSource,
   UnitSearchTransformDataSource,
@@ -630,11 +631,16 @@ export const SearchAndTransform: Story = {
 
     await userEvent.click(canvas.getByRole("button", { name: "工具菜单" }));
     await userEvent.click(page.getByTitle("搜索与替换"));
-    await expect(page.getByRole("dialog", { name: "搜索与替换" })).toBeVisible();
+    await waitFor(async () => {
+      await expect(page.getByRole("dialog", { name: "搜索与替换" })).toBeVisible();
+    });
 
     await userEvent.type(page.getByRole("textbox", { name: "查找短语" }), "这");
     await userEvent.click(page.getByRole("button", { name: "搜索" }));
-    await expect(await page.findByText("3 个匹配 Unit")).toBeVisible();
+    const matchCount = mockProject.pages.length * mockUnits.filter((unit) =>
+      unitTranslatedText(unit)?.includes("这"),
+    ).length;
+    await expect(await page.findByText(`${String(matchCount)} 个匹配 Unit`)).toBeVisible();
 
     await userEvent.type(page.getByRole("textbox", { name: "替换短语" }), "那");
     await userEvent.click(page.getByRole("button", { name: "替换" }));
@@ -658,6 +664,22 @@ export const WithTerminology: Story = {
     }),
     terminology: mockTerminology,
   },
+};
+
+const keyboardArgs = createStoryArgs({ canTranslate: true, canProofread: false });
+
+export const TerminologyKeyboardIsolation: Story = {
+  args: {
+    ...keyboardArgs,
+    currentUserId: TRANSLATOR_ID,
+    onLoadUnits: fn(keyboardArgs.onLoadUnits),
+    onSaveUnits: fn(keyboardArgs.onSaveUnits),
+    onLoadPageImage: () => Promise.resolve(
+      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>',
+    ),
+  },
+  beforeEach: configureKeyboardFixture,
+  play: verifyTranslatorKeyboard,
 };
 
 export const ReadOnlyWithoutTerminology: Story = {

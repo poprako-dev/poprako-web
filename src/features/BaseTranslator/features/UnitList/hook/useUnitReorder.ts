@@ -15,6 +15,7 @@ import {
   type UnitInfo,
 } from "@/types/unit";
 import { isBeyondDragThreshold } from "./dragThreshold";
+import { shouldIgnoreTranslatorKey } from "../../../hook/keyboardScope";
 
 const AUTO_SCROLL_EDGE = 32;
 const MAX_AUTO_SCROLL_SPEED = 12;
@@ -198,6 +199,7 @@ export function useUnitReorder({
   }, [cancelDrag]);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (shouldIgnoreTranslatorKey(event)) {return;}
     if (event.key !== "Escape" || !dragRef.current) {return;}
     event.preventDefault();
     cancelDrag();

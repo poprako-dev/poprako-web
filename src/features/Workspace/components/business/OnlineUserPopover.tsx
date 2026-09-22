@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { ChevronDown, UserRound, UsersRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { UserInfo } from "@/types/user";
+import { isKeyboardComposing } from "@/lib/keyboard";
 
 interface Props {
   onlineCount: number;
@@ -26,6 +27,7 @@ export default function OnlineUserPopover({ onlineCount, users }: Props) {
       setIsOpen(false);
     };
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || isKeyboardComposing(event)) {return;}
       if (event.key === "Escape") {setIsOpen(false);}
     };
 

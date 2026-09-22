@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { expect, fireEvent, fn, userEvent, within } from "storybook/test";
 import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 
 const meta: Meta<typeof AppDialog> = {
@@ -46,6 +46,54 @@ export default meta;
 type Story = StoryObj<typeof AppDialog>;
 
 export const Default: Story = {};
+
+export const KeyboardIsolation: Story = {
+  play: async ({ args, canvasElement }) => {
+    const page = within(canvasElement.ownerDocument.body);
+    const dialog = page.getByRole("dialog");
+    const input = page.getByRole("textbox", { name: "名称" });
+    const onBackgroundKey = fn();
+    const view = canvasElement.ownerDocument.defaultView;
+    if (!view) {throw new Error("Missing browser window");}
+    view.addEventListener("keydown", onBackgroundKey);
+    view.addEventListener("keyup", onBackgroundKey);
+    try {
+      await userEvent.type(input, "abc中文");
+      await expect(input).toHaveValue("abc中文");
+      await expect(input).toHaveFocus();
+      await userEvent.tab();
+      const description = page.getByRole("textbox", { name: "描述" });
+      await expect(description).toHaveFocus();
+      await userEvent.keyboard("第一行{Enter}第二行");
+      await expect(description).toHaveValue("第一行\n第二行");
+      await userEvent.click(page.getByRole("button", { name: "保存" }));
+      await userEvent.tab();
+      await expect(page.getByRole("button", { name: "关闭" })).toHaveFocus();
+      await userEvent.tab({ shift: true });
+      await expect(page.getByRole("button", { name: "保存" })).toHaveFocus();
+      await expect(dialog.contains(canvasElement.ownerDocument.activeElement)).toBe(true);
+      await expect(onBackgroundKey).not.toHaveBeenCalled();
+      await fireEvent.keyDown(input, { key: "Escape", isComposing: true });
+      await fireEvent.keyDown(input, { key: "Escape", keyCode: 229 });
+      await expect(args.onClose).not.toHaveBeenCalled();
+      await userEvent.keyboard("{Escape}");
+      await expect(args.onClose).toHaveBeenCalledTimes(1);
+    } finally {
+      view.removeEventListener("keydown", onBackgroundKey);
+      view.removeEventListener("keyup", onBackgroundKey);
+    }
+  },
+};
+
+export const LockedKeyboard: Story = {
+  args: { locked: true },
+  play: async ({ args, canvasElement }) => {
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(page.getByRole("textbox", { name: "名称" }));
+    await userEvent.keyboard("{Escape}");
+    await expect(args.onClose).not.toHaveBeenCalled();
+  },
+};
 
 export const Warning: Story = {
   args: {
