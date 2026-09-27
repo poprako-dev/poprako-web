@@ -19,6 +19,7 @@ import type { UnitUserResolver } from "../../hook/unitContributorCache";
 import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
 import ReadOnlyDiffUnitItem from "./ReadOnlyDiffUnitItem";
+import type { SpecialCharsBarController } from "../../../../hook/useDetachableSpecialCharsBar";
 
 export interface SpecialCharInsertRequest {
   id: number;
@@ -37,6 +38,7 @@ interface Props {
   onResolveUser: UnitUserResolver;
   enableReadOnly?: boolean | undefined;
   specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
+  specialCharsBar?: SpecialCharsBarController | undefined;
   onSpecialCharUse?: ((char: string) => void) | undefined;
   onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
 }
@@ -51,6 +53,7 @@ export default function UnitList({
   onResolveUser,
   enableReadOnly = false,
   specialCharInsertRequest,
+  specialCharsBar,
   onSpecialCharUse,
   onSpecialCharInserted,
 }: Props) {
@@ -140,6 +143,7 @@ export default function UnitList({
                 showDropIndicator={draggingUnitId === unitId(unit)}
                 enableReadOnly={enableReadOnly}
                 specialCharInsertRequest={specialCharInsertRequest}
+                specialCharsBar={specialCharsBar}
                 onSpecialCharUse={onSpecialCharUse}
                 onSpecialCharInserted={onSpecialCharInserted}
               />
