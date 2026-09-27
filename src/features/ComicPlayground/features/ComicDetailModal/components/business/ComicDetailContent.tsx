@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import clsx from "clsx";
-import { History, Images } from "lucide-react";
+import { Images, UserCog } from "lucide-react";
 
 export type ComicDetailView = "pages" | "workflow";
 
@@ -102,7 +102,7 @@ export default function ComicDetailContent({
             label="工作流记录"
             onClick={() => { onChangeView("workflow"); }}
           >
-            <History size={14} aria-hidden="true" />
+            <UserCog size={14} aria-hidden="true" />
           </ViewButton>
         </div>
       </div>

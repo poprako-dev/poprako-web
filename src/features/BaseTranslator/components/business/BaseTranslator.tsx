@@ -47,6 +47,8 @@ import TerminologyLookupBar from "@/features/BaseTranslator/features/Terminology
 import UnitSearchTransformDialog from
   "@/features/BaseTranslator/features/UnitSearchTransform";
 import StatusOptionBar from "./StatusOptionBar";
+import FloatingSpecialCharsBar from "./FloatingSpecialCharsBar";
+import { useDetachableSpecialCharsBar } from "../../hook/useDetachableSpecialCharsBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
 import { shouldIgnoreTranslatorKey } from "@/features/BaseTranslator/hook/keyboardScope";
@@ -199,6 +201,7 @@ export default function BaseTranslator({
 
   const canvasRef = useRef<CanvasHandle>(null);
   const lastSpecialCharRef = useRef<string | null>(null);
+  const specialCharRequestIdRef = useRef(0);
   const relocationSuppressedUnitIdRef = useRef<string | null>(null);
   const pendingCenteredUnitIdRef = useRef<string | null>(null);
 
@@ -255,6 +258,19 @@ export default function BaseTranslator({
   });
 
   const pageLoadGenerationRef = useRef(0);
+
+  const isSpecialCharsBarSuspended = isShortcutPanelOpen || isSpecialCharPanelOpen
+    || isUnitSearchTransformOpen || pendingAction !== null
+    || deleteConfirmUnitId !== undefined || isCompleteConfirmOpen;
+  const isSpecialCharsBarVisible = !isReadOnly && !isSpecialCharsBarSuspended;
+  const canInsertSpecialChar = canEditView && !isLoadingPage && !isCompletingStage
+    && !isSpecialCharsBarSuspended && unitBuf.some((unit) => unitId(unit) === focusedUnitId);
+  const specialCharsBar = useDetachableSpecialCharsBar({
+    enabled: isSpecialCharsBarVisible,
+    interactionKey: JSON.stringify([
+      project.id, pageIndex, focusedUnitId, view, isLoadingPage, isCompletingStage, canEditView,
+    ]),
+  });
 
   useEffect(() => () => { pageLoadGenerationRef.current += 1; }, []);
 
@@ -350,28 +366,24 @@ export default function BaseTranslator({
     }
   }
 
-  function handleQuickSpecialChar() {
-    const char = lastSpecialCharRef.current ?? allChars[0]?.text;
-    if (!char || !focusedUnitId) {return;}
-
-    setSpecialCharInsertRequest((prev) => ({
-      id: (prev?.id ?? 0) + 1,
+  function handleRequestSpecialChar(char: string) {
+    if (!char || !focusedUnitId || !canInsertSpecialChar) {return;}
+    specialCharRequestIdRef.current += 1;
+    setSpecialCharInsertRequest({
+      id: specialCharRequestIdRef.current,
       char,
       targetUnitId: focusedUnitId,
-    }));
+    });
+  }
+
+  function handleQuickSpecialChar() {
+    const char = lastSpecialCharRef.current ?? allChars[0]?.text;
+    if (char) {handleRequestSpecialChar(char);}
   }
 
   function handleQuickSpecialCharAt(index: number) {
-    return () => {
-      const char = favoriteChars[index];
-      if (!char || !focusedUnitId) {return;}
-
-      setSpecialCharInsertRequest((prev) => ({
-        id: (prev?.id ?? 0) + 1,
-        char,
-        targetUnitId: focusedUnitId,
-      }));
-    };
+    const char = favoriteChars[index];
+    if (char) {handleRequestSpecialChar(char);}
   }
 
   function handleSpecialCharUse(char: string) {
@@ -583,9 +595,9 @@ export default function BaseTranslator({
         }
       },
       quickSpecialChar: handleQuickSpecialChar,
-      quickSpecialChar1: handleQuickSpecialCharAt(0),
-      quickSpecialChar2: handleQuickSpecialCharAt(1),
-      quickSpecialChar3: handleQuickSpecialCharAt(2),
+      quickSpecialChar1: () => { handleQuickSpecialCharAt(0); },
+      quickSpecialChar2: () => { handleQuickSpecialCharAt(1); },
+      quickSpecialChar3: () => { handleQuickSpecialCharAt(2); },
       save: () => {
         void handleSave();
       },
@@ -795,6 +807,7 @@ export default function BaseTranslator({
           onResolveUser={onResolveUser}
           enableReadOnly={!canEditView || isLoadingPage || isCompletingStage}
           specialCharInsertRequest={specialCharInsertRequest}
+          specialCharsBar={specialCharsBar}
           onSpecialCharUse={handleSpecialCharUse}
           onSpecialCharInserted={handleSpecialCharInserted}
         />
@@ -805,6 +818,13 @@ export default function BaseTranslator({
   return (
     <>
       <BaseTranslatorLayout canvas={canvas} sidebar={sidebar} />
+      {isSpecialCharsBarVisible && (
+        <FloatingSpecialCharsBar
+          controller={specialCharsBar}
+          isDisabled={!canInsertSpecialChar}
+          onInsert={handleRequestSpecialChar}
+        />
+      )}
       {isShortcutPanelOpen && (
         <ShortcutPanel
           fixedShortcuts={fixedShortcuts}

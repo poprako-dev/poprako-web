@@ -21,6 +21,7 @@ import UnitFlagButton from "./UnitFlagButton";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
 import type { SpecialCharInsertRequest } from "./UnitList";
+import type { SpecialCharsBarController } from "../../../../hook/useDetachableSpecialCharsBar";
 
 interface Props {
   unit: UnitInfo;
@@ -41,6 +42,7 @@ interface Props {
   translator?: UserInfo | undefined;
   proofreader?: UserInfo | undefined;
   specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
+  specialCharsBar?: SpecialCharsBarController | undefined;
   onSpecialCharUse?: ((char: string) => void) | undefined;
   onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
 }
@@ -61,6 +63,7 @@ export default function ProofreadModeUnitItem({
   translator,
   proofreader,
   specialCharInsertRequest,
+  specialCharsBar,
   onSpecialCharUse,
   onSpecialCharInserted,
 }: Props) {
@@ -95,18 +98,21 @@ export default function ProofreadModeUnitItem({
 
   function insertChar(char: string) {
     const textarea = proofRef.current;
-    if (!textarea) {return;}
+    if (!textarea || enableReadOnly || !isFocused || !onModifyUnit) {return;}
+    const previousActiveElement = document.activeElement;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = unitProofreadText(unit) ?? "";
     const next =
       text.slice(0, Math.max(0, start)) + char + text.slice(Math.max(0, end));
     // 校对文本与校对状态完全独立：输入文本不得切换 isProofread。
-    onModifyUnit?.(unitId(unit), {
+    onModifyUnit(unitId(unit), {
       proofreadText: next,
     });
     setTimeout(() => {
-      if (document.activeElement !== textarea) {return;}
+      if (!textarea.isConnected || (document.activeElement !== previousActiveElement
+        && document.activeElement !== textarea)) {return;}
+      textarea.focus({ preventScroll: true });
       textarea.selectionStart = textarea.selectionEnd = start + char.length;
     }, 0);
   }
@@ -255,10 +261,12 @@ export default function ProofreadModeUnitItem({
                 )}
               </div>
             </div>
-            {isFocused && !enableReadOnly && (
+            {isFocused && !enableReadOnly
+              && (!specialCharsBar?.position || specialCharsBar.placeholderHeight !== null) && (
               <>
                 <div className="h-px bg-gray-200 my-1 mr-10" />
                 <SpecialCharsBar
+                  controller={specialCharsBar}
                   onInsert={insertChar}
                   onUseChar={onSpecialCharUse}
                 />

@@ -176,7 +176,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
               className="select-none shadow-md"
               style={{
                 maxWidth: containerSize.w * 0.9,
-                maxHeight: containerSize.h * 0.87,
+                maxHeight: containerSize.h * 0.95,
                 width: "auto",
                 height: "auto",
               }}
