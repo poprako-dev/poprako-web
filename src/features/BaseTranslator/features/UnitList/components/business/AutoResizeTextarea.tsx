@@ -1,6 +1,7 @@
 /* eslint-disable @eslint-react/no-forward-ref -- imperative textarea ref API. */
 import React, { useLayoutEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import LineBreakOverlay from "./LineBreakOverlay";
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- Props convention.
 type Props = {
@@ -20,6 +21,8 @@ function resizeTextarea(textarea: HTMLTextAreaElement) {
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, Props>(
   ({ value, onChange, placeholder, className, readOnly, onFocus }, ref) => {
     const localRef = useRef<HTMLTextAreaElement>(null);
+    const mirrorRef = useRef<HTMLDivElement>(null);
+    const displayText = (value ?? "").replaceAll(/\r\n?/gu, "\n");
 
     function combinedRef(node: HTMLTextAreaElement | null) {
       localRef.current = node;
@@ -51,21 +54,42 @@ const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, Props>(
     }, []);
 
     return (
-      <textarea
-        ref={combinedRef}
-        value={value ?? ""}
-        onChange={(e) => { onChange(e.target.value); }}
-        onFocus={onFocus}
-        placeholder={placeholder}
-        rows={1}
-        readOnly={readOnly}
-        className={cn(
-          "w-full resize-none overflow-hidden bg-transparent focus:outline-none",
-          "transition-colors block",
-          className,
+      <div className="relative">
+        <textarea
+          ref={combinedRef}
+          value={value ?? ""}
+          onChange={(e) => { onChange(e.target.value); }}
+          onFocus={onFocus}
+          placeholder={placeholder}
+          rows={1}
+          readOnly={readOnly}
+          className={cn(
+            "w-full resize-none overflow-hidden bg-transparent focus:outline-none",
+            "transition-colors block box-border border-0 p-0 pr-4",
+            "whitespace-pre-wrap [overflow-wrap:break-word]",
+            className,
+          )}
+          style={{ minHeight: "1.2em" }}
+        />
+        {displayText.includes("\n") && (
+          <>
+            {/* Match the native textarea's layout without inserting anything into its text. */}
+            <div
+              ref={mirrorRef}
+              aria-hidden="true"
+              className={cn(
+                "pointer-events-none invisible absolute inset-0 select-none",
+                "box-border w-full border-0 p-0 pr-4 whitespace-pre-wrap",
+                "[overflow-wrap:break-word]",
+                className,
+              )}
+            >
+              {displayText}
+            </div>
+            <LineBreakOverlay targetRef={mirrorRef} layoutKey={[displayText, className]} />
+          </>
         )}
-        style={{ minHeight: "1.2em" }}
-      />
+      </div>
     );
   },
 );
