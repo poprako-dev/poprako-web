@@ -23,7 +23,8 @@ export default function BaseTranslatorLayout({ canvas, sidebar }: Props) {
           "shrink-0 flex flex-col overflow-hidden bg-stone-50",
           "portrait:h-2/5 portrait:border-t portrait:border-stone-200",
           "sm:portrait:h-50",
-          "landscape:w-95 landscape:border-l landscape:border-stone-200",
+          "landscape:w-1/3 landscape:min-w-95",
+          "landscape:border-l landscape:border-stone-200",
         )}
       >
         {sidebar}
