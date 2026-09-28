@@ -1,12 +1,16 @@
 import { createMemoryHistory, createRouter } from "@tanstack/react-router";
 import { routeTree } from "@/route-tree.gen";
 import { parseRouteSearch, stringifyRouteSearch } from "@/application/router";
+import { createApiClient } from "@/api/client";
 
 function createFixtureRouter(
   history: ReturnType<typeof createMemoryHistory>,
 ): ReturnType<typeof createRouter<typeof routeTree>> {
   return createRouter({
     routeTree,
+    context: {
+      api: createApiClient({ baseUrl: "/api/v1", getAccessToken: () => null }),
+    },
     history,
     parseSearch: parseRouteSearch,
     stringifySearch: stringifyRouteSearch,

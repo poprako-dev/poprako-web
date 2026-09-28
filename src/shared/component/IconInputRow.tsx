@@ -1,13 +1,13 @@
 import clsx from "clsx";
-import { useState, type ReactElement, type ReactNode } from "react";
+import { useState, type ReactElement } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 type Props = {
-  icon: ReactNode;
+  icon: ReactElement;
   value: string;
   onChange: (value: string) => void;
+  placeholder: string;
   mode?: "text" | "password" | "numeric";
-  placeholder?: string;
   className?: string;
 };
 
@@ -45,7 +45,7 @@ export function IconInputRow({
         inputMode={isNumeric ? "numeric" : undefined}
         pattern={isNumeric ? String.raw`\d*` : undefined}
         placeholder={placeholder}
-        aria-label={placeholder ?? "输入内容"}
+        aria-label={placeholder}
         value={value}
         onChange={(event) => {
           const nextValue = event.target.value;
@@ -60,7 +60,8 @@ export function IconInputRow({
           }}
           className={clsx(
             "absolute inset-y-0 right-0 flex items-center pr-2 text-muted-foreground",
-            "transition-colors hover:text-foreground focus-visible:outline-ring",
+            "transition-colors hover:text-foreground focus-visible:outline-2",
+            "focus-visible:outline-offset-1 focus-visible:outline-primary",
           )}
           aria-label={showPassword ? "隐藏密码" : "显示密码"}
           aria-pressed={showPassword}

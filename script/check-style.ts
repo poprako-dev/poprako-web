@@ -1,4 +1,5 @@
 import ts from "typescript";
+import { inspectApiBoundary } from "./check-api-boundary.ts";
 
 export type Finding = { file: string; line: number; rule: string; message: string };
 
@@ -6,7 +7,6 @@ const OLD_ROOTS = new Set([
   "pages",
   "layouts",
   "router",
-  "api",
   "types",
   "store",
   "hook",
@@ -120,6 +120,35 @@ export function inspectStyleFile(file: string, content: string): Finding[] {
   const segments = normalizedFile.split("/");
   const generated = normalizedFile === "src/route-tree.gen.ts";
   if (generated) return findings;
+  if (
+    normalizedFile.startsWith("src/route/") &&
+    !segments.includes("business") &&
+    content.includes("createFileRoute(")
+  ) {
+    for (const statement of source.statements) {
+      const exported =
+        ts.canHaveModifiers(statement) &&
+        ts
+          .getModifiers(statement)
+          ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
+      const routeDeclaration =
+        ts.isVariableStatement(statement) &&
+        statement.declarationList.declarations.every(
+          (declaration) => ts.isIdentifier(declaration.name) && declaration.name.text === "Route",
+        );
+      const typeOnly =
+        ts.isTypeAliasDeclaration(statement) ||
+        ts.isInterfaceDeclaration(statement) ||
+        (ts.isExportDeclaration(statement) && statement.isTypeOnly);
+      if (!typeOnly && !routeDeclaration && (exported || ts.isExportDeclaration(statement))) {
+        report(
+          statement.getStart(source),
+          "route.lazy-export",
+          "route entry modules export only Route; exporting page components prevents automatic lazy splitting",
+        );
+      }
+    }
+  }
   if (segments.includes("features")) {
     report(0, "structure.features", "implementation directories cannot use `features`");
   }
@@ -134,7 +163,12 @@ export function inspectStyleFile(file: string, content: string): Finding[] {
     );
   }
   for (const segment of segments.slice(1, -1)) {
-    if (SPECIAL_ROUTE_NAMES.has(segment) || segment === "business" || segment === "shared") {
+    if (
+      SPECIAL_ROUTE_NAMES.has(segment) ||
+      segment === "business" ||
+      segment === "shared" ||
+      (normalizedFile.startsWith("src/route/") && /^\([a-z-]+\)$/u.test(segment))
+    ) {
       continue;
     }
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(segment)) {
@@ -147,8 +181,10 @@ export function inspectStyleFile(file: string, content: string): Finding[] {
     .replace(/\.[^.]+$/u, "");
   const isTsx = fileName.endsWith(".tsx");
   const routeFile =
-    normalizedFile.startsWith("src/routes/") &&
-    ["index.tsx", "route.tsx", "__root.tsx", "route-tree.gen.ts"].includes(fileName);
+    normalizedFile.startsWith("src/route/") &&
+    (["index.tsx", "route.tsx", "__root.tsx"].includes(fileName) ||
+      normalizedFile === "src/route/_authenticated/_shell/(setting)/settings.tsx" ||
+      normalizedFile === "src/route/_authenticated/_shell/(utility)/utilities.tsx");
   const kebabBase = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(baseName);
   const pascalBase = /^[A-Z][A-Za-z0-9]*$/u.test(baseName);
   const testFile = /\.test\.(?:ts|tsx)$/u.test(fileName);
@@ -242,7 +278,9 @@ export function inspectStyleFile(file: string, content: string): Finding[] {
 export function checkStyle(root: string): Finding[] {
   const findings: Finding[] = [];
   for (const file of sourceFiles(root)) {
-    findings.push(...inspectStyleFile(normalized(file, root), Deno.readTextFileSync(file)));
+    const path = normalized(file, root);
+    const content = Deno.readTextFileSync(file);
+    findings.push(...inspectStyleFile(path, content), ...inspectApiBoundary(path, content));
   }
   return findings;
 }

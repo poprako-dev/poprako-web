@@ -2,8 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --font-sans:
     ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
@@ -68,6 +66,10 @@
   --color-status-warning: var(--status-warning);
   --color-status-info: var(--status-info);
   --color-selection: var(--selection);
+  --color-marker-bubble: var(--marker-bubble);
+  --color-marker-bubble-border: var(--marker-bubble-border);
+  --color-marker-note: var(--marker-note);
+  --color-marker-note-border: var(--marker-note-border);
   --color-annotation: var(--annotation);
   --color-image-label-overlay: var(--image-label-overlay);
   --color-image-label-foreground: var(--image-label-foreground);
@@ -112,6 +114,10 @@
   --status-warning: #8b641b;
   --status-info: #426d62;
   --selection: #dcefe3;
+  --marker-bubble: #e4bdc9;
+  --marker-bubble-border: #a3687f;
+  --marker-note: #ead39b;
+  --marker-note-border: #967534;
   --annotation: #fff0bd;
   --image-label-overlay: rgb(0 0 0 / 76%);
   --image-label-foreground: #ffffff;
@@ -140,9 +146,9 @@
   --color-red-100: #fbe5e5;
   --color-border-red-200: #fce8e8;
   /* Translator diff colors: distinct but restrained for long-form proofreading. */
-  --color-unit-stats-translate: var(--color-orange-400);
-  --color-unit-stats-edit: var(--color-pink-400);
-  --color-unit-stats-append: var(--color-green-500);
+  --color-unit-stats-translate: var(--status-warning);
+  --color-unit-stats-edit: var(--status-info);
+  --color-unit-stats-append: var(--status-success);
   --diff-delete-text: #813f3f;
   --diff-delete-bg: #f0d2d2;
   --diff-replaced-text: #514c46;
@@ -166,68 +172,6 @@
   --primary-text: #036b4f; /* dark emerald for text on primary tint */
   --on-primary: #ffffff; /* white       → 对应 --primary-foreground */
   --ring-primary: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% → 对应 --ring */
-}
-
-.dark {
-  color-scheme: dark;
-  --background: oklch(0.19 0.012 150);
-  --foreground: oklch(0.94 0.008 145);
-  --card: oklch(0.23 0.014 150);
-  --card-foreground: oklch(0.94 0.008 145);
-  --popover: oklch(0.23 0.014 150);
-  --popover-foreground: oklch(0.94 0.008 145);
-  --primary: #10b981; /* emerald-500 */
-  --primary-foreground: #022c22; /* emerald-950 */
-  --secondary: oklch(0.278 0 0);
-  --secondary-foreground: oklch(0.94 0.008 145);
-  --muted: oklch(0.28 0.012 150);
-  --muted-foreground: oklch(0.76 0.012 145);
-  --accent: #294438;
-  --accent-foreground: #d5ebdc;
-  --destructive: #ff8a80;
-  --destructive-foreground: #3b0907;
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 17%);
-  --ring: #34d399; /* emerald-400 */
-  --chart-1: oklch(0.72 0.12 75);
-  --chart-2: oklch(0.72 0.12 155);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.72 0.12 35);
-  --chart-5: oklch(0.72 0.11 15);
-  --sidebar: oklch(0.23 0.014 150);
-  --sidebar-foreground: oklch(0.94 0.008 145);
-  --sidebar-primary: #10b981; /* emerald-500 */
-  --sidebar-primary-foreground: #022c22; /* emerald-950 */
-  --sidebar-accent: #294438;
-  --sidebar-accent-foreground: #d5ebdc;
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: #34d399; /* emerald-400 */
-  --surface-workspace: #202622;
-  --surface-panel: #292f2b;
-  --surface-hover: #343c36;
-  --text-secondary: #b2bcb4;
-  --overlay: rgb(0 0 0 / 64%);
-  --status-success: #9bd0a8;
-  --status-warning: #e3c476;
-  --status-info: #a5cabc;
-  --selection: #345444;
-  --annotation: #594d2f;
-  --diff-delete-text: #e0aaaa;
-  --diff-delete-bg: #593b3d;
-  --diff-replaced-text: #d0c8bc;
-  --diff-replaced-bg: #454541;
-  --diff-replacement-text: #edc99f;
-  --diff-replacement-bg: #594631;
-  --diff-insert-text: #b6d8b8;
-  --diff-insert-bg: #354b39;
-  --primary-hover: #34d399;
-  --primary-active: #6ee7b7;
-  --primary-subtle: #294438;
-  --primary-muted: #355c47;
-  --primary-border: #48775d;
-  --primary-text: #b7e4c8;
-  --on-primary: #06261b;
-  --ring-primary: #34d399;
 }
 
 @layer base {
@@ -271,14 +215,9 @@
   scrollbar-color: rgba(0, 0, 0, 0.06) transparent;
 }
 
-/* Utility: light/dark aware thumb color using CSS variables */
 :root {
   --scroll-thumb: rgba(0, 0, 0, 0.06);
   --scroll-thumb-hover: rgba(0, 0, 0, 0.12);
-}
-.dark {
-  --scroll-thumb: rgba(255, 255, 255, 0.06);
-  --scroll-thumb-hover: rgba(255, 255, 255, 0.12);
 }
 
 /* Apply variables for browsers that support them */

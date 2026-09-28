@@ -1,14 +1,9 @@
 import { join, normalize, relative, resolve } from "node:path";
 import ts from "typescript";
+import { routeDirectories, routeRelation, sourceDomain } from "./route-ownership.ts";
+import { checkRuntimeCycles, type ModuleEdge } from "./check-cycle.ts";
 import type { Finding } from "./check-style.ts";
 
-type ModuleEdge = {
-  from: string;
-  to: string;
-  line: number;
-  clause: string;
-  defaultImport?: boolean;
-};
 type SourceEntry = { path: string; content: string };
 
 function sourceFiles(root: string): string[] {
@@ -67,27 +62,6 @@ function resolvedPath(
   return path.startsWith(`${root}/`) ? path.slice(root.length + 1) : undefined;
 }
 
-function sourceDomain(path: string, root: string): string | undefined {
-  const segments = path.split("/");
-  if (segments[0] !== "src" || segments[1] !== "routes") return undefined;
-  const routePath = segments.slice(2);
-  if (routePath[0] === "business") return "@common-business";
-  if (routePath[0] === "route-tree.gen.ts") return "@generated";
-  let directory = routePath.slice(0, -1);
-  while (directory.length > 0) {
-    const routeDir = `src/routes/${directory.join("/")}`;
-    for (const entry of ["route.tsx", "index.tsx"]) {
-      try {
-        if (Deno.statSync(`${root}/${routeDir}/${entry}`).isFile) return routeDir;
-      } catch {
-        // Continue toward the nearest parent route boundary.
-      }
-    }
-    directory = directory.slice(0, -1);
-  }
-  return undefined;
-}
-
 function isTestPath(path: string): boolean {
   return /(?:\.test\.[jt]sx?|\.stories\.[jt]sx?|\/business\/(?:[^/]+\/)*test\/|\/application\/test\/)/u.test(
     path,
@@ -102,21 +76,7 @@ function isIntegrationTest(path: string): boolean {
 }
 
 function isRoute(path: string): boolean {
-  return path.startsWith("src/routes/") && !path.endsWith("route-tree.gen.ts");
-}
-
-function routeRelation(
-  source: string,
-  target: string,
-  root: string,
-): "same" | "ancestor" | "sibling" | "other" {
-  const sourceRoute = sourceDomain(source, root);
-  const targetRoute = sourceDomain(target, root);
-  if (!sourceRoute || !targetRoute) return "other";
-  if (sourceRoute === targetRoute) return "same";
-  if (targetRoute === "@common-business") return "ancestor";
-  if (sourceRoute.startsWith(`${targetRoute}/`)) return "ancestor";
-  return "sibling";
+  return path.startsWith("src/route/") && !path.endsWith("route-tree.gen.ts");
 }
 
 function collectEdges(entries: SourceEntry[], root: string): ModuleEdge[] {
@@ -138,6 +98,7 @@ function collectEdges(entries: SourceEntry[], root: string): ModuleEdge[] {
       defaultImport = false,
       sourceFile = source,
       lineOffset = 0,
+      typeOnly = false,
     ): void => {
       const target =
         resolvedPath(specifier, entry.path, root, options) ??
@@ -153,6 +114,7 @@ function collectEdges(entries: SourceEntry[], root: string): ModuleEdge[] {
         line: lineOffset + sourceFile.getLineAndCharacterOfPosition(position).line + 1,
         clause,
         defaultImport,
+        typeOnly,
       });
     };
     for (const node of source.statements) {
@@ -167,6 +129,17 @@ function collectEdges(entries: SourceEntry[], root: string): ModuleEdge[] {
           node.getStart(source),
           "module declaration",
           Boolean(clause?.name),
+          source,
+          0,
+          ts.isImportDeclaration(node)
+            ? clause?.phaseModifier === ts.SyntaxKind.TypeKeyword ||
+                Boolean(
+                  clause?.namedBindings &&
+                    ts.isNamedImports(clause.namedBindings) &&
+                    !clause.name &&
+                    clause.namedBindings.elements.every((element) => element.isTypeOnly),
+                )
+            : node.isTypeOnly,
         );
       }
     }
@@ -263,8 +236,10 @@ function collectEdges(entries: SourceEntry[], root: string): ModuleEdge[] {
 }
 
 export function inspectDependencyEntries(entries: SourceEntry[], root: string): Finding[] {
-  const findings: Finding[] = [];
-  for (const edge of collectEdges(entries, root)) {
+  const edges = collectEdges(entries, root);
+  const findings: Finding[] = checkRuntimeCycles(edges);
+  const owners = routeDirectories(root);
+  for (const edge of edges) {
     if (edge.to === "@dynamic") {
       findings.push({
         file: edge.from,
@@ -312,28 +287,44 @@ export function inspectDependencyEntries(entries: SourceEntry[], root: string): 
     }
     if (
       edge.from.startsWith("src/shared/") &&
-      (edge.to.startsWith("src/routes/") || edge.to.startsWith("src/application/"))
+      (edge.to.startsWith("src/route/") ||
+        edge.to.startsWith("src/application/") ||
+        edge.to.startsWith("src/api/"))
     ) {
-      report("shared modules cannot depend on routes or application assembly");
+      report("shared modules cannot depend on API, routes or application assembly");
       continue;
     }
-    if (edge.from.startsWith("src/routes/") && edge.to.startsWith("src/application/")) {
+    if (
+      edge.from.startsWith("src/api/") &&
+      (edge.to.startsWith("src/route/") ||
+        edge.to.startsWith("src/application/") ||
+        edge.to.startsWith("src/shared/component/") ||
+        edge.to.startsWith("src/shared/hook/"))
+    ) {
+      report("API cannot depend on route business, application, React hooks or UI");
+      continue;
+    }
+    if (edge.from.startsWith("src/route/") && edge.to.startsWith("src/application/")) {
       report("routes cannot depend on application assembly");
       continue;
     }
     if (!isRoute(edge.from) || !isRoute(edge.to)) continue;
     if (sourceTest && isIntegrationTest(edge.from)) continue;
-    const sourceRoute = sourceDomain(edge.from, root);
-    const targetRoute = sourceDomain(edge.to, root);
+    if (edge.from.includes("/business/") && !edge.to.includes("/business/")) {
+      report("route business cannot depend on route entrypoints");
+      continue;
+    }
+    const sourceRoute = sourceDomain(edge.from, owners);
+    const targetRoute = sourceDomain(edge.to, owners);
     if (
       sourceRoute === "@common-business" &&
       (targetRoute !== "@common-business" ||
-        /^src\/routes\/business\/(?:index|route)\.tsx?$/u.test(edge.to))
+        /^src\/route\/business\/(?:index|route)\.tsx?$/u.test(edge.to))
     ) {
       report("route business modules cannot depend on route implementation modules");
       continue;
     }
-    const relation = routeRelation(edge.from, edge.to, root);
+    const relation = routeRelation(edge.from, edge.to, owners);
     if (relation === "same") continue;
     if (relation === "ancestor" && edge.to.includes("/business/")) continue;
     if (relation === "sibling") {

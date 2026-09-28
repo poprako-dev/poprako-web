@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactElement } from "react";
 import type { KeyboardEvent } from "react";
+import clsx from "clsx";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
 
 type Props = {
@@ -31,7 +32,10 @@ export function PageInput({ displayPage, totalPageCount, onChange }: Props): Rea
         onChange={(event) => {
           setValue(event.target.value);
         }}
-        className="h-full w-6 bg-transparent p-0 text-center text-xs font-bold text-foreground"
+        className={clsx(
+          "h-full w-6 bg-transparent p-0 text-center text-xs font-bold text-foreground",
+          "focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary",
+        )}
         onBlur={(event) => {
           if (skipNextBlurRef.current) {
             skipNextBlurRef.current = false;

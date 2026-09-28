@@ -1,6 +1,7 @@
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "@/route-tree.gen";
 import { RoutePending } from "@/application/RoutePending";
+import { applicationApi } from "@/application/api";
 
 export function parseRouteSearch(search: string): Record<string, string> {
   const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
@@ -30,6 +31,7 @@ export function stringifyRouteSearch(search: Record<string, unknown>): string {
 
 export const router = createRouter({
   routeTree,
+  context: { api: applicationApi },
   parseSearch: parseRouteSearch,
   stringifySearch: stringifyRouteSearch,
   defaultPreload: "intent",

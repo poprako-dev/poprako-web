@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 
 export type BarArgs = {
   progressPercent: number;
-  /** CSS color or a theme variable, so the color survives production class extraction. */
+  /** Stable CSS color token unique within one bar list. */
   barColor: string;
 };
 
@@ -28,7 +28,7 @@ export function MultiProgressBar({
     >
       {bars.map((bar, index) => (
         <div
-          key={JSON.stringify(bar)}
+          key={bar.barColor}
           style={{
             width: `${String(Math.max(0, Math.min(100, bar.progressPercent)))}%`,
             zIndex: index + 1,

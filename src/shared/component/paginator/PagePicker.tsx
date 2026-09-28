@@ -44,6 +44,8 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
           className={clsx(
             "flex w-full items-center justify-between px-3 py-1.5 text-xs text-foreground",
             "transition-colors hover:bg-accent active:bg-accent",
+            "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
+            "focus-visible:outline-primary",
             index === currentPageIndex && "bg-accent",
           )}
         >

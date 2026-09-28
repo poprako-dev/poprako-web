@@ -63,9 +63,9 @@ await zip.pipeTo(zipWritable);
 
 ## 可复现验证
 
-使用 Deno 2.9；真实 PSD 放在 `test-resources/` 任意子目录下。测试代码位于
+使用 Deno 2.9；真实 PSD 放在 `test-resource/` 任意子目录下。测试代码位于
 `src/shared/utility/compress/core.test.ts` 和 `script/`，所有生成样本、报告、浏览器配置都在
-被 Git 忽略的 `test-resources/generated/`。不会修改原 PSD。
+被 Git 忽略的 `test-resource/generated/`。不会修改原 PSD。
 
 ```sh
 deno task test:unit src/shared/utility/compress/core.test.ts
@@ -103,4 +103,4 @@ macOS，Chrome 152.0.7977.82，生产构建，默认 preset 3：
 包含 ZIP 读取校验和浏览器自身开销，不是纯 Worker 堆或编解码工作内存测量。
 停止消费、中途取消、写入失败、截断尾部检查均通过，结束时模块 Worker 数量为 0。
 完整报告为 `browser-report.json`、`browser-large-report.json`，互操作报告为
-`interop-report.json`，均位于 `test-resources/generated/`。
+`interop-report.json`，均位于 `test-resource/generated/`。

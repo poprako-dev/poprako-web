@@ -7,7 +7,7 @@ import { runArchive } from "@/shared/utility/compress/core";
 import { xzStream } from "@/shared/utility/compress/xz";
 import type { WorkerJob } from "@/shared/utility/compress/types";
 
-const fixture = new URL("../../../../test-resources/generated/roundtrip.bin", import.meta.url);
+const fixture = new URL("../../../../test-resource/generated/roundtrip.bin", import.meta.url);
 const defaults = { preset: 1, maxBytes: 8 * 1024 ** 3, maxFiles: 1000 };
 type Sample = { bytes: Uint8Array; archive: Blob };
 

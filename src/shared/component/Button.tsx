@@ -9,9 +9,10 @@ const buttonVariants = cva(
   clsx(
     "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm",
     "font-medium whitespace-nowrap transition-all outline-none",
-    "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+    "focus-visible:border-primary focus-visible:outline-2",
+    "focus-visible:outline-offset-2 focus-visible:outline-primary",
     "disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive",
-    "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
+    "aria-invalid:ring-destructive/20",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ),
   {
@@ -20,16 +21,14 @@ const buttonVariants = cva(
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive: clsx(
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-          "focus-visible:ring-destructive/20 dark:bg-destructive/60",
-          "dark:focus-visible:ring-destructive/40",
+          "focus-visible:ring-destructive/20",
         ),
         outline: clsx(
           "border bg-background shadow-xs hover:bg-accent",
-          "hover:text-accent-foreground dark:border-input dark:bg-input/30",
-          "dark:hover:bg-input/50",
+          "hover:text-accent-foreground",
         ),
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -53,16 +52,18 @@ const buttonVariants = cva(
   },
 );
 
+type Props = React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean;
+  };
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-  }): React.ReactElement {
+}: Props): React.ReactElement {
   const Comp = asChild ? Slot.Root : "button";
 
   return (

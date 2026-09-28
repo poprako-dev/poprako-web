@@ -1,0 +1,6111 @@
+{
+  "sourceCommit": "0fd3646",
+  "contract": "docs/swagger.json at source commit",
+  "endpointCount": 103,
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "operationId": "check_health",
+      "summary": "`GET /api/health` — returns recent HTTP metrics to loopback callers.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "server/health (not a Web business adapter)",
+      "newApiOwnerExists": false,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [],
+      "request": null,
+      "response": {
+        "ref": "MetricTotal",
+        "required": [
+          "total",
+          "average_latency_ms",
+          "by_error",
+          "by_path",
+          "minutes"
+        ],
+        "properties": [
+          {
+            "key": "average_latency_ms",
+            "nullable": false,
+            "optional": false,
+            "type": "number"
+          },
+          {
+            "key": "by_error",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          },
+          {
+            "key": "by_path",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          },
+          {
+            "key": "minutes",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          },
+          {
+            "key": "total",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/detailed-metrics",
+      "operationId": "detailed_metrics",
+      "summary": "`GET /api/health/detailed-metrics` — renders Prometheus metrics locally.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "server/health (not a Web business adapter)",
+      "newApiOwnerExists": false,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [],
+      "request": null,
+      "response": null,
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/announcements",
+      "operationId": "create",
+      "summary": "`POST /api/v1/announcements` — create a team announcement.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/workspace/business/announcement/announcement-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/announcement.ts (R002d)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/announcement.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "CreateAnnouncementInstr",
+        "required": [
+          "team_id",
+          "title",
+          "content"
+        ],
+        "properties": [
+          {
+            "key": "content",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "team_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "title",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateAnnouncementVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/announcements/{announcement_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/announcements/{announcement_id}` — delete an announcement.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/workspace/business/announcement/announcement-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/announcement.ts (R002d)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/announcement.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "announcement_id",
+          "in": "path",
+          "description": "Announcement ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/announcements/{announcement_id}",
+      "operationId": "update_info",
+      "summary": "`PUT /api/v1/announcements/{announcement_id}` — replace editable fields.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/workspace/business/announcement/announcement-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/announcement.ts (R002d)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/announcement.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "announcement_id",
+          "in": "path",
+          "description": "Announcement ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateAnnouncementInfoInstr",
+        "required": [
+          "id",
+          "title",
+          "content"
+        ],
+        "properties": [
+          {
+            "key": "content",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "title",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assignment-invitations",
+      "operationId": "create",
+      "summary": "`POST /api/v1/assignment-invitations` — create a pending assignment invitation.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/assignment-invitation/assignment-invitation-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/assignment-invitation.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/assignment-invitation.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "CreateAssignmentInvitationInstr",
+        "required": [
+          "chapter_id",
+          "invitee_qid",
+          "roles"
+        ],
+        "properties": [
+          {
+            "key": "chapter_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "invitee_qid",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "roles",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/RoleMask"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateAssignmentInvitationVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/assignment-invitations/{assignment_invitation_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/assignment-invitations/{assignment_invitation_id}` — delete.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/assignment-invitation/assignment-invitation-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/assignment-invitation.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/assignment-invitation.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "assignment_invitation_id",
+          "in": "path",
+          "description": "Invitation ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assignment-invitations/join",
+      "operationId": "join",
+      "summary": "`POST /api/v1/assignment-invitations/join` — join via invitation code.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/assignment-invitation/assignment-invitation-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/assignment-invitation.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/assignment-invitation.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "JoinAssignmentInvitationInstr",
+        "required": [
+          "code"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_AssignmentInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/assignments",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/assignments` — list assignments by chapter or owner.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/assignment/assignment-request.ts",
+        "src/routes/_authenticated/business/assignment/assignment-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/assignment/assignment-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/assignment/assignment-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "query",
+          "description": "Chapter mode: list assignments on this chapter. Mutually exclusive with\n`owner_id`.",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "owner_id",
+          "in": "query",
+          "description": "Owner-user mode: list assignments owned by this user. Mutually exclusive\nwith `chapter_id`.",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "role",
+          "in": "query",
+          "description": "Single role-bit filter. Must be a singular valid role bit; composite\nvalues are rejected.",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/RoleField"
+          }
+        },
+        {
+          "name": "incl",
+          "in": "query",
+          "description": "Related rows to embed. Repeatable. Values: `user`, `chapter`,\n`chapter.comic`, `chapter.comic.workset`, `chapter.comic.workset.team`,\n`chapter.creator`, `chapter.comic.creator`. Dotted values imply their\nparent segments.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignmentInclOpt"
+            }
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset.",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of results per page.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_AssignmentInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/assignments/{assignment_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/assignments/{assignment_id}` — delete an assignment.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/assignment/assignment-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/assignment/assignment-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/assignment/assignment-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "assignment_id",
+          "in": "path",
+          "description": "Assignment ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assignments/join",
+      "operationId": "join",
+      "summary": "`POST /api/v1/assignments/join` — join a chapter assignment with roles.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/assignment/assignment-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "JoinChapterAssignmentInstr",
+        "required": [
+          "chapter_id",
+          "roles"
+        ],
+        "properties": [
+          {
+            "key": "chapter_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "roles",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/RoleMask"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_AssignmentInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "operationId": "login",
+      "summary": "`POST /api/v1/auth/login` — authenticates a user by QQ id and password.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/auth-request.ts",
+        "src/routes/business/identity/registration-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "LoginAuthInstr",
+        "required": [
+          "qid",
+          "password"
+        ],
+        "properties": [
+          {
+            "key": "password",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "qid",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_LoginAuthVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "operationId": "logout",
+      "summary": "`POST /api/v1/auth/logout` — clears the authorization cookie.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/auth-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "operationId": "register",
+      "summary": "`POST /api/v1/auth/register` — registers a user via invitation code.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/registration-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "RegisterAuthInstr",
+        "required": [
+          "qid",
+          "nickname",
+          "password",
+          "code"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "nickname",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "password",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "qid",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_RegisterAuthVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chapters",
+      "operationId": "create",
+      "summary": "`POST /api/v1/chapters` — create a chapter under a comic.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "CreateChapterInstr",
+        "required": [
+          "comic_id"
+        ],
+        "properties": [
+          {
+            "key": "comic_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "preset_assignment_roles",
+            "nullable": false,
+            "optional": true,
+            "type": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/RoleMask",
+                "description": "Roles assigned to the creator in addition to the mandatory admin role.\nEvery requested role must exist on the creator's team membership."
+              }
+            ]
+          },
+          {
+            "key": "subtitle",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateChapterVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/chapters/{chapter_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/chapters/{chapter_id}` — delete a chapter and descendants.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}",
+      "operationId": "get_info",
+      "summary": "`GET /api/v1/chapters/{chapter_id}` — fetch a chapter by id.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_ChapterInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/chapters/{chapter_id}",
+      "operationId": "update_info",
+      "summary": "`PATCH /api/v1/chapters/{chapter_id}` — partially update a chapter's profile.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateChapterInfoInstr",
+        "required": [
+          "id"
+        ],
+        "properties": [
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "subtitle",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chapters/{chapter_id}/artwork/alloc",
+      "operationId": "alloc_artwork",
+      "summary": "Allocates a direct chapter artwork upload; an available duplicate has no slot.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/artwork-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/artwork-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "AllocChapterArtworkInstr",
+        "required": [
+          "artwork_hash",
+          "new_byte_len",
+          "ext"
+        ],
+        "properties": [
+          {
+            "key": "artwork_hash",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ArtworkHash"
+          },
+          {
+            "key": "ext",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "new_byte_len",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_AllocChapterArtworkVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}/artwork/export",
+      "operationId": "export_artwork",
+      "summary": "Returns the original object URL of the current available artwork.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_ExportChapterArtworkVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chapters/{chapter_id}/artwork/mark-uploaded",
+      "operationId": "mark_artwork_uploaded",
+      "summary": "Optimistically confirms artwork and atomically completes typesetting/redraw.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/artwork-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/artwork-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "MarkChapterArtworkUploadedInstr",
+        "required": [
+          "artwork_version"
+        ],
+        "properties": [
+          {
+            "key": "artwork_version",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}/assignment-invitations",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/chapters/{chapter_id}/assignment-invitations` — list invitations.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/assignment-invitation/assignment-invitation-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/assignment-invitation.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/assignment-invitation.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "is_pending",
+          "in": "query",
+          "description": "When `Some(true)`, returns only unconsumed invitations;\n`Some(false)` returns only consumed ones; `None` returns all.",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset (0-based).",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of items to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_AssignmentInvitationInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/chapters/{chapter_id}/assignments/{user_id}/roles",
+      "operationId": "update_roles",
+      "summary": "`PUT /api/v1/chapters/{chapter_id}/assignments/{user_id}/roles` — update roles.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/assignment/assignment-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/assignment/assignment-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/assignment/assignment-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "user_id",
+          "in": "path",
+          "description": "Assignee user ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateAssignmentRolesInstr",
+        "required": [
+          "chapter_id",
+          "user_id",
+          "roles"
+        ],
+        "properties": [
+          {
+            "key": "chapter_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "roles",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/RoleMask"
+          },
+          {
+            "key": "user_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chapters/{chapter_id}/mark-pinned",
+      "operationId": "mark_pinned",
+      "summary": "`POST /api/v1/chapters/{chapter_id}/mark-pinned` — pin a chapter.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/chapters/{chapter_id}/pages",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/chapters/{chapter_id}/pages` — delete all pages in a chapter.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/page/page-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/page/page-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}/pages",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/chapters/{chapter_id}/pages` — list pages in a chapter.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/page/page-request.ts",
+        "src/routes/_authenticated/translator/business/remote/translator-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/page/page-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_PageInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chapters/{chapter_id}/pages/alloc",
+      "operationId": "alloc_chapter_pages",
+      "summary": "`POST /api/v1/chapters/{chapter_id}/pages/alloc` — allocate all page images.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/page/page-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/page/page-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "AllocChapterPagesInstr",
+        "required": [
+          "chapter_id",
+          "pages"
+        ],
+        "properties": [
+          {
+            "key": "chapter_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "pages",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_AllocChapterPagesVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}/pages/unit-diff-stats",
+      "operationId": "list_unit_diff_stats",
+      "summary": "`GET /api/v1/chapters/{chapter_id}/pages/unit-diff-stats` — list Unit text statistics for Pages with revision differences.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/remote/translator-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/page/page-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_PageUnitDiffStatsVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}/pages/unit-flagged-stats",
+      "operationId": "list_unit_flagged_stats",
+      "summary": "`GET /api/v1/chapters/{chapter_id}/pages/unit-flagged-stats` — list Pages containing visible flagged Units.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/remote/translator-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/page/page-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_PageUnitFlaggedStatsVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chapters/{chapter_id}/stage/advance",
+      "operationId": "advance_stage",
+      "summary": "`POST /api/v1/chapters/{chapter_id}/stage/advance` — advance a workflow stage.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts",
+        "src/routes/_authenticated/translator/business/remote/translator-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateChapterStageInstr",
+        "required": [
+          "id",
+          "stage",
+          "oper"
+        ],
+        "properties": [
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "oper",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ChapterStageOperInstr"
+          },
+          {
+            "key": "stage",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ChapterStageInstr"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}/translations/export",
+      "operationId": "export_translation",
+      "summary": "`GET /api/v1/chapters/{chapter_id}/translations/export` — export response body.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "format",
+          "in": "query",
+          "description": "Comma-separated export formats: poprako,label_plus",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "with_raw_ident",
+          "in": "query",
+          "description": "Use original filenames in LabelPlus; defaults to false",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "ExportChapterTranslationsVal",
+        "required": [],
+        "properties": [
+          {
+            "key": "label_plus",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "poprako",
+            "nullable": false,
+            "optional": true,
+            "type": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ChapterTranslationPortView",
+                "description": "Native `PopRaKo` document, absent when that format was not selected."
+              }
+            ]
+          },
+          {
+            "key": "raw_idents",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}/translations/export/download",
+      "operationId": "export_translation_download",
+      "summary": "`GET /api/v1/chapters/{chapter_id}/translations/export/download` — export as file download.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "format",
+          "in": "query",
+          "description": "Comma-separated export formats: poprako,label_plus",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "with_raw_ident",
+          "in": "query",
+          "description": "Use original filenames in LabelPlus; defaults to false",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "ExportChapterTranslationsVal",
+        "required": [],
+        "properties": [
+          {
+            "key": "label_plus",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "poprako",
+            "nullable": false,
+            "optional": true,
+            "type": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ChapterTranslationPortView",
+                "description": "Native `PopRaKo` document, absent when that format was not selected."
+              }
+            ]
+          },
+          {
+            "key": "raw_idents",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chapters/{chapter_id}/translations/import",
+      "operationId": "import_translation",
+      "summary": "`POST /api/v1/chapters/{chapter_id}/translations/import` — import translations.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "ImportChapterTranslationInstr",
+        "required": [
+          "format",
+          "mode",
+          "content"
+        ],
+        "properties": [
+          {
+            "key": "content",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "format",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ChapterTranslationFormatInstr"
+          },
+          {
+            "key": "mode",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ChapterTranslationImportModeInstr"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_ImportChapterTranslationVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}/units/search",
+      "operationId": "search_infos",
+      "summary": "`GET /api/v1/chapters/{chapter_id}/units/search` — search Unit text.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/remote/translator-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/unit-search.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "description": "Unit text field selected for matching.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/UnitTextPart"
+          }
+        },
+        {
+          "name": "phrase",
+          "in": "query",
+          "description": "Case-sensitive literal substring to search.",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_UnitInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chapters/{chapter_id}/units/transform",
+      "operationId": "transform",
+      "summary": "`POST /api/v1/chapters/{chapter_id}/units/transform` — transform Unit text.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/remote/translator-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/unit-search.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "TransformChapterUnitsInstr",
+        "required": [
+          "part",
+          "units"
+        ],
+        "properties": [
+          {
+            "key": "part",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/UnitTextPart"
+          },
+          {
+            "key": "units",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/chapters/{chapter_id}/workflow-records",
+      "operationId": "list_workflow_record_infos",
+      "summary": "`GET /api/v1/chapters/{chapter_id}/workflow-records` — list activity records.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/chapter/chapter-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "chapter_id",
+          "in": "path",
+          "description": "Chapter ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset (0-based).",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of items to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_ChapterWorkflowRecordInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/comics",
+      "operationId": "create",
+      "summary": "`POST /api/v1/comics` — create a comic (and its first chapter).",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/comic/comic-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comic/comic-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "CreateComicInstr",
+        "required": [
+          "workset_id",
+          "title",
+          "author"
+        ],
+        "properties": [
+          {
+            "key": "author",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "first_chapter_subtitle",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "preset_assignment_roles",
+            "nullable": false,
+            "optional": true,
+            "type": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/RoleMask",
+                "description": "Roles assigned to the creator on the first chapter in addition to the\nmandatory admin role. Every requested role must exist on the creator's\nteam membership."
+              }
+            ]
+          },
+          {
+            "key": "title",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "workset_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateComicVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/comics/{comic_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/comics/{comic_id}` — delete a comic and descendants.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/comic/comic-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comic/comic-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/comics/{comic_id}",
+      "operationId": "get_info",
+      "summary": "`GET /api/v1/comics/{comic_id}` — fetch a comic by id.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/comic/comic-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comic/comic-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "incl",
+          "in": "query",
+          "description": "Related rows to embed. Dotted values include their parent segments.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComicInclOpt"
+            }
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_ComicInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/comics/{comic_id}",
+      "operationId": "update_info",
+      "summary": "`PUT /api/v1/comics/{comic_id}` — update a comic's profile.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/comic/comic-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comic/comic-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateComicInfoInstr",
+        "required": [
+          "id",
+          "title",
+          "author"
+        ],
+        "properties": [
+          {
+            "key": "author",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "title",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/comics/{comic_id}/archive",
+      "operationId": "archive",
+      "summary": "`POST /api/v1/comics/{comic_id}/archive` — archive one comic and clear its active data.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/comic/comic-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comic/comic-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_ArchiveComicVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/comics/{comic_id}/chapters",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/comics/{comic_id}/chapters` — list chapters in a comic.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "incl",
+          "in": "query",
+          "description": "Related rows to embed. Repeatable. Values: `comic`, `comic.workset`,\n`comic.workset.team`, `comic.creator`, `creator`. Dotted values imply\ntheir parent segments.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChapterInclOpt"
+            }
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset (0-based).",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of items to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_ChapterInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/comics/{comic_id}/chapters/pinned",
+      "operationId": "get_pinned",
+      "summary": "`GET /api/v1/comics/{comic_id}/chapters/pinned` — fetch the pinned chapter.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/chapter/chapter-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/chapter/chapter-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Option_ChapterInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "description": "Presentation-ready chapter information.\n\nMirrors [`ChapterInfo`] but converts timestamps to Unix milliseconds\nand exposes the same grouped field layout as the API response.\n\nConstruct via [`From<ChapterInfo>`] — the conversion is infallible.\n\n[`ChapterInfo`]: crate::model::read::proj::chapter::ChapterInfo",
+                "required": [
+                  "id",
+                  "comic_id",
+                  "is_pinned",
+                  "index",
+                  "subtitle",
+                  "page_count",
+                  "total_unit_count",
+                  "translated_unit_count",
+                  "proofread_unit_count",
+                  "stages",
+                  "creator_id",
+                  "created_at",
+                  "updated_at"
+                ],
+                "properties": {
+                  "comic": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/components/schemas/ComicInfoView",
+                        "description": "Included comic information; present only when requested via inclusion\noptions."
+                      }
+                    ]
+                  },
+                  "comic_id": {
+                    "type": "string",
+                    "description": "Owning comic identifier."
+                  },
+                  "created_at": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Timestamp of creation, in Unix milliseconds."
+                  },
+                  "creator": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$ref": "#/components/schemas/UserInfoView",
+                        "description": "Included creator information; present only when requested via inclusion\noptions."
+                      }
+                    ]
+                  },
+                  "creator_id": {
+                    "type": "string",
+                    "description": "Creator user identifier."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "Unique chapter identifier."
+                  },
+                  "index": {
+                    "type": "integer",
+                    "description": "Ordinal position within the parent comic.",
+                    "minimum": 0
+                  },
+                  "is_pinned": {
+                    "type": "boolean",
+                    "description": "Whether the chapter is pinned to the top of its comic's chapter list."
+                  },
+                  "page_count": {
+                    "type": "integer",
+                    "description": "Total number of image pages in the chapter.",
+                    "minimum": 0
+                  },
+                  "proofread_unit_count": {
+                    "type": "integer",
+                    "description": "Number of units whose proofread has been completed.",
+                    "minimum": 0
+                  },
+                  "stages": {
+                    "$ref": "#/components/schemas/StageMask",
+                    "description": "Bitmask encoding the current workflow-stage states."
+                  },
+                  "subtitle": {
+                    "type": "string",
+                    "description": "Display subtitle for the chapter."
+                  },
+                  "total_unit_count": {
+                    "type": "integer",
+                    "description": "Total number of translation units across all pages.",
+                    "minimum": 0
+                  },
+                  "translated_unit_count": {
+                    "type": "integer",
+                    "description": "Number of units whose translation has been completed.",
+                    "minimum": 0
+                  },
+                  "updated_at": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Timestamp of last update, in Unix milliseconds."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/comics/{comic_id}/cover/alloc",
+      "operationId": "alloc_cover",
+      "summary": "`POST /api/v1/comics/{comic_id}/cover/alloc` — allocate a cover upload slot.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/comic/comic-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comic/comic-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "AllocComicCoverInstr",
+        "required": [
+          "image_hash",
+          "new_byte_len",
+          "ext"
+        ],
+        "properties": [
+          {
+            "key": "ext",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ImageExt"
+          },
+          {
+            "key": "image_hash",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ImageHash"
+          },
+          {
+            "key": "new_byte_len",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_AllocComicCoverVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/comics/{comic_id}/cover/mark-uploaded",
+      "operationId": "mark_cover_uploaded",
+      "summary": "`POST /api/v1/comics/{comic_id}/cover/mark-uploaded` — confirm a cover upload.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/comic/comic-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comic/comic-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "MarkComicCoverUploadedInstr",
+        "required": [
+          "image_version"
+        ],
+        "properties": [
+          {
+            "key": "image_version",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/comics/{comic_id}/termbases",
+      "operationId": "list_comic_infos",
+      "summary": "`GET /api/v1/comics/{comic_id}/termbases` — list visible terminology bases.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/termbase-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/termbase.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "fuzzy_name",
+          "in": "query",
+          "description": "Optional case-insensitive name substring.",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Number of records to skip for pagination.",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of records to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_TermbaseInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/comics/{comic_id}/termbases/import",
+      "operationId": "import_comic",
+      "summary": "`POST /api/v1/comics/{comic_id}/termbases/import` — import into a comic scope.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "comic_id",
+          "in": "path",
+          "description": "Comic ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "force_merge",
+          "in": "query",
+          "description": "Merge into a same-name terminology base instead of rejecting it.",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "request": {
+        "ref": "ImportTermbaseInstr",
+        "required": [
+          "name",
+          "terms"
+        ],
+        "properties": [
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "terms",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_ImportTermbaseVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/comments",
+      "operationId": "create",
+      "summary": "`POST /api/v1/comments` — create a team board comment.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/workspace/business/comment/comment-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comment.ts (R002d)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comment.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "CreateCommentInstr",
+        "required": [
+          "team_id",
+          "content"
+        ],
+        "properties": [
+          {
+            "key": "content",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "team_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateCommentVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/member-invitations",
+      "operationId": "create",
+      "summary": "`POST /api/v1/member-invitations` — create a pending team invitation.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/member-list/business/invitation/invitation-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/member-invitation.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/member-invitation.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "CreateMemberInvitationInstr",
+        "required": [
+          "team_id",
+          "invitee_qid",
+          "roles"
+        ],
+        "properties": [
+          {
+            "key": "invitee_qid",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "roles",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/RoleMask"
+          },
+          {
+            "key": "team_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateMemberInvitationVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/member-invitations/{member_invitation_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/member-invitations/{member_invitation_id}` — delete an invitation.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/member-list/business/invitation/invitation-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/member-invitation.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/member-invitation.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "member_invitation_id",
+          "in": "path",
+          "description": "Invitation ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/member-invitations/{member_invitation_id}/roles",
+      "operationId": "update_roles",
+      "summary": "`PUT /api/v1/member-invitations/{member_invitation_id}/roles` — update invitation roles.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/member-invitation.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "member_invitation_id",
+          "in": "path",
+          "description": "Invitation ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateMemberInvitationRolesInstr",
+        "required": [
+          "id",
+          "roles"
+        ],
+        "properties": [
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "roles",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/RoleMask"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/members",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/members` — list members by team or owner.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/member-request.ts",
+        "src/routes/business/identity/member-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "owner_id",
+          "in": "query",
+          "description": "Owner-user mode: list teams/memberships owned by this user. Mutually\nexclusive with `team_id`; when set, `role` and `fuzzy_nickname` must be\nomitted.",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "team_id",
+          "in": "query",
+          "description": "Team mode: list members of this team. Mutually exclusive with\n`owner_id`.",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "fuzzy_nickname",
+          "in": "query",
+          "description": "Substring filter on member nickname (team mode only).",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "role",
+          "in": "query",
+          "description": "Single role-bit filter (team mode only). Must be a singular valid role\nbit; composite values are rejected.",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/RoleField"
+          }
+        },
+        {
+          "name": "incl",
+          "in": "query",
+          "description": "Related rows to embed. Repeatable. Values: `user`, `team`.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberInclOpt"
+            }
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset.",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of results per page.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_MemberInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/members",
+      "operationId": "create",
+      "summary": "`POST /api/v1/members` — create a member under a team.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [],
+      "request": {
+        "ref": "CreateMemberInstr",
+        "required": [
+          "user_id",
+          "team_id",
+          "roles"
+        ],
+        "properties": [
+          {
+            "key": "roles",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/RoleMask"
+          },
+          {
+            "key": "team_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "user_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateMemberVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/members/{member_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/members/{member_id}` — delete a member.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "member_id",
+          "in": "path",
+          "description": "Member ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/members/{member_id}/roles",
+      "operationId": "update_roles",
+      "summary": "`PUT /api/v1/members/{member_id}/roles` — update a member's roles.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/member-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "member_id",
+          "in": "path",
+          "description": "Member ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateMemberRolesInstr",
+        "required": [
+          "id",
+          "roles"
+        ],
+        "properties": [
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "roles",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/RoleMask"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/members/join",
+      "operationId": "join",
+      "summary": "`POST /api/v1/members/join` — join a team via invitation code.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/member-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "JoinTeamInstr",
+        "required": [
+          "code"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_MemberInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/members/me",
+      "operationId": "list_my_infos",
+      "summary": "`GET /api/v1/members/me` — list the current user's memberships.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "incl",
+          "in": "query",
+          "description": "Related rows to embed. Repeatable. Values: `user`, `team`.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberInclOpt"
+            }
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset (0-based).",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of items to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_MemberInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/{page_id}",
+      "operationId": "get_info",
+      "summary": "`GET /api/v1/pages/{page_id}` — fetch one page.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/page/page-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/page/page-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/page/page-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "page_id",
+          "in": "path",
+          "description": "Page ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_PageInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/pages/{page_id}/image/alloc",
+      "operationId": "alloc_image",
+      "summary": "`POST /api/v1/pages/{page_id}/image/alloc` — allocate a replacement page image.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/page/page-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/page/page-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/page/page-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "page_id",
+          "in": "path",
+          "description": "Page ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "AllocPageImageInstr",
+        "required": [
+          "image_hash",
+          "new_byte_len",
+          "ext"
+        ],
+        "properties": [
+          {
+            "key": "ext",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ImageExt"
+          },
+          {
+            "key": "image_hash",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ImageHash"
+          },
+          {
+            "key": "new_byte_len",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "raw_ident",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_AllocatedPageVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/pages/{page_id}/image/mark-uploaded",
+      "operationId": "mark_image_uploaded",
+      "summary": "`POST /api/v1/pages/{page_id}/image/mark-uploaded` — confirm a page image upload.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/page/page-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/page/page-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/page/page-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "page_id",
+          "in": "path",
+          "description": "Page ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "MarkPageImageUploadedInstr",
+        "required": [
+          "image_version"
+        ],
+        "properties": [
+          {
+            "key": "image_version",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/pages/{page_id}/units",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/pages/{page_id}/units` — list units under a page.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/remote/translator-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/page/page-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/unit.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "page_id",
+          "in": "path",
+          "description": "Page ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_ListPageUnitInfosVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/pages/{page_id}/units/save",
+      "operationId": "save_infos",
+      "summary": "`POST /api/v1/pages/{page_id}/units/save` — save Unit edits.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/remote/translator-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/page/page-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/unit.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "page_id",
+          "in": "path",
+          "description": "Page ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "save_id",
+          "in": "query",
+          "description": "Client-generated save UUID, reused only for the identical batch.",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "type": "array"
+      },
+      "response": {
+        "ref": "HttpBody_SavePageUnitEditsVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/system-mails",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/system-mails` — list the current user's system mails.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/business/mail/sys-mail-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/system-mail.ts (R002d)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/system-mail.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "is_read",
+          "in": "query",
+          "description": "Filter by read status. Absent returns all.",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset.",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of results per page.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_SystemMailInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/system-mails/mark-read",
+      "operationId": "mark_read",
+      "summary": "`POST /api/v1/system-mails/mark-read` — mark a batch of mails as read.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/business/mail/sys-mail-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/system-mail.ts (R002d)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/system-mail.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "MarkSystemMailReadInstr",
+        "required": [
+          "ids"
+        ],
+        "properties": [
+          {
+            "key": "ids",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teams",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/teams` — list teams with pagination.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/team-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "query",
+          "description": "Filter to teams joined by the authenticated user. A different user's\nID is rejected. Omit to list all teams (super-admin only).",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset.",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of results per page.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_TeamInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/teams",
+      "operationId": "create",
+      "summary": "`POST /api/v1/teams` — create a new team.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [],
+      "request": {
+        "ref": "CreateTeamInstr",
+        "required": [
+          "name",
+          "description"
+        ],
+        "properties": [
+          {
+            "key": "description",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_TeamInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/teams/{team_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/teams/{team_id}` — delete a team and all descendants.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teams/{team_id}",
+      "operationId": "get_info",
+      "summary": "`GET /api/v1/teams/{team_id}` — fetch a team by id.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_TeamInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/teams/{team_id}",
+      "operationId": "update_info",
+      "summary": "`PUT /api/v1/teams/{team_id}` — update a team's profile.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/team-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateTeamInfoInstr",
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "properties": [
+          {
+            "key": "description",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teams/{team_id}/announcements",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/teams/{team_id}/announcements` — list a team's announcements.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/workspace/business/announcement/announcement-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/announcement.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "incl",
+          "in": "query",
+          "description": "Related rows to embed. Repeatable. Values: `user`.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnnouncementInclOpt"
+            }
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset (0-based).",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of items to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_AnnouncementInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/teams/{team_id}/avatar/alloc",
+      "operationId": "alloc_avatar",
+      "summary": "`POST /api/v1/teams/{team_id}/avatar/alloc` — allocate a team avatar upload slot.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/team-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "AllocTeamAvatarInstr",
+        "required": [
+          "image_hash",
+          "new_byte_len",
+          "ext"
+        ],
+        "properties": [
+          {
+            "key": "ext",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ImageExt"
+          },
+          {
+            "key": "image_hash",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ImageHash"
+          },
+          {
+            "key": "new_byte_len",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_AllocTeamAvatarVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/teams/{team_id}/avatar/mark-uploaded",
+      "operationId": "mark_avatar_uploaded",
+      "summary": "`POST /api/v1/teams/{team_id}/avatar/mark-uploaded` — confirm a team avatar upload.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/team-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "MarkTeamAvatarUploadedInstr",
+        "required": [
+          "image_version"
+        ],
+        "properties": [
+          {
+            "key": "image_version",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teams/{team_id}/comic-archives/export",
+      "operationId": "export_archives",
+      "summary": "`GET /api/v1/teams/{team_id}/comic-archives/export` — export archive month slots.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "month",
+          "in": "query",
+          "description": "UTC month slots in `YYYY-MM` format to filter archives by.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_ExportComicArchivesVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teams/{team_id}/comments",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/teams/{team_id}/comments` — list a team's comments.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/workspace/business/comment/comment-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comment.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "incl",
+          "in": "query",
+          "description": "Related rows to embed. Repeatable. Values: `user`.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommentInclOpt"
+            }
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset (0-based).",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of items to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_CommentInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/teams/{team_id}/mark-self-online",
+      "operationId": "mark_self_online",
+      "summary": "`PUT /api/v1/teams/{team_id}/mark-self-online` — refresh own activity and lease.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/team-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teams/{team_id}/member-invitations",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/teams/{team_id}/member-invitations` — list a team's invitations.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/member-list/business/invitation/invitation-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/member-invitation.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "is_pending",
+          "in": "query",
+          "description": "When `Some(true)`, returns only unconsumed invitations;\n`Some(false)` returns only consumed ones; `None` returns all.",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "incl",
+          "in": "query",
+          "description": "Related rows to embed. Repeatable. Values: `invitor`.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberInvitationInclOpt"
+            }
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset (0-based).",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of items to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_MemberInvitationInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teams/{team_id}/online-users",
+      "operationId": "list_online_user_ids",
+      "summary": "`GET /api/v1/teams/{team_id}/online-users` — list active team users.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/team-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_String",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teams/{team_id}/termbases",
+      "operationId": "list_team_infos",
+      "summary": "`GET /api/v1/teams/{team_id}/termbases` — list team terminology bases.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "fuzzy_name",
+          "in": "query",
+          "description": "Optional case-insensitive name substring.",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Number of records to skip for pagination.",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of records to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_TermbaseInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/teams/{team_id}/termbases/import",
+      "operationId": "import_team",
+      "summary": "`POST /api/v1/teams/{team_id}/termbases/import` — import into a team scope.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "force_merge",
+          "in": "query",
+          "description": "Merge into a same-name terminology base instead of rejecting it.",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "request": {
+        "ref": "ImportTermbaseInstr",
+        "required": [
+          "name",
+          "terms"
+        ],
+        "properties": [
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "terms",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_ImportTermbaseVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/teams/{team_id}/worksets",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/teams/{team_id}/worksets` — list worksets in a team.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/comic-playground/business/workset/workset-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/workset/workset-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "team_id",
+          "in": "path",
+          "description": "Team ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Zero-based offset for paginated results.",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of items to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_WorksetInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/termbases",
+      "operationId": "create",
+      "summary": "`POST /api/v1/termbases` — create a terminology base.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/termbase-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/translator/termbase.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/termbase.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "CreateTermbaseInstr",
+        "required": [
+          "name"
+        ],
+        "properties": [
+          {
+            "key": "comic_id",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "team_id",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateTermbaseVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/termbases/{termbase_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/termbases/{termbase_id}` — delete a terminology base.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/termbase-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/translator/termbase.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/termbase.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "termbase_id",
+          "in": "path",
+          "description": "Termbase ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/termbases/{termbase_id}",
+      "operationId": "get_info",
+      "summary": "`GET /api/v1/termbases/{termbase_id}` — fetch a terminology base.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/termbase-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/translator/termbase.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/termbase.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "termbase_id",
+          "in": "path",
+          "description": "Termbase ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_TermbaseInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/termbases/{termbase_id}",
+      "operationId": "update_info",
+      "summary": "`PUT /api/v1/termbases/{termbase_id}` — replace editable fields.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/termbase-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/translator/termbase.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/termbase.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "termbase_id",
+          "in": "path",
+          "description": "Termbase ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateTermbaseInfoInstr",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": [
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/termbases/{termbase_id}/export",
+      "operationId": "export",
+      "summary": "`GET /api/v1/termbases/{termbase_id}/export` — export native JSON.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/translator/termbase.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "termbase_id",
+          "in": "path",
+          "description": "Termbase ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "ExportTermbaseVal",
+        "required": [
+          "name",
+          "terms"
+        ],
+        "properties": [
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "terms",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/termbases/{termbase_id}/export/download",
+      "operationId": "export_download",
+      "summary": "`GET /api/v1/termbases/{termbase_id}/export/download` — download native JSON.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/translator/termbase.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "termbase_id",
+          "in": "path",
+          "description": "Termbase ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "ExportTermbaseVal",
+        "required": [
+          "name",
+          "terms"
+        ],
+        "properties": [
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "terms",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/termbases/{termbase_id}/terms",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/termbases/{termbase_id}/terms` — list terms in one base.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/term-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/translator/termbase.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/term.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "termbase_id",
+          "in": "path",
+          "description": "Termbase ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "fuzzy_source",
+          "in": "query",
+          "description": "Optional case-insensitive source substring.",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Number of records to skip for pagination.",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of records to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_Vec_TermInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/terms",
+      "operationId": "create",
+      "summary": "`POST /api/v1/terms` — create a terminology entry.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/term-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/translator/term.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/term.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "CreateTermInstr",
+        "required": [
+          "termbase_id",
+          "source",
+          "targets"
+        ],
+        "properties": [
+          {
+            "key": "comment",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "source",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "targets",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          },
+          {
+            "key": "termbase_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateTermVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/terms/{term_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/terms/{term_id}` — delete a terminology entry.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/term-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/translator/term.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/term.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "term_id",
+          "in": "path",
+          "description": "Term ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/terms/{term_id}",
+      "operationId": "get_info",
+      "summary": "`GET /api/v1/terms/{term_id}` — fetch a terminology entry.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/term-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/translator/term.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/term.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "term_id",
+          "in": "path",
+          "description": "Term ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_TermInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/terms/{term_id}",
+      "operationId": "update_info",
+      "summary": "`PUT /api/v1/terms/{term_id}` — replace terminology-entry fields.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/translator/business/terminology/term-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/translator/term.ts (R002c)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/translator/term.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "term_id",
+          "in": "path",
+          "description": "Term ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateTermInfoInstr",
+        "required": [
+          "id",
+          "source",
+          "targets"
+        ],
+        "properties": [
+          {
+            "key": "comment",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "source",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "targets",
+            "nullable": false,
+            "optional": false,
+            "type": "array"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/users/{user_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/users/{user_id}` — delete a user account.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "description": "Target user ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/{user_id}",
+      "operationId": "get_info",
+      "summary": "`GET /api/v1/users/{user_id}` — a user's profile by id.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/user-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "description": "Target user ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_UserInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/users/{user_id}",
+      "operationId": "update_info",
+      "summary": "`PUT /api/v1/users/{user_id}` — update a user's profile.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "description": "Target user ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateUserInfoInstr",
+        "required": [
+          "id",
+          "qid",
+          "nickname"
+        ],
+        "properties": [
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "nickname",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "qid",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/{user_id}/avatar/alloc",
+      "operationId": "alloc_avatar",
+      "summary": "`POST /api/v1/users/{user_id}/avatar/alloc` — allocate an avatar upload slot.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/user-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "description": "Target user ID (must match authenticated user)",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "AllocUserAvatarInstr",
+        "required": [
+          "image_hash",
+          "new_byte_len",
+          "ext"
+        ],
+        "properties": [
+          {
+            "key": "ext",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ImageExt"
+          },
+          {
+            "key": "image_hash",
+            "nullable": false,
+            "optional": false,
+            "type": "#/components/schemas/ImageHash"
+          },
+          {
+            "key": "new_byte_len",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_AllocUserAvatarVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/{user_id}/avatar/mark-uploaded",
+      "operationId": "mark_avatar_uploaded",
+      "summary": "`POST /api/v1/users/{user_id}/avatar/mark-uploaded` — confirm an avatar upload.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/user-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "description": "Target user ID (must match authenticated user)",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "MarkUserAvatarUploadedInstr",
+        "required": [
+          "image_version"
+        ],
+        "properties": [
+          {
+            "key": "image_version",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/users/{user_id}/password",
+      "operationId": "update_password",
+      "summary": "`PUT /api/v1/users/{user_id}/password` — replace the current user's password.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/user-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "description": "Target user ID (must match authenticated user)",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateUserPasswordInstr",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "properties": [
+          {
+            "key": "current_password",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "new_password",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/me",
+      "operationId": "get_my_info",
+      "summary": "`GET /api/v1/users/me` — current user's profile.",
+      "legacyAdapterFiles": [
+        "src/routes/business/identity/user-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/identity/identity-api.ts (R002a)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/identity/identity-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_UserInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worksets",
+      "operationId": "create",
+      "summary": "`POST /api/v1/worksets` — create a workset inside a team.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/comic-playground/business/workset/workset-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/workset/workset-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/workset/workset-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [],
+      "request": {
+        "ref": "CreateWorksetInstr",
+        "required": [
+          "team_id",
+          "name"
+        ],
+        "properties": [
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "team_id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "ref": "HttpBody_CreateWorksetVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/worksets/{workset_id}",
+      "operationId": "delete",
+      "summary": "`DELETE /api/v1/worksets/{workset_id}` — delete a workset and descendants.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/comic-playground/business/workset/workset-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/workset/workset-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/workset/workset-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "workset_id",
+          "in": "path",
+          "description": "Workset ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worksets/{workset_id}",
+      "operationId": "get_info",
+      "summary": "`GET /api/v1/worksets/{workset_id}` — fetch a workset by id.",
+      "legacyAdapterFiles": [],
+      "legacyAdapterUse": "no-production-client-call-at-baseline",
+      "newApiOwner": "src/api/workset/workset-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [],
+      "newApiOperationImplemented": false,
+      "parameters": [
+        {
+          "name": "workset_id",
+          "in": "path",
+          "description": "Workset ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_WorksetInfoView",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "server-operation-without-existing-web-use"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/worksets/{workset_id}",
+      "operationId": "update_info",
+      "summary": "`PUT /api/v1/worksets/{workset_id}` — update a workset's profile.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/_shell/comic-playground/business/workset/workset-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/workset/workset-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/workset/workset-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "workset_id",
+          "in": "path",
+          "description": "Workset ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "request": {
+        "ref": "UpdateWorksetInfoInstr",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": [
+          {
+            "key": "description",
+            "nullable": true,
+            "optional": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "key": "id",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          },
+          {
+            "key": "name",
+            "nullable": false,
+            "optional": false,
+            "type": "string"
+          }
+        ]
+      },
+      "response": null,
+      "disposition": "implemented-independent-api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worksets/{workset_id}/comics",
+      "operationId": "list_infos",
+      "summary": "`GET /api/v1/worksets/{workset_id}/comics` — list comics in a workset.",
+      "legacyAdapterFiles": [
+        "src/routes/_authenticated/business/comic/comic-request.ts"
+      ],
+      "legacyAdapterUse": "used-at-baseline",
+      "newApiOwner": "src/api/comic/comic-api.ts (R002b)",
+      "newApiOwnerExists": true,
+      "newApiImplementationFiles": [
+        "src/api/comic/comic-api.ts"
+      ],
+      "newApiOperationImplemented": true,
+      "parameters": [
+        {
+          "name": "workset_id",
+          "in": "path",
+          "description": "Workset ID",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "fuzzy_title",
+          "in": "query",
+          "description": "Fuzzy title substring filter (case-insensitive).",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "stages",
+          "in": "query",
+          "description": "Workflow stage bitmask filter for pinned chapters.",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "status",
+          "in": "query",
+          "description": "Lifecycle state filter. Omit to list both active and archived comics.",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/ComicStatus"
+          }
+        },
+        {
+          "name": "incl",
+          "in": "query",
+          "description": "Related rows to embed. Repeatable. Values: `workset`, `workset.team`,\n`creator`. Dotted values imply their parent segments.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComicInclOpt"
+            }
+          }
+        },
+        {
+          "name": "with",
+          "in": "query",
+          "description": "Derived rows to attach. Repeatable. Values: `pinned_chapter`,\n`pinned_chapter_assignment`. The assignment option requires the chapter\noption.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComicWithOpt"
+            }
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "description": "Pagination offset (0-based).",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "description": "Maximum number of items to return.",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ListLimit200"
+          }
+        }
+      ],
+      "request": null,
+      "response": {
+        "ref": "HttpBody_ListComicInfosVal",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": [
+          {
+            "key": "code",
+            "nullable": false,
+            "optional": false,
+            "type": "integer"
+          },
+          {
+            "key": "data",
+            "nullable": false,
+            "optional": false,
+            "type": "object"
+          }
+        ]
+      },
+      "disposition": "implemented-independent-api"
+    }
+  ]
+}

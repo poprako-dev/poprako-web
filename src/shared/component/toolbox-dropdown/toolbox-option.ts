@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 
 export type ToolboxOption = {
-  icon: ReactNode;
+  icon: ReactElement;
   title: string;
-  onClick: () => Promise<void> | void;
+  onClick: () => void;
 };

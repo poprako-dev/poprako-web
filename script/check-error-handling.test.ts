@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { deepStrictEqual } from "node:assert/strict";
 import ts from "typescript";
-import { describe, expect, test } from "vitest";
 
 function sourceFiles(directory: string): string[] {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -70,8 +70,9 @@ function isDroppedResultMetadata(node: ts.Node): boolean {
   );
 }
 
-describe("API error handling guard", () => {
-  test("does not hardcode failed Result toasts or drop HTTP metadata", () => {
+Deno.test(
+  "API error handling guard reports no hardcoded failed Result toasts or dropped metadata",
+  () => {
     const violations: string[] = [];
 
     for (const filePath of sourceFiles("src")) {
@@ -104,6 +105,6 @@ describe("API error handling guard", () => {
       visit(source);
     }
 
-    expect(violations).toEqual([]);
-  });
-});
+    deepStrictEqual(violations, []);
+  },
+);

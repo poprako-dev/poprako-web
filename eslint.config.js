@@ -32,7 +32,7 @@ const configuration = tseslint.config(
       "coverage/**",
       "node_modules/**",
       "storybook-static/**",
-      "test-resources/generated/**",
+      "test-resource/generated/**",
       "**/*.timestamp-*.mjs",
     ],
   },

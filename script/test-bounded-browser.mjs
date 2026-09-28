@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { createViteBase } from "../src/application/vite-base.ts";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const generated = path.join(root, "test-resources/generated/bounded");
+const generated = path.join(root, "test-resource/generated/bounded");
 await mkdir(generated, { recursive: true });
 const html = path.join(generated, "index.html");
 await writeFile(
@@ -18,8 +18,8 @@ await writeFile(
   `<div id="root" style="height:100dvh"></div><script type="module">
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Utilities } from '/src/routes/_authenticated/_shell/utilities/business/Utilities.tsx';
-import { prepareBoundedArchive } from '/src/routes/_authenticated/_shell/utilities/business/bounded-compression.ts';
+import { Utilities } from '/src/route/_authenticated/_shell/(utility)/business/Utilities.tsx';
+import { prepareBoundedArchive } from '/src/route/_authenticated/_shell/(utility)/business/bounded-compression.ts';
 import { ZipReader, BlobReader, BlobWriter } from '@zip.js/zip.js';
 import '/src/application/style.css';
 createRoot(document.getElementById('root')).render(React.createElement(Utilities));
@@ -46,7 +46,7 @@ let browser;
 try {
   browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
-  await page.goto("http://127.0.0.1:4183/test-resources/generated/bounded/index.html");
+  await page.goto("http://127.0.0.1:4183/test-resource/generated/bounded/index.html");
   await page.waitForFunction(() => Boolean(globalThis.boundedTest));
   const report = await page.evaluate(async () => {
     const { prepareBoundedArchive, ZipReader, BlobReader, BlobWriter } = globalThis.boundedTest;

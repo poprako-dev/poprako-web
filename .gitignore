@@ -35,4 +35,6 @@ storybook-static
 .claude/settings.local.json
 .omx/
 
-/test-resources/
+/test-resource/
+
+/src/test-resource/

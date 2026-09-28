@@ -9,7 +9,7 @@ type Props = {
   */
   hintText?: string;
   checkedOptionId: string;
-  options: Option[];
+  options: readonly Option[];
   onSelect: (optionId: string) => void;
   /**
   最大高度，以 tailwind 单位为单位
@@ -140,8 +140,9 @@ export function HoverSelect({
         }}
         className={clsx(
           "flex h-full w-full items-center justify-between px-4 py-1",
-          "rounded-sm font-medium outline-none",
+          "rounded-sm font-medium",
           "transform-gpu border transition-all duration-300 ease-in-out",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
           "bg-background text-foreground",
           "hover:border-ring hover:shadow-sm",
           {
@@ -195,6 +196,8 @@ export function HoverSelect({
                   "px-4 py-2.5 transition-colors duration-300 ease-in-out",
                   "text-foreground",
                   "w-full text-left",
+                  "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
+                  "focus-visible:outline-primary",
                   {
                     "bg-accent font-semibold text-accent-foreground": isSelected,
                     "hover:bg-accent hover:text-accent-foreground": !isSelected,

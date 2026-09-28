@@ -21,7 +21,7 @@ const iconColorMap: Record<ToastType, string> = {
   success: "text-status-success",
 };
 
-const iconMap: Record<ToastType, React.ReactNode> = {
+const iconMap: Record<ToastType, ReactElement> = {
   info: <Info size={16} />,
   error: <AlertCircle size={16} />,
   success: <Check size={16} />,
@@ -93,6 +93,7 @@ export function NotificationToast(): ReactElement | null {
             "ml-2 p-1 rounded-md shrink-0",
             "text-muted-foreground hover:text-foreground",
             "hover:bg-accent transition-colors",
+            "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
           )}
           aria-label="关闭通知"
         >

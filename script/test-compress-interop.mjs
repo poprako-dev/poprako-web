@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const exec = promisify(execFile);
-const directory = fileURLToPath(new URL("../test-resources/generated/", import.meta.url));
+const directory = fileURLToPath(new URL("../test-resource/generated/", import.meta.url));
 await mkdir(directory, { recursive: true });
 await initModule();
 const bytes = Uint8Array.from({ length: 256 * 1024 }, (_, index) => index % 251);

@@ -1,28 +1,11 @@
-# Session / routing worker handoff
+# 身份与会话接口复核
 
-## Routing contract
+父认证 route 建立唯一 ready-session；shell 与 translator 共同消费，页面不再重复请求身份。有效身份含必需 userInfo 和带 team 的成员集合。无成员是真实空列表，团队选择是 none/ready 判别状态。清除身份后立即返回登录页，不继续渲染依赖 ready-session 的 Outlet。
 
-- `src/application/router.ts` exports `parseRouteSearch` / `stringifyRouteSearch` with legacy-compatible query behavior ; `script/route-config.ts` owns the shared generator/plugin configuration.
-- Protected pages use `src/routes/_authenticated/route.tsx` for `beforeLoad` session restoration and online lease lifetime. The translator route remains outside the authenticated shell, but inside auth/lease boundaries.
-- Workspace and comic-playground route entries pass the host contract owned by leaf: `search: ComicDetailSearch`, `onChangeSearch(comicId, chapterId)`, `onNavigateToTranslator(TranslatorDestination)` from `use-comic-detail-host`.
-- Translator route uses `parseTranslatorSearch`, `translatorStartMode`, and `translatorReturnDestination` from `translator-search.ts`.
-- `script/generate.ts` `--check` generates in a temporary copy and compares route inputs plus generated tree; `deno task generate:check` passes.
+独立 API 接收 token getter 和 auth revision getter。401 只清除请求所属的同一身份版本；公共登录失败不清理已有会话。同 token 的新登录仍有新 generation。API 不读取 Zustand。
 
-## Session / API behavior
+在线租约响应团队/可见性变化，取消旧请求、计时器和订阅。session-operation 在重新开始、登出、身份替换和卸载时终止头像上传；每个异步阶段验证会话是否仍有效。页面上传队列保留跨页面存续语义，在身份失效时取消。
 
-- Session API: `beginSession(token)`, `ensureSession()`, `refreshSession()`, `selectTeam(id)`, `clearSession()` in `src/routes/business/session/session.ts`.
-- Persisted session schema is intentionally restricted through `persistSessionData`: only `accessToken` and `selectedTeamId` persist; recovered user/member identity and generation do not.
-- Authentication guard quietly redirects missing-token and obsolete-generation cases. A current-token restore failure reports via `showLocalCaughtError` (422 deduplicated) and one `console.error`, then redirects to login.
-- `shared/utility/http.ts` holds pure HTTP response/error utilities. Request adapters own user-facing reporting (`createApiFailure`); custom detail transports route through the same 422 de-duplication policy.
-- Original `src/api/util.test.ts` assertions are preserved in `src/routes/business/request.test.ts`. Added pure transport coverage in `src/shared/utility/http.test.ts`.
+持久化键仍是 app-store，仅保存 accessToken 与 selectedTeamId，身份和 generation 不持久化。真实 rehydrate、写入格式、登出、旧请求隔离及 StrictMode 生命周期已有测试。
 
-## Regression coverage
-
-- `src/routes/business/session/session.test.ts`: concurrent restore deduplication, team fallback and membership validation, stale identity response protection, logout clearing, persisted field contract.
-- `src/application/test/router.test.tsx`: guarded direct navigation and auth failure behavior with an in-memory store fixture (avoids Deno persistent-storage permissions).
-- Upload behavior is split between `upload/page-upload-allocation.test.ts` and `upload/page-upload-runtime.test.ts`; both preserve allocation/serialization/callback tests and stale-generation queue protection.
-- Identity/API compatibility assertions are under `src/routes/business/test/api-contract.test.ts` and `workflow-contract.test.ts`.
-
-## Verification
-
-Passed during handoff: app typecheck, test typecheck, project checker, generate check, scoped lint, router/session/HTTP/request/upload unit coverage. Latest focused run: 28 tests passed; latest session-only run after persistence contract addition: 4 tests passed.
+当前代码：src/route/business/session、src/application/api.ts、src/api/client.ts。逐组件清单见 component-contract-review.md；最终类型、22 项集成和完整测试均通过。

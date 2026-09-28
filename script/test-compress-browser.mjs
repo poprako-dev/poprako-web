@@ -1,7 +1,7 @@
 // Deno 2.9: deno run -A script/test-compress-browser.mjs [--large]
 /// <reference lib="dom" />
 /// <reference path="./browser-test-globals.d.ts" />
-// All input/output data stays under test-resources. Production Vite bundle, real Chromium Worker.
+// All input/output data stays under test-resource. Production Vite bundle, real Chromium Worker.
 import { build, preview } from "vite";
 import { chromium } from "playwright";
 import { mkdir, readdir, writeFile } from "node:fs/promises";
@@ -13,7 +13,7 @@ import { promisify } from "node:util";
 const exec = promisify(execFile);
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const generated = path.join(root, "test-resources/generated");
+const generated = path.join(root, "test-resource/generated");
 await mkdir(generated, { recursive: true });
 const html = path.join(generated, "browser.html");
 await writeFile(
@@ -82,14 +82,14 @@ try {
   const page = await context.newPage();
   page.on("console", (message) => console.log("browser:", message.text()));
   page.on("pageerror", (error) => console.error("pageerror:", error));
-  await page.goto("http://127.0.0.1:4178/test-resources/generated/browser.html");
+  await page.goto("http://127.0.0.1:4178/test-resource/generated/browser.html");
   await page.waitForFunction(() => Boolean(globalThis.testArchive));
-  const paths = (await readdir(path.join(root, "test-resources"), { recursive: true }))
+  const paths = (await readdir(path.join(root, "test-resource"), { recursive: true }))
     .filter((name) => name.toLowerCase().endsWith(".psd"))
     .sort()
-    .map((name) => path.join(root, "test-resources", name));
+    .map((name) => path.join(root, "test-resource", name));
   if (paths.length === 0) {
-    throw new Error("Put PSD fixtures under test-resources/ first");
+    throw new Error("Put PSD fixtures under test-resource/ first");
   }
   await page.locator("#files").setInputFiles(paths);
   const report = await page.evaluate(

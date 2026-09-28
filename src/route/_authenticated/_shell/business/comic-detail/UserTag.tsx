@@ -1,0 +1,79 @@
+import { useState } from "react";
+import type { ReactElement } from "react";
+import clsx from "clsx";
+import { Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
+import type { Role } from "@/route/business/identity/role";
+
+const ROLE_LABEL: Record<Role, string> = {
+  rawProvider: "图源",
+  translator: "翻译",
+  proofreader: "校对",
+  typesetter: "嵌字",
+  redrawer: "美工",
+  reviewer: "监修",
+  publisher: "发布",
+  admin: "管理员",
+};
+
+type Props = {
+  name: string;
+  userId: string;
+  role: Role;
+  onRemove?: ((userId: string, role: Role) => void) | undefined;
+};
+
+export function UserTag({ name, userId, role, onRemove }: Props): ReactElement {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const displayName = name.length > 10 ? name.slice(0, 10) + "…" : name;
+
+  return (
+    <>
+      <div
+        title={name}
+        className={clsx(
+          "relative flex items-center gap-1",
+          "bg-surface-panel/70 border border-border",
+          "rounded-sm py-0.5",
+          "text-[10px] font-semibold text-foreground",
+          "transition-colors duration-150",
+          onRemove ? "pl-1.5 pr-4 hover:border-border" : "px-1.5",
+        )}
+      >
+        <span className="leading-none">{displayName}</span>
+        {onRemove && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowConfirm(true);
+            }}
+            className={clsx(
+              "absolute right-0.5 top-1/2 -translate-y-1/2",
+              "text-muted-foreground hover:text-destructive",
+              "p-0",
+            )}
+            title={`移除 ${name} 的${ROLE_LABEL[role]}角色`}
+          >
+            <Trash2 size={9} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
+      {/* ConfirmDialog rendered as sibling, not child — prevents cancel clicks
+          from bubbling through React tree to clickable ancestors (e.g. RoleTag) */}
+      {showConfirm && onRemove && (
+        <ConfirmDialog
+          title="确认移除角色"
+          description={`即将移除 ${name} 的${ROLE_LABEL[role]}角色，不会影响该成员的其他角色分配。`}
+          onConfirm={() => {
+            onRemove(userId, role);
+            setShowConfirm(false);
+          }}
+          onCancel={() => {
+            setShowConfirm(false);
+          }}
+        />
+      )}
+    </>
+  );
+}

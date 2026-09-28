@@ -31,7 +31,7 @@ cp .env.example .env.development
 ## 架构
 
 页面使用 TanStack Router 文件路由，入口和全局 providers 位于 `src/application/`。
-`src/routes/` 按路由组织页面与业务模块；`src/routes/business/` 存放跨路由的业务逻辑，
+`src/route/` 按路由组织页面与业务模块；`src/route/business/` 存放跨路由的业务逻辑，
 `src/shared/` 存放不依赖路由的通用组件、hooks 和工具。`src/route-tree.gen.ts` 是生成
 文件，应修改路由输入后运行 `deno task generate`，不要直接编辑它。
 

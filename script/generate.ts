@@ -14,7 +14,7 @@ if (!checkOnly) {
 } else {
   const tempRoot = await mkdtemp(join(tmpdir(), "poprako-routes-"));
   try {
-    await cp(resolve(root, "src/routes"), join(tempRoot, "src/routes"), { recursive: true });
+    await cp(resolve(root, "src/route"), join(tempRoot, "src/route"), { recursive: true });
     const config = getConfig(routeConfiguration, tempRoot);
     await new Generator({ config, root: tempRoot }).run();
 
@@ -30,8 +30,8 @@ if (!checkOnly) {
       throw new Error("route-tree.gen.ts is stale; run `deno task generate`.");
     }
 
-    const originalRoutes = resolve(root, "src/routes");
-    const generatedRoutes = resolve(tempRoot, "src/routes");
+    const originalRoutes = resolve(root, "src/route");
+    const generatedRoutes = resolve(tempRoot, "src/route");
     const changed = await findChangedFiles(originalRoutes, generatedRoutes);
     if (changed.length > 0) {
       throw new Error(`Route inputs need generator updates: ${changed.join(", ")}`);

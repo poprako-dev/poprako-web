@@ -39,6 +39,7 @@ export function ToolboxDropdown({ options, direction = "down" }: Props): ReactEl
           className={clsx(
             "w-8 h-8 flex items-center justify-center rounded-md transition-all",
             "duration-300 border",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
             isOpen
               ? "bg-primary-subtle text-foreground shadow-lg"
               : "bg-background border-border text-foreground shadow-sm",
@@ -68,12 +69,15 @@ export function ToolboxDropdown({ options, direction = "down" }: Props): ReactEl
                   className={clsx(
                     "w-8 h-8 flex items-center justify-center",
                     "transition-all duration-200 hover:bg-accent group",
+                    "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
+                    "focus-visible:outline-primary",
                   )}
                   onClick={() => {
-                    void item.onClick();
+                    item.onClick();
                     setIsOpen(false);
                   }}
                   title={item.title}
+                  aria-label={item.title}
                 >
                   <div
                     className={clsx(

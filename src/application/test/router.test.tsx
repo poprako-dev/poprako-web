@@ -15,8 +15,8 @@ const sessionStoreMock = vi.hoisted(() => {
     subscribe: vi.fn(() => () => undefined),
   };
 });
-vi.mock("@/routes/business/session/session", () => ({ ensureSession: mocks.ensureSession }));
-vi.mock("@/routes/business/session/session-store", () => ({
+vi.mock("@/route/business/session/session", () => ({ ensureSession: mocks.ensureSession }));
+vi.mock("@/route/business/session/session-store", () => ({
   useAppStore: {
     getState: sessionStoreMock.getState,
     subscribe: sessionStoreMock.subscribe,

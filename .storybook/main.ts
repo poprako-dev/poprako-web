@@ -1,11 +1,12 @@
 import type { StorybookConfig } from "@storybook/react-vite";
 import { mergeConfig } from "vite";
 import { createViteBase } from "../src/application/vite-base.ts";
+import { STORYBOOK_STORY_GLOBS } from "../script/test-runner-config.ts";
 
 const STORYBOOK_CHUNK_SIZE_WARNING_LIMIT = 1200;
 
 const config: StorybookConfig = {
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+  stories: [...STORYBOOK_STORY_GLOBS],
   addons: [
     "@chromatic-com/storybook",
     "@storybook/addon-vitest",

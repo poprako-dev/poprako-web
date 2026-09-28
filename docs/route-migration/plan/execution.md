@@ -1,4 +1,27 @@
+# 当前执行结果
+
+R001–R007 已实施，R008 本机验收通过。最终证据见 [实施结果](../review/implementation-results.md)。最新用户提供 AGENTS 禁止统一任务 fan-out，已有 worker 已停止，剩余重构和验收由 root 串行完成。以下是历史调度记录，不再描述当前队列或授权。
+
 # 动态实施调度记录
+
+## 2026-09-28 · Current R-series execution
+
+This section supersedes earlier P-series queue/status statements below. The
+active snapshot starts from source commit `0fd3646`. Root integration has
+completed the route-directory rename and generated route tree, and has landed
+the API/context scaffold. Domain API modules are still being migrated by their
+owners. Current ownership: root R001/R002/R008; session R002a/R003; detail
+R002b/R004; translator R002c/R006; leaf routes R002d/R005; shared appearance
+R007. R001's structural baseline is implemented; its project gates and review
+remain in progress. R002's foundation scaffold is landed while R002a–d domain
+modules remain in progress. R003–R007 are in progress or planned; R008 is
+planned. Earlier tests and delivery notes below describe earlier snapshots only
+and are not current acceptance evidence.
+
+The latest accepted requirements require `src/route`, independent `src/api`, and
+`src/test-resource`; setting and utility are pathless route groups. Reuse case
+conversion, retain Zustand/Storybook, and keep the UI light-only. Keep all
+existing untracked test resources. No commit is authorized by this ledger.
 
 执行方式：主agent负责调度、文件所有权、审查和集成；worker负责有明确产物与写入范围的任务。
 本次用户明确授权动态worker pool，覆盖旧AGENTS对本次多agent协作的禁止。
@@ -24,17 +47,19 @@
 
 ## 当前队列
 
-用户限时窗口：2026-09-28 02:27:39–03:57:39 UTC。后续明确要求实现worker全部使用GPT-6 Luna；已中断此前worker，保留已完成修改并交接给以下负责人。
+用户限时窗口：2026-09-28 02:27:39–03:57:39
+UTC。后续明确要求实现worker全部使用GPT-6
+Luna；已中断此前worker，保留已完成修改并交接给以下负责人。
 
-| 工作范围 | 状态 | 唯一写入负责人 | 集成门禁 |
-| --- | --- | --- | --- |
-| P001 / P009配置 / P011 工具、脚本与CI | running | luna_toolchain | 严格类型、声明修复重放、脚本与专项检查 |
-| P002共享与P010主题 | running | luna_shared | UI契约、合法默认值、shared依赖方向 |
-| P002会话 / P003路由、HTTP、身份 | running | luna_session | 所有route入口、Main、生成器、会话竞态及导航兼容 |
-| P004公共业务和漫画详情 | running | luna_detail | domain/raw方向、上传取消、详情与导出兼容 |
-| P005/P006/P007叶路由业务 | running | luna_leaf | 业务Props、状态、设置主题与交互 |
-| P008翻译器 | running | luna_translator | 编辑/保存映射、能力契约、快捷键与故事 |
-| P009故事集成 / P010规范收敛 / P012 | waiting | 主集成检查，修复返还对应worker | 各包可执行后运行完整门禁，不预先声明通过 |
+| 工作范围                              | 状态    | 唯一写入负责人                 | 集成门禁                                        |
+| ------------------------------------- | ------- | ------------------------------ | ----------------------------------------------- |
+| P001 / P009配置 / P011 工具、脚本与CI | running | luna_toolchain                 | 严格类型、声明修复重放、脚本与专项检查          |
+| P002共享与P010主题                    | running | luna_shared                    | UI契约、合法默认值、shared依赖方向              |
+| P002会话 / P003路由、HTTP、身份       | running | luna_session                   | 所有route入口、Main、生成器、会话竞态及导航兼容 |
+| P004公共业务和漫画详情                | running | luna_detail                    | domain/raw方向、上传取消、详情与导出兼容        |
+| P005/P006/P007叶路由业务              | running | luna_leaf                      | 业务Props、状态、设置主题与交互                 |
+| P008翻译器                            | running | luna_translator                | 编辑/保存映射、能力契约、快捷键与故事           |
+| P009故事集成 / P010规范收敛 / P012    | waiting | 主集成检查，修复返还对应worker | 各包可执行后运行完整门禁，不预先声明通过        |
 
 主agent只负责调度、审查、验证和迁移记录；业务实现交由Luna。376项保留源码已集中迁至目标目录；该机械迁移不等于责任拆分或功能验收完成。
 
@@ -47,7 +72,8 @@
   通过工具权限机制重试`deno task test:storybook-start`后退出码0，真实smoke成功；此项不归类为源码回归。
 - 基线日志：`/tmp/poprako-baseline-{typecheck,lint,unit,build}.log`及
   `/tmp/poprako-baseline-storybook-retry.log`。日志为本机临时证据，不作为交付依赖。
-- P001.a首次空缓存安装因registry.npmjs.org DNS解析失败退出1；worker保持原精确清单，正在申请工具网络权限重试。
+- P001.a首次空缓存安装因registry.npmjs.org
+  DNS解析失败退出1；worker保持原精确清单，正在申请工具网络权限重试。
 - 网络重试后隔离安装退出0；目标Vite8生产构建、Vitest4.1.7的Node/RTL共2项测试已成功。
   strict类型检查发现Storybook10.6.0声明内TS2578/TS2344；已派独立复核，P001.b及所有后继保持未解锁。
 - P002只读准备完成：UI、通用工具、HTTP、身份/会话可分配独占范围；根配置、消费者改动与全仓import由集成者串行负责。
@@ -72,19 +98,30 @@
 
 ## 03:25 UTC 集成快照
 
-- D21 已执行：Vitest、browser-playwright、coverage-v8 统一 4.1.11；冻结审计无已知漏洞。
-- 路由、会话、叶子业务、翻校主体与 shared 均已落地；源码不再以 features/pages 布局组织。
-- 最近全仓单测为 51 文件 / 255 测试通过；路由集成 13 测试通过。此处记录快照，不代替最终重跑。
-- Chromium 压缩与有界压缩回归通过，Storybook 真实 HTTP 启动探测通过；shared/术语 23 条浏览器交互通过。
-- 剩余阻断：全仓严格类型、ESLint、400 行和命名规则收敛，完整 Storybook 浏览器回归、格式化及接口逐项审查记录。
-- ComicDetailModal 已拆为 320 行，上传运行时拆分后 13 条回归通过。保留真实空状态，禁止空 ID 伪造就绪状态。
-- 实施 worker 均为 GPT-6 Luna；动态转交故事拆分、编辑器规范与详情展示层，避免同文件并发写入。
+- D21 已执行：Vitest、browser-playwright、coverage-v8 统一
+  4.1.11；冻结审计无已知漏洞。
+- 路由、会话、叶子业务、翻校主体与 shared 均已落地；源码不再以 features/pages
+  布局组织。
+- 最近全仓单测为 51 文件 / 255 测试通过；路由集成 13
+  测试通过。此处记录快照，不代替最终重跑。
+- Chromium 压缩与有界压缩回归通过，Storybook 真实 HTTP 启动探测通过；shared/术语
+  23 条浏览器交互通过。
+- 剩余阻断：全仓严格类型、ESLint、400 行和命名规则收敛，完整 Storybook
+  浏览器回归、格式化及接口逐项审查记录。
+- ComicDetailModal 已拆为 320 行，上传运行时拆分后 13
+  条回归通过。保留真实空状态，禁止空 ID 伪造就绪状态。
+- 实施 worker 均为 GPT-6
+  Luna；动态转交故事拆分、编辑器规范与详情展示层，避免同文件并发写入。
 
 ## 03:55 UTC 最终本机交付快照
 
 - 停止源码写入后统一 Prettier；完整 `deno task check` 最终退出 0。
-- 54 文件 / 261 单测、14 路由集成、39 文件 / 182 Chromium Storybook 测试、11 工程脚本测试全部通过。
-- 全部类型程序、Lint、400 行及架构边界、生成一致性通过；生产 build 和 Storybook build 退出 0。
-- 基线 480 文件在 implementation-map.csv 记录实际入口或删除，入口不存在项为 0；临时运行时 import 环检查为 0。
-- 重复安全审计被自动审批拒绝（依赖元数据将发送至 npm registry）；保留此前 4.1.11 冻结审计成功结果，不记本次为通过。
+- 54 文件 / 261 单测、14 路由集成、39 文件 / 182 Chromium Storybook 测试、11
+  工程脚本测试全部通过。
+- 全部类型程序、Lint、400 行及架构边界、生成一致性通过；生产 build 和 Storybook
+  build 退出 0。
+- 基线 480 文件在 implementation-map.csv 记录实际入口或删除，入口不存在项为
+  0；临时运行时 import 环检查为 0。
+- 重复安全审计被自动审批拒绝（依赖元数据将发送至 npm registry）；保留此前 4.1.11
+  冻结审计成功结果，不记本次为通过。
 - 未完成边界：跨平台/最低浏览器实际运行，及逐组件完整人工审查记录。详见实施报告，不能将本机自动门禁通过扩大为全部需求完成。

@@ -74,6 +74,8 @@ export function Paginator(props: Props): ReactElement {
             className={clsx(
               "flex flex-1 items-center justify-center text-muted-foreground",
               "transition-colors hover:bg-accent disabled:opacity-20",
+              "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
+              "focus-visible:outline-primary",
             )}
           >
             <ChevronLeft size={14} />
@@ -91,6 +93,8 @@ export function Paginator(props: Props): ReactElement {
                 className={clsx(
                   "flex h-full w-full items-center justify-center gap-0.5",
                   "text-xs transition-colors hover:bg-accent disabled:opacity-50",
+                  "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
+                  "focus-visible:outline-primary",
                 )}
               >
                 <span className="font-bold text-foreground">{displayPage}</span>
@@ -118,6 +122,8 @@ export function Paginator(props: Props): ReactElement {
             className={clsx(
               "flex flex-1 items-center justify-center text-muted-foreground",
               "transition-colors hover:bg-accent disabled:opacity-20",
+              "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
+              "focus-visible:outline-primary",
             )}
           >
             <ChevronRight size={14} />
@@ -140,7 +146,7 @@ export function Paginator(props: Props): ReactElement {
         <button
           type="button"
           aria-label="Close page list"
-          className="fixed inset-0 z-40 bg-foreground/20"
+          className="fixed inset-0 z-40 bg-foreground/20 focus-visible:outline-2 focus-visible:outline-primary"
           onClick={() => {
             changeOpen(false);
           }}

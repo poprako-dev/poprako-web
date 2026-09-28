@@ -23,7 +23,7 @@ TypeScript 程序，并运行结构依赖、生成路由、单元、集成、Sto
 Deno 2.9 是受支持的运行时和包管理工具。`AGENTS.md` 与
 `.agents/skills/` 中仍在使用的项目规则对所有变更生效。
 
-更新 API 调用时，应在 API 边界把后端蛇形字段转换为 `src/routes/**/business/` 中的
+更新 API 调用时，应在 API 边界把后端蛇形字段转换为 `src/route/**/business/` 中的
 camelCase 领域类型。不要在业务模块间复制原始 API 结构，也不要手工维护第二份
 OpenAPI 快照；后端契约快照位于 `docs/swagger.json`。
 

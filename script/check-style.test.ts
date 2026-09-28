@@ -50,3 +50,17 @@ void test("style checker enforces the physical 400-line limit", () => {
     /size\.lines/u,
   );
 });
+
+void test("route entry exports cannot silently disable lazy component splitting", () => {
+  const route = 'export const Route = createFileRoute("/sample")({ component: Page });';
+  const file = "src/route/sample/index.tsx";
+  for (const page of [
+    "export function Page() { return null; }",
+    "function Page() { return null; } export { Page };",
+  ]) {
+    assert.ok(
+      inspectStyleFile(file, route + page).some((item) => item.rule === "route.lazy-export"),
+    );
+  }
+  assert.deepEqual(inspectStyleFile(file, route + "function Page() { return null; }"), []);
+});

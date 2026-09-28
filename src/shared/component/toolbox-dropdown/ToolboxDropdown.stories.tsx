@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import { ToolboxDropdown } from "@/shared/component/toolbox-dropdown/ToolboxDropdown";
 import { User, Mail, Bell, Search, Settings, Leaf, Heart, Camera } from "lucide-react";
 
@@ -14,64 +15,48 @@ const meta: Meta<typeof ToolboxDropdown> = {
 export default meta;
 type Story = StoryObj<typeof ToolboxDropdown>;
 
-export const GreenTheme: Story = {
+export const Default: Story = {
   args: {
     options: [
       {
         icon: <User size={20} />,
         title: "Account",
-        onClick: () => {
-          return;
-        },
+        onClick: fn(),
       },
       {
         icon: <Leaf size={20} />,
         title: "Eco Mode",
-        onClick: () => {
-          return;
-        },
+        onClick: fn(),
       },
       {
         icon: <Mail size={20} />,
         title: "Messages",
-        onClick: () => {
-          return;
-        },
+        onClick: fn(),
       },
       {
         icon: <Bell size={20} />,
         title: "Alerts",
-        onClick: () => {
-          return;
-        },
+        onClick: fn(),
       },
       {
         icon: <Heart size={20} />,
         title: "Likes",
-        onClick: () => {
-          return;
-        },
+        onClick: fn(),
       },
       {
         icon: <Search size={20} />,
         title: "Search",
-        onClick: () => {
-          return;
-        },
+        onClick: fn(),
       },
       {
         icon: <Camera size={20} />,
         title: "Photos",
-        onClick: () => {
-          return;
-        },
+        onClick: fn(),
       },
       {
         icon: <Settings size={20} />,
         title: "Settings",
-        onClick: () => {
-          return;
-        },
+        onClick: fn(),
       },
     ],
   },

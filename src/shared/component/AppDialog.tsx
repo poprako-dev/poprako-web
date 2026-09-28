@@ -90,10 +90,11 @@ export function AppDialog({
           )}
         >
           <div
-            className="h-1 w-full shrink-0 opacity-20"
-            style={{
-              background: tone === "warning" ? "var(--color-yellow-500)" : "var(--color-green-500)",
-            }}
+            aria-hidden="true"
+            className={clsx(
+              "h-1 w-full shrink-0 opacity-40",
+              tone === "warning" ? "bg-status-warning" : "bg-primary",
+            )}
           />
           <div className="relative shrink-0 px-5 pb-2 pt-4 text-center">
             <Dialog.Title className="text-base font-bold text-foreground">{title}</Dialog.Title>
@@ -115,6 +116,7 @@ export function AppDialog({
                   "absolute right-4 top-3.5 flex size-7 items-center justify-center",
                   "rounded-md text-muted-foreground transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
+                  "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
                   "disabled:cursor-not-allowed disabled:opacity-40",
                 )}
               >
@@ -156,6 +158,7 @@ export function AppDialogAction({
         "flex h-8 items-center justify-center gap-1 rounded-lg border px-3",
         "text-xs font-semibold transition-all duration-200 active:scale-[0.98]",
         "flex-1 disabled:cursor-not-allowed disabled:opacity-50",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
         tone === "neutral" && [
           "border-border bg-muted text-muted-foreground",
           "hover:bg-accent hover:text-accent-foreground",
