@@ -66,7 +66,9 @@ if (sources.size !== inventory.length) errors.push("Duplicate source identity in
 for (const input of inputs) if (!sources.has(input)) errors.push(`Missing source: ${input}`);
 for (const source of sources) if (!inputs.includes(source)) errors.push(`Unknown source: ${source}`);
 
-const planPaths = documents.filter((path) => /^P\d{3}-.*\.md$/.test(basename(path)));
+const planPaths = documents.filter((path) =>
+  dirname(path) === resolve(packageRoot, "plan") && /^P\d{3}-.*\.md$/.test(basename(path))
+);
 const plans = new Map(planPaths.map((path) => [basename(path).slice(0, 4), path]));
 if (plans.size !== 12) errors.push(`Expected 12 plans, found ${plans.size}`);
 const counts = {};

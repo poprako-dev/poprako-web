@@ -31,17 +31,17 @@ jobs:
           cache: true
 
       - name: Run required checks
-        run: sh scripts/ci-check.sh
+        run: sh script/ci-check.sh
 
       - name: Audit dependencies
-        run: sh scripts/ci-audit.sh
+        run: sh script/ci-audit.sh
 
       - name: Build release artifacts
         env:
           RELEASE_DIR: ${{ runner.temp }}/poprako-web-release
           RELEASE_SHA: ${{ github.sha }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: sh scripts/ci-release.sh
+        run: sh script/ci-release.sh
 
       - name: Publish GitHub Release
         env:

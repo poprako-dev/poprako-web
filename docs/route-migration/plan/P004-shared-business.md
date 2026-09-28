@@ -142,6 +142,12 @@ ComicPlayground共享请求/类型、ComicDetailModal全子树、PageList、Comi
 5. 上传runtime与store按S04保持跨视图存活；订阅session代次自行取消登出任务，根session不能反向import上传；预签名上传与通用hash放正确位置。
 6. 对跨业务原API测试按S06拆就近契约或转明确集成入口；更新两个未完全迁移页面与translator的调用路径。
 
+## 接口与空值语义修正
+
+逐个审查本包全部生产组件及实际调用方，按S02.8/S04-08修正不必要的optional/null、重复判空和无意义fallback。必需数据与动作收紧契约；合理默认值在所属边界集中；真实空状态与互斥模式显式建模。同步修改受影响的跨包调用方，由集成负责人协调共享文件，不保留临时宽接口。
+
+结果写入[接口审查记录](../review/interface-audit.md)，逐项保留调用方与验证证据。
+
 ## 兼容要求
 
 以 [兼容矩阵](../migration/compatibility-map.md) 和所引用 spec 为准；不改变本包未明确授权的后端协议、公开 URL 或用户数据格式。
@@ -154,6 +160,7 @@ ComicPlayground共享请求/类型、ComicDetailModal全子树、PageList、Comi
 
 ## 完成标准
 
+- [ ] 本包接口审查和受影响调用方已完成；IC-01至IC-04在本包范围内无未处理项，不能仅以类型检查通过代替。
 - [ ] 漫画详情不在comic-playground内部；所有消费者只依赖祖先共享业务。
 - [ ] 所有本包超限源/test职责已拆分，无存量源遗漏到features。
 - [ ] save/export/upload外部协议保留，唯明确回退修正有回归证据。

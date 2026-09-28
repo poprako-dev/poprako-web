@@ -71,6 +71,12 @@ MemberList/MemberCard、SystemMail、Settings，以及mail/invitation业务契�
 4. 登出使用clearSession及业务失效订阅；远端失败仍执行本地清理和/login；主题选择控件及其新行为明确由P010加入，本包不引用尚未建立的theme实现。
 5. 页面加载/空/错误/重试、弹窗焦点及输入保留按原功能和S05统一，全部调用点使用具名导出。
 
+## 接口与空值语义修正
+
+逐个审查本包全部生产组件及实际调用方，按S02.8/S04-08修正不必要的optional/null、重复判空和无意义fallback。必需数据与动作收紧契约；合理默认值在所属边界集中；真实空状态与互斥模式显式建模。同步修改受影响的跨包调用方，由集成负责人协调共享文件，不保留临时宽接口。
+
+结果写入[接口审查记录](../review/interface-audit.md)，逐项保留调用方与验证证据。
+
 ## 兼容要求
 
 以 [兼容矩阵](../migration/compatibility-map.md) 和所引用 spec 为准；不改变本包未明确授权的后端协议、公开 URL 或用户数据格式。
@@ -83,6 +89,7 @@ MemberList/MemberCard、SystemMail、Settings，以及mail/invitation业务契�
 
 ## 完成标准
 
+- [ ] 本包接口审查和受影响调用方已完成；IC-01至IC-04在本包范围内无未处理项，不能仅以类型检查通过代替。
 - [ ] 三个route及其测试/stories不依赖旧feature；邮件cache只有一个权威来源。
 - [ ] 设置logout不通过根反向导入叶子业务；头像上传不暴露Bearer。
 

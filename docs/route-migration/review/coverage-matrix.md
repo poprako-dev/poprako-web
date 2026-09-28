@@ -1,6 +1,6 @@
 # 文档覆盖审查
 
-审查对象：本套迁移文档；不代表目标代码已经实现。需求的适用/适配/例外/不适用决定见[需求矩阵](../requirements-matrix.md)。每行给出完整负责工作包（范围已展开）、spec和未来证据；本轮状态统一为“已规划，实施未测”。P012汇总所有适用项，不重复写入每行。
+审查对象：本套迁移文档；不代表目标代码已经实现。需求的适用/适配/例外/不适用决定见[需求矩阵](../requirements-matrix.md)。每行给出完整负责工作包（范围已展开）、spec和未来证据；下表保留设计阶段的需求到证据映射；实施验证另见 [执行记录](../plan/execution.md)，尚未逐项完成最终验收。P012汇总所有适用项，不重复写入每行。
 
 ## 逐条需求
 
@@ -42,7 +42,7 @@
 | R4-03 函数组合、按需抽象、Prettier/rustfmt | [S01](../spec/01-toolchain.md)、[S07](../spec/07-quality-and-delivery.md) | [P010](../plan/P010-style-and-theme.md)、[P011](../plan/P011-quality-and-delivery.md) | A72 |
 | R4-04 具名导出、顶层function、回调箭头、工具默认导出例外 | [S07](../spec/07-quality-and-delivery.md) | [P002](../plan/P002-shared-and-session.md)、[P003](../plan/P003-file-routing.md)、[P004](../plan/P004-shared-business.md)、[P005](../plan/P005-workspace-and-comic.md)、[P006](../plan/P006-member-mail-settings.md)、[P007](../plan/P007-utilities.md)、[P008](../plan/P008-translator.md)、[P009](../plan/P009-storybook-and-testing.md)、[P010](../plan/P010-style-and-theme.md) | A70 |
 | R4-05 数据type、纯调用interface、Props永远type | [S01](../spec/01-toolchain.md)、[S07](../spec/07-quality-and-delivery.md) | [P010](../plan/P010-style-and-theme.md)、[P011](../plan/P011-quality-and-delivery.md) | A70 |
-| R4-06 Props尽量必选、真实空值语义例外 | [S02](../spec/02-structure-and-dependency.md)、[S04](../spec/04-state-and-data.md) | [P002](../plan/P002-shared-and-session.md)、[P003](../plan/P003-file-routing.md)、[P004](../plan/P004-shared-business.md)、[P005](../plan/P005-workspace-and-comic.md)、[P006](../plan/P006-member-mail-settings.md)、[P007](../plan/P007-utilities.md)、[P008](../plan/P008-translator.md)、[P009](../plan/P009-storybook-and-testing.md)、[P010](../plan/P010-style-and-theme.md) | 严格类型及交互测试 |
+| R4-06 Props必需性、空值语义与业务fallback | [S02](../spec/02-structure-and-dependency.md)、[S04](../spec/04-state-and-data.md)、[S07](../spec/07-quality-and-delivery.md) | [P002](../plan/P002-shared-and-session.md)、[P003](../plan/P003-file-routing.md)、[P004](../plan/P004-shared-business.md)、[P005](../plan/P005-workspace-and-comic.md)、[P006](../plan/P006-member-mail-settings.md)、[P007](../plan/P007-utilities.md)、[P008](../plan/P008-translator.md)、[P009](../plan/P009-storybook-and-testing.md)、[P010](../plan/P010-style-and-theme.md)、[P012](../plan/P012-acceptance.md) | IC-01至IC-04；[接口审查记录](interface-audit.md) |
 | R4-07 import type、导出/边界返回类型、unknown收窄 | [S01](../spec/01-toolchain.md)、[S07](../spec/07-quality-and-delivery.md) | [P010](../plan/P010-style-and-theme.md) | A03/A72 |
 | R4-08 禁any/危险断言/非空断言、禁无理由抑制和丢Promise | [S01](../spec/01-toolchain.md)、[S07](../spec/07-quality-and-delivery.md) | [P010](../plan/P010-style-and-theme.md)、[P011](../plan/P011-quality-and-delivery.md) | A03/A70 |
 | R4-09 Hooks、render纯净、清理和错误处理、派生不冗余Effect | [S04](../spec/04-state-and-data.md)、[S06](../spec/06-storybook-and-testing.md) | [P008](../plan/P008-translator.md)、[P009](../plan/P009-storybook-and-testing.md)、[P010](../plan/P010-style-and-theme.md) | 取消/卸载/快速切换 |

@@ -48,6 +48,11 @@ P001先建立Node/jsdom配置、RTL setup、test:integration和固定浏览器�
 供P002/P003/P007验收；P009整合Storybook及完整夹具。主题provider、设置选择与主题
 decorator在P010一起实现，P009只验收既有行为和基础设施，不提前要求完整ST-07。
 
+P001实测确认`@testing-library/jest-dom/vitest`与`vitest/config`引入的browser matcher
+全局声明不能在同一tsc程序中合并。采用D20：jsdom测试与browser/stories/工具配置分别由
+严格tsc程序检查，保持所有文件有覆盖；共享生产源码可被多个程序检查。
+测试setup只属于对应环境，不让生产或另一测试环境导入；不得使用排除测试后不再检查的做法。
+
 | 任务 | 固定职责与运行环境 |
 | --- | --- |
 | `deno task test:unit` | Vitest Node project；纯规则、请求转换、controller、store 测试；包含 `.test.ts` |

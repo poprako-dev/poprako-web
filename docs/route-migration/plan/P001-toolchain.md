@@ -1,6 +1,6 @@
 # P001 — 固定 Native 工具链并建立迁移诊断基线
 
-计划状态：ready（设计）；实施状态：not-started。
+计划状态：ready（设计）；实施状态：in-progress（隔离验证通过，项目工具链落地中）。
 前置工作包：无；这是首批入口。
 
 负责人：工具链负责人；独占 package.json、deno.json、deno.lock、根工具配置。
@@ -28,7 +28,7 @@
 
 | 原文件 | 动作 | 最终去向 |
 | --- | --- | --- |
-| `.node-version` | update | `.node-version` |
+| `.node-version` | delete | 删除；统一 Deno 2.9 |
 | `deno.json` | update | `deno.json` |
 | `deno.lock` | update | `deno.lock` |
 | `eslint.config.js` | update | `eslint.config.js` |

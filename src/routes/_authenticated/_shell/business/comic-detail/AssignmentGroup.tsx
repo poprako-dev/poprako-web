@@ -1,0 +1,314 @@
+import { type JSX, type ReactNode, useRef, useState } from "react";
+import clsx from "clsx";
+import { Plus, UserMinus, UserPlus } from "lucide-react";
+import type { WorkflowTransition } from "@/routes/_authenticated/business/chapter/chapter-input";
+import {
+  canApplyWorkflowTransition,
+  type ChapterInfo,
+} from "@/routes/_authenticated/business/chapter/chapter";
+import type { AssignmentInfo } from "@/routes/_authenticated/business/assignment/assignment";
+import type { Role } from "@/routes/business/identity/role";
+import type { Result } from "@/shared/utility/result";
+import type { WorkflowStatus } from "@/routes/_authenticated/business/chapter/workflow";
+import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
+import { AssignmentAvatarStack } from "@/routes/_authenticated/_shell/business/comic-detail/AssignmentAvatarStack";
+import { ASSIGNMENT_ROLE_DEFS } from "@/routes/_authenticated/_shell/business/comic-detail/assignment-workflow";
+import { TransitionDialog } from "@/routes/_authenticated/_shell/business/comic-detail/TransitionDialog";
+
+type Props = {
+  selectedChapter?: ChapterInfo | undefined;
+  assignments: AssignmentInfo[];
+  isAssignmentsLoading?: boolean | undefined;
+  currentUserId: string | null;
+  onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
+  onRemoveAssignment?: ((userId: string, role: Role) => void) | undefined;
+  onAddAssignment?: ((role: Role) => void) | undefined;
+  onJoinRole?: ((role: Role) => void) | undefined;
+  canJoinRole?: ((role: Role) => boolean) | undefined;
+  isRoleJoining?: ((role: Role) => boolean) | undefined;
+  onLeaveRole?: ((role: Role) => void) | undefined;
+  canLeaveRole?: ((role: Role) => boolean) | undefined;
+  isRoleLeaving?: ((role: Role) => boolean) | undefined;
+  canOperateWorkflow?: boolean | undefined;
+  canManageAssignments?: boolean | undefined;
+};
+
+type TransitionState = {
+  label: string;
+  status: WorkflowStatus;
+  forwardTransition: WorkflowTransition | null;
+  revertTransition: WorkflowTransition | null;
+};
+
+type RemoveState = {
+  assignment: AssignmentInfo;
+  role: Role;
+  roleLabel: string;
+};
+
+type ActionButtonProps = {
+  label: string;
+  disabled?: boolean | undefined;
+  danger?: boolean | undefined;
+  onClick: () => void;
+  children: ReactNode;
+};
+
+function ActionButton({
+  label,
+  disabled = false,
+  danger = false,
+  onClick,
+  children,
+}: ActionButtonProps): JSX.Element {
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      disabled={disabled}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      onKeyDown={(event) => {
+        event.stopPropagation();
+      }}
+      className={clsx(
+        "flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border",
+        "border-transparent transition-colors",
+        danger
+          ? "text-rose-300 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
+          : ["text-muted-foreground hover:border-border", "hover:bg-accent hover:text-foreground"],
+        "focus-visible:outline-2 focus-visible:outline-primary/60",
+        "disabled:cursor-not-allowed disabled:opacity-45",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function assignmentName(assignment: AssignmentInfo): string {
+  return assignment.user?.name ?? assignment.userId;
+}
+
+function workflowStatusLabel(status: WorkflowStatus): string {
+  if (status === "pending") return "未开始";
+  if (status === "ongoing") return "进行中";
+  if (status === "completed") return "已完成";
+  return "未配置";
+}
+
+export function AssignmentGroup({
+  selectedChapter,
+  assignments,
+  isAssignmentsLoading = false,
+  currentUserId,
+  onTransiteWorkflow,
+  onRemoveAssignment,
+  onAddAssignment,
+  onJoinRole,
+  canJoinRole,
+  isRoleJoining,
+  onLeaveRole,
+  canLeaveRole,
+  isRoleLeaving,
+  canOperateWorkflow = false,
+  canManageAssignments = false,
+}: Props): JSX.Element {
+  const [transitionState, setTransitionState] = useState<TransitionState | null>(null);
+  const [removalState, setRemovalState] = useState<RemoveState | null>(null);
+  const transitioningRef = useRef(false);
+
+  async function handleTransition(transition: WorkflowTransition): Promise<void> {
+    if (transitioningRef.current) return;
+    transitioningRef.current = true;
+    setTransitionState(null);
+    try {
+      await onTransiteWorkflow(transition);
+    } catch (error) {
+      console.error("[AssignmentGroup] 流程操作失败:", error);
+    } finally {
+      transitioningRef.current = false;
+    }
+  }
+
+  return (
+    <section aria-label="章节分工" className="relative bg-transparent p-4">
+      <span
+        aria-hidden="true"
+        className={clsx(
+          "absolute bottom-0 left-1/2 h-[1.5px] w-4/5 -translate-x-1/2",
+          "bg-stone-200",
+        )}
+      />
+      <div className="grid grid-cols-2 border-l border-t border-stone-200/80 rounded-sm">
+        {ASSIGNMENT_ROLE_DEFS.map((roleDef) => {
+          const roleAssignments = assignments.filter((assignment) => roleDef.matches(assignment));
+          const isCurrentUserAssigned = Boolean(
+            currentUserId &&
+              roleAssignments.some((assignment) => assignment.userId === currentUserId),
+          );
+          const canOperateThisRole = canOperateWorkflow || isCurrentUserAssigned;
+          const status = selectedChapter
+            ? roleDef.getStatus(selectedChapter)
+            : ("unset" as WorkflowStatus);
+          const statusLabel = workflowStatusLabel(status);
+          const nextForward =
+            selectedChapter && status !== "unset" ? roleDef.nextTransition(status) : null;
+          const forwardTransition =
+            canOperateThisRole &&
+            selectedChapter &&
+            nextForward &&
+            canApplyWorkflowTransition(selectedChapter, nextForward)
+              ? nextForward
+              : null;
+          const nextRevert = selectedChapter ? roleDef.prevRevertTransition(selectedChapter) : null;
+          const revertTransition =
+            canOperateThisRole &&
+            selectedChapter &&
+            nextRevert &&
+            canApplyWorkflowTransition(selectedChapter, nextRevert)
+              ? nextRevert
+              : null;
+          const hasTransition = Boolean(forwardTransition ?? revertTransition);
+          const canJoin = canJoinRole?.(roleDef.addRole) ?? false;
+
+          const openTransition = (): void => {
+            if (!hasTransition || transitioningRef.current) return;
+            setTransitionState({
+              label: roleDef.shortLabel,
+              status,
+              forwardTransition,
+              revertTransition,
+            });
+          };
+
+          return (
+            <div
+              key={roleDef.addRole}
+              className={clsx(
+                "group/stage flex min-h-12 min-w-0 items-center gap-2",
+                "border-b border-r border-stone-200/80 px-2.5 py-1.5",
+                "transition-colors duration-150",
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={clsx(
+                  "h-7 w-0.5 shrink-0 rounded-full transition-colors",
+                  status === "pending" && "bg-muted-foreground",
+                  status === "ongoing" && "bg-orange-300",
+                  status === "completed" && "bg-emerald-400",
+                  status === "unset" && "bg-border",
+                )}
+              />
+              {hasTransition ? (
+                <button
+                  type="button"
+                  aria-label={`${roleDef.fullLabel}，${statusLabel}`}
+                  onClick={openTransition}
+                  className={clsx(
+                    "w-8 shrink-0 text-left text-xs font-bold text-foreground",
+                    "hover:text-foreground focus-visible:outline-2 focus-visible:outline-border",
+                  )}
+                >
+                  {roleDef.fullLabel}
+                </button>
+              ) : (
+                <span className="w-8 shrink-0 text-xs font-bold text-foreground">
+                  {roleDef.fullLabel}
+                </span>
+              )}
+              <span aria-hidden="true" className="h-5 w-px shrink-0 bg-stone-200" />
+              <div className="flex min-w-0 flex-1 items-center">
+                <AssignmentAvatarStack
+                  assignments={roleAssignments}
+                  isLoading={isAssignmentsLoading}
+                  canRemove={canManageAssignments && Boolean(onRemoveAssignment)}
+                  onRequestRemove={(assignment) => {
+                    setRemovalState({
+                      assignment,
+                      role: roleDef.addRole,
+                      roleLabel: roleDef.fullLabel,
+                    });
+                  }}
+                />
+              </div>
+
+              <div className="flex shrink-0 items-center gap-0.5">
+                {canManageAssignments && onAddAssignment && (
+                  <ActionButton
+                    label={`分配${roleDef.fullLabel}成员`}
+                    onClick={() => {
+                      onAddAssignment(roleDef.addRole);
+                    }}
+                  >
+                    <Plus size={13} strokeWidth={2.25} />
+                  </ActionButton>
+                )}
+                {canJoin && onJoinRole && (
+                  <ActionButton
+                    label={`加入${roleDef.fullLabel}分工`}
+                    disabled={isRoleJoining?.(roleDef.addRole)}
+                    onClick={() => {
+                      onJoinRole(roleDef.addRole);
+                    }}
+                  >
+                    <UserPlus size={13} strokeWidth={2.25} />
+                  </ActionButton>
+                )}
+                {!canJoin && canLeaveRole?.(roleDef.addRole) && onLeaveRole && (
+                  <ActionButton
+                    label={`退出${roleDef.fullLabel}分工`}
+                    danger
+                    disabled={isRoleLeaving?.(roleDef.addRole)}
+                    onClick={() => {
+                      onLeaveRole(roleDef.addRole);
+                    }}
+                  >
+                    <UserMinus size={13} strokeWidth={2.25} />
+                  </ActionButton>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {transitionState && (
+        <TransitionDialog
+          label={transitionState.label}
+          status={transitionState.status}
+          forwardTransition={transitionState.forwardTransition}
+          revertTransition={transitionState.revertTransition}
+          onConfirm={(transition) => {
+            void handleTransition(transition);
+          }}
+          onCancel={() => {
+            setTransitionState(null);
+          }}
+        />
+      )}
+
+      {removalState && onRemoveAssignment && (
+        <ConfirmDialog
+          title="移除成员"
+          description={
+            `确认移除「${assignmentName(removalState.assignment)}」的` +
+            `${removalState.roleLabel}分工？`
+          }
+          confirmLabel="移除"
+          onConfirm={() => {
+            onRemoveAssignment(removalState.assignment.userId, removalState.role);
+            setRemovalState(null);
+          }}
+          onCancel={() => {
+            setRemovalState(null);
+          }}
+        />
+      )}
+    </section>
+  );
+}

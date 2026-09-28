@@ -7,7 +7,7 @@
 | --- | --- | --- | --- |
 | D01 | 全项目 route 内聚，删除所有自有 features 及旧业务分类入口 | 用户明确要求；包含测试、stories、脚本，不保留兼容桶 | S02、P002–P012 |
 | D02 | 目录使用 routes | 用户指定，作为 Native 单数命名规则的明确例外 | S02、P003 |
-| D03 | Native 前端共同依赖精确对齐 | 用户选定版本也对齐；允许降到 Native 已选 React/ESLint 版本，必须验证 Web 兼容 | S01、P001 |
+| D03 | Native 前端共同依赖精确对齐，Vitest 安全例外见 D21 | 用户选定版本也对齐；允许降到 Native 已选 React/ESLint 版本，必须验证 Web 兼容 | S01、P001 |
 | D04 | 保留 Web 浏览器、HTTP、现有许可证与部署协议 | 项目仍是 Web；Tauri/Rust/SQLite/系统凭据/桌面发布不是本次目标 | S01、S07、P011 |
 | D05 | 保留 Zustand | 用户明确接受；移除顶层 store 分类，按业务归属并明确生命周期 | S04、P002/P004/P006/P008 |
 | D06 | 本次不引入 TanStack Query | Native 按需要求，不因结构迁移同时重写所有数据缓存；现有状态仍只有一个权威来源 | S04 |
@@ -21,8 +21,11 @@
 | D14 | 主题浅色/深色/系统，本轮覆盖全界面 | Native 适用前端要求；新增独立主题偏好，保留既有布局及柔和视觉风格 | S05、P010 |
 | D15 | 400物理行覆盖所有手写TS/TSX与测试 | 格式化后检查；按职责拆分，不压缩排版、不排除stories | S02、S07、P010 |
 | D16 | 同一迁移分支分工作包审查，最后统一验收 | 中间 lint 诊断必须真实登记；最终完成前不合并发布，不用宽泛排除伪造绿灯 | 全部 plans |
-| D17 | 本轮仅交付文档包 | 用户最后确认的是“出具体 plans 的 plan”；执行该元计划不会触发生产迁移 | README |
+| D17 | 文档编制阶段仅交付文档；实施阶段单独记录 | 原元计划已完成；后续用户要求主agent动态调度实现，P001已开始隔离验证，不能将前期文档ready当成实施完成 | README、plan/execution |
 | D18 | 允许 subagent，按独立文件责任协作 | 用户本会话显式授权，覆盖旧 AGENTS 的禁止并行约定；在项目规范中记录本次迁移的协作例外 | P011 |
+| D19 | Storybook10.6.0发布声明采用精确排版兼容修复 | 主集成依据P001.a与独立复核决定；仅恢复两条上游既有抑制注释的位置，固定原/结果hash；不修改版本或全局严格度，不声称修复CSF factory泛型；完整安装重放待P001.c验证 | S01、P001、review/P001-toolchain-validation |
+| D20 | jsdom与browser/tool分别由严格tsc程序检查 | 已复现两种matcher全局声明冲突；全部文件必须有归属，禁止借项目拆分漏检；仍skipLibCheck=false | S06/S07、P001 |
+| D21 | Vitest、@vitest/browser-playwright、@vitest/coverage-v8 统一使用 4.1.11 | 2026-09-28 冻结审计证实 Native 的 4.1.7 带入两个 critical 漏洞；用户明确批准升级并登记安全例外。对应 GHSA-p63j-vcc4-9vmv、GHSA-g8mr-85jm-7xhm。升级后重新冻结锁并审计，不豁免审计失败 | S01、P001/P009/P011 |
 
 ## 决策完整性
 

@@ -9,7 +9,7 @@ source,target,action,owner,plan,spec,reason,verification
 ".github/workflows/ci.yml",".github/workflows/ci.yml","update",".github/workflows","P011","S02;S07","保留工具/文档位置并更新命令、规则和迁移后的引用","类型检查、依赖检查及原有测试通过"
 ".github/workflows/release.yml",".github/workflows/release.yml","update",".github/workflows","P011","S02;S07","保留工具/文档位置并更新命令、规则和迁移后的引用","类型检查、依赖检查及原有测试通过"
 ".gitignore",".gitignore","update",".gitignore","P011","S02;S07","保留工具/文档位置并更新命令、规则和迁移后的引用","类型检查、依赖检查及原有测试通过"
-".node-version",".node-version","update",".node-version","P001","S01","保留工具/文档位置并更新命令、规则和迁移后的引用","类型检查、依赖检查及原有测试通过"
+".node-version","","delete",".node-version","P001","S01","统一 Deno 2.9 工具链，不再维护 Node 版本入口","CI 固定 Deno 2.9.6；脚本拒绝非 2.9 版本"
 ".storybook/main.ts",".storybook/main.ts","update",".storybook","P009","S02;S06","保留工具/文档位置并更新命令、规则和迁移后的引用","类型检查、依赖检查及原有测试通过"
 ".storybook/preview.ts",".storybook/preview.ts","update",".storybook","P009","S02;S06","保留工具/文档位置并更新命令、规则和迁移后的引用","类型检查、依赖检查及原有测试通过"
 ".storybook/vitest.setup.ts",".storybook/vitest.setup.ts","update",".storybook","P009","S02;S06","保留工具/文档位置并更新命令、规则和迁移后的引用","类型检查、依赖检查及原有测试通过"

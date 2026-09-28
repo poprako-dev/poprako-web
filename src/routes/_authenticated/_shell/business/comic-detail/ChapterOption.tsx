@@ -1,0 +1,326 @@
+import { type JSX, useCallback, useEffect, useRef, useState } from "react";
+import clsx from "clsx";
+import { ChevronDown, Loader2, Plus, Trash2 } from "lucide-react";
+import type { ChapterInfo } from "@/routes/_authenticated/business/chapter/chapter";
+import type { ComicInfo } from "@/routes/_authenticated/business/comic/comic";
+import type { MemberInfo } from "@/routes/business/identity/member";
+import type { Result } from "@/shared/utility/result";
+import { ChapterCreatorModal } from "@/routes/_authenticated/_shell/business/comic-detail/ChapterCreatorModal";
+import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
+
+type Props = {
+  comicInfo: ComicInfo;
+  activeMember: MemberInfo | null;
+  chapters: ChapterInfo[];
+  selectedChapter?: ChapterInfo | undefined;
+  hasMore: boolean;
+  isLoading?: boolean | undefined;
+  onLoadMore: () => void;
+  onSelect: (id: string) => void;
+  onCreateChapter?:
+    | ((subtitle?: string, presetAssignmentRoles?: number) => Promise<Result<string>>)
+    | undefined;
+  onDelete?: ((id: string) => void) | undefined;
+  onLongPress?: ((chapter: ChapterInfo) => void) | undefined;
+};
+
+export function ChapterOption({
+  comicInfo,
+  activeMember,
+  chapters,
+  selectedChapter,
+  hasMore,
+  isLoading,
+  onLoadMore,
+  onSelect,
+  onCreateChapter,
+  onDelete,
+  onLongPress,
+}: Props): JSX.Element {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showCreator, setShowCreator] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressChapterRef = useRef<ChapterInfo | null>(null);
+  const longPressHandledRef = useRef(false);
+
+  const clearLongPress = useCallback(() => {
+    if (!longPressTimerRef.current) {
+      return;
+    }
+
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
+  }, []);
+
+  const handleChapterPointerDown = useCallback(
+    (ch: ChapterInfo) => (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      longPressHandledRef.current = false;
+      longPressChapterRef.current = ch;
+      longPressTimerRef.current = setTimeout(() => {
+        longPressHandledRef.current = true;
+        onLongPress?.(ch);
+      }, 500);
+    },
+    [onLongPress],
+  );
+
+  const handleChapterPointerUp = useCallback(
+    () => (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearLongPress();
+      if (!longPressHandledRef.current) {
+        const ch = longPressChapterRef.current;
+        if (ch) {
+          onSelect(ch.id);
+          setIsOpen(false);
+        }
+      }
+    },
+    [clearLongPress, onSelect],
+  );
+
+  const handleChapterPointerCancel = useCallback(
+    () => () => {
+      clearLongPress();
+    },
+    [clearLongPress],
+  );
+
+  const handleChapterContextMenu = useCallback(
+    () => (e: React.MouseEvent) => {
+      e.preventDefault();
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent): void => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !hasMore || isLoading || !observerRef.current) return;
+    const ob = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        onLoadMore();
+      }
+    });
+    ob.observe(observerRef.current);
+    return () => {
+      ob.disconnect();
+    };
+  }, [isOpen, hasMore, isLoading, onLoadMore]);
+
+  // Clean up long press timer on unmount
+  useEffect(() => {
+    return () => {
+      clearLongPress();
+    };
+  }, [clearLongPress]);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      {selectedChapter ? (
+        <button
+          type="button"
+          onClick={() => {
+            setIsOpen(!isOpen);
+          }}
+          className={clsx(
+            "flex items-center gap-2 px-2 py-0.5",
+            "border rounded-sm bg-surface-panel transition-colors",
+            isOpen ? "border-border" : "border-border/60 hover:border-border",
+          )}
+        >
+          <span className="text-sm font-black italic text-muted-foreground">
+            #{selectedChapter.index + 1}
+          </span>
+          {selectedChapter.subtitle && (
+            <>
+              <div className="w-px h-2.5 bg-border mx-0.5" />
+              <span
+                className={clsx("text-xs font-bold text-foreground", "uppercase tracking-widest")}
+              >
+                {selectedChapter.subtitle}
+              </span>
+            </>
+          )}
+          <ChevronDown size={12} className="text-muted-foreground ml-1" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setIsOpen(!isOpen);
+          }}
+          className={clsx(
+            "flex items-center gap-2 px-2 py-0.5 text-[10px] text-muted-foreground",
+            "border border-border/60 rounded-sm bg-surface-panel transition-colors",
+            "hover:border-border",
+          )}
+        >
+          选择章节
+          <ChevronDown size={12} />
+        </button>
+      )}
+
+      {isOpen && (
+        <div
+          className={clsx(
+            "absolute top-full right-0 mt-1 w-48 z-15",
+            "bg-popover rounded-md border border-border shadow-lg",
+          )}
+        >
+          <div
+            className={clsx(
+              "flex flex-col p-1.5 gap-0.5 max-h-60 overflow-y-auto",
+              "scrollbar-thin scrollbar-thumb-border overscroll-contain",
+            )}
+          >
+            <div className="pb-1 shrink-0">
+              {onCreateChapter && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setShowCreator(true);
+                  }}
+                  className={clsx(
+                    "w-full flex items-center justify-center gap-1.5",
+                    "py-1.5 rounded-sm border border-dashed border-border",
+                    "text-muted-foreground hover:text-foreground hover:bg-accent",
+                    "transition-colors text-[11px]",
+                  )}
+                >
+                  <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  新建章节
+                </button>
+              )}
+            </div>
+
+            {chapters.map((ch) => (
+              <div key={ch.id} className="group relative flex items-center shrink-0">
+                {onLongPress ? (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onPointerDown={handleChapterPointerDown(ch)}
+                    onPointerUp={handleChapterPointerUp()}
+                    onPointerCancel={handleChapterPointerCancel()}
+                    onPointerLeave={handleChapterPointerCancel()}
+                    onContextMenu={handleChapterContextMenu()}
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" && event.key !== " ") return;
+                      event.preventDefault();
+                      onSelect(ch.id);
+                      setIsOpen(false);
+                    }}
+                    className={clsx(
+                      "flex-1 flex items-center gap-2 text-left",
+                      "px-2 py-1.5 rounded-sm transition-colors pr-6",
+                      "select-none touch-none cursor-pointer",
+                      selectedChapter?.id === ch.id
+                        ? "bg-surface-hover text-foreground"
+                        : "text-text-secondary hover:bg-accent",
+                    )}
+                    title="长按修改章节信息"
+                  >
+                    <span className="text-[10px] font-black italic text-muted-foreground w-4 shrink-0">
+                      #{ch.index + 1}
+                    </span>
+                    <span className="text-[11px] font-bold truncate">
+                      {ch.subtitle || "无标题"}
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelect(ch.id);
+                      setIsOpen(false);
+                    }}
+                    className={clsx(
+                      "flex-1 flex items-center gap-2 text-left",
+                      "px-2 py-1.5 rounded-sm transition-colors pr-6",
+                      selectedChapter?.id === ch.id
+                        ? "bg-surface-hover text-foreground"
+                        : "text-text-secondary hover:bg-accent",
+                    )}
+                  >
+                    <span className="text-[10px] font-black italic text-muted-foreground w-4 shrink-0">
+                      #{ch.index + 1}
+                    </span>
+                    <span className="text-[11px] font-bold truncate">
+                      {ch.subtitle || "无标题"}
+                    </span>
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPendingDeleteId(ch.id);
+                    }}
+                    className={clsx(
+                      "absolute right-1 p-1 rounded",
+                      "opacity-0 group-hover:opacity-100 transition-opacity",
+                      "text-muted-foreground hover:text-destructive",
+                    )}
+                  >
+                    <Trash2 className="w-3 h-3" strokeWidth={1.5} />
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {hasMore && (
+              <div
+                ref={observerRef}
+                className="h-8 w-full flex items-center justify-center shrink-0"
+              >
+                <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {showCreator && onCreateChapter && (
+        <ChapterCreatorModal
+          comicInfo={comicInfo}
+          activeMember={activeMember}
+          onCreateChapter={onCreateChapter}
+          onClose={() => {
+            setShowCreator(false);
+          }}
+        />
+      )}
+      {pendingDeleteId && onDelete && (
+        <ConfirmDialog
+          title="确认删除章节"
+          description="删除章节后，该章节下的所有页面也将被删除。此操作不可撤销。"
+          onConfirm={() => {
+            onDelete(pendingDeleteId);
+            setPendingDeleteId(null);
+          }}
+          onCancel={() => {
+            setPendingDeleteId(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}

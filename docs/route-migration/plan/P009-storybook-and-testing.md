@@ -110,6 +110,12 @@
 5. 保留并迁移Deno package manager代理，独立Storybook Vite配置复用基础React/样式/alias并隔离route生成；复用P001已建立的unit/integration与浏览器安装任务，补齐storybook/script/frontend聚合。
 6. 固定Playwright浏览器安装入口；CI与开发执行同一fixture策略，浏览器play进入真实门禁而非仅build-storybook。
 
+## 接口与空值语义修正
+
+按已收敛的生产契约更新stories、fixture与测试装配；不为旧story的缺参放宽生产Props，不用空函数掩盖待测动作。检查默认值、合法空态、只读/交互模式的代表性场景；仅为实际行为风险补充回归。
+
+结果写入[接口审查记录](../review/interface-audit.md)，逐项保留调用方与验证证据。
+
 ## 兼容要求
 
 以 [兼容矩阵](../migration/compatibility-map.md) 和所引用 spec 为准；不改变本包未明确授权的后端协议、公开 URL 或用户数据格式。
@@ -122,6 +128,7 @@
 
 ## 完成标准
 
+- [ ] 本包接口审查和受影响调用方已完成；IC-01至IC-04在本包范围内无未处理项，不能仅以类型检查通过代替。
 - [ ] src/stories与其features目录删除，所有有效内容都有目标或有理由的删除记录。
 - [ ] 测试无业务生产反向依赖；全部真实play可自动运行。
 - [ ] 旧react-router-dom、旧stories引用和远程夹具依赖清零。

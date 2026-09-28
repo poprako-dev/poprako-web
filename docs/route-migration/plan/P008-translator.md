@@ -149,6 +149,12 @@ BaseTranslator、WebTranslator全部子树，专用unit/project/preview/search/t
 5. 保留specialChars_v2/configurableShortcuts/relocation key及迁移，保存fixture转同业务测试支持；本包同时迁移helper消费者，避免unit tests导入storybook/test。
 6. 与最新68cedc0对齐：独立特殊字符工具条、显式换行标记、textarea布局、IME scope、预览位置均纳入浏览器回归；不重写为Native整页快照保存。
 
+## 接口与空值语义修正
+
+逐个审查本包全部生产组件及实际调用方，按S02.8/S04-08修正不必要的optional/null、重复判空和无意义fallback。必需数据与动作收紧契约；合理默认值在所属边界集中；真实空状态与互斥模式显式建模。同步修改受影响的跨包调用方，由集成负责人协调共享文件，不保留临时宽接口。
+
+结果写入[接口审查记录](../review/interface-audit.md)，逐项保留调用方与验证证据。
+
 ## 兼容要求
 
 以 [兼容矩阵](../migration/compatibility-map.md) 和所引用 spec 为准；不改变本包未明确授权的后端协议、公开 URL 或用户数据格式。
@@ -161,6 +167,7 @@ BaseTranslator、WebTranslator全部子树，专用unit/project/preview/search/t
 
 ## 完成标准
 
+- [ ] 本包接口审查和受影响调用方已完成；IC-01至IC-04在本包范围内无未处理项，不能仅以类型检查通过代替。
 - [ ] 整个translator源/test/story均有目标，无嵌套features残留。
 - [ ] 移动前后保存协议和controller测试语义一致；路由重挂载不会重复保存或丢草稿。
 - [ ] 专用类型不泄漏到共享父module；所有超限源文件按职责拆分。

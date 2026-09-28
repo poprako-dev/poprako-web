@@ -12,6 +12,8 @@ Web 保持 React 浏览器应用、HTTP 后端与现有部署方式。采用 Nat
 
 固定 Deno **2.9.6**（本机与现有 CI 均已核实），唯一安装入口为 Deno，唯一任务契约在 `deno.json`。保持 `nodeModulesDir: "auto"` 与 frozen lock；这是 Web 为 Storybook 本地解析保留的配置，不复制 Native 的 manual 安装假设。`package.json` 保留依赖、元数据和精确 `engines.deno: "2.9.6"`，删除重复 scripts，命令迁至 `deno.json`。不提交其他包管理器锁文件。
 
+实施期安全例外 D21：Native 固定的 Vitest 4.1.7 经冻结审计存在两个 critical 漏洞，用户已明确批准 Web 的 Vitest/browser/coverage 升级为 4.1.11；其他共同版本继续精确对齐。升级后的冻结锁与实际测试重新验收。
+
 以下每项均是精确版本，不带 `^`、`~`。Native 已安装 package manifests 与锁文件相符；下列依赖整体在 Web 的组合运行仍须 P001/P012 验证。
 
 | 类别 | 精确依赖 |
@@ -21,9 +23,9 @@ Web 保持 React 浏览器应用、HTTP 后端与现有部署方式。采用 Nat
 | 路由生成 | `@tanstack/router-plugin@1.168.40`、`@tanstack/router-generator@1.167.38` |
 | 样式 | `tailwindcss@4.1.18`、`@tailwindcss/postcss@4.1.18`、`postcss@8.5.28` |
 | 质量工具 | `eslint@9.39.1`、`@eslint/js@9.39.1`、`typescript-eslint@8.67.0`、`eslint-plugin-react@7.37.5`、`eslint-plugin-react-hooks@7.1.1`、`eslint-config-prettier@10.1.8`、`prettier@3.6.2` |
-| 测试 | `vitest@4.1.7`、`@testing-library/react@16.3.0`、`@testing-library/dom@10.4.2`、`@testing-library/user-event@14.6.7`、`@testing-library/jest-dom@7.0.1`、`jsdom@30.1.1` |
+| 测试 | `vitest@4.1.11`、`@testing-library/react@16.3.0`、`@testing-library/dom@10.4.2`、`@testing-library/user-event@14.6.7`、`@testing-library/jest-dom@7.0.1`、`jsdom@30.1.1` |
 
-已检查的 Native peer 约束：Router plugin 要求 router `^1.170.38`，plugin-react 要求 Vite `^8.0.0`；typescript-eslint 支持 TS `>=4.8.4 <6.1.0`、ESLint9；React plugin 支持 ESLint `^9.7`；Testing Library 支持 React19；Vitest4.1.7 支持 Vite6/7/8，且其 browser/coverage adapters 必须 **4.1.7**。plugin-react 的 React Compiler/Babel 相关 peers 是可选，当前无启用依据，不额外安装。
+已检查的 Native peer 约束：Router plugin 要求 router `^1.170.38`，plugin-react 要求 Vite `^8.0.0`；typescript-eslint 支持 TS `>=4.8.4 <6.1.0`、ESLint9；React plugin 支持 ESLint `^9.7`；Testing Library 支持 React19；Vitest4.1.11 支持 Vite6/7/8，且其 browser/coverage adapters 必须 **4.1.11**。plugin-react 的 React Compiler/Babel 相关 peers 是可选，当前无启用依据，不额外安装。
 
 ### Web 专用依赖逐项处置
 
@@ -50,8 +52,8 @@ Web 保持 React 浏览器应用、HTTP 后端与现有部署方式。采用 Nat
 | `@storybook/addon-onboarding` | 保留 `10.6.0`；peer Storybook `^10.6.0` | 配置加载，删除占位stories不要求删除addon |
 | `@storybook/addon-vitest` | 保留 `10.6.0`；peer Vitest/browser/runner含4 | play测试和隔离fixture |
 | `@storybook/react-vite` | 保留 `10.6.0`；peer Vite含8、React含19、TS>=4.9 | 独立Vite配置、静态构建 |
-| `@vitest/browser-playwright` | **改为 `4.1.7`**；Native Vitest exact-peer | Storybook浏览器测试 |
-| `@vitest/coverage-v8` | **改为 `4.1.7`**；Native Vitest exact-peer | coverage启动，不设全局百分比门槛 |
+| `@vitest/browser-playwright` | **改为 `4.1.11`**；Native Vitest exact-peer | Storybook浏览器测试 |
+| `@vitest/coverage-v8` | **改为 `4.1.11`**；Native Vitest exact-peer | coverage启动，不设全局百分比门槛 |
 | `eslint-plugin-jsx-a11y` | 保留 `6.10.2`；peer ESLint含9且不含10 | strict规则全error |
 | `eslint-plugin-react-refresh` | 保留 `0.4.26`；peer ESLint>=8.40 | Vite HMR，路由导出精准例外 |
 | `eslint-plugin-storybook` | 保留 `10.6.0`；peer ESLint>=8 | stories与工具例外 |
@@ -97,10 +99,23 @@ Unicorn的推荐规则不会整体迁移。其风格偏好（数组非变异语�
 
 验收ID：**A01** Deno版本/精确manifest/frozen lock；**A02** peer图、构建与类型；**A03**全部lint配置加载、规则承接；**A04** Worker/Storybook/样式生产运行。
 
-本次已完成：读取双方manifest/lock和已安装包peer、检查Deno2.9.6；这不是新组合安装证明。P001必须在临时隔离目录先验证精确清单安装、Vite8+React19.1+Storybook10.6+Vitest4.1.7启动；验证通过才更新Web配置与锁。不得覆盖用户node_modules来把探索伪装成兼容性验证。安装需要的生命周期脚本按照生成锁中的实际版本逐项登记，保留node-liblzma必要安装能力，不使用全局允许所有脚本。
+本次已完成：读取双方manifest/lock和已安装包peer、检查Deno2.9.6；这不是新组合安装证明。P001必须在临时隔离目录先验证精确清单安装、Vite8+React19.1+Storybook10.6+Vitest4.1.11启动；验证通过才更新Web配置与锁。不得覆盖用户node_modules来把探索伪装成兼容性验证。安装需要的生命周期脚本按照生成锁中的实际版本逐项登记，保留node-liblzma必要安装能力，不使用全局允许所有脚本。
 
 如依赖兼容失败，P001记录具体包/peer或运行错误并阻断后继计划；不擅自升级固定Native基线。P012再在干净checkout运行全部任务，证明目标组合和最终源码一起通过。
 
 ## S01.6 迁移分支与中间状态
 
 整个实施在单一隔离迁移分支进行，中间工作包不承诺可部署。P001必须验证工具本身加载、生产构建链和Vitest可启动，并保存新严格规则对全量存量源码的诊断；源码违规按file-map分配到负责工作包，P010统一清零。允许记录中间失败，不允许排除存量源码、临时降低规则或标绿掩盖失败。P011接最终统一门禁，P012只有全部要求通过后才能宣告完成。构建因类型错误提前失败时，隔离工具链冒烟与最终应用构建分别记录，不把前者写为后者成功。
+
+## S01.7 已验证的发布声明兼容处理
+
+P001隔离安装暴露Storybook10.6.0发布声明的两条同行`@ts-expect-error`失效，
+详细原版复现、独立复核和hash见[P001验证记录](../review/P001-toolchain-validation.md)。
+采用D19：仅将这两条上游已有指令移至对应声明上一行，不新增抑制或修改泛型/运行代码。
+这属于依赖发布排版修复，不应被描述为CSF factory泛型正确性修复。
+
+安装准备步骤显式应用该限定修复；固定包版本、相对文件、原文hash和结果hash，
+幂等运行，任何其他内容或版本必须失败并要求重新审查。typecheck/check只验证准备结果，
+不得在检查时写依赖，也不得修改Deno全局cache或相邻项目。清洁安装后必须重放准备步骤。
+保留正反类型用例，证明正常Meta/StoryObj可用、错误args仍被拒绝；准备脚本验证首次、重复、
+原文不匹配和只读检查行为。未来升级移除此补丁前重新复核，不能自动套用到其他版本。

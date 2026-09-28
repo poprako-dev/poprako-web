@@ -59,7 +59,7 @@
 | R4-03 | 函数组合、按需抽象、Prettier/rustfmt | 采用前端；不预建框架/假接口；无Rust formatter任务 | S01.4/S07.1；P010/P011；A72 |
 | R4-04 | 具名导出、顶层function、回调箭头、工具默认导出例外 | 采用；覆盖export default function而非只查ExportAssignment；原Web默认组件风格被新规范替代 | S07.2；P002–P010；A70 |
 | R4-05 | 数据type、纯调用interface、Props永远type | 采用；专项AST检查，不用consistent-type-definitions一刀切 | S01.4/S07.2；P010/P011；A70 |
-| R4-06 | Props尽量必选、真实空值语义例外 | 采用；不通过断言/占位值消除optional，逐调用方审查 | S02/S04；P002–P010；严格类型及交互测试 |
+| R4-06 | Props必需性、空值语义与业务fallback | 采用；全量组件与调用方审查，收紧多余可空，集中合理默认，保留有依据的真实空状态；不用断言/占位值掩盖缺失 | S02.8/S04-08/S07；P002–P010/P012；IC-01至IC-04及接口审查记录 |
 | R4-07 | import type、导出/边界返回类型、unknown收窄 | 采用；现有raw转换保留且严格化 | S01.4/S07.1；P010；A03/A72 |
 | R4-08 | 禁any/危险断言/非空断言、禁无理由抑制和丢Promise | 采用；定点工具例外与原因，移除现有整文件disable | S01.4/S07.1–2；P010/P011；A03/A70 |
 | R4-09 | Hooks、render纯净、清理和错误处理、派生不冗余Effect | 采用；翻校/上传/哈希/窗口事件保持生命周期测试 | S04/S06；P008/P009/P010；取消/卸载/快速切换 |

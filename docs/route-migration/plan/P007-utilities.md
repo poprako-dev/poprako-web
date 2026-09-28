@@ -63,6 +63,12 @@ Utilities、shared压缩调用方、test-bounded-browser/test-compress-browser/t
 4. 确定test:compress-browser/test:bounded-browser任务，验证真实图片/压缩Worker；将Unix ps内存采样和系统xz互操作明确归为有环境条件的诊断任务。
 5. 保留取消、Blob释放、错误恢复和文件命名行为；大计算留Worker，进度不会冻结交互。
 
+## 接口与空值语义修正
+
+逐个审查本包全部生产组件及实际调用方，按S02.8/S04-08修正不必要的optional/null、重复判空和无意义fallback。必需数据与动作收紧契约；合理默认值在所属边界集中；真实空状态与互斥模式显式建模。同步修改受影响的跨包调用方，由集成负责人协调共享文件，不保留临时宽接口。
+
+结果写入[接口审查记录](../review/interface-audit.md)，逐项保留调用方与验证证据。
+
 ## 兼容要求
 
 以 [兼容矩阵](../migration/compatibility-map.md) 和所引用 spec 为准；不改变本包未明确授权的后端协议、公开 URL 或用户数据格式。
@@ -75,6 +81,7 @@ Utilities、shared压缩调用方、test-bounded-browser/test-compress-browser/t
 
 ## 完成标准
 
+- [ ] 本包接口审查和受影响调用方已完成；IC-01至IC-04在本包范围内无未处理项，不能仅以类型检查通过代替。
 - [ ] utilities业务完整迁移；scripts字符串源码入口全部在清单中处理。
 - [ ] 通用跨平台测试不依赖系统Chrome或Unix ps；平台诊断前提写入文档。
 

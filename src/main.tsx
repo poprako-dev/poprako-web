@@ -1,46 +1,43 @@
-import "@/lib/consoleLog";
-import { StrictMode } from "react";
+import { StrictMode, useEffect, type ReactElement } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.tsx";
-import { NotificationToast } from "@/components/ui/NotificationToast";
+import { RouterProvider } from "@tanstack/react-router";
+import { router } from "@/application/router";
+import { ThemeProvider } from "@/application/ThemeProvider";
+import { NotificationToast } from "@/shared/component/notification-toast/NotificationToast";
+import { initializeTheme } from "@/shared/utility/theme";
+import { useAppStore } from "@/routes/business/session/session-store";
+import { installConsoleLogCollector } from "@/shared/utility/console-log";
+import "@/application/style.css";
 
-// Inline loader keyframes — injected synchronously with index.css lifecycle,
-// before any React render. This guarantees LoadingCircle's animation exists
-// even during lazy-loaded Suspense fallback, before page CSS chunks arrive.
-{
-  const style = document.createElement("style");
-  style.textContent =
-    "@keyframes poprako-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}";
-  document.head.append(style);
+export function Application(): ReactElement {
+  useEffect(
+    () =>
+      useAppStore.subscribe((state, previous) => {
+        if (state.generation !== previous.generation) {
+          void router.invalidate();
+        }
+      }),
+    [],
+  );
+  return <RouterProvider router={router} />;
 }
 
 const rootElement = document.querySelector("#root");
 if (!rootElement) {
   throw new Error("Root element was not found");
 }
+initializeTheme();
+installConsoleLogCollector();
+const loaderStyle = document.createElement("style");
+loaderStyle.textContent =
+  "@keyframes poprako-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}";
+document.head.append(loaderStyle);
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
-    <NotificationToast />
+    <ThemeProvider>
+      <Application />
+      <NotificationToast />
+    </ThemeProvider>
   </StrictMode>,
 );
-
-// Preload secondary routes after first paint so navigation feels instant.
-// requestIdleCallback avoids competing with the initial render + hydrate work;
-// fall back to a short setTimeout in environments that lack it.
-const schedulePreload = (fn: () => void) => {
-  if (typeof requestIdleCallback === "undefined") {
-    setTimeout(fn, 200);
-  } else {
-    requestIdleCallback(fn);
-  }
-};
-
-schedulePreload(() => {
-  // fire-and-forget — failures are non-fatal (the lazy route Suspense
-  // will retry on navigation)
-  void import("@/pages/WorkspacePage");
-  void import("@/pages/ComicPlaygroundPage");
-});

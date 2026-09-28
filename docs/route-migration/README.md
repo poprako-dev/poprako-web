@@ -1,7 +1,9 @@
 # Poprako Web 全项目 routes 迁移文档包
 
 文档状态：ready（文档包已完成）；交叉审查结果见 [review/findings](review/findings.md)。
-生产迁移状态：**尚未开始**。本目录是实施依据，不是已经完成改造的声明。
+实施状态：**架构主体已落地，本机完整自动门禁通过**；跨平台及逐组件完整人工审查尚未全部完成。
+实时进度见[调度记录](plan/execution.md)。本目录是实施依据，不是已经完成改造的声明。
+当前实现与验证结果见[实施报告](review/implementation-results.md)，基线入口逐项对应见[实施映射](migration/implementation-map.csv)。
 
 ## 目的与固定约束
 
@@ -10,7 +12,8 @@
 本项目使用用户明确指定的 `routes`，保留 Zustand 和 Storybook，继续作为使用 HTTP 后端的 Web 产品。
 这些决定来自本会话用户，不再把全项目迁移缩小为单个业务试点。
 
-本轮只写文档、清点源码并运行迁移前只读检查；没有改动生产源码、依赖、构建配置、AGENTS 或部署系统。
+文档编制阶段只写文档、清点源码并运行迁移前只读检查；该阶段没有改动生产源码、依赖、构建配置、AGENTS或部署系统。
+后续实施结果另见调度记录与各工作包验收，不追溯更改文档阶段的验证结论。
 此前单份方案与临时 HTML 报告仅作为调研材料；冲突时以本套文档的已决策条款为准。
 
 ## 阅读顺序
@@ -22,7 +25,7 @@
 5. [迁移清单](migration/file-map.csv)、[依赖图](migration/dependency-map.md)、
    [兼容矩阵](migration/compatibility-map.md)、[新增文件](migration/new-files.csv)。
 6. [实施计划入口](plan/README.md)：工作包、依赖、第一批可执行任务。
-7. [覆盖审查](review/coverage-matrix.md)与[发现记录](review/findings.md)。
+7. [覆盖审查](review/coverage-matrix.md)、[接口审查要求](review/interface-audit.md)与[发现记录](review/findings.md)。
 
 ## Spec 索引
 
@@ -53,3 +56,7 @@
 字符串入口或兼容转发文件。文档清单、自动生成结果、源码和 CI 应互相一致。
 保留既有 Web 功能、URL、保存协议和浏览器数据；新增主题行为按照 S05 验证。
 完整交付需要实测目标工具链、Storybook、浏览器交互和部署回归；当前文档不会预先宣称这些结果通过。
+
+全量组件接口与调用方审查也是完成条件：修正多余可空Props、无意义fallback、非法模式组合、
+重复派生状态和重复请求编排；合理默认值集中在语义所属边界，真实空状态保留明确表达。
+具体规则见S02.8/S04-08，逐业务包修复，P010汇总，P012按IC-01至IC-04验收。
