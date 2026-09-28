@@ -1,3 +1,4 @@
+import { decodeAssignment, type AssignmentResponse } from "./content-contract";
 import type { ApiClient } from "./client";
 import {
   decodeArray,
@@ -71,8 +72,8 @@ export function createAssignmentInvitation(
 export function joinAssignmentInvitation(
   client: ApiClient,
   code: string,
-): Promise<Result<undefined>> {
-  return client.post("/assignment-invitations/join", { code }, { decode: decodeVoid });
+): Promise<Result<AssignmentResponse>> {
+  return client.post("/assignment-invitations/join", { code }, { decode: decodeAssignment });
 }
 
 export function deleteAssignmentInvitation(

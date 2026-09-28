@@ -61,8 +61,8 @@ function TeamAvatar({
         "transition-all duration-300",
         canUpload && "group/avatar",
         isListOpen ? "shadow-md scale-105" : "",
-        !resolvedAvatarUrl && isListOpen && "bg-primary text-primary-foreground",
-        !resolvedAvatarUrl && !isListOpen && "bg-primary/80 text-primary-foreground",
+        !resolvedAvatarUrl && isListOpen && "bg-[var(--brand-leaf)]",
+        !resolvedAvatarUrl && !isListOpen && "bg-[var(--brand-leaf)]/80",
         canUpload ? "cursor-pointer" : "cursor-default",
       )}
     >
@@ -76,7 +76,7 @@ function TeamAvatar({
         <Globe2
           size={22}
           className={clsx(
-            "text-primary-foreground transition-transform duration-500",
+            "text-ink-white transition-transform duration-500",
             isListOpen && "rotate-12",
           )}
         />
@@ -86,8 +86,10 @@ function TeamAvatar({
         className={clsx(
           "absolute inset-0 pointer-events-none",
           "transition-colors duration-200",
-          canUpload ? "bg-overlay/0 group-hover/avatar:bg-overlay/18" : "bg-overlay/0",
-          isUploading && "bg-overlay/45",
+          canUpload
+            ? "bg-surface-black/0 group-hover/avatar:bg-surface-black/18"
+            : "bg-surface-black/0",
+          isUploading && "bg-surface-black/45",
         )}
       />
 
@@ -99,18 +101,16 @@ function TeamAvatar({
             "transition-opacity duration-200",
           )}
         >
-          <Upload className="w-4 h-4 text-primary-foreground" strokeWidth={2.5} />
+          <Upload className="w-4 h-4 text-ink-white" strokeWidth={2.5} />
         </div>
       )}
 
       {isUploading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center">
           {uploadProgress !== null && uploadProgress < 100 ? (
-            <span className="text-[10px] font-bold text-primary-foreground/95">
-              {uploadProgress}%
-            </span>
+            <span className="text-[10px] font-bold text-ink-white/95">{uploadProgress}%</span>
           ) : (
-            <span className="text-[10px] font-bold text-primary-foreground/95">...</span>
+            <span className="text-[10px] font-bold text-ink-white/95">...</span>
           )}
         </div>
       )}
@@ -317,11 +317,13 @@ export function TeamOption({
               "px-2 py-2 rounded-sm h-11",
               "flex flex-col justify-center",
               "transition-colors duration-300",
-              isListOpen ? "bg-surface-hover" : "hover:bg-surface-hover",
+              isListOpen ? "bg-surface-gray-100/60" : "hover:bg-surface-gray-100/80",
             )}
           >
             <div className="flex items-center gap-1.5">
-              <span className={clsx("text-sm font-bold tracking-wide", "truncate text-foreground")}>
+              <span
+                className={clsx("text-sm font-bold tracking-wide", "truncate text-heading-forest")}
+              >
                 {activeTeam.name}
               </span>
             </div>

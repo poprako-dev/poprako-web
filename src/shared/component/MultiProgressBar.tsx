@@ -23,8 +23,13 @@ export function MultiProgressBar({
 }: Props): ReactElement {
   return (
     <div
-      className={clsx("relative flex overflow-hidden rounded-sm border border-border bg-muted")}
-      style={{ width: fullWidth ? "100%" : `${String(width)}rem`, height: `${String(height)}rem` }}
+      className={clsx(
+        "relative flex",
+        "overflow-hidden rounded-sm bg-surface-gray-200",
+        "shadow-sm shadow-shadow-slate-200",
+        "border border-line-slate-200",
+      )}
+      style={{ width: fullWidth ? "100%" : String(width) + "rem", height: String(height) + "rem" }}
     >
       {bars.map((bar, index) => (
         <div
@@ -34,7 +39,10 @@ export function MultiProgressBar({
             zIndex: index + 1,
             backgroundColor: bar.barColor,
           }}
-          className="absolute left-0 top-0 h-full transition-all duration-500 ease-in-out"
+          className={clsx(
+            "absolute top-0 left-0 h-full",
+            "transition-all duration-500 ease-in-out",
+          )}
         />
       ))}
     </div>

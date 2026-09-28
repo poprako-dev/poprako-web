@@ -10,7 +10,7 @@ type Props = {
 
 export function SettingsFooter({ config, isActive, onClick }: Props): ReactElement {
   return (
-    <div className="py-2 border-t border-border">
+    <div className="py-2 border-t border-navigation-border">
       <NavItem icon={config.icon} label={config.label} isActive={isActive} onClick={onClick} />
     </div>
   );

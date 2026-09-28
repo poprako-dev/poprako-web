@@ -32,7 +32,10 @@ function TextParts({ parts }: TextPartsProps): JSX.Element[] {
       {part.variable ? (
         <span
           data-workflow-variable="true"
-          className={clsx("underline decoration-border decoration-1", "underline-offset-4")}
+          className={clsx(
+            "underline decoration-decoration-stone-400 decoration-1",
+            "underline-offset-4",
+          )}
         >
           {part.text}
         </span>
@@ -53,18 +56,21 @@ function RecordItem({ record, getUserLabel }: RecordItemProps): JSX.Element {
       <span
         aria-hidden="true"
         className={clsx(
-          "absolute left-0 top-4 h-1.5 w-1.5 rounded-full bg-border",
-          "transition-colors group-hover/record:bg-text-secondary",
+          "absolute left-0 top-4 h-1.5 w-1.5 rounded-full bg-surface-stone-300",
+          "transition-colors group-hover/record:bg-surface-stone-400",
         )}
       />
-      <p className="text-sm font-normal leading-6 text-text-secondary">
-        <span className="text-[15px] font-semibold text-text-primary">
+      <p className="text-sm font-normal leading-6 text-ink-stone-600">
+        <span className="text-[15px] font-semibold text-ink-stone-800">
           <TextParts parts={presentation.title} />：
         </span>
         <span> </span>
         <span
           data-workflow-variable="true"
-          className={clsx("underline decoration-border decoration-1", "underline-offset-4")}
+          className={clsx(
+            "underline decoration-decoration-stone-400 decoration-1",
+            "underline-offset-4",
+          )}
         >
           {actor}
         </span>
@@ -72,7 +78,7 @@ function RecordItem({ record, getUserLabel }: RecordItemProps): JSX.Element {
         <TextParts parts={presentation.detail} />
         <time
           dateTime={new Date(record.createdAt).toISOString()}
-          className="ml-2 whitespace-nowrap text-xs text-text-secondary"
+          className="ml-2 whitespace-nowrap text-xs text-ink-stone-400"
         >
           · {time}
         </time>
@@ -114,8 +120,8 @@ export function WorkflowRecordList({
   if (!chapterId) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2">
-        <History size={26} className="text-text-secondary" />
-        <p className="text-sm text-text-secondary">选择章节后查看活动记录</p>
+        <History size={26} className="text-ink-stone-300" />
+        <p className="text-sm text-ink-stone-400">选择章节后查看活动记录</p>
       </div>
     );
   }
@@ -131,8 +137,8 @@ export function WorkflowRecordList({
   if (state.error && state.records.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2">
-        <CircleAlert size={24} className="text-text-secondary" />
-        <p className="text-sm text-text-secondary">活动记录加载失败</p>
+        <CircleAlert size={24} className="text-ink-stone-300" />
+        <p className="text-sm text-ink-stone-400">活动记录加载失败</p>
       </div>
     );
   }
@@ -140,8 +146,8 @@ export function WorkflowRecordList({
   if (state.loadedOnce && state.records.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2">
-        <History size={26} className="text-text-secondary" />
-        <p className="text-sm text-text-secondary">暂无活动记录</p>
+        <History size={26} className="text-ink-stone-300" />
+        <p className="text-sm text-ink-stone-400">暂无活动记录</p>
       </div>
     );
   }
@@ -154,11 +160,11 @@ export function WorkflowRecordList({
       tabIndex={0}
       className={clsx(
         "h-full overflow-y-auto px-5 py-3 sm:px-7",
-        "scrollbar-thin scrollbar-thumb-border",
+        "scrollbar-thin scrollbar-thumb-scrollbar-stone-300",
       )}
     >
       <div className="mx-auto w-full max-w-180">
-        {state.error && <p className="mb-4 text-xs text-text-secondary">最新记录刷新失败</p>}
+        {state.error && <p className="mb-4 text-xs text-ink-stone-400">最新记录刷新失败</p>}
 
         <ol>
           {state.records.map((record) => (
@@ -173,7 +179,7 @@ export function WorkflowRecordList({
           </div>
         )}
         {state.loadMoreError && (
-          <p className="py-4 text-center text-xs text-text-secondary">更早记录加载失败</p>
+          <p className="py-4 text-center text-xs text-ink-stone-400">更早记录加载失败</p>
         )}
       </div>
     </div>

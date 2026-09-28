@@ -162,7 +162,7 @@ export function Canvas({
       tabIndex={0}
       aria-label="图像标记画布，使用方向键平移"
       className={clsx(
-        "relative w-full h-full overflow-hidden bg-foreground touch-none select-none",
+        "relative w-full h-full overflow-hidden bg-surface-stone-600 touch-none select-none",
         isPanning ? "cursor-grabbing" : "cursor-default",
       )}
       onMouseDown={handleCanvasMouseDown}
@@ -306,8 +306,8 @@ export function Canvas({
                   <div
                     className={clsx(
                       "-translate-y-full",
-                      "px-2 py-1 rounded-sm bg-foreground/90 text-popover-foreground text-xs",
-                      "backdrop-blur-md shadow-xl border border-surface-panel/10 whitespace-pre",
+                      "px-2 py-1 rounded-sm bg-surface-slate-800/90 text-ink-slate-50 text-xs",
+                      "backdrop-blur-md shadow-xl border border-line-white/10 whitespace-pre",
                     )}
                   >
                     {unitFinalText(previewUnit)}

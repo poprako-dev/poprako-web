@@ -39,43 +39,40 @@ export function Marker({
           "border-2 shadow-lg",
           isBubble
             ? dimmed
-              ? "bg-marker-bubble/40 border-marker-bubble-border/40"
-              : "bg-marker-bubble/80 border-marker-bubble-border/70"
+              ? "bg-surface-pink-300/40 border-line-pink-400/40"
+              : "bg-surface-pink-300/80 border-line-pink-400/70"
             : dimmed
-              ? "bg-marker-note/40 border-marker-note-border/40"
-              : "bg-marker-note/80 border-marker-note-border/70",
-          isSelected && "ring-4 ring-status-info/10",
+              ? "bg-surface-amber-300/40 border-line-amber-400/40"
+              : "bg-surface-amber-300/80 border-line-amber-400/70",
+          isSelected && "ring-4 ring-focus-blue-500/10",
         )}
         style={{
           width: `${String(CIRCLE_SIZE)}px`,
           height: `${String(CIRCLE_SIZE)}px`,
           borderColor: isSelected
-            ? "var(--primary)"
+            ? "var(--marker-selected)"
             : isCompleted
-              ? "var(--status-success)"
+              ? "var(--brand-leaf)"
               : undefined,
           transition: "background-color 0.2s, border-color 0.2s, box-shadow 0.2s",
         }}
       >
-        <span className="text-[13px] font-black text-foreground tabular-nums leading-none">
+        <span className="text-[13px] font-black text-ink-white tabular-nums leading-none">
           {index + 1}
         </span>
       </div>
       <div
         className={clsx(
-          "rounded-full -mt-px shadow-sm border-2 border-foreground/20",
+          "rounded-full -mt-px shadow-sm border-2 border-line-black/20",
           isBubble
             ? dimmed
-              ? "bg-marker-bubble/40"
-              : "bg-marker-bubble/80"
+              ? "bg-surface-pink-300/40"
+              : "bg-surface-pink-300/80"
             : dimmed
-              ? "bg-marker-note/40"
-              : "bg-marker-note/80",
+              ? "bg-surface-amber-300/40"
+              : "bg-surface-amber-300/80",
         )}
-        style={{
-          width: `${String(DOT_SIZE)}px`,
-          height: `${String(DOT_SIZE)}px`,
-        }}
+        style={{ width: `${String(DOT_SIZE)}px`, height: `${String(DOT_SIZE)}px` }}
       />
     </div>
   );

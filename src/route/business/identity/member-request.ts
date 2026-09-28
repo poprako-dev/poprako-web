@@ -49,6 +49,7 @@ export function updateMemberRole(
   return updateMemberRoles(client, memberId, roles);
 }
 
-export function joinMember(client: ApiClient, invitationCode: string): Promise<Result<void>> {
-  return joinTeamApi(client, invitationCode);
+export async function joinMember(client: ApiClient, invitationCode: string): Promise<Result<void>> {
+  const result = await joinTeamApi(client, invitationCode);
+  return result.success ? { success: true, data: undefined } : result;
 }

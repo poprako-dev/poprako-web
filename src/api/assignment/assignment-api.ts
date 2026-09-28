@@ -1,13 +1,8 @@
 import { decodeAssignment } from "@/api/content-contract";
 import type { AssignmentResponse } from "@/api/content-contract";
 import type { ApiClient } from "@/api/client";
-import { decodeArray, decodeObject, decodeString, decodeVoid } from "@/api/contract";
+import { decodeArray, decodeVoid } from "@/api/contract";
 import type { Result } from "@/shared/utility/result";
-
-function decodeId(value: unknown): { id: string } {
-  const object = decodeObject(value, "assignment result");
-  return { id: decodeString(object["id"], "assignment result.id") };
-}
 
 export type ListAssignmentsQuery = {
   chapterId?: string | undefined;
@@ -38,7 +33,7 @@ export function upsertAssignment(
   chapterId: string,
   userId: string,
   roles: number,
-): Promise<Result<{ id: string }>> {
+): Promise<Result<undefined>> {
   return client.put(
     `/chapters/${chapterId}/assignments/${userId}/roles`,
     {
@@ -46,7 +41,7 @@ export function upsertAssignment(
       userId,
       roles,
     },
-    { decode: decodeId },
+    { decode: decodeVoid },
   );
 }
 

@@ -17,7 +17,7 @@ void test("dependency checker resolves aliases and allows explicit integration a
     for (const route of ["alpha", "beta"]) {
       const directory = join(root, "src/route", route);
       await mkdir(directory, { recursive: true });
-      await writeFile(join(directory, "index.tsx"), "export {};\n");
+      await writeFile(join(directory, "Index.tsx"), "export {};\n");
       await mkdir(join(directory, "business"), { recursive: true });
     }
     await mkdir(join(root, "src/application/test"), { recursive: true });
@@ -60,7 +60,7 @@ void test("route modules may import their own route business package", async () 
     );
     const route = join(root, "src/route/alpha");
     await mkdir(join(route, "business"), { recursive: true });
-    await writeFile(join(route, "index.tsx"), "export {};\n");
+    await writeFile(join(route, "Index.tsx"), "export {};\n");
     await writeFile(join(route, "business/model.ts"), "export const model = 1;\n");
     assert.deepEqual(
       inspectDependencyEntries(
@@ -92,10 +92,10 @@ void test("checker rejects common business to route imports and dynamic generate
     const common = join(root, "src/route/business");
     await mkdir(alpha, { recursive: true });
     await mkdir(common, { recursive: true });
-    await writeFile(join(alpha, "index.tsx"), "export {};\n");
+    await writeFile(join(alpha, "Index.tsx"), "export {};\n");
     await writeFile(join(alpha, "Utilities.tsx"), "export function Utilities() {}\n");
     await writeFile(join(common, "request.ts"), "export {};\n");
-    await writeFile(join(common, "index.tsx"), "export {};\n");
+    await writeFile(join(common, "Index.tsx"), "export {};\n");
     const inlineScript = [
       "<script",
       ' type="module">',
@@ -107,8 +107,8 @@ void test("checker rejects common business to route imports and dynamic generate
         {
           path: "src/route/business/request.ts",
           content: [
-            'import "@/route/alpha";',
-            'import "@/route/business";',
+            'import "@/route/alpha/Index";',
+            'import "@/route/business/Index";',
             "new Worker(workerPath);",
             "const moduleName = './dynamic';",
             "void import(moduleName);",
@@ -126,14 +126,14 @@ void test("checker rejects common business to route imports and dynamic generate
     assert.match(findings.map((finding) => finding.rule).join(" "), /dependency\.default-import/u);
     assert.match(
       findings[0]?.message ?? "",
-      /src\/route\/business\/request\.ts → src\/route\/alpha\/index\.tsx/u,
+      /src\/route\/business\/request\.ts → src\/route\/alpha\/Index\.tsx/u,
     );
   } finally {
     await rm(root, { recursive: true, force: true });
   }
 });
 
-void test("group routes retain ownership and API type imports cannot depend on routes", async () => {
+void test("page routes retain ownership and API type imports cannot depend on routes", async () => {
   const root = await mkdtemp(join(tmpdir(), "poprako-api-direction-"));
   try {
     await writeFile(
@@ -142,34 +142,27 @@ void test("group routes retain ownership and API type imports cannot depend on r
         compilerOptions: { baseUrl: ".", paths: { "@/*": ["src/*"] } },
       }),
     );
-    for (const folder of [
-      "src/route/(setting)/business",
-      "src/route/(utility)/business",
-      "src/api",
-    ])
+    for (const folder of ["src/route/settings/business", "src/route/utilities/business", "src/api"])
       await mkdir(join(root, folder), { recursive: true });
-    for (const [group, url] of [
-      ["setting", "settings"],
-      ["utility", "utilities"],
-    ] as const) {
+    for (const url of ["settings", "utilities"]) {
       await writeFile(
-        join(root, `src/route/(${group})/${url}.tsx`),
+        join(root, `src/route/${url}/Index.tsx`),
         `export const Route = createFileRoute('/${url}')({});`,
       );
       await writeFile(
-        join(root, `src/route/(${group})/business/model.ts`),
+        join(root, `src/route/${url}/business/model.ts`),
         "export type Model = string;",
       );
     }
     const findings = inspectDependencyEntries(
       [
         {
-          path: "src/route/(setting)/business/setting.ts",
-          content: 'import type { Model } from "@/route/(utility)/business/model";',
+          path: "src/route/settings/business/setting.ts",
+          content: 'import type { Model } from "@/route/utilities/business/model";',
         },
         {
           path: "src/api/client.ts",
-          content: 'import type { Model } from "@/route/(setting)/business/model";',
+          content: 'import type { Model } from "@/route/settings/business/model";',
         },
       ],
       root,

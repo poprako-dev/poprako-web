@@ -140,30 +140,31 @@ export function HoverSelect({
         }}
         className={clsx(
           "flex h-full w-full items-center justify-between px-4 py-1",
-          "rounded-sm font-medium",
+          "rounded-sm font-medium outline-none",
           "transform-gpu border transition-all duration-300 ease-in-out",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-          "bg-background text-foreground",
-          "hover:border-ring hover:shadow-sm",
+          // 基础色调：淡白色与石板灰（边框颜色由 isActive 控制）
+          "bg-surface-white text-ink-slate-700",
+          // 悬停效果：极其微弱的加深和缩放
+          "hover:border-line-slate-350/90 hover:shadow-sm",
           {
-            "bg-background shadow-sm": isOpen,
+            "bg-surface-white shadow-sm": isOpen,
           },
           // active 状态使用绿色 BG
           {
-            "bg-primary-muted": isActive,
-            "border-border": !isActive,
+            "bg-surface-emerald-200/80": isActive,
+            "border-line-slate-200": !isActive,
           },
         )}
       >
         <span
           className={clsx("truncate", {
-            "font-normal text-muted-foreground": !selectedOption,
+            "font-normal text-ink-slate-400": !selectedOption,
           })}
         >
           {selectedOption ? selectedOption.text : hintText}
         </span>
         <ChevronDown
-          className={clsx("h-4 w-4 text-muted-foreground transition-transform duration-300", {
+          className={clsx("h-4 w-4 text-ink-slate-400 transition-transform duration-300", {
             "rotate-180": isOpen,
           })}
         />
@@ -174,14 +175,18 @@ export function HoverSelect({
         className={clsx(
           "absolute z-50 mt-2 w-full overflow-hidden",
           "origin-top transform-gpu rounded-sm border transition-all duration-300 ease-in-out",
-          "border-border bg-popover text-popover-foreground shadow-lg",
+          // 下拉框色调：纯白底色，浅灰边框，较深阴影提升层次
+          "border-line-slate-200/80 bg-surface-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)]",
           {
             "translate-y-0 scale-100 opacity-100": isOpen,
             "pointer-events-none -translate-y-2 scale-95 opacity-0": !isOpen,
           },
         )}
       >
-        <div className="overflow-y-auto" style={{ maxHeight: `${String(maxHeight)}rem` }}>
+        <div
+          className="scrollbar-thin scrollbar-thumb-scrollbar-slate-200 overflow-y-auto"
+          style={{ maxHeight: `${String(maxHeight)}rem` }}
+        >
           {options.map((option) => {
             const isSelected = checkedOptionId === option.id;
             return (
@@ -194,13 +199,12 @@ export function HoverSelect({
                 className={clsx(
                   "flex transform-gpu cursor-pointer items-center justify-between",
                   "px-4 py-2.5 transition-colors duration-300 ease-in-out",
-                  "text-foreground",
+                  "text-ink-slate-600",
                   "w-full text-left",
-                  "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
-                  "focus-visible:outline-primary",
                   {
-                    "bg-accent font-semibold text-accent-foreground": isSelected,
-                    "hover:bg-accent hover:text-accent-foreground": !isSelected,
+                    // 选中项：淡淡的灰色背景，不抢眼但有区分度
+                    "bg-surface-gray-200 font-semibold text-ink-slate-900": isSelected,
+                    "hover:bg-surface-gray-100 hover:text-ink-slate-800": !isSelected,
                   },
                 )}
               >
@@ -210,7 +214,7 @@ export function HoverSelect({
             );
           })}
           {options.length === 0 && (
-            <div className="px-4 py-8 text-center text-xs text-muted-foreground">无可用选项</div>
+            <div className="px-4 py-8 text-center text-xs text-ink-slate-400">无可用选项</div>
           )}
         </div>
       </div>

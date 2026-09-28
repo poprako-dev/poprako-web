@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./appearance.css";
 
 @theme inline {
   --font-sans:
@@ -91,15 +92,15 @@
   --card-foreground: oklch(0.13 0.028 261.692);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.13 0.028 261.692);
-  --primary: #047857; /* emerald-700, accessible with white text */
+  --primary: #059669; /* original emerald-600 */
   --primary-foreground: #ffffff; /* on-primary */
   --secondary: oklch(0.967 0 0);
   --secondary-foreground: oklch(0.21 0 0);
   --muted: oklch(0.967 0 0);
-  --muted-foreground: oklch(0.44 0 0);
+  --muted-foreground: oklch(0.551 0 0);
   --accent: #ecfdf5; /* emerald-50  → primary-subtle */
   --accent-foreground: #047857; /* emerald-700 → primary-text */
-  --destructive: #b42318;
+  --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: #ffffff;
   --border: oklch(0.928 0 0);
   --input: oklch(0.928 0 0);
@@ -128,7 +129,7 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0.002 247.839);
   --sidebar-foreground: oklch(0.13 0.028 261.692);
-  --sidebar-primary: #047857; /* emerald-700 */
+  --sidebar-primary: #059669; /* original emerald-600 */
   --sidebar-primary-foreground: #ffffff; /* on-primary */
   --sidebar-accent: #ecfdf5; /* emerald-50  → primary-subtle */
   --sidebar-accent-foreground: #047857; /* emerald-700 → primary-text */
@@ -146,12 +147,12 @@
   --color-red-100: #fbe5e5;
   --color-border-red-200: #fce8e8;
   /* Translator diff colors: distinct but restrained for long-form proofreading. */
-  --color-unit-stats-translate: var(--status-warning);
-  --color-unit-stats-edit: var(--status-info);
-  --color-unit-stats-append: var(--status-success);
-  --diff-delete-text: #813f3f;
+  --color-unit-stats-translate: var(--color-orange-400);
+  --color-unit-stats-edit: var(--color-pink-400);
+  --color-unit-stats-append: var(--color-green-500);
+  --diff-delete-text: #9f6262;
   --diff-delete-bg: #f0d2d2;
-  --diff-replaced-text: #514c46;
+  --diff-replaced-text: #6f6a64;
   --diff-replaced-bg: #dfdcd8;
   --diff-replacement-text: #704b2c;
   --diff-replacement-bg: #efd1ac;
@@ -169,7 +170,7 @@
   --primary-subtle: #ecfdf5; /* emerald-50  → 对应 --accent */
   --primary-muted: #d1fae5; /* emerald-100 */
   --primary-border: #a7f3d0; /* emerald-200 */
-  --primary-text: #036b4f; /* dark emerald for text on primary tint */
+  --primary-text: #047857; /* original emerald-700 */
   --on-primary: #ffffff; /* white       → 对应 --primary-foreground */
   --ring-primary: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% → 对应 --ring */
 }

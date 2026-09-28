@@ -225,13 +225,13 @@ export function ArtworkUploadDialog({
           "flex min-h-24 w-full items-center justify-center gap-3 rounded-lg",
           "border border-dashed transition-colors",
           isRetrying
-            ? "border-destructive/30 bg-destructive/10 text-destructive"
-            : "border-border bg-surface-workspace/60 text-muted-foreground",
-          canSelect && "hover:border-status-success/30 hover:bg-status-success/10",
+            ? "border-(--danger-border) bg-surface-red-50 text-ink-red-500"
+            : "border-line-stone-200 bg-surface-stone-50/60 text-ink-slate-400",
+          canSelect && "hover:border-(--brand-leaf-border) hover:bg-surface-green-50",
           !canSelect && "cursor-default",
         )}
       >
-        {isBusy && <LoaderCircle size={22} className="animate-spin text-status-success" />}
+        {isBusy && <LoaderCircle size={22} className="animate-spin text-ink-green-500" />}
         {!isBusy && isRetrying && <CircleAlert size={22} />}
         {!isBusy && !isRetrying && files.length > 0 && <FileStack size={22} />}
         {!isBusy && !isRetrying && files.length === 0 && <FileUp size={22} />}
@@ -244,21 +244,21 @@ export function ArtworkUploadDialog({
 
       {isBusy && (
         <div className="mt-4 flex items-center gap-3">
-          <CloudUpload size={15} className="shrink-0 text-status-success" />
+          <CloudUpload size={15} className="shrink-0 text-ink-green-500" />
           <div
             role="progressbar"
             aria-label="上传进度"
             aria-valuenow={Math.round(progress)}
             aria-valuemin={0}
             aria-valuemax={100}
-            className="h-1.5 flex-1 overflow-hidden rounded-full bg-status-success/10"
+            className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-green-50"
           >
             <div
-              className="h-full rounded-full bg-status-success transition-[width]"
+              className="h-full rounded-full bg-(--brand-leaf) transition-[width]"
               style={{ width: `${String(progress)}%` }}
             />
           </div>
-          <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+          <span className="text-xs font-semibold tabular-nums text-ink-slate-400">
             {Math.round(progress)}%
           </span>
         </div>

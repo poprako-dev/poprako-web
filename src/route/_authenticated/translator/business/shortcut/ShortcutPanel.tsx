@@ -87,7 +87,13 @@ export function ShortcutPanel({
   }, [onClose, recordingIndex]);
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm">
+    <div
+      className={clsx(
+        "fixed inset-0 z-50",
+        "flex items-center justify-center",
+        "bg-surface-white/60 backdrop-blur-sm",
+      )}
+    >
       <button
         type="button"
         aria-label="关闭快捷键设置"
@@ -96,23 +102,23 @@ export function ShortcutPanel({
       />
       <div
         className={clsx(
-          "relative w-[calc(100%-2rem)] max-w-3xl overflow-hidden rounded-xl",
-          "border border-border bg-surface-panel shadow-(--shadow-sm)",
+          "w-[calc(100%-2rem)] max-w-3xl overflow-hidden rounded-xl bg-surface-white",
+          "border border-(--brand-leaf-border) shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
         role="dialog"
         aria-modal="true"
         aria-label="快捷键设置"
       >
-        <div className="h-1 w-full opacity-20" style={{ background: "var(--status-success)" }} />
+        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
         <div className={clsx("flex justify-between items-center", "px-5 pb-2 pt-4")}>
-          <span className="text-base font-bold text-foreground">快捷键设置</span>
+          <span className="text-base font-bold text-ink-slate-800">快捷键设置</span>
           <button
             type="button"
             aria-label="关闭快捷键设置"
             className={clsx(
-              "flex size-7 items-center justify-center rounded-md text-muted-foreground",
-              "transition-colors hover:bg-surface-hover hover:text-foreground",
+              "flex size-7 items-center justify-center rounded-md text-ink-slate-300",
+              "transition-colors hover:bg-surface-slate-50 hover:text-ink-slate-500",
             )}
             onClick={onClose}
           >
@@ -150,21 +156,22 @@ export function ShortcutPanel({
                   }}
                   className={clsx(
                     "h-7 px-2",
-                    "flex items-center rounded-md border text-xs transition-all",
+                    "flex items-center rounded-md border",
+                    "text-xs transition-all",
                     "select-none cursor-pointer",
                     recordingIndex === index
                       ? clsx(
-                          "border-primary-border",
-                          "bg-primary-subtle",
-                          "text-primary-text",
-                          "ring-1 ring-primary-border",
+                          "border-line-green-200",
+                          "bg-surface-green-50",
+                          "text-ink-green-600",
+                          "ring-1 ring-focus-green-100",
                         )
                       : clsx(
-                          "border-border",
-                          "bg-surface-panel",
-                          "text-muted-foreground",
-                          "shadow-sm shadow-foreground/5",
-                          "hover:border-primary-border",
+                          "border-line-slate-200",
+                          "bg-surface-white",
+                          "text-ink-slate-500",
+                          "shadow-sm shadow-shadow-slate-100",
+                          "hover:border-line-slate-300",
                         ),
                   )}
                 >

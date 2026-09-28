@@ -107,9 +107,9 @@ export function TermEditorDialog({
           </div>
         }
       >
-        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2.5">
-          <p className="text-sm font-semibold text-foreground">{term.source}</p>
-          <p className="mt-1 text-xs leading-relaxed text-destructive">
+        <div className="rounded-md border border-line-red-100 bg-surface-red-50/60 px-3 py-2.5">
+          <p className="text-sm font-semibold text-ink-slate-700">{term.source}</p>
+          <p className="mt-1 text-xs leading-relaxed text-ink-red-500">
             删除后无法恢复该原文和全部译名。
           </p>
         </div>
@@ -155,7 +155,7 @@ export function TermEditorDialog({
     >
       <div className="space-y-3">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">原文</span>
+          <span className="mb-1 block text-xs font-medium text-ink-slate-500">原文</span>
           <input
             value={source}
             disabled={isSubmitting}
@@ -163,23 +163,23 @@ export function TermEditorDialog({
               setSource(event.target.value);
             }}
             className={clsx(
-              "h-8 w-full rounded-md border border-border bg-surface-panel px-2.5",
-              "text-sm text-foreground shadow-sm shadow-foreground/5 outline-none",
-              "transition-colors focus:border-border",
+              "h-8 w-full rounded-md border border-line-slate-200 bg-surface-white px-2.5",
+              "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
+              "transition-colors focus:border-line-slate-300",
             )}
           />
         </label>
 
         <fieldset>
           <div className="mb-1 flex items-center justify-between">
-            <legend className="text-xs font-medium text-muted-foreground">译名</legend>
+            <legend className="text-xs font-medium text-ink-slate-500">译名</legend>
             <button
               type="button"
               disabled={isSubmitting}
               onClick={handleAddTarget}
               className={clsx(
                 "flex h-6 items-center gap-1 rounded-md px-1.5",
-                "text-[10px] text-muted-foreground hover:bg-primary/15 hover:text-primary-text",
+                "text-[10px] text-ink-slate-400 hover:bg-surface-green-50 hover:text-ink-green-600",
               )}
             >
               <Plus size={11} />
@@ -200,11 +200,11 @@ export function TermEditorDialog({
                     setHasTouchedTargets(true);
                   }}
                   className={clsx(
-                    "h-8 min-w-0 flex-1 rounded-md border bg-surface-panel px-2.5",
-                    "text-sm text-foreground shadow-sm shadow-foreground/5 outline-none",
+                    "h-8 min-w-0 flex-1 rounded-md border bg-surface-white px-2.5",
+                    "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
                     visibleTargetError && target.value.trim().length === 0
-                      ? "border-destructive"
-                      : "border-border focus:border-border",
+                      ? "border-line-red-200"
+                      : "border-line-slate-200 focus:border-line-slate-300",
                   )}
                 />
                 <button
@@ -215,8 +215,8 @@ export function TermEditorDialog({
                     setTargets((current) => moveTermTarget(current, index, index - 1));
                   }}
                   className={clsx(
-                    "flex size-7 items-center justify-center rounded-md text-muted-foreground",
-                    "hover:bg-surface-hover hover:text-foreground",
+                    "flex size-7 items-center justify-center rounded-md text-ink-slate-400",
+                    "hover:bg-surface-slate-50 hover:text-ink-slate-600",
                     "disabled:opacity-20",
                   )}
                 >
@@ -230,8 +230,8 @@ export function TermEditorDialog({
                     setTargets((current) => moveTermTarget(current, index, index + 1));
                   }}
                   className={clsx(
-                    "flex size-7 items-center justify-center rounded-md text-muted-foreground",
-                    "hover:bg-surface-hover hover:text-foreground",
+                    "flex size-7 items-center justify-center rounded-md text-ink-slate-400",
+                    "hover:bg-surface-slate-50 hover:text-ink-slate-600",
                     "disabled:opacity-20",
                   )}
                 >
@@ -245,8 +245,8 @@ export function TermEditorDialog({
                     setTargets((current) => current.filter((item) => item.id !== target.id));
                   }}
                   className={clsx(
-                    "flex size-7 items-center justify-center rounded-md text-muted-foreground",
-                    "hover:bg-destructive/10 hover:text-destructive disabled:opacity-20",
+                    "flex size-7 items-center justify-center rounded-md text-ink-slate-400",
+                    "hover:bg-surface-red-50 hover:text-ink-red-500 disabled:opacity-20",
                   )}
                 >
                   <X size={13} />
@@ -255,12 +255,12 @@ export function TermEditorDialog({
             ))}
           </div>
           {visibleTargetError && (
-            <p className="mt-1 text-[10px] text-destructive">{visibleTargetError}</p>
+            <p className="mt-1 text-[10px] text-ink-red-500">{visibleTargetError}</p>
           )}
         </fieldset>
 
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">备注</span>
+          <span className="mb-1 block text-xs font-medium text-ink-slate-500">备注</span>
           <textarea
             rows={2}
             value={comment}
@@ -270,9 +270,9 @@ export function TermEditorDialog({
             }}
             placeholder="选填"
             className={clsx(
-              "w-full resize-none rounded-md border border-border bg-surface-panel px-2.5 py-2",
-              "text-sm leading-relaxed text-foreground shadow-sm shadow-foreground/5",
-              "outline-none placeholder:text-muted-foreground focus:border-border",
+              "w-full resize-none rounded-md border border-line-slate-200 bg-surface-white px-2.5 py-2",
+              "text-sm leading-relaxed text-ink-slate-700 shadow-sm shadow-shadow-slate-100",
+              "outline-none placeholder:text-ink-slate-300 focus:border-line-slate-300",
             )}
           />
         </label>

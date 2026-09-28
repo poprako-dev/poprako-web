@@ -9,18 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './route/__root'
-import { Route as AuthenticatedRouteRouteImport } from './route/_authenticated/route'
-import { Route as AuthenticatedShellRouteRouteImport } from './route/_authenticated/_shell/route'
-import { Route as AuthenticatedTranslatorRouteRouteImport } from './route/_authenticated/translator/route'
-import { Route as LoginIndexRouteImport } from './route/login/index'
-import { Route as AuthenticatedShellIndexRouteImport } from './route/_authenticated/_shell/index'
-import { Route as AuthenticatedShellsettingSettingsRouteImport } from './route/_authenticated/_shell/(setting)/settings'
-import { Route as AuthenticatedShellutilityUtilitiesRouteImport } from './route/_authenticated/_shell/(utility)/utilities'
-import { Route as AuthenticatedShellComicPlaygroundIndexRouteImport } from './route/_authenticated/_shell/comic-playground/index'
-import { Route as AuthenticatedShellMemberListIndexRouteImport } from './route/_authenticated/_shell/member-list/index'
-import { Route as AuthenticatedShellSystemMailIndexRouteImport } from './route/_authenticated/_shell/system-mail/index'
-import { Route as AuthenticatedShellWorkspaceIndexRouteImport } from './route/_authenticated/_shell/workspace/index'
-import { Route as AuthenticatedTranslatorChapterIdPageIdIndexRouteImport } from './route/_authenticated/translator/$chapterId/$pageId/index'
+import { Route as AuthenticatedRouteRouteImport } from './route/_authenticated/Route'
+import { Route as AuthenticatedShellRouteRouteImport } from './route/_authenticated/_shell/Route'
+import { Route as AuthenticatedTranslatorRouteRouteImport } from './route/_authenticated/translator/Route'
+import { Route as LoginIndexRouteImport } from './route/login/Index'
+import { Route as AuthenticatedShellIndexRouteImport } from './route/_authenticated/_shell/Index'
+import { Route as AuthenticatedShellComicPlaygroundIndexRouteImport } from './route/_authenticated/_shell/comic-playground/Index'
+import { Route as AuthenticatedShellMemberListIndexRouteImport } from './route/_authenticated/_shell/member-list/Index'
+import { Route as AuthenticatedShellSettingsIndexRouteImport } from './route/_authenticated/_shell/settings/Index'
+import { Route as AuthenticatedShellSystemMailIndexRouteImport } from './route/_authenticated/_shell/system-mail/Index'
+import { Route as AuthenticatedShellUtilitiesIndexRouteImport } from './route/_authenticated/_shell/utilities/Index'
+import { Route as AuthenticatedShellWorkspaceIndexRouteImport } from './route/_authenticated/_shell/workspace/Index'
+import { Route as AuthenticatedTranslatorChapterIdPageIdIndexRouteImport } from './route/_authenticated/translator/$chapterId/$pageId/Index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -46,18 +46,6 @@ const AuthenticatedShellIndexRoute = AuthenticatedShellIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedShellRouteRoute,
 } as any)
-const AuthenticatedShellsettingSettingsRoute =
-  AuthenticatedShellsettingSettingsRouteImport.update({
-    id: '/(setting)/settings',
-    path: '/settings',
-    getParentRoute: () => AuthenticatedShellRouteRoute,
-  } as any)
-const AuthenticatedShellutilityUtilitiesRoute =
-  AuthenticatedShellutilityUtilitiesRouteImport.update({
-    id: '/(utility)/utilities',
-    path: '/utilities',
-    getParentRoute: () => AuthenticatedShellRouteRoute,
-  } as any)
 const AuthenticatedShellComicPlaygroundIndexRoute =
   AuthenticatedShellComicPlaygroundIndexRouteImport.update({
     id: '/comic-playground/',
@@ -70,10 +58,22 @@ const AuthenticatedShellMemberListIndexRoute =
     path: '/member-list/',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
+const AuthenticatedShellSettingsIndexRoute =
+  AuthenticatedShellSettingsIndexRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
 const AuthenticatedShellSystemMailIndexRoute =
   AuthenticatedShellSystemMailIndexRouteImport.update({
     id: '/system-mail/',
     path: '/system-mail/',
+    getParentRoute: () => AuthenticatedShellRouteRoute,
+  } as any)
+const AuthenticatedShellUtilitiesIndexRoute =
+  AuthenticatedShellUtilitiesIndexRouteImport.update({
+    id: '/utilities/',
+    path: '/utilities/',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
 const AuthenticatedShellWorkspaceIndexRoute =
@@ -93,11 +93,11 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedShellIndexRoute
   '/translator': typeof AuthenticatedTranslatorRouteRouteWithChildren
   '/login/': typeof LoginIndexRoute
-  '/settings': typeof AuthenticatedShellsettingSettingsRoute
-  '/utilities': typeof AuthenticatedShellutilityUtilitiesRoute
   '/comic-playground/': typeof AuthenticatedShellComicPlaygroundIndexRoute
   '/member-list/': typeof AuthenticatedShellMemberListIndexRoute
+  '/settings/': typeof AuthenticatedShellSettingsIndexRoute
   '/system-mail/': typeof AuthenticatedShellSystemMailIndexRoute
+  '/utilities/': typeof AuthenticatedShellUtilitiesIndexRoute
   '/workspace/': typeof AuthenticatedShellWorkspaceIndexRoute
   '/translator/$chapterId/$pageId/': typeof AuthenticatedTranslatorChapterIdPageIdIndexRoute
 }
@@ -105,11 +105,11 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedShellIndexRoute
   '/translator': typeof AuthenticatedTranslatorRouteRouteWithChildren
   '/login': typeof LoginIndexRoute
-  '/settings': typeof AuthenticatedShellsettingSettingsRoute
-  '/utilities': typeof AuthenticatedShellutilityUtilitiesRoute
   '/comic-playground': typeof AuthenticatedShellComicPlaygroundIndexRoute
   '/member-list': typeof AuthenticatedShellMemberListIndexRoute
+  '/settings': typeof AuthenticatedShellSettingsIndexRoute
   '/system-mail': typeof AuthenticatedShellSystemMailIndexRoute
+  '/utilities': typeof AuthenticatedShellUtilitiesIndexRoute
   '/workspace': typeof AuthenticatedShellWorkspaceIndexRoute
   '/translator/$chapterId/$pageId': typeof AuthenticatedTranslatorChapterIdPageIdIndexRoute
 }
@@ -120,11 +120,11 @@ export interface FileRoutesById {
   '/_authenticated/translator': typeof AuthenticatedTranslatorRouteRouteWithChildren
   '/login/': typeof LoginIndexRoute
   '/_authenticated/_shell/': typeof AuthenticatedShellIndexRoute
-  '/_authenticated/_shell/(setting)/settings': typeof AuthenticatedShellsettingSettingsRoute
-  '/_authenticated/_shell/(utility)/utilities': typeof AuthenticatedShellutilityUtilitiesRoute
   '/_authenticated/_shell/comic-playground/': typeof AuthenticatedShellComicPlaygroundIndexRoute
   '/_authenticated/_shell/member-list/': typeof AuthenticatedShellMemberListIndexRoute
+  '/_authenticated/_shell/settings/': typeof AuthenticatedShellSettingsIndexRoute
   '/_authenticated/_shell/system-mail/': typeof AuthenticatedShellSystemMailIndexRoute
+  '/_authenticated/_shell/utilities/': typeof AuthenticatedShellUtilitiesIndexRoute
   '/_authenticated/_shell/workspace/': typeof AuthenticatedShellWorkspaceIndexRoute
   '/_authenticated/translator/$chapterId/$pageId/': typeof AuthenticatedTranslatorChapterIdPageIdIndexRoute
 }
@@ -134,11 +134,11 @@ export interface FileRouteTypes {
     | '/'
     | '/translator'
     | '/login/'
-    | '/settings'
-    | '/utilities'
     | '/comic-playground/'
     | '/member-list/'
+    | '/settings/'
     | '/system-mail/'
+    | '/utilities/'
     | '/workspace/'
     | '/translator/$chapterId/$pageId/'
   fileRoutesByTo: FileRoutesByTo
@@ -146,11 +146,11 @@ export interface FileRouteTypes {
     | '/'
     | '/translator'
     | '/login'
-    | '/settings'
-    | '/utilities'
     | '/comic-playground'
     | '/member-list'
+    | '/settings'
     | '/system-mail'
+    | '/utilities'
     | '/workspace'
     | '/translator/$chapterId/$pageId'
   id:
@@ -160,11 +160,11 @@ export interface FileRouteTypes {
     | '/_authenticated/translator'
     | '/login/'
     | '/_authenticated/_shell/'
-    | '/_authenticated/_shell/(setting)/settings'
-    | '/_authenticated/_shell/(utility)/utilities'
     | '/_authenticated/_shell/comic-playground/'
     | '/_authenticated/_shell/member-list/'
+    | '/_authenticated/_shell/settings/'
     | '/_authenticated/_shell/system-mail/'
+    | '/_authenticated/_shell/utilities/'
     | '/_authenticated/_shell/workspace/'
     | '/_authenticated/translator/$chapterId/$pageId/'
   fileRoutesById: FileRoutesById
@@ -211,20 +211,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellIndexRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
-    '/_authenticated/_shell/(setting)/settings': {
-      id: '/_authenticated/_shell/(setting)/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedShellsettingSettingsRouteImport
-      parentRoute: typeof AuthenticatedShellRouteRoute
-    }
-    '/_authenticated/_shell/(utility)/utilities': {
-      id: '/_authenticated/_shell/(utility)/utilities'
-      path: '/utilities'
-      fullPath: '/utilities'
-      preLoaderRoute: typeof AuthenticatedShellutilityUtilitiesRouteImport
-      parentRoute: typeof AuthenticatedShellRouteRoute
-    }
     '/_authenticated/_shell/comic-playground/': {
       id: '/_authenticated/_shell/comic-playground/'
       path: '/comic-playground'
@@ -239,11 +225,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellMemberListIndexRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
+    '/_authenticated/_shell/settings/': {
+      id: '/_authenticated/_shell/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthenticatedShellSettingsIndexRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
     '/_authenticated/_shell/system-mail/': {
       id: '/_authenticated/_shell/system-mail/'
       path: '/system-mail'
       fullPath: '/system-mail/'
       preLoaderRoute: typeof AuthenticatedShellSystemMailIndexRouteImport
+      parentRoute: typeof AuthenticatedShellRouteRoute
+    }
+    '/_authenticated/_shell/utilities/': {
+      id: '/_authenticated/_shell/utilities/'
+      path: '/utilities'
+      fullPath: '/utilities/'
+      preLoaderRoute: typeof AuthenticatedShellUtilitiesIndexRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
     '/_authenticated/_shell/workspace/': {
@@ -265,27 +265,26 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedShellRouteRouteChildren {
   AuthenticatedShellIndexRoute: typeof AuthenticatedShellIndexRoute
-  AuthenticatedShellsettingSettingsRoute: typeof AuthenticatedShellsettingSettingsRoute
-  AuthenticatedShellutilityUtilitiesRoute: typeof AuthenticatedShellutilityUtilitiesRoute
   AuthenticatedShellComicPlaygroundIndexRoute: typeof AuthenticatedShellComicPlaygroundIndexRoute
   AuthenticatedShellMemberListIndexRoute: typeof AuthenticatedShellMemberListIndexRoute
+  AuthenticatedShellSettingsIndexRoute: typeof AuthenticatedShellSettingsIndexRoute
   AuthenticatedShellSystemMailIndexRoute: typeof AuthenticatedShellSystemMailIndexRoute
+  AuthenticatedShellUtilitiesIndexRoute: typeof AuthenticatedShellUtilitiesIndexRoute
   AuthenticatedShellWorkspaceIndexRoute: typeof AuthenticatedShellWorkspaceIndexRoute
 }
 
 const AuthenticatedShellRouteRouteChildren: AuthenticatedShellRouteRouteChildren =
   {
     AuthenticatedShellIndexRoute: AuthenticatedShellIndexRoute,
-    AuthenticatedShellsettingSettingsRoute:
-      AuthenticatedShellsettingSettingsRoute,
-    AuthenticatedShellutilityUtilitiesRoute:
-      AuthenticatedShellutilityUtilitiesRoute,
     AuthenticatedShellComicPlaygroundIndexRoute:
       AuthenticatedShellComicPlaygroundIndexRoute,
     AuthenticatedShellMemberListIndexRoute:
       AuthenticatedShellMemberListIndexRoute,
+    AuthenticatedShellSettingsIndexRoute: AuthenticatedShellSettingsIndexRoute,
     AuthenticatedShellSystemMailIndexRoute:
       AuthenticatedShellSystemMailIndexRoute,
+    AuthenticatedShellUtilitiesIndexRoute:
+      AuthenticatedShellUtilitiesIndexRoute,
     AuthenticatedShellWorkspaceIndexRoute:
       AuthenticatedShellWorkspaceIndexRoute,
   }

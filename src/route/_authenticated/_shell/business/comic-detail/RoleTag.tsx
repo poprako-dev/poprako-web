@@ -49,24 +49,24 @@ type StatusConfig = {
 
 const STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
   pending: {
-    labelText: "text-muted-foreground",
-    hoverLabelText: "group-hover:text-muted-foreground",
-    barColor: "bg-border",
+    labelText: "text-ink-slate-300",
+    hoverLabelText: "group-hover:text-ink-slate-500",
+    barColor: "bg-surface-slate-300",
   },
   ongoing: {
-    labelText: "text-status-warning",
-    hoverLabelText: "group-hover:text-status-warning",
-    barColor: "bg-status-warning",
+    labelText: "text-ink-orange-300",
+    hoverLabelText: "group-hover:text-ink-orange-600",
+    barColor: "bg-surface-orange-300",
   },
   completed: {
-    labelText: "text-status-success",
-    hoverLabelText: "group-hover:text-status-success",
-    barColor: "bg-status-success",
+    labelText: "text-ink-emerald-400",
+    hoverLabelText: "group-hover:text-ink-emerald-600",
+    barColor: "bg-surface-emerald-400",
   },
   unset: {
-    labelText: "text-muted-foreground",
-    hoverLabelText: "group-hover:text-muted-foreground",
-    barColor: "bg-surface-hover",
+    labelText: "text-ink-slate-200",
+    hoverLabelText: "group-hover:text-ink-slate-400",
+    barColor: "bg-surface-slate-200",
   },
 };
 
@@ -137,10 +137,10 @@ export function RoleTag({
           "relative flex items-center min-w-0 w-full group",
           "pl-4 pr-2 py-1 gap-3",
           "transition-all duration-200",
-          "bg-surface-panel",
+          "bg-surface-white",
           onClickable && [
-            "cursor-pointer hover:bg-surface-hover",
-            "focus-visible:outline-2 focus-visible:outline-border",
+            "cursor-pointer hover:bg-surface-stone-100",
+            "focus-visible:outline-2 focus-visible:outline-outline-stone-400",
             "focus-visible:outline-offset-[-2px]",
           ],
         )}
@@ -161,7 +161,7 @@ export function RoleTag({
         {/* User tags */}
         <div className="flex flex-1 items-center flex-wrap gap-1.5 min-h-5">
           {assignments.length === 0 ? (
-            <span className="text-[10px] text-muted-foreground italic leading-none">未分配</span>
+            <span className="text-[10px] text-ink-slate-300 italic leading-none">未分配</span>
           ) : (
             assignments.map((a) => (
               <UserTag
@@ -185,8 +185,8 @@ export function RoleTag({
             }}
             className={clsx(
               "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
-              "text-muted-foreground/70 hover:text-foreground hover:bg-surface-hover/80",
-              "border border-transparent hover:border-border",
+              "text-ink-slate-300/70 hover:text-ink-slate-700 hover:bg-surface-slate-100/80",
+              "border border-transparent hover:border-line-slate-200",
             )}
             title="添加成员"
           >
@@ -204,8 +204,8 @@ export function RoleTag({
             disabled={isJoiningSelf}
             className={clsx(
               "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
-              "text-muted-foreground/70 hover:text-foreground hover:bg-surface-hover/80",
-              "border border-transparent hover:border-border",
+              "text-ink-slate-300/70 hover:text-ink-slate-700 hover:bg-surface-slate-100/80",
+              "border border-transparent hover:border-line-slate-200",
               "disabled:opacity-60 disabled:cursor-not-allowed",
             )}
             title="加入当前分工"
@@ -224,8 +224,8 @@ export function RoleTag({
             disabled={isLeavingSelf}
             className={clsx(
               "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
-              "text-muted-foreground/70 hover:text-foreground hover:bg-surface-hover/80",
-              "border border-transparent hover:border-border",
+              "text-ink-slate-300/70 hover:text-ink-slate-700 hover:bg-surface-slate-100/80",
+              "border border-transparent hover:border-line-slate-200",
               "disabled:opacity-60 disabled:cursor-not-allowed",
             )}
             title="退出当前分工"

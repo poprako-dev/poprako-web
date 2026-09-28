@@ -66,11 +66,11 @@ export function PresetAssignmentRoleSwitchGroup({
                 "text-xs font-medium transition-colors duration-150",
                 "shadow-sm",
                 isSelected
-                  ? ["border-primary-border bg-primary-subtle", "text-primary-text"]
-                  : "border-border bg-surface-panel text-muted-foreground hover:border-primary-border",
+                  ? ["border-(--primary-border) bg-(--primary-subtle)", "text-ink-slate-500"]
+                  : "border-line-slate-200 bg-surface-white text-ink-slate-400 hover:border-line-slate-300",
                 !isAvailable &&
                   !isMandatory &&
-                  "cursor-not-allowed border-border bg-muted text-muted-foreground",
+                  "cursor-not-allowed border-line-slate-100 bg-surface-slate-50 text-ink-slate-300",
                 isMandatory && "cursor-default",
               )}
             >

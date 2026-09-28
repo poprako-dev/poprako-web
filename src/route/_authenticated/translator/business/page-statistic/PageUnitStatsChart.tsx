@@ -72,7 +72,7 @@ export function PageUnitStatsChart({
       <div
         role={load.status === "error" ? "alert" : "status"}
         aria-label={load.status === "error" ? "统计加载失败" : "正在加载统计"}
-        className="flex h-20 items-center justify-center text-muted-foreground"
+        className="flex h-20 items-center justify-center text-ink-stone-400"
       >
         {load.status === "error" ? (
           <button
@@ -82,7 +82,7 @@ export function PageUnitStatsChart({
             onClick={handleRetry}
             className={clsx(
               "flex size-8 items-center justify-center rounded-sm transition-colors",
-              "hover:bg-surface-hover hover:text-foreground focus-visible:outline-ring",
+              "hover:bg-surface-stone-100 hover:text-ink-stone-600 focus-visible:outline-outline-stone-400",
             )}
           >
             <RefreshCcw size={14} />
@@ -101,7 +101,7 @@ export function PageUnitStatsChart({
       <div
         role="status"
         aria-label="当前章节暂无页面"
-        className="flex h-20 items-center justify-center text-muted-foreground"
+        className="flex h-20 items-center justify-center text-ink-stone-300"
       >
         <Files size={16} />
       </div>
@@ -118,14 +118,13 @@ export function PageUnitStatsChart({
       tabIndex={0}
       className={clsx(
         "min-h-0 overflow-y-auto overscroll-contain pb-1 font-mono tabular-nums",
-        "focus-visible:outline-2 focus-visible:outline-primary",
         "[scrollbar-width:thin]",
       )}
     >
       <div
         className={clsx(
           "sticky top-0 z-10 grid grid-cols-[1.75rem_minmax(0,1fr)_4.5rem] items-center",
-          "h-7 gap-x-2 bg-surface-hover px-2.5 text-[10px] text-muted-foreground",
+          "h-7 gap-x-2 bg-surface-stone-50 px-2.5 text-[10px] text-ink-stone-400",
         )}
       >
         <span aria-hidden="true" />
@@ -140,7 +139,7 @@ export function PageUnitStatsChart({
           <span title="编辑（包含在翻译中）" className="text-(--color-unit-stats-edit)">
             <CheckCheck size={12} strokeWidth={1.8} />
           </span>
-          <span title="追加" className="text-primary-text">
+          <span title="追加" className="text-(--brand-leaf)">
             <Plus size={12} strokeWidth={1.8} />
           </span>
         </div>
@@ -168,25 +167,25 @@ export function PageUnitStatsChart({
                 "group grid w-full grid-cols-[1.75rem_minmax(0,1fr)_4.5rem]",
                 "h-7 scroll-mt-7 items-center gap-x-2 px-2.5 text-[11px] transition-colors",
                 "[@media(any-pointer:coarse)]:h-9",
-                "hover:bg-surface-hover active:bg-accent disabled:opacity-50",
+                "hover:bg-surface-stone-100 active:bg-surface-stone-200/70 disabled:opacity-50",
                 "focus-visible:outline-1 focus-visible:outline-offset-[-1px]",
-                "focus-visible:outline-ring",
-                isCurrent && "bg-surface-hover",
+                "focus-visible:outline-outline-stone-400",
+                isCurrent && "bg-surface-stone-100",
               )}
             >
               <span
                 className={clsx(
                   "text-left",
-                  isCurrent ? "font-semibold text-foreground" : "text-text-secondary",
+                  isCurrent ? "font-semibold text-ink-stone-800" : "text-ink-stone-500",
                 )}
               >
                 P{row.index + 1}
               </span>
               <span
                 aria-hidden="true"
-                className="relative flex h-full items-center border-x border-border/50"
+                className="relative flex h-full items-center border-x border-line-stone-200/50"
               >
-                <span className="absolute inset-y-0 left-1/2 border-l border-border/35" />
+                <span className="absolute inset-y-0 left-1/2 border-l border-line-stone-200/35" />
                 <span className="relative h-2 w-full">
                   <span
                     data-stat="translated"
@@ -208,9 +207,7 @@ export function PageUnitStatsChart({
                   />
                   <span
                     data-stat="edited"
-                    style={{
-                      width: `${String((row.editedUnitCount / scale) * 100)}%`,
-                    }}
+                    style={{ width: `${String((row.editedUnitCount / scale) * 100)}%` }}
                     className={clsx(
                       "absolute bottom-0 left-0 h-0.5 rounded-[1px]",
                       "bg-(--color-unit-stats-edit)",
@@ -229,8 +226,8 @@ export function PageUnitStatsChart({
                   <span
                     key={column}
                     className={clsx(
-                      count === 0 ? "text-muted-foreground" : "text-text-secondary",
-                      isCurrent && count > 0 && "font-medium text-foreground",
+                      count === 0 ? "text-ink-stone-300" : "text-ink-stone-600",
+                      isCurrent && count > 0 && "font-medium text-ink-stone-800",
                     )}
                   >
                     {count}

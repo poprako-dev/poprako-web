@@ -50,12 +50,14 @@ export function PageCard({
     typeof uploadProgress === "number"
       ? Math.max(0, Math.min(100, Math.round(uploadProgress)))
       : null;
-  let statusClass = isEmpty ? "border-[3px] border-status-success bg-transparent" : "bg-border";
+  let statusClass = isEmpty
+    ? "border-[3px] border-line-green-500 bg-transparent"
+    : "bg-surface-gray-400";
   if (isTranslated) {
-    statusClass = "bg-status-warning";
+    statusClass = "bg-surface-orange-400";
   }
   if (isCompleted) {
-    statusClass = "bg-status-success";
+    statusClass = "bg-surface-green-500";
   }
 
   const handleReuploadFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -86,10 +88,10 @@ export function PageCard({
       style={{ contentVisibility: "auto", containIntrinsicSize: "auto 150px" }}
       className={clsx(
         "relative aspect-3/4 border rounded-sm flex flex-col",
-        "hover:border-border hover:shadow-sm",
+        "hover:border-line-slate-300 hover:shadow-sm",
         "transition-all group",
         isInteractive ? "cursor-pointer" : "cursor-default",
-        "bg-surface-panel border-border overflow-hidden",
+        "bg-surface-white border-line-slate-100 overflow-hidden",
         isPending && "opacity-60",
       )}
     >
@@ -97,11 +99,14 @@ export function PageCard({
       <div
         className={clsx(
           "absolute top-2 left-2 z-10",
-          "bg-foreground px-1.5 py-1 rounded",
+          "bg-surface-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded",
           "flex items-center justify-center",
         )}
       >
-        <span className="text-[10px] font-bold text-background leading-none">
+        <span
+          data-page-index={page.index}
+          className="text-[10px] font-bold text-ink-white/90 leading-none"
+        >
           P{page.index + 1}
         </span>
       </div>
@@ -111,7 +116,7 @@ export function PageCard({
         <div
           className={clsx(
             "absolute top-2 right-2 z-10",
-            "bg-foreground px-1.5 py-1 rounded",
+            "bg-surface-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded",
             "flex items-center justify-center",
           )}
         >
@@ -130,11 +135,11 @@ export function PageCard({
         <div
           className={clsx(
             "absolute inset-0 flex flex-col items-center justify-center gap-1.5",
-            "bg-muted animate-pulse",
+            "bg-surface-slate-100 animate-pulse",
           )}
         >
-          <Upload className="w-4 h-4 text-muted-foreground" />
-          <span className="text-[10px] font-bold text-muted-foreground tracking-tighter">
+          <Upload className="w-4 h-4 text-ink-slate-300" />
+          <span className="text-[10px] font-bold text-ink-slate-300 tracking-tighter">
             P{page.index + 1}
           </span>
         </div>
@@ -143,14 +148,14 @@ export function PageCard({
       {/* Hover dim overlay */}
       <div
         className={clsx(
-          "absolute inset-0 z-[3] bg-foreground/0 pointer-events-none",
-          "group-hover:bg-foreground/[0.07] transition-colors duration-200",
+          "absolute inset-0 z-[3] bg-surface-black/0 pointer-events-none",
+          "group-hover:bg-surface-black/[0.07] transition-colors duration-200",
         )}
       />
 
       {clampedUploadProgress !== null &&
         (clampedUploadProgress < 100 || uploadStatus === "confirming") && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-overlay">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/25">
             <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
               <circle
                 cx="20"
@@ -175,7 +180,7 @@ export function PageCard({
                 className="transition-all duration-300 ease-out"
               />
             </svg>
-            <span className="absolute text-[11px] font-bold text-image-label-foreground">
+            <span className="absolute text-[11px] font-bold text-ink-white/90">
               {uploadStatus === "confirming" ? "确认中" : `${String(clampedUploadProgress)}%`}
             </span>
           </div>
@@ -185,8 +190,7 @@ export function PageCard({
         <div
           className={clsx(
             "absolute inset-x-1.5 bottom-1.5 z-20 rounded-sm px-1.5 py-1",
-            "bg-destructive-foreground text-center text-[9px] font-bold text-foreground",
-            "border border-destructive",
+            "bg-surface-rose-600/90 text-center text-[9px] font-bold text-ink-white",
           )}
           title={uploadError}
         >
@@ -206,8 +210,8 @@ export function PageCard({
             fullWidth
             height={0.35}
             bars={[
-              { progressPercent: transPct, barColor: "#fdba74" },
-              { progressPercent: proofPct, barColor: "#f9a8d4" },
+              { progressPercent: transPct, barColor: "var(--progress-page-translation)" },
+              { progressPercent: proofPct, barColor: "var(--progress-proofread)" },
             ]}
           />
         </div>
@@ -223,8 +227,8 @@ export function PageCard({
           }}
           className={clsx(
             "absolute bottom-3 right-1.5 z-10 p-1.5 rounded-sm",
-            "bg-surface-panel/90 backdrop-blur-sm border border-border shadow-sm",
-            "text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20",
+            "bg-surface-white/90 backdrop-blur-sm border border-line-slate-100 shadow-sm",
+            "text-ink-slate-400 hover:text-ink-rose-500 hover:bg-surface-rose-50 hover:border-line-rose-100",
             "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all active:scale-95",
           )}
         >
@@ -259,9 +263,9 @@ export function PageCard({
               disabled={isReuploading}
               className={clsx(
                 "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-sm",
-                "bg-surface-workspace/20 backdrop-blur-[1px] border border-border/20",
-                "text-muted-foreground hover:text-foreground",
-                "hover:bg-surface-workspace/35 hover:border-border/45",
+                "bg-surface-slate-50/20 backdrop-blur-[1px] border border-line-slate-300/20",
+                "text-ink-slate-400 hover:text-ink-slate-600",
+                "hover:bg-surface-slate-50/35 hover:border-line-slate-300/45",
                 "opacity-100 sm:opacity-0 sm:group-hover:opacity-100",
                 "transition-all active:scale-95",
                 "disabled:opacity-50 disabled:cursor-not-allowed",

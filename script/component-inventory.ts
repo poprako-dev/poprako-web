@@ -83,7 +83,7 @@ function componentOwner(file: string): string {
     return "R004";
   }
   if (
-    file.includes("/(setting)/") ||
+    file.includes("/settings/") ||
     file.includes("/(member-list)/") ||
     file.includes("/(system-mail)/") ||
     file.includes("/login/")

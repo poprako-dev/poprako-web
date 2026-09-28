@@ -53,7 +53,7 @@ void test("style checker enforces the physical 400-line limit", () => {
 
 void test("route entry exports cannot silently disable lazy component splitting", () => {
   const route = 'export const Route = createFileRoute("/sample")({ component: Page });';
-  const file = "src/route/sample/index.tsx";
+  const file = "src/route/sample/Index.tsx";
   for (const page of [
     "export function Page() { return null; }",
     "function Page() { return null; } export { Page };",
@@ -63,4 +63,25 @@ void test("route entry exports cannot silently disable lazy component splitting"
     );
   }
   assert.deepEqual(inspectStyleFile(file, route + "function Page() { return null; }"), []);
+});
+
+void test("TSX always uses PascalCase, including route entries and tests", () => {
+  for (const name of ["index.tsx", "route.tsx", "settings.tsx", "use-session.test.tsx"]) {
+    assert.ok(
+      inspectStyleFile(`src/route/settings/${name}`, "").some(
+        (finding) => finding.rule === "naming.file",
+      ),
+      name,
+    );
+  }
+  for (const name of ["Index.tsx", "Route.tsx", "Settings.tsx", "UseSession.test.tsx"]) {
+    assert.deepEqual(inspectStyleFile(`src/route/settings/${name}`, ""), [], name);
+  }
+  assert.ok(
+    inspectStyleFile("src/shared/utility/Session.test.ts", "").some(
+      (finding) => finding.rule === "naming.file",
+    ),
+  );
+  assert.deepEqual(inspectStyleFile("src/shared/utility/session.test.ts", ""), []);
+  assert.deepEqual(inspectStyleFile("src/route/__root.ts", ""), []);
 });

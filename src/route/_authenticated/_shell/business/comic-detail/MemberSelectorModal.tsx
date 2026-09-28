@@ -105,15 +105,15 @@ export function MemberSelectorModal({
 
   return (
     <AppDialog title={title} size="large" onClose={onClose} bodyClassName="p-0">
-      <div className="border-b border-border px-4 py-3">
+      <div className="border-b border-line-slate-100 px-4 py-3">
         <div
           className={clsx(
             "flex items-center gap-2 rounded-md border px-3 py-2",
-            "border-border bg-surface-panel shadow-sm shadow-border",
-            "focus-within:border-border",
+            "border-line-slate-200 bg-surface-white shadow-sm shadow-shadow-slate-100",
+            "focus-within:border-line-slate-300",
           )}
         >
-          <Search size={14} className="text-muted-foreground" />
+          <Search size={14} className="text-ink-slate-400" />
           <input
             value={keyword}
             onChange={(event) => {
@@ -121,8 +121,8 @@ export function MemberSelectorModal({
             }}
             placeholder="搜索昵称 / QQ"
             className={clsx(
-              "w-full bg-transparent text-sm text-foreground outline-none",
-              "placeholder:text-muted-foreground",
+              "w-full bg-transparent text-sm text-ink-slate-700 outline-none",
+              "placeholder:text-ink-slate-300",
             )}
           />
         </div>
@@ -140,16 +140,16 @@ export function MemberSelectorModal({
               disabled={isSubmitting}
               className={clsx(
                 "flex items-center gap-3 rounded-lg border px-3 py-2 text-left",
-                "border-border",
-                "transition-all hover:border-status-success/30 hover:bg-status-success/4",
+                "border-line-slate-200",
+                "transition-all hover:border-line-green-100 hover:bg-surface-green-50/40",
                 isSubmitting && "cursor-wait opacity-60",
               )}
             >
               <div
                 className={clsx(
                   "flex h-9 w-9 shrink-0 items-center justify-center",
-                  "overflow-hidden rounded-full bg-surface-hover",
-                  "text-xs font-bold text-text-secondary",
+                  "overflow-hidden rounded-full bg-surface-slate-100",
+                  "text-xs font-bold text-ink-slate-500",
                 )}
               >
                 {member.user?.avatarThumbnailUrl ? (
@@ -163,7 +163,7 @@ export function MemberSelectorModal({
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold text-foreground">
+                <div className="truncate text-sm font-semibold text-ink-slate-700">
                   {member.user?.name ?? member.userId}
                 </div>
                 <div className="mt-0.5 flex items-center gap-1.5">
@@ -175,14 +175,14 @@ export function MemberSelectorModal({
                         className={clsx(
                           "inline-block rounded px-1 py-px",
                           "text-[10px] font-bold leading-tight",
-                          "bg-muted text-text-secondary",
+                          "bg-surface-slate-100 text-ink-slate-500",
                         )}
                       >
                         {ROLE_LABEL[r] ?? r}
                       </span>
                     ))}
                   {unmaskRoles(member.roles).filter((r) => r !== "admin").length === 0 && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-ink-slate-300">
                       {member.user?.qq ?? member.userId}
                     </span>
                   )}
@@ -191,7 +191,7 @@ export function MemberSelectorModal({
               <div
                 className={clsx(
                   "flex size-7 shrink-0 items-center justify-center rounded-md",
-                  "border border-status-success/30 bg-status-success/10 text-status-success",
+                  "border border-line-green-100 bg-surface-green-50 text-ink-green-500",
                 )}
               >
                 {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
@@ -200,7 +200,7 @@ export function MemberSelectorModal({
           ))}
 
           {isFetching && (
-            <div className="flex h-24 items-center justify-center text-sm text-muted-foreground">
+            <div className="flex h-24 items-center justify-center text-sm text-ink-slate-400">
               <Loader2 size={16} className="animate-spin" />
             </div>
           )}
@@ -212,7 +212,7 @@ export function MemberSelectorModal({
           )}
 
           {!isFetching && !loadError && members.length === 0 && (
-            <div className="flex h-24 items-center justify-center text-sm text-muted-foreground">
+            <div className="flex h-24 items-center justify-center text-sm text-ink-slate-400">
               没有可添加的成员
             </div>
           )}

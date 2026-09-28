@@ -28,9 +28,12 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
     <div
       ref={listRef}
       className={clsx(
-        "absolute right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto",
-        "max-w-[calc(100vw-1rem)] rounded-sm border border-border bg-background/95 shadow-lg",
-        pages.some((page) => page.flaggedUnits !== undefined) ? "w-56" : "w-44",
+        "absolute top-full right-0 mt-1 z-50",
+        "bg-surface-white/95 backdrop-blur-md",
+        "rounded-sm shadow-2xl border border-line-black/5",
+        "max-h-60 overflow-y-auto",
+        "max-w-[calc(100vw-1rem)]",
+        pages.some((stat) => stat.flaggedUnits !== undefined) ? "w-56" : "w-44",
       )}
     >
       {pages.map((page, index) => (
@@ -42,11 +45,10 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
           }}
           aria-current={index === currentPageIndex ? "page" : undefined}
           className={clsx(
-            "flex w-full items-center justify-between px-3 py-1.5 text-xs text-foreground",
-            "transition-colors hover:bg-accent active:bg-accent",
-            "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
-            "focus-visible:outline-primary",
-            index === currentPageIndex && "bg-accent",
+            "w-full flex items-center justify-between px-3 py-1.5",
+            "text-xs hover:bg-surface-stone-100 transition-colors active:bg-surface-stone-200",
+            "border-none outline-none",
+            index === currentPageIndex && "bg-surface-stone-100",
           )}
         >
           <span className="flex items-center gap-1.5">
@@ -54,31 +56,31 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
               className={clsx(
                 "size-1.5 shrink-0 rounded-full",
                 page.totalUnits > 0 && page.proofreadUnits >= page.totalUnits
-                  ? "bg-primary"
+                  ? "bg-surface-green-500"
                   : page.totalUnits > 0 && page.translatedUnits >= page.totalUnits
-                    ? "bg-chart-2"
-                    : "bg-muted-foreground",
+                    ? "bg-surface-orange-400"
+                    : "bg-surface-gray-400",
               )}
               aria-hidden
             />
-            <span className="font-medium">P{index + 1}</span>
+            <span className="text-ink-stone-700 font-medium">P{index + 1}</span>
             {page.flaggedUnits !== undefined && page.flaggedUnits > 0 && (
               <span
                 title={`${String(page.flaggedUnits)} 个待回看的标记`}
                 aria-label={`${String(page.flaggedUnits)} 个待回看的标记`}
-                className="flex items-center gap-0.5 text-chart-2"
+                className="flex items-center gap-0.5 text-[var(--status-flag)]"
               >
                 <Star size={12} fill="currentColor" aria-hidden />
                 {page.flaggedUnits}
               </span>
             )}
           </span>
-          <span className="flex items-center font-mono text-[11px] text-muted-foreground">
-            <span>{page.totalUnits}</span>
-            <span className="mx-px">/</span>
-            <span className="text-chart-2">{page.translatedUnits}</span>
-            <span className="mx-px">/</span>
-            <span className="text-primary">{page.proofreadUnits}</span>
+          <span className="flex items-center font-mono text-[11px]">
+            <span className="text-ink-stone-400">{page.totalUnits}</span>
+            <span className="text-ink-stone-300 mx-px">/</span>
+            <span className="text-ink-orange-400">{page.translatedUnits}</span>
+            <span className="text-ink-stone-300 mx-px">/</span>
+            <span className="text-ink-pink-400">{page.proofreadUnits}</span>
           </span>
         </button>
       ))}

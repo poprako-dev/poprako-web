@@ -41,12 +41,12 @@ export function CircleSelector({
           "flex size-4 items-center justify-center rounded-full border-2",
           "transition-[border-color] duration-200 ease-out",
           "motion-reduce:transition-none",
-          state === "unchecked" ? "border-muted-foreground" : "border-primary",
+          state === "unchecked" ? "border-line-orange-400" : "border-(--brand-leaf)",
         )}
       >
         <span
           className={clsx(
-            "size-1.5 rounded-full bg-primary",
+            "size-1.5 rounded-full bg-(--brand-leaf)",
             "transition-[opacity,transform] duration-150 ease-out",
             "motion-reduce:transition-none",
             state === "checked" ? "scale-100 opacity-100" : "scale-0 opacity-0",

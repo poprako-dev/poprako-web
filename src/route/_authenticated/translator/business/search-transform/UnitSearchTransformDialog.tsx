@@ -212,7 +212,7 @@ export function UnitSearchTransformDialog({
       }
     >
       <label className="block">
-        <span className="mb-1 block text-xs font-medium text-muted-foreground">查找短语</span>
+        <span className="mb-1 block text-xs font-medium text-ink-slate-500">查找短语</span>
         <input
           value={searchValue}
           disabled={isTransforming}
@@ -222,14 +222,14 @@ export function UnitSearchTransformDialog({
           }}
           aria-label="查找短语"
           className={clsx(
-            "h-8 w-full rounded-md border border-border bg-surface-panel px-2.5",
-            "text-sm text-foreground shadow-sm shadow-foreground/5 outline-none",
-            "transition-colors focus:border-primary-border",
+            "h-8 w-full rounded-md border border-line-slate-200 bg-surface-white px-2.5",
+            "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
+            "transition-colors focus:border-line-slate-300",
           )}
         />
       </label>
       <label className="block">
-        <span className="mb-1 block text-xs font-medium text-muted-foreground">替换短语</span>
+        <span className="mb-1 block text-xs font-medium text-ink-slate-500">替换短语</span>
         <input
           value={targetValue}
           disabled={!isTransformEnabled || isTransforming}
@@ -238,22 +238,24 @@ export function UnitSearchTransformDialog({
           }}
           aria-label="替换短语"
           className={clsx(
-            "h-8 w-full rounded-md border border-border bg-surface-panel px-2.5",
-            "text-sm text-foreground shadow-sm shadow-foreground/5 outline-none",
-            "transition-colors focus:border-primary-border",
-            "disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground",
+            "h-8 w-full rounded-md border border-line-slate-200 bg-surface-white px-2.5",
+            "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
+            "transition-colors focus:border-line-slate-300",
+            "disabled:cursor-not-allowed disabled:bg-surface-slate-50 disabled:text-ink-slate-300",
           )}
         />
       </label>
       <section
         aria-label="搜索结果预览"
-        className={clsx("h-60 overflow-y-auto rounded-md border border-border bg-surface-panel")}
+        className={clsx(
+          "h-60 overflow-y-auto rounded-md border border-line-slate-200 bg-surface-white",
+        )}
       >
         {searchState.status === "ready" && matches.length > 0 && (
           <div
             className={clsx(
               "sticky top-0 z-10 flex h-7 items-center justify-between border-b",
-              "border-border bg-surface-panel/95 px-3 text-[10px] text-muted-foreground",
+              "border-line-slate-100 bg-surface-white/95 px-3 text-[10px] text-ink-slate-400",
               "backdrop-blur-sm",
             )}
           >

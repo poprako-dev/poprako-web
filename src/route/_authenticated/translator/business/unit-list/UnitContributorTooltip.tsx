@@ -38,8 +38,8 @@ function ContributorAvatar({ user }: AvatarProps): React.ReactElement {
       aria-hidden="true"
       className={
         "flex size-5 shrink-0 items-center justify-center overflow-hidden " +
-        "rounded-full border border-border bg-secondary text-[9px] " +
-        "font-bold text-secondary-foreground"
+        "rounded-full border border-line-stone-500 bg-surface-stone-600 text-[9px] " +
+        "font-bold text-ink-stone-100"
       }
     >
       {avatarUrl && failedAvatarUrl !== avatarUrl ? (
@@ -137,7 +137,7 @@ export function UnitContributorTooltip({ contributors, children }: Props): React
           collisionPadding={8}
           className={
             "pointer-events-none z-50 max-w-60 rounded-md border " +
-            "border-border bg-popover px-3 py-2 text-popover-foreground " +
+            "border-line-stone-700 bg-surface-stone-800/95 px-3 py-2 text-ink-stone-50 " +
             "shadow-lg backdrop-blur-sm data-[state=closed]:animate-out " +
             "data-[state=delayed-open]:animate-in data-[state=closed]:fade-out-0 " +
             "data-[state=delayed-open]:fade-in-0"
@@ -152,7 +152,7 @@ export function UnitContributorTooltip({ contributors, children }: Props): React
                   key={`${role}:${user.id}`}
                   className="flex max-w-full items-center justify-center gap-1.5 text-xs"
                 >
-                  <span className="w-10 shrink-0 text-right text-muted-foreground">
+                  <span className="w-10 shrink-0 text-right text-ink-stone-300">
                     {role === "translator" ? "翻译：" : "校对："}
                   </span>
                   <ContributorAvatar user={user} />
@@ -161,7 +161,7 @@ export function UnitContributorTooltip({ contributors, children }: Props): React
               );
             })}
           </div>
-          <Tooltip.Arrow className="fill-popover" />
+          <Tooltip.Arrow className="fill-fill-stone-800" />
         </Tooltip.Content>
       </Tooltip.Portal>
     </Tooltip.Root>

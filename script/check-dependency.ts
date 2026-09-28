@@ -319,7 +319,7 @@ export function inspectDependencyEntries(entries: SourceEntry[], root: string): 
     if (
       sourceRoute === "@common-business" &&
       (targetRoute !== "@common-business" ||
-        /^src\/route\/business\/(?:index|route)\.tsx?$/u.test(edge.to))
+        /^src\/route\/business\/(?:Index|Route)\.tsx?$/u.test(edge.to))
     ) {
       report("route business modules cannot depend on route implementation modules");
       continue;

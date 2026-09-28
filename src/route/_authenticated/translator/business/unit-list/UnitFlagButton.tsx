@@ -31,9 +31,9 @@ export function UnitFlagButton({
       }}
       className={clsx(
         "flex size-7 shrink-0 items-center justify-center rounded cursor-pointer",
-        "transition-colors hover:bg-surface-hover/70 focus-visible:outline-border",
+        "transition-colors hover:bg-surface-stone-200/70 focus-visible:outline-outline-stone-500",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        isFlagged ? "text-[var(--status-warning)]" : "text-text-secondary",
+        isFlagged ? "text-[var(--status-flag)]" : "text-ink-stone-400",
       )}
     >
       <Star size={16} fill={isFlagged ? "currentColor" : "none"} aria-hidden="true" />

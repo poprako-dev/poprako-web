@@ -57,24 +57,24 @@ const WORKFLOW_STEPS = [
 
 const STATUS_CONFIG: Record<WorkflowStatus, { text: string; bg: string; dot: string }> = {
   pending: {
-    text: "text-muted-foreground",
-    bg: "bg-muted",
-    dot: "bg-border",
+    text: "text-ink-slate-300",
+    bg: "bg-surface-slate-50",
+    dot: "bg-surface-slate-200",
   },
   ongoing: {
-    text: "text-status-warning",
-    bg: "bg-status-warning/10",
-    dot: "bg-status-warning",
+    text: "text-ink-orange-400",
+    bg: "bg-surface-orange-50",
+    dot: "bg-surface-orange-300",
   },
   completed: {
-    text: "text-status-success",
-    bg: "bg-status-success/10",
-    dot: "bg-status-success",
+    text: "text-ink-emerald-500",
+    bg: "bg-surface-emerald-50",
+    dot: "bg-surface-emerald-400",
   },
   unset: {
-    text: "text-muted-foreground",
-    bg: "bg-muted",
-    dot: "bg-border",
+    text: "text-ink-slate-300",
+    bg: "bg-surface-slate-50",
+    dot: "bg-surface-slate-200",
   },
 };
 
@@ -95,13 +95,13 @@ const STATUS_LABELS: Record<WorkflowStatus, string> = {
 };
 
 function getActivityStatusColor(lastActiveAt: number | undefined): string {
-  if (!lastActiveAt) return "bg-border";
+  if (!lastActiveAt) return "bg-surface-stone-300";
   const threeMonths = 1000 * 60 * 60 * 24 * 90;
   const sixMonths = 1000 * 60 * 60 * 24 * 180;
   const diff = Date.now() - lastActiveAt;
-  if (diff <= threeMonths) return "bg-status-success";
-  if (diff <= sixMonths) return "bg-status-warning";
-  return "bg-border";
+  if (diff <= threeMonths) return "bg-activity-recent";
+  if (diff <= sixMonths) return "bg-surface-amber-200";
+  return "bg-surface-stone-300";
 }
 
 function formatDate(ts: number | undefined): string {
@@ -140,8 +140,8 @@ export function ComicProgressItem({
       }}
       className={clsx(
         "group relative w-full flex items-center gap-2 px-3 py-2",
-        "bg-muted hover:bg-muted",
-        "border border-border hover:border-border",
+        "bg-surface-stone-50/10 hover:bg-surface-stone-50/40",
+        "border border-line-stone-200 hover:border-line-stone-200",
         "rounded-sm transition-all duration-150 cursor-pointer",
         "hover:-translate-y-0.5 shadow-xs",
         "shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm",
@@ -164,8 +164,8 @@ export function ComicProgressItem({
         {/* 漫画序号 */}
         <span // eslint-disable-line jsx-a11y/no-static-element-interactions
           className={clsx(
-            "relative text-xs font-mono text-muted-foreground",
-            "bg-surface-hover px-2 py-0.5 rounded shrink-0",
+            "relative text-xs font-mono text-ink-slate-400",
+            "bg-surface-slate-100 px-2 py-0.5 rounded shrink-0",
           )}
           onMouseEnter={() => {
             setShowCover(true);
@@ -180,7 +180,7 @@ export function ComicProgressItem({
               className={clsx(
                 "absolute top-full left-1/2 -translate-x-1/2 mt-3.5 z-20",
                 "w-20 h-28 rounded-sm overflow-hidden shadow-md",
-                "border border-border bg-surface-hover",
+                "border border-line-stone-200 bg-surface-stone-100",
               )}
             >
               <img
@@ -202,26 +202,24 @@ export function ComicProgressItem({
             setShowTitleDropdown(false);
           }}
         >
-          <h3 className={clsx("text-base font-bold text-foreground", "truncate min-w-0")}>
+          <h3 className={clsx("text-base font-bold text-ink-slate-700", "truncate min-w-0")}>
             {comicInfo.title || "未命名"}
           </h3>
           {showTitleDropdown && comicInfo.title && (
             <div
               className={clsx(
                 "absolute top-full left-0 mt-3.5 z-20",
-                "bg-surface-panel border border-border rounded-sm shadow-sm",
+                "bg-surface-white/95 border border-line-stone-200 rounded-sm shadow-sm",
                 "py-1.5 px-2.5 w-60",
               )}
             >
-              <p className="text-sm font-bold text-muted-foreground break-words">
-                {comicInfo.title}
-              </p>
+              <p className="text-sm font-bold text-ink-stone-500 break-words">{comicInfo.title}</p>
             </div>
           )}
         </div>
 
         {/* 章节信息 */}
-        <span className="text-[11px] text-muted-foreground truncate shrink-0 max-w-[120px]">
+        <span className="text-[11px] text-ink-slate-400 truncate shrink-0 max-w-[120px]">
           {chapter?.index ? `[#${String(chapter.index)}]` : "—"}
         </span>
       </div>
@@ -290,7 +288,7 @@ export function ComicProgressItem({
             <div
               className={clsx(
                 "absolute top-full right-0 mt-4.5 z-20",
-                "bg-surface-panel border border-border rounded-sm shadow-sm",
+                "bg-surface-white/95 border border-line-stone-200 rounded-sm shadow-sm",
                 "py-1.5 px-2.5",
               )}
             >
@@ -302,11 +300,11 @@ export function ComicProgressItem({
 
                   return (
                     <div key={step.label}>
-                      <div className="text-muted-foreground">
+                      <div className="text-ink-stone-500">
                         <span className="font-bold">{ROLE_NAMES[step.label]}：</span>
                         <span className="italic">{STATUS_LABELS[status]}</span>
                       </div>
-                      <div className="text-muted-foreground italic">
+                      <div className="text-ink-stone-400 italic">
                         {names.length > 0 ? names.join("、") : "—"}
                       </div>
                     </div>

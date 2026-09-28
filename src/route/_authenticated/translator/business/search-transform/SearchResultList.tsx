@@ -48,7 +48,7 @@ export function SearchResultList({
 
   if (searchState.status === "loading") {
     return (
-      <div className="flex h-full items-center justify-center text-muted-foreground">
+      <div className="flex h-full items-center justify-center text-ink-slate-300">
         <Loader2 className="animate-spin" size={20} />
       </div>
     );
@@ -56,21 +56,21 @@ export function SearchResultList({
   if (searchState.status === "error") {
     return (
       <div className="flex h-full items-center justify-center px-6 text-center">
-        <p className="text-xs leading-relaxed text-destructive">{searchState.message}</p>
+        <p className="text-xs leading-relaxed text-(--danger-soft)">{searchState.message}</p>
       </div>
     );
   }
   if (searchState.status === "ready" && searchState.matches.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-xs text-muted-foreground">没有找到匹配内容</p>
+        <p className="text-xs text-ink-slate-300">没有找到匹配内容</p>
       </div>
     );
   }
   if (searchState.status !== "ready") return null;
 
   return (
-    <div role="tree" aria-label="搜索结果" className="divide-y divide-border">
+    <div role="tree" aria-label="搜索结果" className="divide-y divide-separator-slate-100">
       {groups.map((group) => {
         const pageIds = group.matches.map((match) => unitId(match.unit));
         const selectedCount = pageIds.filter((id) => selectedIds.has(id)).length;
@@ -100,7 +100,7 @@ export function SearchResultList({
             <div
               className={clsx(
                 "flex h-9 cursor-default items-center gap-2 px-2",
-                "select-none transition-colors hover:bg-surface-hover",
+                "select-none transition-colors hover:bg-surface-slate-50",
               )}
             >
               <CircleSelector
@@ -116,10 +116,15 @@ export function SearchResultList({
                   onSelectedIdsChange(nextIds);
                 }}
               />
-              <span className="min-w-0 flex-1 text-xs font-semibold text-foreground">
+              <span className="min-w-0 flex-1 text-xs font-semibold text-ink-slate-600">
                 第 {group.page.index + 1} 页
               </span>
-              <span className="min-w-5 text-right text-[10px] font-medium tabular-nums text-muted-foreground">
+              <span
+                className={clsx(
+                  "min-w-5 text-right text-[10px] font-medium",
+                  "tabular-nums text-ink-slate-400",
+                )}
+              >
                 {group.matches.length}
               </span>
               <button
@@ -134,7 +139,7 @@ export function SearchResultList({
                     return nextIds;
                   });
                 }}
-                className="flex size-6 items-center justify-center text-muted-foreground hover:text-foreground"
+                className="flex size-6 items-center justify-center text-ink-slate-300"
               >
                 <ChevronRight
                   size={15}
@@ -151,10 +156,10 @@ export function SearchResultList({
               aria-hidden={!isExpanded}
               inert={!isExpanded}
               className={clsx(
-                "grid bg-surface-hover/50 transition-[grid-template-rows,border-color]",
+                "grid bg-surface-slate-50/50 transition-[grid-template-rows,border-color]",
                 "duration-200 ease-out motion-reduce:transition-none",
                 isExpanded
-                  ? "grid-rows-[1fr] border-t border-border"
+                  ? "grid-rows-[1fr] border-t border-line-slate-100"
                   : "grid-rows-[0fr] border-t border-transparent",
               )}
             >
@@ -178,7 +183,7 @@ export function SearchResultList({
                       onDoubleClick={() => void onNavigate(group.page.id, matchId)}
                       className={clsx(
                         "flex min-h-9 cursor-default items-start gap-2 py-1.5 pl-7 pr-3",
-                        "transition-colors hover:bg-surface-panel",
+                        "transition-colors hover:bg-surface-white",
                       )}
                     >
                       <CircleSelector
@@ -189,7 +194,7 @@ export function SearchResultList({
                           onSelectedIdsChange(toggleUnitSelection(selectedIds, matchId));
                         }}
                       />
-                      <p className="min-w-0 flex-1 text-xs leading-5 text-foreground">
+                      <p className="min-w-0 flex-1 text-xs leading-5 text-ink-slate-600">
                         <HighlightedText
                           text={unitSearchText(match, part)}
                           phrase={searchState.phrase}

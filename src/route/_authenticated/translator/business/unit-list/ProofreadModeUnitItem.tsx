@@ -160,12 +160,12 @@ export function ProofreadModeUnitItem({
               onFocus={() => onSelect?.(unitId(unit))}
               placeholder="无翻译内容"
               className={clsx(
-                "cursor-default text-base font-normal leading-relaxed placeholder:text-muted-foreground",
+                "cursor-default text-base font-normal leading-relaxed placeholder:text-ink-gray-300",
                 hasProofreadText
-                  ? "text-foreground"
+                  ? "text-ink-gray-400"
                   : isFocused
-                    ? "text-foreground"
-                    : "text-text-secondary",
+                    ? "text-ink-gray-900"
+                    : "text-ink-gray-700",
               )}
             />
           </div>
@@ -178,7 +178,7 @@ export function ProofreadModeUnitItem({
             <div
               className={clsx(
                 "w-2 h-2 rounded-full",
-                unitIsProofread(unit) ? "bg-status-success" : "bg-border",
+                unitIsProofread(unit) ? "bg-[var(--brand-leaf)]" : "bg-surface-gray-200",
               )}
             />
           </div>
@@ -188,7 +188,7 @@ export function ProofreadModeUnitItem({
         {/* 只读模式下，有校对内容就始终显示。 */}
         {isShowProofreadField && (
           <>
-            <div className="h-[1.5px] bg-border my-1 mr-10" />
+            <div className="h-[1.5px] bg-surface-gray-300 my-1 mr-10" />
             <div className="flex items-start gap-1">
               <div data-unit-contributor-trigger className="min-w-0 flex-1">
                 <AutoResizeTextarea
@@ -204,8 +204,8 @@ export function ProofreadModeUnitItem({
                   placeholder="输入校对..."
                   readOnly={enableReadOnly}
                   className={clsx(
-                    "text-base font-normal leading-relaxed placeholder:text-muted-foreground",
-                    isFocused ? "text-foreground" : "text-text-secondary",
+                    "text-base font-normal leading-relaxed placeholder:text-ink-gray-300",
+                    isFocused ? "text-ink-gray-900" : "text-ink-gray-700",
                   )}
                 />
               </div>
@@ -225,7 +225,7 @@ export function ProofreadModeUnitItem({
                     }}
                     className={clsx(
                       "shrink-0 p-1 rounded",
-                      "text-muted-foreground hover:text-primary-text",
+                      "text-ink-gray-400 hover:text-ink-green-600",
                       "transition-colors",
                     )}
                   >
@@ -247,8 +247,8 @@ export function ProofreadModeUnitItem({
                     className={clsx(
                       "shrink-0 p-1 rounded",
                       unitIsProofread(unit)
-                        ? "text-muted-foreground hover:text-destructive"
-                        : "text-muted-foreground hover:text-primary-text",
+                        ? "text-ink-gray-400 hover:text-ink-red-500"
+                        : "text-ink-gray-400 hover:text-ink-green-600",
                       "transition-colors",
                     )}
                   >
@@ -265,7 +265,7 @@ export function ProofreadModeUnitItem({
               !enableReadOnly &&
               (!specialCharsBar?.position || specialCharsBar.placeholderHeight !== null) && (
                 <>
-                  <div className="h-px bg-border my-1 mr-10" />
+                  <div className="h-px bg-surface-gray-200 my-1 mr-10" />
                   <SpecialCharsBar
                     controller={specialCharsBar}
                     onInsert={insertChar}

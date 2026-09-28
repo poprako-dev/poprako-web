@@ -13,18 +13,18 @@ type Props = {
 
 function getActivityStatusColor(lastActiveAt: number | undefined): string {
   if (!lastActiveAt) {
-    return "bg-border text-muted-foreground";
+    return "bg-surface-stone-300 text-ink-stone-600";
   }
   const diff = Date.now() - lastActiveAt;
   const threeMonths = 1000 * 60 * 60 * 24 * 90;
   if (diff <= threeMonths) {
-    return "bg-status-success text-primary-foreground";
+    return "bg-surface-green-800/60 text-ink-white/85";
   }
   const sixMonths = 1000 * 60 * 60 * 24 * 180;
   if (diff <= sixMonths) {
-    return "bg-status-warning text-primary-foreground";
+    return "bg-surface-amber-200 text-ink-amber-700";
   }
-  return "bg-border text-muted-foreground";
+  return "bg-surface-stone-300 text-ink-stone-600";
 }
 
 function formatDate(ts: number | undefined): string {
@@ -40,10 +40,10 @@ function DataTag({ icon, value }: { icon: React.ReactNode; value: number }): Rea
     <div
       className={clsx(
         "flex flex-1 items-center justify-center gap-1 py-0.5",
-        "text-[11px] font-semibold text-muted-foreground",
+        "text-[11px] font-semibold text-ink-stone-500",
       )}
     >
-      <span className="text-muted-foreground flex items-center justify-center">{icon}</span>
+      <span className="text-ink-stone-400 flex items-center justify-center">{icon}</span>
       <span className="leading-none">{value}</span>
     </div>
   );
@@ -74,15 +74,15 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
       }}
       className={clsx(
         "w-full h-26 flex",
-        "bg-surface-panel rounded-sm overflow-hidden shadow-xs",
-        "border border-border",
+        "bg-surface-stone-50/10 rounded-sm overflow-hidden shadow-xs",
+        "border border-line-stone-200",
         "transition-all cursor-pointer duration-300",
         "hover:-translate-y-0.5 hover:shadow-sm",
         "p-2",
       )}
     >
       {/* 左侧封面 */}
-      <div className="w-14 shrink-0 overflow-hidden bg-surface-hover rounded-sm">
+      <div className="w-14 shrink-0 overflow-hidden bg-surface-stone-100 rounded-sm">
         {comicInfo.coverThumbnailUrl ? (
           <img
             src={comicInfo.coverThumbnailUrl}
@@ -91,7 +91,7 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <FileText size={20} className="text-muted-foreground" />
+            <FileText size={20} className="text-ink-stone-300" />
           </div>
         )}
       </div>
@@ -100,7 +100,7 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
       <div className="flex-1 flex flex-col justify-between min-w-0 px-2 py-1">
         {/* 第一行：标题 + 序号指示 */}
         <div className="flex items-center justify-between gap-1.5">
-          <h3 className={clsx("text-base font-bold text-foreground", "truncate leading-tight")}>
+          <h3 className={clsx("text-base font-bold text-ink-stone-700", "truncate leading-tight")}>
             {comicInfo.title || "未命名"}
           </h3>
           <div
@@ -115,15 +115,15 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
         </div>
 
         {/* 第二行：序号 + 日期 + 页数 */}
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
+        <div className="flex items-center gap-1 text-[11px] text-ink-stone-400/80 font-mono">
           <Hash size={11} strokeWidth={2.5} />
           <span>{displayChapter ? displayChapter.index + 1 : "—"}</span>
-          <span className="text-border">|</span>
+          <span className="text-ink-stone-200">|</span>
           <div className="flex items-center gap-1 shrink-0">
             <Clock size={11} strokeWidth={2.5} />
             <span className="tracking-tighter">{formatDate(comicInfo.lastActiveAt)}</span>
           </div>
-          <span className="text-border">|</span>
+          <span className="text-ink-stone-200">|</span>
           <div className="flex items-center gap-1 shrink-0">
             <FileText size={11} strokeWidth={2.5} />
             <span>{pageCount}P</span>
@@ -131,7 +131,7 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
         </div>
 
         {/* 第三行：统计标签 — 内陷式槽 */}
-        <div className="flex rounded-[3px] bg-surface-hover p-0.5">
+        <div className="flex rounded-[3px] bg-surface-stone-200/30 p-0.5">
           <DataTag icon={<Tag size={12} strokeWidth={2.5} />} value={total} />
           <DataTag icon={<Languages size={12} strokeWidth={2.5} />} value={translated} />
           <DataTag icon={<CheckSquare size={12} strokeWidth={2.5} />} value={proofread} />
@@ -142,8 +142,8 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
           fullWidth
           height={0.5}
           bars={[
-            { progressPercent: translationPct, barColor: "var(--status-warning)" },
-            { progressPercent: proofreadPct, barColor: "var(--primary)" },
+            { progressPercent: translationPct, barColor: "var(--progress-comic-translation)" },
+            { progressPercent: proofreadPct, barColor: "var(--progress-proofread)" },
           ]}
         />
       </div>

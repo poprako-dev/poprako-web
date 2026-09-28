@@ -33,7 +33,10 @@ export function ComicListLayout({
       {isSidebarOpen && (
         <button
           type="button"
-          className={clsx("fixed inset-0 z-40 bg-foreground/10", "transition-opacity md:hidden")}
+          className={clsx(
+            "fixed inset-0 z-40 bg-surface-slate-900/10",
+            "transition-opacity md:hidden",
+          )}
           onClick={onCloseSidebar}
         />
       )}

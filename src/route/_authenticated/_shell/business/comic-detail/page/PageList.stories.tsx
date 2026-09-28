@@ -39,7 +39,7 @@ export const Default: Story = {
   },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelectorAll('[role="button"]')).toHaveLength(0);
-    const pageLabels = canvasElement.querySelectorAll("span.text-background");
+    const pageLabels = canvasElement.querySelectorAll("[data-page-index]");
     await expect(pageLabels).toHaveLength(12);
     await expect(pageLabels.item(0)).toBeVisible();
   },

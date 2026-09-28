@@ -40,3 +40,11 @@ void test("directory checking includes empty and asset-only directories", () => 
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+void test("concrete page names keep their URLs without permitting plural utility directories", () => {
+  for (const page of ["settings", "utilities"]) {
+    assert.deepEqual(inspectDirectory(`src/route/_authenticated/_shell/${page}`), []);
+    assert.ok(inspectDirectory(`src/shared/${page}`).length > 0);
+    assert.ok(inspectDirectory(`src/route/_authenticated/_shell/business/${page}`).length > 0);
+  }
+});

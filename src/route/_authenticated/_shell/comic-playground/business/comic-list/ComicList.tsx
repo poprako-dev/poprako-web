@@ -136,11 +136,12 @@ export function ComicList({
               <div
                 className="w-full h-0.5 rounded-sm"
                 style={{
-                  background: "linear-gradient(90deg, var(--border) 0%, transparent 60%)",
+                  background:
+                    "linear-gradient(90deg, rgba(148,163,184,1) 0%," + " rgba(148,163,184,0) 60%)",
                 }}
               />
             </div>
-            <div className="flex rounded-lg bg-surface-hover p-0.5">
+            <div className="flex rounded-lg bg-surface-stone-100/80 p-0.5">
               <button
                 type="button"
                 onClick={() => {
@@ -152,8 +153,8 @@ export function ComicList({
                   "flex items-center gap-2",
                   "transition-all duration-200 focus:outline-none",
                   activeMode === "translator"
-                    ? "bg-primary-subtle text-primary-text shadow-(--shadow-sm)"
-                    : "text-muted-foreground hover:text-text-secondary",
+                    ? "bg-surface-gray-200 text-ink-gray-800 shadow-(--shadow-sm)"
+                    : "text-ink-slate-400 hover:text-ink-slate-600",
                 )}
               >
                 <PencilLine size={16} />
@@ -169,8 +170,8 @@ export function ComicList({
                   "flex items-center gap-2",
                   "transition-all duration-200 focus:outline-none",
                   activeMode === "reviewer"
-                    ? "bg-primary-subtle text-primary-text shadow-(--shadow-sm)"
-                    : "text-muted-foreground hover:text-text-secondary",
+                    ? "bg-surface-gray-200 text-ink-gray-800 shadow-(--shadow-sm)"
+                    : "text-ink-slate-400 hover:text-ink-slate-600",
                 )}
               >
                 <Eye size={16} />

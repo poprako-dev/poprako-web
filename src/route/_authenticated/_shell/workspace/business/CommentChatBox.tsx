@@ -56,10 +56,12 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
   );
 
   return (
-    <div className={clsx("flex flex-col h-full rounded-sm", "bg-muted text-foreground")}>
+    <div
+      className={clsx("flex flex-col h-full rounded-sm", "bg-surface-stone-50/40 text-foreground")}
+    >
       {/* message list — inner flex-col pushes content to bottom */}
       <div
-        className="flex-1 min-h-0 overflow-y-auto"
+        className="flex-1 overflow-y-auto min-h-0"
         role="region"
         tabIndex={0}
         aria-label="留言列表"
@@ -87,7 +89,7 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
                         "shrink-0 w-7 h-7 rounded-full",
                         "flex items-center justify-center",
                         "text-xs font-medium select-none",
-                        "bg-surface-hover overflow-hidden",
+                        "bg-surface-stone-100 overflow-hidden",
                       )}
                     >
                       {c.user?.avatarThumbnailUrl || c.user?.avatarUrl ? (
@@ -97,7 +99,7 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-primary-text">{avatarChar(c.user?.name)}</span>
+                        <span className="text-[var(--brand-leaf)]">{avatarChar(c.user?.name)}</span>
                       )}
                     </div>
                     <div className="flex flex-col min-w-0">
@@ -115,7 +117,7 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
                       "mt-1.5 text-sm leading-snug wrap-break-word",
                       "whitespace-pre-wrap",
                       "px-3 py-1.5 rounded-xl rounded-tl-sm",
-                      "bg-surface-hover text-foreground",
+                      "bg-surface-stone-100/80 text-foreground",
                     )}
                   >
                     {c.content}
@@ -128,17 +130,17 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
       </div>
 
       {/* divider */}
-      <div className="h-px bg-border mx-3 shrink-0" />
+      <div className="h-px bg-surface-stone-200 mx-3 shrink-0" />
 
       {/* input row */}
       <div className="shrink-0 flex items-center gap-2 px-3 py-2.5">
         <textarea
           className={clsx(
             "flex-1 resize-none rounded-lg px-3 py-1.5",
-            "text-sm leading-relaxed bg-surface-panel text-foreground",
-            "placeholder:text-muted-foreground",
-            "border border-border",
-            "focus:outline-none focus:border-primary/40",
+            "text-sm leading-relaxed bg-surface-white/80 text-foreground",
+            "placeholder:text-ink-stone-400",
+            "border border-line-stone-200",
+            "focus:outline-none focus:border-[var(--brand-leaf)]/40",
             "transition-colors min-h-8 max-h-24",
           )}
           rows={1}
@@ -160,7 +162,7 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
           className={clsx(
             "shrink-0",
             !sending && input.trim()
-              ? "text-primary-text hover:bg-primary-subtle"
+              ? "text-[var(--brand-leaf)] hover:bg-[var(--brand-leaf-faint)]/50"
               : "text-muted-foreground",
           )}
           aria-label="发送"

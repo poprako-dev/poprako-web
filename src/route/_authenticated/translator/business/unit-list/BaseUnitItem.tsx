@@ -74,13 +74,13 @@ export function BaseUnitItem({
       ref={containerRef}
       data-unit-id={dataUnitId}
       className={clsx(
-        "relative flex cursor-text items-stretch border-y border-border",
+        "relative flex cursor-text items-stretch border-y border-line-stone-200",
         "first:border-t-0 last:border-b-0 transition-all duration-75",
-        isFocused ? "z-10 bg-border/50" : "bg-transparent hover:bg-surface-hover/70",
-        isDragDimmed && "bg-surface-hover/60 opacity-40 grayscale",
+        isFocused ? "z-10 bg-surface-stone-300/50" : "bg-transparent hover:bg-surface-stone-100/70",
+        isDragDimmed && "bg-surface-stone-100/60 opacity-40 grayscale",
         isDragging && [
-          "z-20 bg-surface-panel opacity-100",
-          "outline outline-1 outline-[var(--status-success)] shadow-md",
+          "z-20 bg-surface-stone-50 opacity-100",
+          "outline outline-1 outline-[var(--brand-leaf)] shadow-md",
         ],
       )}
     >
@@ -88,7 +88,7 @@ export function BaseUnitItem({
         <div
           className={clsx(
             "pointer-events-none absolute -top-0.5 right-0 left-0 z-30 h-1",
-            "rounded-full bg-status-success shadow-md",
+            "rounded-full bg-[var(--brand-leaf)] shadow-md",
           )}
         />
       )}
@@ -96,7 +96,7 @@ export function BaseUnitItem({
         className={clsx(
           "transition-all duration-150 shrink-0",
           "border-l-4",
-          isBubble ? "border-status-info/30" : "border-status-warning/30",
+          isBubble ? "border-line-pink-300" : "border-line-amber-300",
         )}
       />
 
@@ -126,13 +126,13 @@ export function BaseUnitItem({
           "w-8 shrink-0 flex items-center justify-center select-none touch-none",
           "font-mono text-xs font-bold tracking-tighter transition-colors duration-150",
           canReorder
-            ? "cursor-grab hover:bg-surface-hover/70 active:cursor-grabbing"
-            : "cursor-pointer hover:bg-surface-hover/70",
+            ? "cursor-grab hover:bg-surface-stone-200/70 active:cursor-grabbing"
+            : "cursor-pointer hover:bg-surface-stone-200/70",
           isDragging
-            ? "bg-surface-hover/80 text-text-secondary"
+            ? "bg-surface-stone-200/80 text-ink-stone-700"
             : isFocused
-              ? "text-muted-foreground"
-              : "text-text-secondary hover:text-foreground",
+              ? "text-ink-stone-500"
+              : "text-ink-stone-300 hover:text-ink-stone-500",
         )}
       >
         {unitIndex(unit) + 1}

@@ -12,14 +12,14 @@ export function ComicDetailModalLayout({ header, sidebar, content }: Props): JSX
     <div
       className={clsx(
         "fixed inset-0 z-80 flex items-center justify-center p-4 backdrop-blur-sm",
-        "bg-foreground/25",
+        "bg-surface-stone-950/25",
       )}
     >
       <div
         data-comic-detail-boundary
         className={clsx(
           "relative w-full max-w-240 h-[85vh]",
-          "bg-surface-workspace rounded-sm border border-border",
+          "bg-surface-stone-50 rounded-sm border border-line-stone-200",
           "shadow-xl",
           "flex flex-col overflow-hidden transition-all duration-300",
         )}
@@ -28,7 +28,7 @@ export function ComicDetailModalLayout({ header, sidebar, content }: Props): JSX
         <div
           className={clsx(
             "flex justify-between items-center px-5 py-2.5",
-            "border-b border-border shrink-0 bg-surface-hover",
+            "border-b border-line-stone-300 shrink-0 bg-surface-stone-200",
           )}
         >
           {header}
@@ -46,11 +46,11 @@ export function ComicDetailModalLayout({ header, sidebar, content }: Props): JSX
             {/* Sidebar – warm white */}
             <div
               className={clsx(
-                "shrink-0 border-border p-2",
-                "flex flex-col bg-surface-workspace",
+                "shrink-0 border-line-stone-200 p-2",
+                "flex flex-col bg-surface-stone-50",
                 "w-full border-b",
                 "sm:w-45 sm:border-b-0 sm:border-r sm:overflow-y-auto",
-                "sm:scrollbar-thin sm:scrollbar-thumb-border",
+                "sm:scrollbar-thin sm:scrollbar-thumb-scrollbar-stone-200",
               )}
             >
               {sidebar}

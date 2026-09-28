@@ -3,5 +3,7 @@ export const routeConfiguration = {
   routesDirectory: "./src/route",
   generatedRouteTree: "./src/route-tree.gen.ts",
   routeFileIgnorePattern: "^business$",
+  indexToken: "Index",
+  routeToken: "Route",
   autoCodeSplitting: true,
 };

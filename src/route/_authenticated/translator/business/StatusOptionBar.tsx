@@ -67,18 +67,18 @@ export function StatusOptionBar({
 }: Props): TranslatorImportedType0.Element {
   const btnBase = clsx(
     "flex-1 flex items-center justify-center py-2 transition-colors",
-    "text-text-secondary shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
+    "text-ink-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
   );
 
   return (
-    <div className="flex w-full divide-x divide-border">
+    <div className="flex w-full divide-x divide-separator-stone-200">
       {canSwitchView && (
         <button
           type="button"
           title={`当前：${modeLabel[view].replace("模式", "视图")}，点击切换视图`}
           aria-label={`切换到${modeLabel[nextView]}`}
           onClick={onSwitchView}
-          className={clsx(btnBase, "bg-primary-subtle hover:bg-primary-muted")}
+          className={clsx(btnBase, "bg-surface-green-50 hover:bg-surface-green-100")}
         >
           {modeIcon[view]}
         </button>
@@ -90,8 +90,8 @@ export function StatusOptionBar({
         className={clsx(
           btnBase,
           isRelocationEnabled
-            ? "bg-primary-subtle hover:bg-primary-muted"
-            : "bg-surface-panel hover:bg-surface-hover",
+            ? "bg-surface-green-50 hover:bg-surface-green-100"
+            : "bg-surface-white hover:bg-surface-stone-100",
         )}
       >
         <MapPin size={18} />
@@ -106,8 +106,8 @@ export function StatusOptionBar({
               btnBase,
               "hidden [@media(any-pointer:coarse)]:flex",
               isUnitCreationEnabled
-                ? "bg-surface-panel hover:bg-surface-hover"
-                : "bg-primary-subtle hover:bg-primary-muted",
+                ? "bg-surface-white hover:bg-surface-stone-100"
+                : "bg-surface-green-50 hover:bg-surface-green-100",
             )}
           >
             <CircleSlash size={18} />
@@ -120,8 +120,8 @@ export function StatusOptionBar({
             onClick={() => void onSaveClick()}
             className={clsx(
               btnBase,
-              "bg-surface-panel",
-              isLoadingPage ? "opacity-40 cursor-not-allowed" : "hover:bg-surface-hover",
+              "bg-surface-white",
+              isLoadingPage ? "opacity-40 cursor-not-allowed" : "hover:bg-surface-stone-100",
             )}
           >
             {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
@@ -143,8 +143,8 @@ export function StatusOptionBar({
           btnBase,
           isLoadingPage && "cursor-not-allowed opacity-40",
           isHighResolution
-            ? "bg-primary-subtle hover:bg-primary-muted"
-            : "bg-surface-panel hover:bg-surface-hover",
+            ? "bg-surface-green-50 hover:bg-surface-green-100"
+            : "bg-surface-white hover:bg-surface-stone-100",
         )}
       >
         <Image size={18} />
@@ -156,8 +156,8 @@ export function StatusOptionBar({
         className={clsx(
           btnBase,
           proofreadPreviewVisibility === "visible"
-            ? "bg-primary-subtle hover:bg-primary-muted"
-            : "bg-surface-panel hover:bg-surface-hover",
+            ? "bg-surface-green-50 hover:bg-surface-green-100"
+            : "bg-surface-white hover:bg-surface-stone-100",
         )}
       >
         <Eye size={18} />

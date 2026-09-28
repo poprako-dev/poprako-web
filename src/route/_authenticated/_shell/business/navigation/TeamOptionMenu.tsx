@@ -117,8 +117,8 @@ export function TeamList({
     >
       <div
         className={clsx(
-          "w-64 bg-popover text-popover-foreground",
-          "border border-border rounded-sm",
+          "w-64 bg-surface-white",
+          "border border-line-gray-100 rounded-sm",
           "shadow-[0_20px_50px_rgba(0,0,0,0.1)]",
           "flex flex-col",
         )}
@@ -128,7 +128,7 @@ export function TeamList({
             className={clsx(
               "text-[11px] font-black uppercase",
               "tracking-widest text-left",
-              "text-muted-foreground",
+              "text-ink-gray-400",
             )}
           >
             切换汉化组
@@ -146,8 +146,8 @@ export function TeamList({
                     "items-center justify-center overflow-hidden",
                     "font-black text-sm relative",
                     isSelected
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground",
+                      ? "bg-[var(--brand-leaf)] text-ink-white"
+                      : "bg-surface-gray-100 text-ink-gray-400",
                   )}
                 >
                   {(t.avatarThumbnailUrl ?? t.avatarUrl) ? (
@@ -164,15 +164,17 @@ export function TeamList({
                   <span className="text-sm font-bold truncate w-full">{t.name}</span>
                   <span className="text-[10px] opacity-60 truncate w-full">{t.desc}</span>
                 </div>
-                {isSelected && <Check size={16} className={clsx("ml-auto", "text-primary")} />}
+                {isSelected && (
+                  <Check size={16} className={clsx("ml-auto", "text-ink-green-500")} />
+                )}
               </>
             );
 
             const baseClasses = clsx(
               "w-full flex items-center gap-4",
               "px-4 py-3 rounded-sm transition-all",
-              isSelected ? "bg-primary-subtle" : "text-muted-foreground hover:bg-accent",
-              isSelected ? "text-primary-text" : "hover:text-foreground",
+              isSelected ? "bg-surface-green-50" : "text-ink-gray-500 hover:bg-surface-gray-50",
+              isSelected ? "text-ink-green-800" : "hover:text-ink-gray-900",
             );
 
             return onLongPressTeam ? (
@@ -210,8 +212,10 @@ export function TeamList({
           })}
         </div>
 
-        <div className={clsx("border-t border-border", "px-3 py-2", "flex items-center gap-2")}>
-          <Plus size={14} className="text-muted-foreground shrink-0" />
+        <div
+          className={clsx("border-t border-line-gray-100", "px-3 py-2", "flex items-center gap-2")}
+        >
+          <Plus size={14} className="text-ink-gray-300 shrink-0" />
           <input
             type="text"
             value={inviteCode}
@@ -223,9 +227,9 @@ export function TeamList({
             disabled={isJoining}
             className={clsx(
               "flex-1 min-w-0",
-              "text-xs text-foreground",
+              "text-xs text-ink-gray-600",
               "bg-transparent outline-none",
-              "placeholder:text-muted-foreground",
+              "placeholder:text-ink-gray-300",
               isJoining && "opacity-50",
             )}
           />

@@ -91,16 +91,17 @@ export function ComicDetailHeader({
       <div className="flex items-center gap-2 min-w-0">
         <div
           className={clsx(
-            "px-2 py-0.5 rounded-xs text-md font-black text-primary-foreground",
-            "leading-none shrink-0 bg-primary",
+            "px-2 py-0.5 rounded-xs text-md opacity-80 font-black text-ink-white",
+            "leading-none shrink-0",
           )}
+          style={{ backgroundColor: "var(--brand-leaf)" }}
         >
           #{comicInfo.index + 1}
         </div>
         <h1
           {...titleLongPress}
           className={clsx(
-            "text-lg font-black tracking-tight text-foreground min-w-0 flex-1",
+            "text-lg font-black tracking-tight text-ink-stone-700 min-w-0 flex-1",
             onLongPressTitle && "select-none touch-none",
           )}
           title={onLongPressTitle ? "长按修改作品信息" : undefined}
@@ -112,7 +113,7 @@ export function ComicDetailHeader({
           type="button"
           onClick={onClose}
           aria-label="关闭漫画详情"
-          className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
+          className="text-ink-stone-400 hover:text-ink-stone-700 transition-colors p-1 shrink-0"
         >
           <X size={18} />
         </button>

@@ -51,7 +51,7 @@ export function AppDialog({
         <Dialog.Overlay
           data-app-dialog
           className={clsx(
-            "fixed inset-0 z-100 bg-overlay backdrop-blur-sm",
+            "fixed inset-0 z-100 bg-surface-white/60 backdrop-blur-sm",
             "data-[state=open]:animate-in data-[state=open]:fade-in-0",
             "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
             "duration-200 motion-reduce:animate-none",
@@ -78,8 +78,8 @@ export function AppDialog({
           className={clsx(
             "fixed left-1/2 top-1/2 z-100 flex w-[calc(100%-2rem)]",
             "max-h-[calc(100dvh-2rem)] -translate-x-1/2 -translate-y-1/2",
-            "flex-col overflow-hidden rounded-xl bg-popover text-popover-foreground",
-            "border border-border shadow-sm",
+            "flex-col overflow-hidden rounded-xl bg-surface-white",
+            "border border-(--brand-leaf-border) shadow-(--shadow-sm)",
             "data-[state=open]:animate-in data-[state=open]:fade-in-0",
             "data-[state=open]:zoom-in-95 duration-200 motion-reduce:animate-none",
             size === "compact" && "max-w-70",
@@ -91,15 +91,15 @@ export function AppDialog({
         >
           <div
             aria-hidden="true"
-            className={clsx(
-              "h-1 w-full shrink-0 opacity-40",
-              tone === "warning" ? "bg-status-warning" : "bg-primary",
-            )}
+            className="h-1 w-full shrink-0 opacity-20"
+            style={{
+              background: tone === "warning" ? "var(--status-flag)" : "var(--brand-leaf)",
+            }}
           />
           <div className="relative shrink-0 px-5 pb-2 pt-4 text-center">
-            <Dialog.Title className="text-base font-bold text-foreground">{title}</Dialog.Title>
+            <Dialog.Title className="text-base font-bold text-ink-slate-800">{title}</Dialog.Title>
             {description && (
-              <Dialog.Description className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              <Dialog.Description className="mt-1 text-xs leading-relaxed text-ink-slate-400">
                 {description}
               </Dialog.Description>
             )}
@@ -114,9 +114,8 @@ export function AppDialog({
                 onClick={onClose}
                 className={clsx(
                   "absolute right-4 top-3.5 flex size-7 items-center justify-center",
-                  "rounded-md text-muted-foreground transition-colors",
-                  "hover:bg-accent hover:text-accent-foreground",
-                  "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
+                  "rounded-md text-ink-slate-300 transition-colors",
+                  "hover:bg-surface-slate-50 hover:text-ink-slate-500",
                   "disabled:cursor-not-allowed disabled:opacity-40",
                 )}
               >
@@ -158,22 +157,21 @@ export function AppDialogAction({
         "flex h-8 items-center justify-center gap-1 rounded-lg border px-3",
         "text-xs font-semibold transition-all duration-200 active:scale-[0.98]",
         "flex-1 disabled:cursor-not-allowed disabled:opacity-50",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
         tone === "neutral" && [
-          "border-border bg-muted text-muted-foreground",
-          "hover:bg-accent hover:text-accent-foreground",
+          "border-line-slate-100 bg-surface-slate-50 text-ink-slate-400",
+          "hover:bg-surface-slate-100 hover:text-ink-slate-500",
         ],
         tone === "brand" && [
-          "border-primary-border bg-primary-subtle text-primary-text",
-          "hover:bg-primary-muted",
+          "border-(--brand-leaf-border) bg-surface-green-50 text-ink-green-600",
+          "hover:bg-surface-green-100",
         ],
         tone === "danger" && [
-          "border-destructive/30 bg-destructive/10 text-destructive",
-          "hover:bg-destructive/15",
+          "border-(--danger-border) bg-surface-red-50 text-ink-red-500",
+          "hover:bg-surface-red-100",
         ],
         tone === "warning" && [
-          "border-status-warning/30 bg-status-warning/10 text-status-warning",
-          "hover:bg-status-warning/15",
+          "border-line-amber-100 bg-surface-amber-50 text-ink-amber-600",
+          "hover:bg-surface-amber-100",
         ],
         className,
       )}

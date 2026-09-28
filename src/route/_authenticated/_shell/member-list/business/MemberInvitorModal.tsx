@@ -52,24 +52,30 @@ export function MemberInvitorModal({
     <div
       className={clsx(
         "fixed inset-0 z-50 flex items-center justify-center p-4",
-        "bg-overlay backdrop-blur-sm animate-in fade-in duration-200",
+        "bg-surface-white/60 backdrop-blur-sm",
+        "animate-in fade-in duration-200",
       )}
     >
       <div
         className={clsx(
           "relative flex w-full max-w-3xl flex-col overflow-hidden",
-          "bg-surface-panel border border-border rounded-xl shadow-(--shadow-sm)",
-          "animate-in zoom-in-95 duration-200 md:flex-row",
+          "bg-surface-white border border-line-slate-200 rounded-xl",
+          "shadow-(--shadow-sm)",
+          "animate-in zoom-in-95 duration-200",
+          "md:flex-row",
         )}
       >
-        <div className="absolute top-0 left-0 right-0 z-1 h-1 bg-primary opacity-20" />
+        <div
+          className="absolute top-0 left-0 right-0 h-1 opacity-20 z-1"
+          style={{ background: "var(--brand-leaf)" }}
+        />
         <button
           type="button"
           onClick={onClose}
           aria-label="关闭邀请窗口"
           className={clsx(
             "absolute right-3 top-3 z-10 rounded-full p-1.5",
-            "text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground",
+            "text-ink-slate-300 transition-colors hover:bg-surface-slate-50 hover:text-ink-slate-500",
           )}
         >
           <X className="h-4 w-4" />

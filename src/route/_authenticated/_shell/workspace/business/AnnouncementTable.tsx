@@ -44,12 +44,10 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
       {/* Header */}
       <div className={clsx("flex items-center justify-between", "mb-2 px-0.5")}>
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-border shrink-0" />
-          <span className="text-sm font-semibold text-muted-foreground tracking-tight">
-            当前公告
-          </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-surface-slate-300 shrink-0" />
+          <span className="text-sm font-semibold text-ink-slate-500 tracking-tight">当前公告</span>
         </div>
-        <div className="flex-1 mx-2 h-0.5 bg-border" />
+        <div className="flex-1 mx-2 h-0.5 bg-surface-slate-200" />
         {isAdmin && (
           <button
             type="button"
@@ -58,7 +56,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
             }}
             className={clsx(
               "inline-flex items-center gap-1 px-2 py-1",
-              "hover:text-foreground bg-muted hover:bg-primary-subtle",
+              "hover:text-ink-slate-700 bg-surface-slate-50 hover:bg-surface-green-100",
               "transition-colors duration-150 focus:outline-none",
               "rounded-sm",
             )}
@@ -70,15 +68,15 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
 
       {/* Body */}
       {loading ? (
-        <div className="flex items-center justify-center h-24 text-muted-foreground">
+        <div className="flex items-center justify-center h-24 text-ink-slate-400">
           <LoadingCircle size={18} />
         </div>
       ) : announcements.length === 0 ? (
         <div
           className={clsx(
             "flex items-center justify-center h-20",
-            "text-xs text-muted-foreground border border-dashed",
-            "border-border rounded-md",
+            "text-xs text-ink-slate-300 border border-dashed",
+            "border-line-slate-200 rounded-md",
           )}
         >
           暂无公告
@@ -91,8 +89,8 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
               : announcements.length === 2
                 ? "grid grid-cols-1 sm:grid-cols-2"
                 : "grid grid-cols-1 sm:grid-cols-3",
-            "border border-border rounded-md overflow-hidden",
-            "divide-y sm:divide-y-0 sm:divide-x divide-border",
+            "border border-line-slate-200 rounded-md overflow-hidden",
+            "divide-y sm:divide-y-0 sm:divide-x divide-separator-slate-100",
           )}
         >
           {announcements.map((announcement, index) => (
@@ -111,7 +109,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
         <div
           className={clsx(
             "fixed inset-0 z-50 flex justify-end",
-            "bg-overlay/10 backdrop-blur-[1px]",
+            "bg-surface-black/5 backdrop-blur-[1px]",
           )}
         >
           <button
@@ -122,8 +120,8 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
           />
           <div
             className={clsx(
-              "relative w-full max-w-xs bg-muted h-full",
-              "border-l border-border p-5",
+              "relative w-full max-w-xs bg-surface-stone-50 h-full",
+              "border-l border-line-slate-200 p-5",
               "flex flex-col shadow-sm",
               "animate-in slide-in-from-right duration-200",
             )}
@@ -135,9 +133,9 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                 rows={2}
                 className={clsx(
                   "w-full resize-none rounded-md px-2 py-1.5 mb-3",
-                  "text-sm font-bold text-foreground leading-relaxed",
-                  "border border-border bg-surface-panel",
-                  "focus:border-border focus:outline-none",
+                  "text-sm font-bold text-ink-slate-700 leading-relaxed",
+                  "border border-line-slate-200 bg-surface-white",
+                  "focus:border-line-slate-300 focus:outline-none",
                 )}
                 value={draft.title}
                 onChange={(event) => {
@@ -148,7 +146,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                 }}
               />
             ) : (
-              <h2 className={clsx("text-sm font-bold text-foreground", "leading-relaxed mb-3")}>
+              <h2 className={clsx("text-sm font-bold text-ink-slate-700", "leading-relaxed mb-3")}>
                 {selected.title}
               </h2>
             )}
@@ -157,9 +155,9 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                 aria-label="公告内容"
                 className={clsx(
                   "w-full flex-1 min-h-24 resize-none rounded-md px-2 py-1.5",
-                  "text-xs text-muted-foreground leading-relaxed",
-                  "border border-border bg-surface-panel",
-                  "focus:border-border focus:outline-none",
+                  "text-xs text-ink-slate-500 leading-relaxed",
+                  "border border-line-slate-200 bg-surface-white",
+                  "focus:border-line-slate-300 focus:outline-none",
                 )}
                 value={draft.content}
                 onChange={(event) => {
@@ -172,7 +170,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
             ) : (
               <p
                 className={clsx(
-                  "text-xs text-muted-foreground leading-relaxed",
+                  "text-xs text-ink-slate-500 leading-relaxed",
                   "whitespace-pre-wrap flex-1",
                 )}
               >
@@ -181,17 +179,17 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
             )}
             <div
               className={clsx(
-                "pt-3 border-t border-border",
+                "pt-3 border-t border-line-slate-100",
                 "flex items-center justify-between",
-                "text-[10px] text-muted-foreground font-mono",
+                "text-[10px] text-ink-slate-400 font-mono",
               )}
             >
               <span className="flex items-center gap-1.5">
                 <span
                   className={clsx(
-                    "w-4 h-4 rounded border border-border",
-                    "bg-muted flex items-center justify-center",
-                    "text-[9px] font-bold text-muted-foreground",
+                    "w-4 h-4 rounded border border-line-slate-200",
+                    "bg-surface-slate-50 flex items-center justify-center",
+                    "text-[9px] font-bold text-ink-slate-500",
                   )}
                 >
                   {selected.user?.avatarThumbnailUrl ? (
@@ -225,12 +223,12 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                     "transition-all duration-200 active:scale-[0.98]",
                     isEditing
                       ? [
-                          "text-muted-foreground bg-muted hover:bg-surface-hover",
-                          "border border-border",
+                          "text-ink-slate-400 bg-surface-slate-50 hover:bg-surface-slate-100",
+                          "border border-line-slate-100",
                         ]
                       : [
-                          "text-destructive bg-surface-panel hover:bg-destructive/10",
-                          "border border-destructive/30",
+                          "text-ink-red-500 bg-surface-red-50 hover:bg-surface-red-100",
+                          "border border-(--danger-border)",
                         ],
                     isSaving && "opacity-60 cursor-not-allowed",
                   )}
@@ -252,10 +250,10 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                     "flex items-center justify-center gap-1",
                     "transition-all duration-200 active:scale-[0.98]",
                     isEditing && !canPublish
-                      ? "bg-muted text-muted-foreground cursor-not-allowed border border-border"
+                      ? "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100"
                       : [
-                          "bg-primary-subtle text-primary-text hover:bg-primary-muted",
-                          "border border-primary-border",
+                          "bg-surface-green-50 text-ink-green-500 hover:bg-surface-green-100",
+                          "border border-(--brand-leaf-border)",
                         ],
                   )}
                 >

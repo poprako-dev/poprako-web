@@ -99,7 +99,13 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm">
+    <div
+      className={clsx(
+        "fixed inset-0 z-50",
+        "flex items-center justify-center",
+        "bg-surface-white/60 backdrop-blur-sm",
+      )}
+    >
       <button
         type="button"
         aria-label="关闭特殊符号面板"
@@ -111,21 +117,21 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
         aria-modal="true"
         aria-label="特殊符号面板"
         className={clsx(
-          "relative w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-xl bg-surface-panel",
-          "border border-primary/20 shadow-(--shadow-sm)",
+          "w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-xl bg-surface-white",
+          "border border-(--brand-leaf-border) shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
       >
-        <div className="h-1 w-full bg-primary opacity-20" />
+        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
         {/* Header */}
         <div className={clsx("flex justify-between items-center", "px-5 pb-2 pt-4")}>
-          <span className="text-base font-bold text-foreground">特殊符号面板</span>
+          <span className="text-base font-bold text-ink-slate-800">特殊符号面板</span>
           <button
             type="button"
             aria-label="关闭特殊符号面板"
             className={clsx(
-              "flex size-7 items-center justify-center rounded-md text-muted-foreground",
-              "transition-colors hover:bg-surface-hover hover:text-muted-foreground",
+              "flex size-7 items-center justify-center rounded-md text-ink-slate-300",
+              "transition-colors hover:bg-surface-slate-50 hover:text-ink-slate-500",
             )}
             onClick={onClose}
           >
@@ -137,7 +143,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
         <div className="px-5 pb-5 pt-3">
           {/* Mode Tabs */}
           <div className="flex justify-center mb-5">
-            <div className="inline-flex items-center gap-0.5 rounded-lg bg-surface-hover p-1">
+            <div className="inline-flex items-center gap-0.5 rounded-lg bg-surface-slate-50 p-1">
               {(["select", "delete"] as Mode[]).map((m) => (
                 <button
                   type="button"
@@ -149,8 +155,8 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
                     "rounded-md px-5 py-1.5 text-sm outline-none",
                     "transition-all duration-200",
                     mode === m
-                      ? "bg-surface-panel font-medium text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? "bg-surface-white font-medium text-ink-slate-700 shadow-sm"
+                      : "text-ink-slate-400 hover:text-ink-slate-600",
                   )}
                 >
                   {m === "select" ? "优选" : "删除"}
@@ -187,7 +193,11 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
                   draggingId === char.id && "opacity-60 ring-2 ring-primary/30",
                   mode === "select"
                     ? char.isFavorite
-                      ? ["bg-primary/10", "text-primary-text", "hover:opacity-80"]
+                      ? [
+                          "bg-[var(--brand-leaf-faint)]",
+                          "text-[var(--brand-leaf)]",
+                          "hover:opacity-80",
+                        ]
                       : ["bg-muted text-muted-foreground", "hover:bg-accent hover:text-foreground"]
                     : [
                         "bg-muted text-muted-foreground",
@@ -245,7 +255,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
           </div>
 
           {/* Hint */}
-          <p className="mt-4 text-xs text-muted-foreground text-center">
+          <p className="mt-4 text-xs text-muted-foreground/70 text-center">
             {mode === "select"
               ? "点击切换是否出现在符号栏中，拖动可排序"
               : "点击符号将其删除，拖动可排序"}

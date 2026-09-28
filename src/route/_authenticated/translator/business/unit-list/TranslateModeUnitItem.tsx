@@ -147,8 +147,8 @@ export function TranslateModeUnitItem({
             placeholder="点击输入翻译..."
             readOnly={enableReadOnly}
             className={`text-base font-normal leading-relaxed ${
-              isFocused ? "text-foreground" : "text-text-secondary"
-            } placeholder:text-muted-foreground`}
+              isFocused ? "text-ink-gray-900" : "text-ink-gray-700"
+            } placeholder:text-ink-gray-300`}
           />
         </div>
         <UnitFlagButton
@@ -160,7 +160,7 @@ export function TranslateModeUnitItem({
           <div
             className={clsx(
               "w-2 h-2 rounded-full",
-              unitTranslatedText(unit) ? "bg-status-success" : "bg-border",
+              unitTranslatedText(unit) ? "bg-[var(--brand-leaf)]" : "bg-surface-gray-200",
             )}
           />
         </div>
@@ -169,7 +169,7 @@ export function TranslateModeUnitItem({
         !enableReadOnly &&
         (!specialCharsBar?.position || specialCharsBar.placeholderHeight !== null) && (
           <>
-            <div className="h-px bg-border my-1 mr-10" />
+            <div className="h-px bg-surface-gray-200 my-1 mr-10" />
             <SpecialCharsBar
               controller={specialCharsBar}
               onInsert={insertChar}

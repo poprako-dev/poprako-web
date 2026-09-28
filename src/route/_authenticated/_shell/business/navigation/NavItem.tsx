@@ -24,7 +24,7 @@ export function NavItem({
       className={clsx(
         "group/item relative flex h-11 w-full",
         "items-center outline-none transition-all",
-        isActive ? "text-primary-text" : "text-foreground",
+        isActive ? "text-navigation-active" : "text-navigation-ink",
       )}
     >
       {/* Left accent bar — expands from 0 height on hover, always visible when active */}
@@ -34,8 +34,8 @@ export function NavItem({
           "w-0.75 h-5 rounded-full",
           "transition-all duration-200 ease-out",
           isActive
-            ? "bg-primary scale-y-100"
-            : "bg-primary/85 scale-y-0 group-hover/item:scale-y-100",
+            ? "bg-surface-green-600 scale-y-100"
+            : "bg-surface-green-500/85 scale-y-0 group-hover/item:scale-y-100",
         )}
       />
 
@@ -46,7 +46,10 @@ export function NavItem({
         />
         {hasBadge && (
           <span
-            className={clsx("absolute top-0 right-2.5", "w-1.5 h-1.5 rounded-full bg-destructive")}
+            className={clsx(
+              "absolute top-0 right-2.5",
+              "w-1.5 h-1.5 rounded-full bg-surface-red-400",
+            )}
           />
         )}
       </span>

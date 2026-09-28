@@ -230,10 +230,30 @@ describe("identity and endpoint contract", () => {
     await updateMemberRole(createTestApi(), "member_1", 5);
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/members/member_1/roles");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+      id: "member_1",
       roles: 5,
     });
 
-    await joinMember(createTestApi(), "invite-code");
+    fetchMock.mockResolvedValueOnce(
+      Response.json(
+        {
+          code: 0,
+          data: {
+            id: "member_1",
+            user_id: "user_1",
+            team_id: "team_1",
+            nickname: "Reader",
+            last_active_at: 1,
+            roles: 2,
+          },
+        },
+        { status: 201 },
+      ),
+    );
+    expect(await joinMember(createTestApi(), "invite-code")).toEqual({
+      success: true,
+      data: undefined,
+    });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/members/join");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ code: "invite-code" });
 

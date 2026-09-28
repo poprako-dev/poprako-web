@@ -141,24 +141,27 @@ export function ChapterOption({
           }}
           className={clsx(
             "flex items-center gap-2 px-2 py-0.5",
-            "border rounded-sm bg-surface-panel transition-colors",
-            isOpen ? "border-border" : "border-border/60 hover:border-border",
+            "border rounded-sm bg-surface-white/50 transition-colors",
+            isOpen ? "border-line-slate-300" : "border-line-slate-100 hover:border-line-slate-200",
           )}
         >
-          <span className="text-sm font-black italic text-muted-foreground">
+          <span className="text-sm font-black italic text-ink-slate-400">
             #{selectedChapter.index + 1}
           </span>
           {selectedChapter.subtitle && (
             <>
-              <div className="w-px h-2.5 bg-border mx-0.5" />
+              <div className="w-px h-2.5 bg-surface-slate-200 mx-0.5" />
               <span
-                className={clsx("text-xs font-bold text-foreground", "uppercase tracking-widest")}
+                className={clsx(
+                  "text-xs font-bold text-ink-slate-600",
+                  "uppercase tracking-widest",
+                )}
               >
                 {selectedChapter.subtitle}
               </span>
             </>
           )}
-          <ChevronDown size={12} className="text-muted-foreground ml-1" />
+          <ChevronDown size={12} className="text-ink-slate-400 ml-1" />
         </button>
       ) : (
         <button
@@ -167,9 +170,9 @@ export function ChapterOption({
             setIsOpen(!isOpen);
           }}
           className={clsx(
-            "flex items-center gap-2 px-2 py-0.5 text-[10px] text-muted-foreground",
-            "border border-border/60 rounded-sm bg-surface-panel transition-colors",
-            "hover:border-border",
+            "flex items-center gap-2 px-2 py-0.5 text-[10px] text-ink-slate-400",
+            "border border-line-slate-100 rounded-sm bg-surface-white/50 transition-colors",
+            "hover:border-line-slate-200",
           )}
         >
           选择章节
@@ -181,13 +184,13 @@ export function ChapterOption({
         <div
           className={clsx(
             "absolute top-full right-0 mt-1 w-48 z-15",
-            "bg-popover rounded-md border border-border shadow-lg",
+            "bg-surface-white rounded-md border border-line-slate-200 shadow-lg",
           )}
         >
           <div
             className={clsx(
               "flex flex-col p-1.5 gap-0.5 max-h-60 overflow-y-auto",
-              "scrollbar-thin scrollbar-thumb-border overscroll-contain",
+              "scrollbar-thin scrollbar-thumb-scrollbar-slate-200 overscroll-contain",
             )}
           >
             <div className="pb-1 shrink-0">
@@ -200,8 +203,8 @@ export function ChapterOption({
                   }}
                   className={clsx(
                     "w-full flex items-center justify-center gap-1.5",
-                    "py-1.5 rounded-sm border border-dashed border-border",
-                    "text-muted-foreground hover:text-foreground hover:bg-accent",
+                    "py-1.5 rounded-sm border border-dashed border-line-slate-200",
+                    "text-ink-slate-400 hover:text-ink-slate-500 hover:bg-surface-slate-50",
                     "transition-colors text-[11px]",
                   )}
                 >
@@ -233,12 +236,12 @@ export function ChapterOption({
                       "px-2 py-1.5 rounded-sm transition-colors pr-6",
                       "select-none touch-none cursor-pointer",
                       selectedChapter?.id === ch.id
-                        ? "bg-surface-hover text-foreground"
-                        : "text-text-secondary hover:bg-accent",
+                        ? "bg-surface-slate-100 text-ink-slate-700"
+                        : "text-ink-slate-500 hover:bg-surface-slate-50",
                     )}
                     title="长按修改章节信息"
                   >
-                    <span className="text-[10px] font-black italic text-muted-foreground w-4 shrink-0">
+                    <span className="text-[10px] font-black italic text-ink-slate-400 w-4 shrink-0">
                       #{ch.index + 1}
                     </span>
                     <span className="text-[11px] font-bold truncate">
@@ -256,11 +259,11 @@ export function ChapterOption({
                       "flex-1 flex items-center gap-2 text-left",
                       "px-2 py-1.5 rounded-sm transition-colors pr-6",
                       selectedChapter?.id === ch.id
-                        ? "bg-surface-hover text-foreground"
-                        : "text-text-secondary hover:bg-accent",
+                        ? "bg-surface-slate-100 text-ink-slate-700"
+                        : "text-ink-slate-500 hover:bg-surface-slate-50",
                     )}
                   >
-                    <span className="text-[10px] font-black italic text-muted-foreground w-4 shrink-0">
+                    <span className="text-[10px] font-black italic text-ink-slate-400 w-4 shrink-0">
                       #{ch.index + 1}
                     </span>
                     <span className="text-[11px] font-bold truncate">
@@ -278,7 +281,7 @@ export function ChapterOption({
                     className={clsx(
                       "absolute right-1 p-1 rounded",
                       "opacity-0 group-hover:opacity-100 transition-opacity",
-                      "text-muted-foreground hover:text-destructive",
+                      "text-ink-slate-300 hover:text-ink-rose-400",
                     )}
                   >
                     <Trash2 className="w-3 h-3" strokeWidth={1.5} />
@@ -292,7 +295,7 @@ export function ChapterOption({
                 ref={observerRef}
                 className="h-8 w-full flex items-center justify-center shrink-0"
               >
-                <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 text-ink-slate-300 animate-spin" />
               </div>
             )}
           </div>

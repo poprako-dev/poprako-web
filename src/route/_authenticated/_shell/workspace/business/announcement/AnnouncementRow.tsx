@@ -22,31 +22,36 @@ export function AnnouncementRow({ announcement, hiddenOnMobile, onOpen }: Props)
       }}
       className={clsx(
         hiddenOnMobile && "hidden sm:block",
-        "group flex w-full flex-col justify-between px-3 py-2.5 text-left",
-        "hover:bg-muted transition-colors duration-150 focus:outline-none",
+        "group w-full text-left px-3 py-2.5",
+        "flex flex-col justify-between",
+        "hover:bg-surface-slate-50/60 transition-colors duration-150",
+        "focus:outline-none",
       )}
     >
       <div>
-        <div className="mb-1.5 flex items-start justify-between gap-2">
+        <div className="flex justify-between items-start gap-2 mb-1.5">
           <h3
             className={clsx(
-              "flex-1 line-clamp-2 text-base font-bold leading-snug text-text-secondary",
-              "group-hover:text-foreground transition-colors",
+              "text-base font-bold text-ink-slate-600",
+              "group-hover:text-ink-slate-800 transition-colors",
+              "line-clamp-2 leading-snug flex-1",
             )}
           >
             {announcement.title}
           </h3>
           <div
             className={clsx(
-              "flex h-6 w-6 shrink-0 items-center justify-center rounded",
-              "border border-border bg-muted text-[10px] font-bold text-muted-foreground",
+              "shrink-0 w-6 h-6 rounded",
+              "border border-line-slate-200 bg-surface-slate-50",
+              "flex items-center justify-center",
+              "text-[10px] font-bold text-ink-slate-500",
             )}
           >
             {announcement.user?.avatarThumbnailUrl ? (
               <img
                 src={announcement.user.avatarThumbnailUrl}
                 alt={`${announcement.user.name} 的头像`}
-                className="h-full w-full rounded-[inherit] object-cover"
+                className="w-full h-full object-cover rounded-[inherit]"
               />
             ) : (
               avatarChar(announcement.user?.name)
@@ -55,15 +60,21 @@ export function AnnouncementRow({ announcement, hiddenOnMobile, onOpen }: Props)
         </div>
         <p
           className={clsx(
-            "line-clamp-2 text-sm leading-snug text-muted-foreground",
-            "group-hover:text-muted-foreground transition-colors",
+            "text-sm text-ink-slate-400 leading-snug",
+            "line-clamp-2 group-hover:text-ink-slate-500",
+            "transition-colors",
           )}
         >
           {announcement.content}
         </p>
       </div>
-      <div className="mt-2 flex items-center justify-between border-t border-dashed border-border pt-1.5">
-        <span className="font-mono text-[10px] text-muted-foreground">
+      <div
+        className={clsx(
+          "mt-2 pt-1.5 border-t border-dashed border-line-slate-100",
+          "flex items-center justify-between",
+        )}
+      >
+        <span className="text-[10px] text-ink-slate-400/60 font-mono">
           {formatAnnouncementDate(announcement.createdAt)}
         </span>
       </div>

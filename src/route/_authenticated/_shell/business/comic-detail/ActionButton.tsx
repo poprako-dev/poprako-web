@@ -24,14 +24,14 @@ export function ActionButton({ icon: Icon, title, onClick, disabled, danger }: P
         "after:h-[2px] after:w-[60%] after:transition-all after:duration-200",
         "hover:after:w-[80%]",
         !danger && [
-          "bg-surface-workspace text-muted-foreground",
-          "hover:text-foreground",
-          "after:bg-border",
+          "bg-surface-stone-50 text-ink-stone-400",
+          "hover:text-ink-stone-700",
+          "after:bg-surface-stone-300",
         ],
         danger && [
-          "bg-surface-workspace text-destructive/70",
-          "hover:text-destructive",
-          "after:bg-destructive/70",
+          "bg-surface-stone-50 text-ink-rose-300",
+          "hover:text-ink-rose-500",
+          "after:bg-surface-rose-300",
         ],
         "disabled:opacity-50 disabled:cursor-not-allowed",
       )}

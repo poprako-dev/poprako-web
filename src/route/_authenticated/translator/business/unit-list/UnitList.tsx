@@ -107,7 +107,7 @@ export function UnitList({
 
   return (
     <Tooltip.Provider>
-      <div className="flex h-full w-full flex-col overflow-hidden bg-surface-panel">
+      <div className="flex h-full w-full flex-col overflow-hidden bg-surface-stone-50">
         <div
           ref={listRef}
           className={clsx("min-h-0 flex-1 overflow-y-auto", draggingUnitId && "select-none")}
@@ -154,10 +154,10 @@ export function UnitList({
             onClick={proofreadAll}
             className={clsx(
               "flex w-full shrink-0 items-center justify-center border-t-2",
-              "border-border bg-surface-panel py-2",
+              "border-line-gray-300 bg-surface-stone-50 py-2",
               isAllUnitsProofread
-                ? "text-destructive hover:bg-destructive/10 hover:text-destructive"
-                : "text-text-secondary hover:bg-surface-hover hover:text-foreground",
+                ? "text-ink-red-600 hover:bg-surface-red-50 hover:text-ink-red-700"
+                : "text-ink-gray-700 hover:bg-surface-stone-200 hover:text-ink-gray-900",
             )}
           >
             <ListCheck size={22} />

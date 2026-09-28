@@ -70,24 +70,28 @@ export function InvitationForm({
   }
 
   return (
-    <div className="flex-1 border-b border-border px-7 py-6 md:border-b-0 md:border-r">
-      <h3 className="mb-5 text-base font-bold text-foreground">邀请新成员</h3>
+    <div className="flex-1 border-b border-line-slate-100 px-7 py-6 md:border-b-0 md:border-r">
+      <h3 className="mb-5 text-base font-bold text-ink-slate-700">邀请新成员</h3>
       <div className="space-y-3">
         <div
           className={clsx(
-            "flex items-center gap-2 rounded-md bg-surface-panel px-3 py-2",
-            "border border-border shadow-sm shadow-border/50",
-            "hover:border-border focus-within:border-border transition-all",
+            "flex items-center gap-2 rounded-md bg-surface-white px-3 py-2",
+            "border border-line-slate-200 shadow-sm shadow-shadow-slate-100",
+            "hover:border-line-slate-300",
+            "focus-within:border-line-slate-300 transition-all",
           )}
         >
-          <MessageCircle className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <MessageCircle className="h-3.5 w-3.5 shrink-0 text-ink-slate-400" />
           <input
             type="text"
             value={qq}
             onChange={(event) => {
               setQq(event.target.value.replaceAll(/\D/g, ""));
             }}
-            className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+            className={clsx(
+              "w-full bg-transparent text-sm text-ink-slate-700",
+              "placeholder:text-ink-slate-400 outline-none",
+            )}
             placeholder="QQ 号"
           />
         </div>
@@ -107,7 +111,10 @@ export function InvitationForm({
                   "py-2 text-[12px] font-bold transition-all active:scale-95",
                   isActive
                     ? role.activeClass
-                    : "border-border bg-surface-panel text-muted-foreground hover:border-border hover:text-muted-foreground",
+                    : [
+                        "border-line-slate-200 bg-surface-white text-ink-slate-400",
+                        "hover:border-line-slate-300 hover:text-ink-slate-500",
+                      ],
                 )}
               >
                 {isActive ? (
@@ -126,13 +133,13 @@ export function InvitationForm({
             "flex items-center justify-center rounded-md border px-3 py-2.5",
             "transition-all duration-300",
             generatedCode
-              ? "border-border bg-surface-panel shadow-sm shadow-border/50 opacity-100"
-              : "border-border bg-muted opacity-60",
+              ? "border-line-slate-200 bg-surface-white shadow-sm shadow-shadow-slate-100 opacity-100"
+              : "border-line-slate-100 bg-surface-slate-50 opacity-60",
           )}
         >
           <div className="flex items-center gap-2">
-            <KeyRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <span className="font-mono text-sm font-bold tracking-widest text-foreground">
+            <KeyRound className="h-3.5 w-3.5 shrink-0 text-ink-slate-400" />
+            <span className="font-mono text-sm font-bold tracking-widest text-ink-slate-600">
               {generatedCode || "— — — — — —"}
             </span>
             {generatedCode && (
@@ -141,7 +148,7 @@ export function InvitationForm({
                 onClick={() => {
                   copyCode(generatedCode);
                 }}
-                className="text-muted-foreground transition-colors hover:text-text-secondary"
+                className="text-ink-slate-400 transition-colors hover:text-ink-slate-600"
                 title="复制"
               >
                 <Copy className="h-3.5 w-3.5" />
@@ -156,7 +163,7 @@ export function InvitationForm({
             onClick={onClose}
             className={clsx(
               "flex-1 rounded-lg py-2 text-xs font-semibold transition-all active:scale-[0.98]",
-              "bg-muted text-muted-foreground hover:bg-surface-hover border border-border",
+              "bg-surface-slate-50 text-ink-slate-400 hover:bg-surface-slate-100 border border-line-slate-100",
             )}
           >
             取消
@@ -168,11 +175,15 @@ export function InvitationForm({
               void submitInvitation();
             }}
             className={clsx(
-              "flex flex-1 items-center justify-center gap-1 rounded-lg py-2",
+              "flex-1 flex items-center justify-center gap-1 rounded-lg py-2",
               "text-xs font-semibold transition-all active:scale-[0.98]",
               isFormValid && !isSubmitting
-                ? "bg-primary-subtle text-primary-text border border-primary-border hover:bg-primary hover:text-primary-foreground hover:border-primary"
-                : "bg-muted text-muted-foreground cursor-not-allowed border border-border",
+                ? [
+                    "bg-surface-slate-50 text-ink-slate-600 border border-line-slate-100",
+                    "hover:bg-surface-emerald-50 hover:text-ink-emerald-600",
+                    "hover:border-line-emerald-100",
+                  ]
+                : "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100",
             )}
           >
             {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : "邀请"}

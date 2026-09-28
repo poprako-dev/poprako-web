@@ -108,10 +108,10 @@ export function ComicDetailSidebar({
     <>
       <div
         className={clsx(
-          "relative w-28 mx-auto aspect-3/4 bg-surface-hover rounded-sm border border-border",
-          "flex items-center justify-center text-muted-foreground mb-4 mt-2",
+          "relative w-28 mx-auto aspect-3/4 bg-surface-stone-100 rounded-sm border border-line-stone-200",
+          "flex items-center justify-center text-ink-slate-200 mb-4 mt-2",
           "overflow-hidden shrink-0",
-          "hover:border-border transition-colors group",
+          "hover:border-line-slate-300 transition-colors group",
         )}
       >
         {coverUpload.localCoverUrl ? (
@@ -130,13 +130,13 @@ export function ComicDetailSidebar({
         {/* Hover dim overlay */}
         <div
           className={clsx(
-            "absolute inset-0 bg-overlay/0 group-hover:bg-overlay/[0.07] transition-colors",
+            "absolute inset-0 bg-surface-black/0 group-hover:bg-surface-black/[0.07] transition-colors",
             "duration-200 pointer-events-none z-1",
           )}
         />
 
         {coverUpload.isUploadingCover && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-overlay/40">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/40">
             {coverUpload.coverUploadProgress !== null && coverUpload.coverUploadProgress < 100 && (
               <>
                 <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
@@ -161,7 +161,7 @@ export function ComicDetailSidebar({
                     className="transition-all duration-300 ease-out"
                   />
                 </svg>
-                <span className="absolute text-[11px] font-bold text-primary-foreground/90">
+                <span className="absolute text-[11px] font-bold text-ink-white/90">
                   {coverUpload.coverUploadProgress}%
                 </span>
               </>
@@ -189,9 +189,9 @@ export function ComicDetailSidebar({
                 onClick={() => coverInputRef.current?.click()}
                 className={clsx(
                   "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-sm",
-                  "bg-surface-workspace/20 backdrop-blur-[1px] border border-border/20",
-                  "text-muted-foreground hover:text-foreground",
-                  "hover:bg-surface-workspace/35 hover:border-border/45",
+                  "bg-surface-slate-50/20 backdrop-blur-[1px] border border-line-slate-300/20",
+                  "text-ink-slate-400 hover:text-ink-slate-600",
+                  "hover:bg-surface-slate-50/35 hover:border-line-slate-300/45",
                   "opacity-0 group-hover:opacity-100",
                   "transition-all active:scale-95",
                 )}
@@ -204,7 +204,7 @@ export function ComicDetailSidebar({
         )}
       </div>
 
-      <div className="bg-surface-hover rounded-sm border border-border px-2.5 py-0.5 mb-3 shrink-0">
+      <div className="bg-surface-stone-100 rounded-sm border border-line-stone-200 px-2.5 py-0.5 mb-3 shrink-0">
         <StatItem icon={BookOpen} label="总页数" value={selectedChapter?.pageCount ?? "-"} />
         <StatItem icon={Tag} label="总单元数" value={selectedChapter?.totalUnitCount ?? "-"} />
         <StatItem
@@ -222,7 +222,7 @@ export function ComicDetailSidebar({
       {!selectedChapter && (
         <p
           className={clsx(
-            "text-[10px] sm:text-[9px] text-muted-foreground",
+            "text-[10px] sm:text-[9px] text-ink-slate-300",
             "text-center leading-relaxed mb-2 shrink-0",
           )}
         >
@@ -272,7 +272,7 @@ export function ComicDetailSidebar({
                 type="button"
                 className={clsx(
                   "flex h-7 w-full items-center justify-center gap-1.5 rounded-sm",
-                  "text-[10px] font-semibold text-muted-foreground hover:text-foreground",
+                  "text-[10px] font-semibold text-ink-stone-400 hover:text-ink-stone-700",
                 )}
               >
                 <MoreHorizontal size={13} />
@@ -288,8 +288,8 @@ export function ComicDetailSidebar({
                 collisionPadding={8}
                 sticky="always"
                 className={clsx(
-                  "z-100 min-w-32 rounded-md border border-border bg-surface-workspace p-1",
-                  "text-xs text-foreground shadow-md overflow-y-auto",
+                  "z-100 min-w-32 rounded-md border border-line-stone-200 bg-surface-stone-50 p-1",
+                  "text-xs text-ink-stone-600 shadow-md overflow-y-auto",
                   "max-h-(--radix-dropdown-menu-content-available-height)",
                   "max-w-(--radix-dropdown-menu-content-available-width)",
                 )}
@@ -325,8 +325,8 @@ export function ComicDetailSidebar({
                       disabled={item.disabled}
                       className={clsx(
                         "flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2 outline-none",
-                        "data-highlighted:bg-surface-hover data-disabled:opacity-40",
-                        item.label === "删除漫画" && "text-destructive",
+                        "data-highlighted:bg-surface-stone-200 data-disabled:opacity-40",
+                        item.label === "删除漫画" && "text-ink-red-500",
                       )}
                     >
                       <item.icon size={13} />

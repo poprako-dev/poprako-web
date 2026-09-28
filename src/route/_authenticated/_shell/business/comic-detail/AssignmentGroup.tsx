@@ -78,8 +78,11 @@ function ActionButton({
         "flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border",
         "border-transparent transition-colors",
         danger
-          ? "text-destructive/70 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
-          : ["text-muted-foreground hover:border-border", "hover:bg-accent hover:text-foreground"],
+          ? "text-ink-rose-300 hover:border-line-rose-200 hover:bg-surface-rose-50 hover:text-ink-rose-500"
+          : [
+              "text-ink-stone-300 hover:border-line-stone-200",
+              "hover:bg-surface-stone-100 hover:text-ink-stone-600",
+            ],
         "focus-visible:outline-2 focus-visible:outline-primary/60",
         "disabled:cursor-not-allowed disabled:opacity-45",
       )}
@@ -140,10 +143,10 @@ export function AssignmentGroup({
         aria-hidden="true"
         className={clsx(
           "absolute bottom-0 left-1/2 h-[1.5px] w-4/5 -translate-x-1/2",
-          "bg-surface-hover",
+          "bg-surface-stone-200",
         )}
       />
-      <div className="grid grid-cols-2 border-l border-t border-border/80 rounded-sm">
+      <div className="grid grid-cols-2 border-l border-t border-line-stone-200/80 rounded-sm">
         {ASSIGNMENT_ROLE_DEFS.map((roleDef) => {
           const roleAssignments = assignments.filter((assignment) => roleDef.matches(assignment));
           const isCurrentUserAssigned = Boolean(
@@ -190,18 +193,23 @@ export function AssignmentGroup({
               key={roleDef.addRole}
               className={clsx(
                 "group/stage flex min-h-12 min-w-0 items-center gap-2",
-                "border-b border-r border-border/80 px-2.5 py-1.5",
+                "border-b border-r border-line-stone-200/80 px-2.5 py-1.5",
                 "transition-colors duration-150",
+                hasTransition && [
+                  "cursor-pointer hover:bg-surface-stone-100/90",
+                  "focus-visible:z-10 focus-visible:outline-2",
+                  "focus-visible:outline-outline-stone-400 focus-visible:outline-offset-[-2px]",
+                ],
               )}
             >
               <span
                 aria-hidden="true"
                 className={clsx(
                   "h-7 w-0.5 shrink-0 rounded-full transition-colors",
-                  status === "pending" && "bg-muted-foreground",
-                  status === "ongoing" && "bg-status-warning",
-                  status === "completed" && "bg-status-success",
-                  status === "unset" && "bg-border",
+                  status === "pending" && "bg-surface-slate-300",
+                  status === "ongoing" && "bg-surface-orange-300",
+                  status === "completed" && "bg-surface-emerald-400",
+                  status === "unset" && "bg-surface-slate-200",
                 )}
               />
               {hasTransition ? (
@@ -210,18 +218,18 @@ export function AssignmentGroup({
                   aria-label={`${roleDef.fullLabel}，${statusLabel}`}
                   onClick={openTransition}
                   className={clsx(
-                    "w-8 shrink-0 text-left text-xs font-bold text-foreground",
-                    "hover:text-foreground focus-visible:outline-2 focus-visible:outline-border",
+                    "w-8 shrink-0 text-left text-xs font-bold text-ink-stone-700",
+                    "focus-visible:outline-2 focus-visible:outline-border",
                   )}
                 >
                   {roleDef.fullLabel}
                 </button>
               ) : (
-                <span className="w-8 shrink-0 text-xs font-bold text-foreground">
+                <span className="w-8 shrink-0 text-xs font-bold text-ink-stone-700">
                   {roleDef.fullLabel}
                 </span>
               )}
-              <span aria-hidden="true" className="h-5 w-px shrink-0 bg-surface-hover" />
+              <span aria-hidden="true" className="h-5 w-px shrink-0 bg-surface-stone-200" />
               <div className="flex min-w-0 flex-1 items-center">
                 <AssignmentAvatarStack
                   assignments={roleAssignments}

@@ -36,19 +36,21 @@ function TermRow({ term, onEdit }: RowProps): React.ReactElement {
       onPointerLeave={onEdit ? longPress.onPointerCancel : undefined}
       title={onEdit ? "长按编辑术语" : term.comment}
       className={clsx(
-        "flex min-h-8 items-center gap-3 border-b border-border/60",
-        "px-2.5 py-1 last:border-b-0 transition-colors hover:bg-surface-hover",
+        "flex min-h-8 items-center gap-3 border-b border-line-stone-200/55",
+        "px-2.5 py-1 last:border-b-0 transition-colors hover:bg-surface-stone-50",
         onEdit ? "touch-none select-none cursor-pointer" : "select-text",
       )}
     >
-      <p className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{term.source}</p>
+      <p className="min-w-0 flex-1 truncate text-xs font-semibold text-ink-stone-700">
+        {term.source}
+      </p>
       <div className="flex max-w-[68%] flex-wrap justify-end gap-1">
         {term.targets.length > 0 ? (
           term.targets.map((target, index) => (
             <div
               key={`${term.id}:${target}:${String(index)}`}
               className={clsx(
-                "rounded-md border border-primary/20 bg-primary/10 px-1.5 py-px",
+                "rounded-md border border-line-green-100 bg-surface-green-50/60 px-1.5 py-px",
                 "text-[10px] leading-4 text-primary-text",
               )}
             >
@@ -56,7 +58,7 @@ function TermRow({ term, onEdit }: RowProps): React.ReactElement {
             </div>
           ))
         ) : (
-          <span className="text-[11px] text-muted-foreground">暂无译名</span>
+          <span className="text-[11px] text-ink-stone-400">暂无译名</span>
         )}
       </div>
     </div>
@@ -97,11 +99,11 @@ export function TermPanel({
 
   return (
     <>
-      <div className="flex items-center gap-2 border-b border-border/80 px-2.5 py-2">
+      <div className="flex items-center gap-2 border-b border-line-stone-200/80 px-2.5 py-2">
         <span
           className={clsx(
             "min-w-0 flex-1 truncate",
-            "text-sm font-semibold leading-4 text-foreground",
+            "text-sm font-semibold leading-4 text-ink-stone-800",
           )}
         >
           {termbase.name}
@@ -110,8 +112,8 @@ export function TermPanel({
           className={clsx(
             "shrink-0 rounded-md border px-1 py-px text-[9px] font-medium",
             termbase.comicId
-              ? "border-primary/20 bg-primary/10 text-primary-text"
-              : "border-border bg-surface-hover text-muted-foreground",
+              ? "border-line-green-100 bg-surface-green-50 text-ink-stone-600"
+              : "border-line-stone-200 bg-surface-stone-50 text-ink-stone-500",
           )}
         >
           {termbase.comicId ? "本作" : "团队"}
@@ -124,8 +126,8 @@ export function TermPanel({
             onClick={onCreate}
             className={clsx(
               "flex size-7 shrink-0 items-center justify-center rounded-md border",
-              "border-border bg-surface-panel text-muted-foreground transition-colors",
-              "hover:border-primary/20 hover:bg-primary/15 hover:text-foreground",
+              "border-line-stone-200 bg-surface-white text-ink-stone-500 transition-colors",
+              "hover:border-line-green-100 hover:bg-surface-green-50 hover:text-ink-stone-700",
             )}
           >
             <Plus size={13} />

@@ -90,34 +90,39 @@ export function LoginCard(): ReactElement {
     <div
       className={clsx(
         "w-full max-w-sm overflow-hidden rounded-xl",
-        "border border-border",
-        "bg-surface-panel shadow-(--shadow-sm)",
+        "border border-(--brand-leaf-border)",
+        "bg-surface-white shadow-(--shadow-sm)",
       )}
     >
       {/* 顶部品牌色条 */}
-      <div className="h-1 w-full bg-primary" />
+      <div className="h-1 w-full" style={{ background: "var(--brand-leaf)" }} />
 
       {/* 品牌标识区 */}
       <div className="flex items-end justify-between px-6 pt-5 pb-3">
         <div>
-          <h1 className="mt-0.5 text-xl font-bold leading-none text-foreground">PopRaKo W</h1>
+          <h1 className="mt-0.5 text-xl font-bold leading-none text-ink-slate-800">PopRaKo W</h1>
         </div>
         {/* 装饰小方块，呼应漫画格子感 */}
         <div className="mb-0.5 flex gap-1">
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className={clsx(
-                "h-2.5 w-2.5 rounded-[3px]",
-                i === 0 ? "bg-primary" : i === 1 ? "bg-primary-muted" : "bg-primary-subtle",
-              )}
+              className="h-2.5 w-2.5 rounded-[3px]"
+              style={{
+                background:
+                  i === 0
+                    ? "var(--brand-leaf)"
+                    : i === 1
+                      ? "var(--brand-leaf-muted)"
+                      : "var(--brand-leaf-faint)",
+              }}
             />
           ))}
         </div>
       </div>
 
       {/* 模式切换 Tab */}
-      <div className={clsx("mx-6 mb-4 flex rounded-lg p-0.5", "bg-primary-subtle")}>
+      <div className={clsx("mx-6 mb-4 flex rounded-lg p-0.5", "bg-surface-green-50")}>
         {(["login", "register"] as Mode[]).map((m) => (
           <button
             type="button"
@@ -129,8 +134,8 @@ export function LoginCard(): ReactElement {
               "flex-1 rounded-md py-1.5 text-xs font-semibold",
               "transition-all duration-200 focus:outline-none",
               mode === m
-                ? "bg-surface-panel text-foreground shadow-(--shadow-sm)"
-                : "text-muted-foreground hover:text-foreground",
+                ? "bg-surface-white text-ink-slate-800 shadow-(--shadow-sm)"
+                : "text-ink-slate-400 hover:text-ink-slate-600",
             )}
           >
             {m === "login" ? "登录" : "注册"}
@@ -191,10 +196,10 @@ export function LoginCard(): ReactElement {
           }}
           className={clsx(
             "mt-4 w-full rounded-lg py-2 text-sm font-semibold",
-            "bg-primary-subtle text-primary-text",
-            "border border-primary-border",
+            "bg-surface-green-50 text-ink-green-500",
+            "border border-(--brand-leaf-border)",
             "transition-all duration-200 active:scale-[0.98]",
-            "hover:bg-primary-muted",
+            "hover:bg-surface-green-100",
             "focus:outline-none",
             "disabled:cursor-not-allowed disabled:opacity-50",
           )}

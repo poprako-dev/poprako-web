@@ -19,42 +19,42 @@ const ROLE_CONFIG: RoleConfig[] = [
   {
     label: "图",
     value: 1,
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-amber-50 text-ink-amber-500 border-line-amber-200",
   },
   {
     label: "翻",
     value: 2,
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-sky-50 text-ink-sky-500 border-line-sky-200",
   },
   {
     label: "校",
     value: 4,
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-emerald-50 text-ink-emerald-500 border-line-emerald-200",
   },
   {
     label: "嵌",
     value: 8,
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-violet-50 text-ink-violet-500 border-line-violet-200",
   },
   {
     label: "美",
     value: 16,
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-pink-50 text-ink-pink-500 border-line-pink-200",
   },
   {
     label: "监",
     value: 32,
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-indigo-50 text-ink-indigo-400 border-line-indigo-200",
   },
   {
     label: "传",
     value: 64,
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-rose-50 text-ink-rose-400 border-line-rose-200",
   },
   {
     label: "管",
     value: 128,
-    activeClass: "bg-surface-hover text-muted-foreground border-border",
+    activeClass: "bg-surface-stone-100 text-ink-stone-500 border-line-stone-200",
   },
 ];
 
@@ -110,42 +110,45 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
     <div
       className={clsx(
         "fixed inset-0 z-50 flex items-center justify-center p-4",
-        "bg-overlay backdrop-blur-sm",
+        "bg-surface-white/60 backdrop-blur-sm",
         "animate-in fade-in duration-200",
       )}
     >
       <div
         className={clsx(
           "relative w-full max-w-sm overflow-hidden",
-          "bg-surface-panel border border-border rounded-xl",
+          "bg-surface-white border border-line-slate-200 rounded-xl",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
       >
         {/* ── Top accent bar ────────────────────────────────────────────── */}
-        <div className="absolute top-0 left-0 right-0 z-1 h-1 bg-primary opacity-20" />
+        <div
+          className="absolute top-0 left-0 right-0 h-1 opacity-20 z-1"
+          style={{ background: "var(--brand-leaf)" }}
+        />
 
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div
           className={clsx(
             "flex items-center justify-between",
-            "bg-muted border-b border-border",
+            "bg-surface-slate-50/60 border-b border-line-slate-200/60",
             "px-6 py-2 pr-10",
           )}
         >
           <div className="flex flex-col min-w-0">
-            <span className="text-md font-bold text-foreground truncate">
+            <span className="text-md font-bold text-ink-slate-700 truncate">
               {user?.name ?? "未知成员"}
             </span>
             {user?.qq && (
-              <span className="text-xs font-semibold text-muted-foreground font-mono leading-none mt-0.5">
+              <span className="text-xs font-semibold text-ink-slate-400 font-mono leading-none mt-0.5">
                 {user.qq}
               </span>
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0 ml-4">
-            <Clock className="h-3 w-3 text-muted-foreground" />
-            <span className="text-[11px] text-muted-foreground font-mono">{lastActive}</span>
+            <Clock className="h-3 w-3 text-ink-slate-300" />
+            <span className="text-[11px] text-ink-slate-400 font-mono">{lastActive}</span>
           </div>
         </div>
 
@@ -155,8 +158,8 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
           <div className="relative shrink-0">
             <div
               className={clsx(
-                "w-16 h-16 rounded-full bg-surface-hover overflow-hidden",
-                "border border-border",
+                "w-16 h-16 rounded-full bg-surface-slate-100 overflow-hidden",
+                "border border-line-slate-200",
               )}
             >
               {(user?.avatarThumbnailUrl ?? user?.avatarUrl) ? (
@@ -169,7 +172,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
                 <div
                   className={clsx(
                     "w-full h-full flex items-center",
-                    "justify-center text-muted-foreground",
+                    "justify-center text-ink-slate-300",
                   )}
                 >
                   <UserIcon size={28} />
@@ -180,11 +183,11 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
               <div
                 className={clsx(
                   "absolute -bottom-1 -right-1",
-                  "bg-surface-panel rounded-full p-0.5",
-                  "shadow-sm border border-border",
+                  "bg-surface-white rounded-full p-0.5",
+                  "shadow-sm border border-line-slate-100",
                 )}
               >
-                <ShieldCheck size={16} className="text-status-warning fill-primary-subtle" />
+                <ShieldCheck size={16} className="text-ink-amber-500 fill-fill-amber-50" />
               </div>
             )}
           </div>
@@ -207,8 +210,8 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
                     isActive
                       ? role.activeClass
                       : clsx(
-                          "border-border bg-surface-panel text-muted-foreground",
-                          "hover:border-border hover:text-muted-foreground",
+                          "border-line-slate-200 bg-surface-white text-ink-slate-400",
+                          "hover:border-line-slate-300 hover:text-ink-slate-500",
                         ),
                   )}
                 >
@@ -231,8 +234,8 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
             onClick={onClose}
             className={clsx(
               "rounded-sm px-4 py-1.5 text-xs font-semibold w-full",
-              "bg-muted text-muted-foreground border border-border",
-              "transition-all hover:bg-surface-hover active:scale-[0.98]",
+              "bg-surface-slate-50 text-ink-slate-400 border border-line-slate-100",
+              "transition-all hover:bg-surface-slate-100 active:scale-[0.98]",
             )}
           >
             收起
@@ -248,11 +251,11 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
               "text-xs font-semibold transition-all active:scale-[0.98]",
               isDirty && !isSubmitting
                 ? [
-                    "bg-muted text-text-secondary border border-border",
-                    "hover:bg-primary-subtle hover:text-primary-text",
-                    "hover:border-primary-border",
+                    "bg-surface-slate-50 text-ink-slate-600 border border-line-slate-100",
+                    "hover:bg-surface-emerald-50 hover:text-ink-emerald-600",
+                    "hover:border-line-emerald-100",
                   ]
-                : "bg-muted text-muted-foreground cursor-not-allowed border border-border",
+                : "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100",
             )}
           >
             {isSubmitting && <Loader2 className="h-3 w-3 animate-spin" />}

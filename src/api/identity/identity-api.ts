@@ -98,15 +98,15 @@ export function updateMemberRoles(
 ): Promise<Result<void>> {
   return client.put(
     `/members/${encodeURIComponent(memberId)}/roles`,
-    { roles },
+    { id: memberId, roles },
     {
       decode: decodeVoid,
     },
   );
 }
 
-export function joinTeam(client: ApiClient, code: string): Promise<Result<void>> {
-  return client.post("/members/join", { code }, { decode: decodeVoid });
+export function joinTeam(client: ApiClient, code: string): Promise<Result<ApiMember>> {
+  return client.post("/members/join", { code }, { decode: decodeApiMember });
 }
 
 export function listTeams(

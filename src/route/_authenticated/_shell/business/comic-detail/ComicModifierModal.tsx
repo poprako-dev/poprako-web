@@ -48,23 +48,23 @@ export function ComicModifierModal({ comicInfo, onUpdate, onClose }: Props): JSX
     <div
       className={clsx(
         "fixed inset-0 z-90 flex items-center justify-center p-4",
-        "bg-surface-panel/60 backdrop-blur-sm",
+        "bg-surface-white/60 backdrop-blur-sm",
         "animate-in fade-in duration-200",
       )}
     >
       <div
         className={clsx(
           "w-full max-w-70 rounded-xl overflow-hidden",
-          "bg-surface-panel",
-          "border border-status-success/30",
+          "bg-surface-white",
+          "border border-(--brand-leaf-border)",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
       >
-        <div className="h-1 w-full opacity-20" style={{ background: "var(--status-success)" }} />
+        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
 
         <div className="pt-4 pb-2 text-center">
-          <h3 className="text-lg font-bold text-foreground">修改作品信息</h3>
+          <h3 className="text-lg font-bold text-ink-slate-800">修改作品信息</h3>
         </div>
 
         <form
@@ -95,18 +95,18 @@ export function ComicModifierModal({ comicInfo, onUpdate, onClose }: Props): JSX
             <div
               className={clsx(
                 "flex items-start gap-2.5 rounded-md px-3 py-2",
-                "border border-border bg-surface-panel shadow-sm shadow-border",
-                "hover:border-border",
-                "focus-within:border-border transition-all",
+                "border border-line-slate-200 bg-surface-white shadow-sm shadow-shadow-slate-100",
+                "hover:border-line-slate-300",
+                "focus-within:border-line-slate-300 transition-all",
               )}
             >
-              <AlignLeft className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
+              <AlignLeft className="w-3.5 h-3.5 text-ink-slate-400 mt-0.5 shrink-0" />
               <textarea
                 placeholder="描述（选填）"
                 rows={2}
                 className={clsx(
-                  "w-full bg-transparent text-sm text-foreground",
-                  "placeholder:text-muted-foreground outline-none resize-none",
+                  "w-full bg-transparent text-sm text-ink-slate-700",
+                  "placeholder:text-ink-slate-400 outline-none resize-none",
                 )}
                 value={formData.description}
                 onChange={(e) => {
@@ -123,8 +123,8 @@ export function ComicModifierModal({ comicInfo, onUpdate, onClose }: Props): JSX
               className={clsx(
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "transition-all duration-200 active:scale-[0.98]",
-                "text-muted-foreground bg-surface-workspace hover:bg-surface-hover",
-                "border border-border",
+                "text-ink-slate-400 bg-surface-slate-50 hover:bg-surface-slate-100",
+                "border border-line-slate-100",
               )}
             >
               取消
@@ -138,11 +138,11 @@ export function ComicModifierModal({ comicInfo, onUpdate, onClose }: Props): JSX
                 "transition-all duration-200 active:scale-[0.98]",
                 isValid
                   ? [
-                      "bg-status-success/10 text-status-success",
-                      "border border-status-success/30",
-                      "hover:bg-status-success/10",
+                      "bg-surface-green-50 text-ink-green-500",
+                      "border border-(--brand-leaf-border)",
+                      "hover:bg-surface-green-100",
                     ]
-                  : "bg-surface-workspace text-muted-foreground cursor-not-allowed border border-border",
+                  : "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100",
               )}
             >
               {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : "确认"}

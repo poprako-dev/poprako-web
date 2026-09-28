@@ -22,7 +22,7 @@ export function LoadingCircle({
         flexShrink: 0,
         alignItems: "center",
         justifyContent: "center",
-        color: "var(--primary)",
+        color: "var(--loading-indicator)",
         animation: "poprako-spin 1s linear infinite",
         width: size,
         height: size,

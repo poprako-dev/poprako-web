@@ -33,8 +33,9 @@ export function PageInput({ displayPage, totalPageCount, onChange }: Props): Rea
           setValue(event.target.value);
         }}
         className={clsx(
-          "h-full w-6 bg-transparent p-0 text-center text-xs font-bold text-foreground",
-          "focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary",
+          "w-6 h-full text-center text-xs font-bold",
+          "bg-transparent border-none focus:outline-none",
+          "text-ink-gray-900 p-0",
         )}
         onBlur={(event) => {
           if (skipNextBlurRef.current) {
@@ -53,8 +54,8 @@ export function PageInput({ displayPage, totalPageCount, onChange }: Props): Rea
         }}
         aria-label="Current page"
       />
-      <span className="text-xs font-light text-muted-foreground">/</span>
-      <span className="w-6 text-center text-xs font-semibold text-muted-foreground">
+      <span className="text-xs text-ink-gray-300 font-light select-none">/</span>
+      <span className="text-xs text-ink-gray-500 font-semibold w-6 text-center">
         {totalPageCount}
       </span>
     </>

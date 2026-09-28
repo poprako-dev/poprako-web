@@ -54,15 +54,15 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
         }}
         className={clsx(
           "flex items-center gap-2 rounded-md px-2.5 py-1.5",
-          "text-sm font-medium text-muted-foreground transition-colors",
-          "hover:bg-surface-hover hover:text-foreground",
+          "text-sm font-medium text-ink-slate-500 transition-colors",
+          "hover:bg-surface-stone-100/80 hover:text-ink-slate-700",
         )}
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-status-success" />
+        <span className="h-1.5 w-1.5 rounded-full bg-activity-recent" />
         <span>{status === "error" ? "在线人数未知" : `${String(onlineCount)} 人在线`}</span>
         <ChevronDown
           size={14}
-          className={clsx("text-muted-foreground transition-transform", isOpen && "rotate-180")}
+          className={clsx("text-ink-slate-400 transition-transform", isOpen && "rotate-180")}
         />
       </button>
 
@@ -73,12 +73,12 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
           className={clsx(
             "absolute left-0 top-full z-40 mt-2 w-64 max-w-[calc(100vw-2rem)]",
             "sm:left-auto sm:right-0",
-            "rounded-lg border border-border bg-surface-panel p-3 shadow-lg",
+            "rounded-lg border border-line-stone-200 bg-page-paper p-3 shadow-lg",
           )}
         >
           <div className="mb-2 flex items-center gap-2 text-left">
-            <UsersRound size={15} className="text-muted-foreground" />
-            <p className="text-sm font-semibold text-text-secondary">在线组员</p>
+            <UsersRound size={15} className="text-ink-slate-400" />
+            <p className="text-sm font-semibold text-ink-slate-600">在线组员</p>
           </div>
 
           <div className="max-h-64 space-y-1 overflow-y-auto">
@@ -90,7 +90,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
                   <div
                     className={clsx(
                       "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden",
-                      "rounded-full bg-surface-hover text-xs font-semibold text-muted-foreground",
+                      "rounded-full bg-surface-stone-100 text-xs font-semibold text-ink-stone-500",
                     )}
                   >
                     {avatarUrl ? (
@@ -99,13 +99,13 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
                       <span>{avatarChar(user)}</span>
                     )}
                   </div>
-                  <span className="min-w-0 truncate text-sm text-text-secondary">{user.name}</span>
+                  <span className="min-w-0 truncate text-sm text-ink-slate-600">{user.name}</span>
                 </div>
               );
             })}
 
             {status === "loading" && (
-              <div className="flex items-center gap-2 px-1.5 py-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 px-1.5 py-2 text-xs text-ink-slate-400">
                 <UserRound size={14} />
                 正在加载在线组员
               </div>
@@ -116,7 +116,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
             )}
 
             {status === "ready" && onlineCount === 0 && (
-              <p className="px-1.5 py-2 text-xs text-muted-foreground">暂无在线组员</p>
+              <p className="px-1.5 py-2 text-xs text-ink-slate-400">暂无在线组员</p>
             )}
           </div>
         </div>

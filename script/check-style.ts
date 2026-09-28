@@ -177,23 +177,16 @@ export function inspectStyleFile(file: string, content: string): Finding[] {
   }
   const fileName = segments.at(-1) ?? "";
   const baseName = fileName
-    .replace(/\.(?:test|stories)\.(?:tsx?|jsx?)$/u, "")
+    .replace(/\.(?:test|spec|stories)\.(?:tsx?|jsx?)$/u, "")
     .replace(/\.[^.]+$/u, "");
   const isTsx = fileName.endsWith(".tsx");
-  const routeFile =
-    normalizedFile.startsWith("src/route/") &&
-    (["index.tsx", "route.tsx", "__root.tsx"].includes(fileName) ||
-      normalizedFile === "src/route/_authenticated/_shell/(setting)/settings.tsx" ||
-      normalizedFile === "src/route/_authenticated/_shell/(utility)/utilities.tsx");
+  const frameworkRoot = normalizedFile === "src/route/__root.ts";
   const kebabBase = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(baseName);
   const pascalBase = /^[A-Z][A-Za-z0-9]*$/u.test(baseName);
-  const testFile = /\.test\.(?:ts|tsx)$/u.test(fileName);
-  const validBase =
-    routeFile ||
-    (isTsx ? pascalBase || (testFile && kebabBase) : kebabBase || (testFile && pascalBase));
+  const validBase = frameworkRoot || (isTsx ? pascalBase : kebabBase);
   const isConfig =
     /(?:^|\.)(?:config|setup|shim|type)$/u.test(baseName) || fileName.endsWith(".d.ts");
-  if (!validBase && !isConfig && !fileName.endsWith(".d.ts")) {
+  if (!validBase && !(isConfig && !isTsx)) {
     report(0, "naming.file", `file \`${fileName}\` does not follow its TS/TSX filename convention`);
   }
   const lineCount = content.endsWith("\n")

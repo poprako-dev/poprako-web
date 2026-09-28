@@ -6,11 +6,12 @@ type Props = { onClose: () => void };
 
 export function AnnouncementDetailHeader({ onClose }: Props): JSX.Element {
   return (
-    <div className="mb-5 flex items-start justify-between">
+    <div className="flex justify-between items-start mb-5">
       <span
         className={clsx(
-          "rounded bg-muted px-0 py-1 text-[10px] font-semibold italic text-muted-foreground",
-          "tracking-wide",
+          "text-[10px] font-semibold text-ink-slate-300",
+          "tracking-wide bg-surface-slate-50",
+          "px-0 py-1 rounded italic",
         )}
       >
         ANNOUNCEMENT DETAIL
@@ -19,7 +20,8 @@ export function AnnouncementDetailHeader({ onClose }: Props): JSX.Element {
         type="button"
         onClick={onClose}
         className={clsx(
-          "rounded p-1 text-muted-foreground hover:bg-muted hover:text-text-secondary",
+          "p-1 rounded hover:bg-surface-slate-50",
+          "text-ink-slate-400 hover:text-ink-slate-600",
           "transition-colors focus:outline-none",
         )}
       >

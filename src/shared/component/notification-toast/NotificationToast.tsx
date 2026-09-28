@@ -10,15 +10,15 @@ const TOAST_DURATION = 3000;
 const EXIT_DURATION = 300;
 
 const borderColorMap: Record<ToastType, string> = {
-  info: "border-status-info",
-  error: "border-destructive",
-  success: "border-status-success",
+  info: "border-line-blue-500",
+  error: "border-line-red-500",
+  success: "border-line-green-500",
 };
 
 const iconColorMap: Record<ToastType, string> = {
-  info: "text-status-info",
-  error: "text-destructive",
-  success: "text-status-success",
+  info: "text-ink-blue-600",
+  error: "text-ink-red-600",
+  success: "text-ink-green-600",
 };
 
 const iconMap: Record<ToastType, ReactElement> = {
@@ -73,7 +73,7 @@ export function NotificationToast(): ReactElement | null {
     >
       <div
         className={clsx(
-          "bg-popover text-popover-foreground border-2 rounded-lg",
+          "bg-surface-white border-2 rounded-lg",
           "shadow-xl px-3 py-2",
           "flex items-center gap-1",
           "w-fit max-w-[90vw] whitespace-nowrap",
@@ -82,7 +82,7 @@ export function NotificationToast(): ReactElement | null {
       >
         <div className={clsx("shrink-0 mr-2", iconColorMap[toast.type])}>{iconMap[toast.type]}</div>
 
-        <span className={clsx("font-semibold text-sm", "tracking-tight text-foreground")}>
+        <span className={clsx("font-semibold text-sm", "tracking-tight text-ink-slate-700")}>
           {toast.message}
         </span>
 
@@ -91,9 +91,8 @@ export function NotificationToast(): ReactElement | null {
           onClick={handleClose}
           className={clsx(
             "ml-2 p-1 rounded-md shrink-0",
-            "text-muted-foreground hover:text-foreground",
-            "hover:bg-accent transition-colors",
-            "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
+            "text-ink-slate-400 hover:text-ink-slate-600",
+            "hover:bg-surface-slate-100 transition-colors",
           )}
           aria-label="关闭通知"
         >

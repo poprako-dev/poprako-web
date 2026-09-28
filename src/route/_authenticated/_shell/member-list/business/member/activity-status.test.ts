@@ -6,16 +6,16 @@ const NOW = 2_000_000_000_000;
 
 describe("getMemberActivityColor", () => {
   it("uses green through the first seven days", () => {
-    expect(getMemberActivityColor(NOW - 7 * DAY_IN_MS, NOW)).toBe("bg-status-success");
+    expect(getMemberActivityColor(NOW - 7 * DAY_IN_MS, NOW)).toBe("bg-activity-recent");
   });
 
   it("uses yellow after seven days through thirty days", () => {
-    expect(getMemberActivityColor(NOW - 7 * DAY_IN_MS - 1, NOW)).toBe("bg-status-warning");
-    expect(getMemberActivityColor(NOW - 30 * DAY_IN_MS, NOW)).toBe("bg-status-warning");
+    expect(getMemberActivityColor(NOW - 7 * DAY_IN_MS - 1, NOW)).toBe("bg-surface-amber-200");
+    expect(getMemberActivityColor(NOW - 30 * DAY_IN_MS, NOW)).toBe("bg-surface-amber-200");
   });
 
   it("uses gray after thirty days or when activity is unavailable", () => {
-    expect(getMemberActivityColor(NOW - 30 * DAY_IN_MS - 1, NOW)).toBe("bg-border");
-    expect(getMemberActivityColor(undefined, NOW)).toBe("bg-border");
+    expect(getMemberActivityColor(NOW - 30 * DAY_IN_MS - 1, NOW)).toBe("bg-surface-stone-300");
+    expect(getMemberActivityColor(undefined, NOW)).toBe("bg-surface-stone-300");
   });
 });

@@ -86,15 +86,15 @@ export function WorksetSidebar({
 
   return (
     <>
-      <div className="flex flex-col h-full bg-surface-hover border-l border-border w-56">
+      <div className="flex flex-col h-full bg-surface-stone-100/40 border-l border-line-stone-200 w-56">
         {/* 头部 */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
-          <h2 className="text-md font-bold text-text-secondary">作品集</h2>
+          <h2 className="text-md font-bold text-ink-slate-600">作品集</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="关闭作品集面板"
-            className="text-muted-foreground hover:text-text-secondary transition-colors p-0.5 rounded"
+            className="text-ink-slate-400 hover:text-ink-slate-600 transition-colors p-0.5 rounded"
           >
             <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
           </button>
@@ -123,8 +123,8 @@ export function WorksetSidebar({
                     "px-3 py-2 rounded-md transition-colors text-left",
                     "pr-7 select-none touch-none cursor-pointer",
                     activeWorksetId === ws.id
-                      ? "text-primary-text"
-                      : "text-muted-foreground hover:bg-muted",
+                      ? "text-navigation-active"
+                      : "text-ink-slate-500 hover:bg-surface-slate-50",
                   )}
                   title="长按修改作品集信息"
                 >
@@ -133,7 +133,7 @@ export function WorksetSidebar({
                   </span>
                   <span
                     className={clsx(
-                      "text-[11px] font-semibold text-muted-foreground shrink-0 flex",
+                      "text-[11px] font-semibold text-ink-slate-400 shrink-0 flex",
                       "items-center gap-0.5",
                     )}
                   >
@@ -152,8 +152,8 @@ export function WorksetSidebar({
                     "px-3 py-2 rounded-md transition-colors text-left",
                     "pr-7",
                     activeWorksetId === ws.id
-                      ? "text-primary-text"
-                      : "text-muted-foreground hover:bg-muted",
+                      ? "text-navigation-active"
+                      : "text-ink-slate-500 hover:bg-surface-slate-50",
                   )}
                 >
                   <span className="text-[12px] font-bold truncate pr-2">
@@ -161,7 +161,7 @@ export function WorksetSidebar({
                   </span>
                   <span
                     className={clsx(
-                      "text-[11px] font-semibold text-muted-foreground shrink-0 flex",
+                      "text-[11px] font-semibold text-ink-slate-400 shrink-0 flex",
                       "items-center gap-0.5",
                     )}
                   >
@@ -177,23 +177,23 @@ export function WorksetSidebar({
                   "w-0.75 h-5 rounded-full",
                   "transition-all duration-200 ease-out",
                   activeWorksetId === ws.id
-                    ? "bg-primary scale-y-100"
-                    : "bg-primary/35 scale-y-0 group-hover:scale-y-100",
+                    ? "bg-surface-green-500/60 scale-y-100"
+                    : "bg-surface-green-500/35 scale-y-0 group-hover:scale-y-100",
                 )}
               />
             </div>
           ))}
 
           {/* 新建按钮 */}
-          <div className="pt-2 mt-1 border-t border-border">
+          <div className="pt-2 mt-1 border-t border-line-slate-100">
             <button
               type="button"
               onClick={onCreateWorkset}
               aria-label="新建作品集"
               className={clsx(
                 "w-full flex items-center justify-center gap-1.5",
-                "py-1 rounded-md border border-dashed border-border",
-                "text-muted-foreground hover:text-muted-foreground hover:bg-muted",
+                "py-1 rounded-md border border-dashed border-line-slate-200",
+                "text-ink-slate-400 hover:text-ink-slate-500 hover:bg-surface-slate-50",
                 "transition-colors text-[12px]",
               )}
             >

@@ -50,7 +50,7 @@ export function EditorSidebar({ session }: Props): TranslatorImportedType0.Eleme
 
   return (
     <>
-      <div className="flex items-center border-b-2 border-border shrink-0 bg-surface-panel">
+      <div className="flex items-center border-b-2 border-line-stone-200 shrink-0 bg-surface-stone-50">
         <div className="flex-1 min-w-0">
           <StatusOptionBar
             currMode={view}
@@ -79,7 +79,7 @@ export function EditorSidebar({ session }: Props): TranslatorImportedType0.Eleme
       </div>
       <div
         className={clsx(
-          "flex-1 overflow-y-auto bg-surface-hover",
+          "flex-1 overflow-y-auto bg-surface-stone-100",
           "shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]",
         )}
       >

@@ -90,7 +90,7 @@ export function QuickWorkflowActions({
   };
 
   return (
-    <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border pt-3">
+    <div className="mt-2 grid grid-cols-2 gap-2 border-t border-line-stone-200 pt-3">
       <button
         type="button"
         disabled={!revertAction}
@@ -100,8 +100,8 @@ export function QuickWorkflowActions({
         className={clsx(
           "flex min-w-0 items-center justify-center gap-1.5 rounded-sm px-2 py-2",
           "text-xs font-semibold transition-colors",
-          "bg-status-warning/10 text-status-warning hover:bg-status-warning/10",
-          "disabled:cursor-not-allowed disabled:bg-surface-hover disabled:text-muted-foreground",
+          "bg-surface-amber-50 text-ink-amber-700 hover:bg-surface-amber-100",
+          "disabled:cursor-not-allowed disabled:bg-surface-stone-100 disabled:text-ink-stone-300",
         )}
         title={revertAction ? `回退${revertAction.roleDef.fullLabel}` : "暂无可回退阶段"}
       >
@@ -118,8 +118,8 @@ export function QuickWorkflowActions({
         className={clsx(
           "flex min-w-0 items-center justify-center gap-1.5 rounded-sm px-2 py-2",
           "text-xs font-semibold transition-colors",
-          "bg-status-success/10 text-status-success hover:bg-status-success/10",
-          "disabled:cursor-not-allowed disabled:bg-surface-hover disabled:text-muted-foreground",
+          "bg-surface-emerald-50 text-ink-emerald-700 hover:bg-surface-emerald-100",
+          "disabled:cursor-not-allowed disabled:bg-surface-stone-100 disabled:text-ink-stone-300",
         )}
         title={forwardAction ? `推进${forwardAction.roleDef.fullLabel}` : "暂无可推进阶段"}
       >

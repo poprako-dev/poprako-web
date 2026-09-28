@@ -57,13 +57,20 @@ export function WorkspacePanel({
     [client, userInfo.id],
   );
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden">
-      <div className="mb-3 flex flex-col sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+    <div className={clsx("flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden")}>
+      <div
+        className={clsx(
+          "mb-3 flex flex-col",
+          "sm:flex-row sm:items-end sm:justify-between sm:gap-4",
+        )}
+      >
         <div>
           {username && (
             <>
-              <p className="text-md text-muted-foreground">欢迎回来</p>
-              <h1 className="mt-0.5 ml-1 text-3xl font-bold text-foreground">{username}</h1>
+              <p className={clsx("text-md text-ink-slate-400")}>欢迎回来</p>
+              <h1 className={clsx("mt-0.5 ml-1 text-3xl font-bold text-ink-slate-700")}>
+                {username}
+              </h1>
             </>
           )}
         </div>
@@ -84,10 +91,10 @@ export function WorkspacePanel({
         <AnnouncementTable key={team.id} teamId={team.id} teamName={team.name} isAdmin={isAdmin} />
       )}
 
-      <div className="hidden min-h-0 min-w-0 flex-1 flex-row gap-4 md:flex">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className={clsx("hidden md:flex", "flex-1 min-h-0 min-w-0 flex-row gap-4")}>
+        <div className={clsx("flex-1 min-h-0 min-w-0 overflow-hidden", "flex flex-col")}>
           <SectionHeading label="任务列表" />
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <ComicTranslationList
               key={comicListRefreshKey}
               onLoadComics={loadComics}
@@ -96,9 +103,15 @@ export function WorkspacePanel({
           </div>
         </div>
         {team && (
-          <div className="flex min-h-0 w-64 shrink-0 flex-col">
+          <div className={clsx("w-64 shrink-0 min-h-0", "flex flex-col")}>
             <SectionHeading label="留言板" />
-            <div className="min-h-0 flex-1 overflow-hidden rounded-md border border-border/50">
+            <div
+              className={clsx(
+                "flex-1 min-h-0",
+                "rounded-md border border-border/50",
+                "overflow-hidden",
+              )}
+            >
               <CommentChatBox
                 comments={comments}
                 loading={commentsLoading}
@@ -110,8 +123,8 @@ export function WorkspacePanel({
       </div>
 
       {team && (
-        <div className="md:hidden flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="mb-2 flex shrink-0 items-center gap-4 px-1">
+        <div className="md:hidden flex-1 min-h-0 min-w-0 flex flex-col">
+          <div className={clsx("flex items-center gap-4 px-1 mb-2 shrink-0")}>
             <TabButton
               label="任务列表"
               active={mobileTab === 0}
@@ -126,10 +139,10 @@ export function WorkspacePanel({
                 onChangeMobileTab(1);
               }}
             />
-            <div className="h-0.5 flex-1 bg-border" />
+            <div className="flex-1 h-0.5 bg-surface-stone-200" />
           </div>
           <div
-            className="relative min-h-0 flex-1 overflow-hidden"
+            className="flex-1 min-h-0 overflow-hidden relative"
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
@@ -147,7 +160,9 @@ export function WorkspacePanel({
               className="absolute inset-0 h-full"
               style={{ visibility: mobileTab === 1 ? "visible" : "hidden" }}
             >
-              <div className="h-full overflow-hidden rounded-md border border-border/50">
+              <div
+                className={clsx("h-full", "rounded-md border border-border/50", "overflow-hidden")}
+              >
                 <CommentChatBox
                   comments={comments}
                   loading={commentsLoading}
@@ -162,12 +177,17 @@ export function WorkspacePanel({
   );
 }
 
-function SectionHeading({ label }: { label: string }): JSX.Element {
+function SectionHeading({ label }: { label: "任务列表" | "留言板" }): JSX.Element {
   return (
-    <div className="mb-2 flex shrink-0 items-center gap-2 px-1">
-      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-border" />
-      <span className="text-sm font-semibold tracking-tight text-muted-foreground">{label}</span>
-      <div className="h-0.5 flex-1 bg-border" />
+    <div className={clsx("flex items-center gap-2 px-1 mb-2 shrink-0")}>
+      <span className="w-1.5 h-1.5 rounded-full bg-surface-slate-300 shrink-0" />
+      <span className="text-sm font-semibold text-ink-slate-500 tracking-tight">{label}</span>
+      <div
+        className={clsx(
+          "flex-1 h-0.5",
+          label === "任务列表" ? "bg-surface-slate-200" : "bg-surface-stone-200",
+        )}
+      />
     </div>
   );
 }
@@ -184,12 +204,15 @@ function TabButton({
   return (
     <button type="button" onClick={onClick} className="flex items-center gap-2">
       <span
-        className={clsx("h-1.5 w-1.5 shrink-0 rounded-full", active ? "bg-muted0" : "bg-border")}
+        className={clsx(
+          "w-1.5 h-1.5 rounded-full shrink-0",
+          active ? "bg-surface-slate-500" : "bg-surface-slate-300",
+        )}
       />
       <span
         className={clsx(
           "text-sm font-semibold tracking-tight",
-          active ? "text-text-secondary" : "text-muted-foreground",
+          active ? "text-ink-slate-600" : "text-ink-slate-400",
         )}
       >
         {label}

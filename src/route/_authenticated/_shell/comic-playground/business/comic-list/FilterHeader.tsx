@@ -100,8 +100,8 @@ export function FilterHeader({
             title="创建漫画"
             className={clsx(
               "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
-              "border border-border bg-surface-panel text-muted-foreground",
-              "hover:border-border hover:shadow-sm hover:bg-surface-hover",
+              "border border-line-slate-200 bg-surface-white text-ink-slate-500",
+              "hover:border-line-slate-300 hover:shadow-sm hover:bg-surface-gray-100",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             )}
           >
@@ -117,10 +117,10 @@ export function FilterHeader({
             className={clsx(
               "flex h-8 w-8 shrink-0 items-center",
               "justify-center rounded-lg transition-all",
-              "border border-border bg-surface-panel",
-              "text-muted-foreground",
-              "hover:border-border",
-              "hover:shadow-sm hover:bg-surface-hover",
+              "border border-line-slate-200 bg-surface-white",
+              "text-ink-slate-500",
+              "hover:border-line-slate-300",
+              "hover:shadow-sm hover:bg-surface-gray-100",
             )}
           >
             <Layers className="h-4 w-4" strokeWidth={1.5} />

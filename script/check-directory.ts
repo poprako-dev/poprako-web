@@ -100,6 +100,10 @@ const OWNED_NAME = new Set([
   "workspace",
 ]);
 const ROUTE_SEGMENT = new Set(["_authenticated", "_shell", "$chapterId", "$pageId"]);
+const PAGE_DIRECTORY = new Set([
+  "src/route/_authenticated/_shell/settings",
+  "src/route/_authenticated/_shell/utilities",
+]);
 const GENERATED_FIXTURE = new Set(["test-resource/generated", "src/test-resource/generated"]);
 const SOURCE_ROOT = new Set(["application", "api", "route", "shared", "test-resource"]);
 
@@ -112,6 +116,7 @@ export function inspectDirectory(path: string): Finding[] {
     return report("structure.root", `unregistered source root: ${name}`);
   }
   if (path.startsWith("src/route/") && ROUTE_SEGMENT.has(name)) return [];
+  if (PAGE_DIRECTORY.has(path)) return [];
   const word =
     path.startsWith("src/route/") && /^\([a-z-]+\)$/u.test(name) ? name.slice(1, -1) : name;
   if (!OWNED_NAME.has(word)) {

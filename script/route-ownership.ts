@@ -13,10 +13,10 @@ export function routeDirectories(root: string): Set<string> {
         if (entry.name !== "business") pending.push(`${directory}/${entry.name}`);
         continue;
       }
-      if (!entry.name.endsWith(".tsx")) continue;
+      if (!/\.tsx?$/u.test(entry.name)) continue;
       const content = readFileSync(join(root, directory, entry.name), "utf8");
       if (
-        ["index.tsx", "route.tsx", "__root.tsx"].includes(entry.name) ||
+        ["Index.tsx", "Route.tsx", "__root.ts"].includes(entry.name) ||
         /\bcreateFileRoute\s*\(/u.test(content)
       ) {
         result.add(directory);

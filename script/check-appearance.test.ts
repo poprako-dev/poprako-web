@@ -39,6 +39,36 @@ void test("appearance checker permits transparent and inherited neutral utilitie
   );
 });
 
+void test("semantic aliases containing color words are references, not literal CSS colors", () => {
+  assert.deepEqual(
+    inspectAppearanceFile(
+      "src/application/appearance.css",
+      [
+        "@theme inline {",
+        "  --color-surface-white: var(--surface-white);",
+        "  --color-ink-green-500: var(--ink-green-500);",
+        "}",
+        ":root {",
+        "  --surface-white: #ffffff;",
+        "  --ink-green-500: var(--color-green-500);",
+        "}",
+      ].join("\n"),
+    ),
+    [],
+  );
+  assert.equal(
+    inspectAppearanceFile("src/application/invalid.css", ".panel {\ncolor: white;\n}").length,
+    1,
+  );
+  assert.equal(
+    inspectAppearanceFile(
+      "src/application/invalid.css",
+      ".panel {\ncolor: var(--color-green-500);\n}",
+    ).length,
+    1,
+  );
+});
+
 void test("white and black remain palette colors unless one exact media exception is documented", () => {
   const findings = inspectAppearanceFile(
     "src/shared/component/Sample.tsx",

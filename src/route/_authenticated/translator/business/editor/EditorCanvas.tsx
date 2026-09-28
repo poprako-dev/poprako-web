@@ -80,7 +80,7 @@ export function EditorCanvas({ session }: Props): TranslatorImportedType0.Elemen
   }
 
   return (
-    <div className="@container relative w-full h-full bg-foreground">
+    <div className="@container relative w-full h-full bg-surface-stone-700">
       <Canvas
         ref={canvasRef}
         imageSrc={imageUrl}
@@ -112,8 +112,8 @@ export function EditorCanvas({ session }: Props): TranslatorImportedType0.Elemen
           }}
           className={clsx(
             "flex size-8 items-center justify-center rounded-md border",
-            "border-border bg-surface-panel text-text-secondary shadow-sm",
-            "transition-colors hover:bg-surface-panel hover:text-foreground",
+            "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
+            "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
           )}
         >
           <SquareArrowRight size={20} />
@@ -131,9 +131,9 @@ export function EditorCanvas({ session }: Props): TranslatorImportedType0.Elemen
             }}
             className={clsx(
               "flex size-8 items-center justify-center rounded-md border",
-              "border-border bg-surface-panel text-text-secondary shadow-sm",
-              "transition-colors hover:border-status-success/30 hover:bg-primary-subtle",
-              "hover:text-primary-text disabled:cursor-not-allowed disabled:opacity-60",
+              "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
+              "transition-colors hover:border-line-green-200 hover:bg-surface-green-50",
+              "hover:text-ink-green-600 disabled:cursor-not-allowed disabled:opacity-60",
             )}
           >
             {isCompletingStage ? (

@@ -33,7 +33,7 @@ Prettier采用Native
 | 检查       | 精确定义                                                                                                                                                                                                                  |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 结构清零   | 自有源码与工作树中的自有实现不允许任意层级features/entities；拒绝旧顶层pages/layouts/router/api/types/store/hook/hooks/components/lib/utils/config/stories；保留application/routes/shared与明确工具例外                   |
-| 目录命名   | 单数完整单词、前端kebab-case；routes是用户指定例外；真实URL段如settings/utilities及框架动态参数/无路径布局单独登记；不以自动词干算法猜语义                                                                                |
+| 目录命名   | 普通目录单数完整单词、kebab-case；具体页面名 settings/utilities 保留；所有 TSX（含路由、测试）PascalCase，普通 TS 为 kebab-case；框架固定名称单独登记                                                                                |
 | 文件命名   | TS kebab-case，TSX PascalCase；源名+test/stories后缀、配置名、声明文件、路由和生成名按精确模式例外                                                                                                                        |
 | 物理行     | 手写TS/TSX及测试最多400行，计空行注释，末尾换行不多算一行；本项目维护的shadcn源码也检查；生成路径显式名单，不按任意generated文件夹整体豁免                                                                                |
 | 导出/声明  | AST检查ExportAssignment和ExportDefault修饰符、顶层function与导出的函数表达式/箭头、type/interface使用、Props定义；工具默认导出仅允许明确配置和stories metadata                                                            |

@@ -1,6 +1,6 @@
 import type { ChapterWorkflowRecordEvent, ChapterWorkflowRecord } from "./workflow-contract";
-import { decodeChapterResponse } from "@/api/content-contract";
-import type { ChapterResponse } from "@/api/content-contract";
+import { decodeAssignment, decodeChapterResponse } from "@/api/content-contract";
+import type { AssignmentResponse, ChapterResponse } from "@/api/content-contract";
 import type { ApiClient } from "@/api/client";
 import {
   decodeArray,
@@ -292,12 +292,12 @@ export function joinChapter(
   client: ApiClient,
   chapterId: string,
   roles: number,
-): Promise<Result<undefined>> {
+): Promise<Result<AssignmentResponse>> {
   return client.post(
     "/assignments/join",
     { chapterId, roles },
     {
-      decode: decodeVoid,
+      decode: decodeAssignment,
     },
   );
 }

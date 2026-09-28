@@ -62,9 +62,13 @@ export function Paginator(props: Props): ReactElement {
       <div className="relative z-50 inline-block select-none" ref={containerRef}>
         <div
           className={clsx(
-            "inline-flex h-8 w-24 items-stretch overflow-hidden rounded-sm",
-            "border border-border bg-background/95 shadow-lg",
+            "inline-flex items-stretch",
+            "h-8 w-24",
+            "bg-surface-white/95 backdrop-blur-md",
+            "rounded-sm shadow-2xl",
+            "overflow-hidden",
           )}
+          style={{ opacity: 0.85 }}
         >
           <button
             type="button"
@@ -72,15 +76,24 @@ export function Paginator(props: Props): ReactElement {
             disabled={totalPageCount === 0 || currPageIndex <= 0}
             aria-label="Previous page"
             className={clsx(
-              "flex flex-1 items-center justify-center text-muted-foreground",
-              "transition-colors hover:bg-accent disabled:opacity-20",
-              "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
-              "focus-visible:outline-primary",
+              "flex items-center justify-center",
+              "flex-1",
+              "hover:bg-surface-stone-400/40",
+              "disabled:opacity-20 disabled:hover:bg-transparent",
+              "transition-colors border-none outline-none",
+              "active:bg-surface-stone-400/60",
+              "hover:[&>svg]:text-ink-stone-950",
+              "hover:shadow-inner",
             )}
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={14} className="text-ink-gray-600" />
           </button>
-          <div className="flex w-16 flex-none items-center justify-center border-x border-border">
+          <div
+            className={clsx(
+              "flex flex-none items-center justify-center w-16",
+              "border-x border-line-gray-100 bg-surface-gray-50/20",
+            )}
+          >
             {props.mode === "list" ? (
               <button
                 type="button"
@@ -91,15 +104,17 @@ export function Paginator(props: Props): ReactElement {
                 aria-label="Open page list"
                 aria-expanded={isListVisible}
                 className={clsx(
-                  "flex h-full w-full items-center justify-center gap-0.5",
-                  "text-xs transition-colors hover:bg-accent disabled:opacity-50",
-                  "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
-                  "focus-visible:outline-primary",
+                  "flex items-center justify-center gap-0.5",
+                  "w-full h-full",
+                  "hover:bg-surface-stone-400/30 transition-colors",
+                  "border-none outline-none",
+                  "active:bg-surface-stone-400/50",
+                  "hover:shadow-inner",
                 )}
               >
-                <span className="font-bold text-foreground">{displayPage}</span>
-                <span className="font-light text-muted-foreground">/</span>
-                <span className="font-semibold text-muted-foreground">{totalPageCount}</span>
+                <span className="text-xs text-ink-gray-900 font-bold">{displayPage}</span>
+                <span className="text-xs text-ink-gray-300 font-light">/</span>
+                <span className="text-xs text-ink-gray-500 font-semibold">{totalPageCount}</span>
               </button>
             ) : props.mode === "input" ? (
               <PageInput
@@ -109,9 +124,15 @@ export function Paginator(props: Props): ReactElement {
                 onChange={props.onPageIndexChange}
               />
             ) : (
-              <span className="text-xs text-foreground">
-                {displayPage} / {totalPageCount}
-              </span>
+              <>
+                <span className="text-sm text-ink-gray-900 font-bold w-6 text-center">
+                  {displayPage}
+                </span>
+                <span className="text-xs text-ink-gray-300 font-light select-none">/</span>
+                <span className="text-sm text-ink-gray-500 font-semibold w-6 text-center">
+                  {totalPageCount}
+                </span>
+              </>
             )}
           </div>
           <button
@@ -120,13 +141,17 @@ export function Paginator(props: Props): ReactElement {
             disabled={totalPageCount === 0 || currPageIndex >= totalPageCount - 1}
             aria-label="Next page"
             className={clsx(
-              "flex flex-1 items-center justify-center text-muted-foreground",
-              "transition-colors hover:bg-accent disabled:opacity-20",
-              "focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
-              "focus-visible:outline-primary",
+              "flex items-center justify-center",
+              "flex-1",
+              "hover:bg-surface-stone-400/40",
+              "disabled:opacity-20 disabled:hover:bg-transparent",
+              "transition-colors border-none outline-none",
+              "active:bg-surface-stone-400/60",
+              "hover:[&>svg]:text-ink-stone-950",
+              "hover:shadow-inner",
             )}
           >
-            <ChevronRight size={14} />
+            <ChevronRight size={14} className="text-ink-gray-600" />
           </button>
         </div>
         {props.mode === "list" && isListVisible && (
@@ -146,7 +171,7 @@ export function Paginator(props: Props): ReactElement {
         <button
           type="button"
           aria-label="Close page list"
-          className="fixed inset-0 z-40 bg-foreground/20 focus-visible:outline-2 focus-visible:outline-primary"
+          className="fixed inset-0 z-40 bg-surface-black/25"
           onClick={() => {
             changeOpen(false);
           }}

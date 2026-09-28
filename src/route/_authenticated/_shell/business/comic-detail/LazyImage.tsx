@@ -44,7 +44,10 @@ export function LazyImage({ src, alt = "", className, placeholderClassName }: Pr
     <div ref={ref} className={clsx("relative overflow-hidden", className)}>
       {!loaded && (
         <div
-          className={clsx("absolute inset-0 bg-surface-hover animate-pulse", placeholderClassName)}
+          className={clsx(
+            "absolute inset-0 bg-surface-slate-100 animate-pulse",
+            placeholderClassName,
+          )}
         />
       )}
       {visible && (

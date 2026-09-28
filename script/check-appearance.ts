@@ -48,7 +48,10 @@ function isProductionSource(path: string): boolean {
 }
 
 function isRawCssColor(value: string): boolean {
-  return RAW_CSS_COLOR.test(value) || RAW_PALETTE_REFERENCE.test(value);
+  return (
+    RAW_PALETTE_REFERENCE.test(value) ||
+    RAW_CSS_COLOR.test(value.replace(/var\(\s*--[\w-]+\s*\)/gu, ""))
+  );
 }
 
 function inspectTypeScript(path: string, content: string): Finding[] {
@@ -212,7 +215,8 @@ function inspectCss(path: string, content: string): Finding[] {
     if (isColorDeclaration) {
       const context = lines.slice(Math.max(0, index - 1), index + 1).join("\n");
       const isSemanticRootToken = isCustomProperty && rootDepth !== null && braceDepth >= rootDepth;
-      if (!isSemanticRootToken && !EXCEPTION.test(context) && isRawCssColor(visible)) {
+      const value = visible.slice(visible.indexOf(":") + 1);
+      if (!isSemanticRootToken && !EXCEPTION.test(context) && isRawCssColor(value)) {
         report(
           "appearance.raw-css-color",
           "use semantic root tokens instead of literal component colors",

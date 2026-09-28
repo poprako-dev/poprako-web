@@ -79,14 +79,14 @@ export function InfiniteTerminologyList({
   if (error && itemCount === 0) {
     return (
       <div className="flex min-h-28 flex-1 flex-col items-center justify-center gap-2 px-4">
-        <p className="text-center text-[11px] leading-4 text-muted-foreground">{error}</p>
+        <p className="text-center text-[11px] leading-4 text-ink-stone-500">{error}</p>
         <button
           type="button"
           onClick={onRetry}
           className={clsx(
             "inline-flex items-center gap-1 rounded-md border px-2 py-1",
-            "border-border bg-surface-panel text-[11px] font-medium text-text-secondary",
-            "transition-colors hover:border-border hover:text-foreground",
+            "border-line-stone-200 bg-surface-white text-[11px] font-medium text-ink-stone-600",
+            "transition-colors hover:border-line-stone-300 hover:text-ink-stone-900",
           )}
         >
           <RefreshCcw size={13} />
@@ -99,8 +99,8 @@ export function InfiniteTerminologyList({
   if (itemCount === 0) {
     return (
       <div className="flex min-h-28 flex-1 flex-col items-center justify-center gap-1.5">
-        <BookOpenText size={17} strokeWidth={1.5} className="text-muted-foreground" />
-        <p className="text-[11px] text-muted-foreground">{emptyMessage}</p>
+        <BookOpenText size={17} strokeWidth={1.5} className="text-ink-stone-300" />
+        <p className="text-[11px] text-ink-stone-400">{emptyMessage}</p>
       </div>
     );
   }
@@ -111,7 +111,7 @@ export function InfiniteTerminologyList({
       role="region"
       aria-label={`${ariaLabel}，可滚动`}
       tabIndex={0}
-      className="min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:outline-2 focus-visible:outline-primary"
+      className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
     >
       <div role={role} aria-label={ariaLabel}>
         {children}
@@ -122,13 +122,13 @@ export function InfiniteTerminologyList({
           <button
             type="button"
             onClick={onRetry}
-            className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            className="text-xs text-ink-stone-500 underline-offset-2 hover:underline"
           >
             加载失败，点击重试
           </button>
         )}
         {!hasMore && !error && (
-          <span className="text-[10px] tracking-wide text-muted-foreground">已显示全部</span>
+          <span className="text-[10px] tracking-wide text-ink-stone-300">已显示全部</span>
         )}
       </div>
     </div>

@@ -38,14 +38,14 @@ export function ExportProgressDialog({
       <div className="flex items-center gap-3">
         <LoadingCircle
           size={20}
-          className="inline-flex shrink-0 animate-spin text-status-success"
+          className="inline-flex shrink-0 animate-spin text-ink-green-500"
           aria-label="exporting"
         />
         <div className="min-w-0 flex-1">
-          <div className="h-2 overflow-hidden rounded-full bg-status-success/10">
+          <div className="h-2 overflow-hidden rounded-full bg-surface-green-50">
             <div
               className={clsx(
-                "h-full rounded-full bg-status-success",
+                "h-full rounded-full bg-(--brand-leaf)",
                 "transition-[width] duration-200",
               )}
               style={{ width: `${String(Math.max(0, Math.min(progress, 100)))}%` }}

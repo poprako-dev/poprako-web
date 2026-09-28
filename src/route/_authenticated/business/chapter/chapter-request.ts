@@ -126,10 +126,11 @@ export function importChapter(
     mode: args.mode,
   });
 }
-export function joinChapter(
+export async function joinChapter(
   client: ApiClient,
   chapterId: string,
   roles: number,
 ): Promise<Result<undefined>> {
-  return chapterApi.joinChapter(client, chapterId, roles);
+  const result = await chapterApi.joinChapter(client, chapterId, roles);
+  return result.success ? { success: true, data: undefined } : result;
 }

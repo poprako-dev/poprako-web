@@ -142,12 +142,12 @@ export function ComicProgressList({ onLoadComics, onComicClick }: Props): JSX.El
       </div>
 
       <div ref={loadMoreRef} className="w-full flex justify-center py-4 h-16 items-center">
-        {isLoading && <LoaderCircle className="h-5 w-5 text-muted-foreground animate-spin" />}
+        {isLoading && <LoaderCircle className="h-5 w-5 text-ink-stone-300 animate-spin" />}
         {!hasMore && comics.length > 0 && (
-          <span className="text-muted-foreground text-sm">没有更多漫画了 O^O</span>
+          <span className="text-ink-slate-400 text-sm">没有更多漫画了 O^O</span>
         )}
         {!hasMore && comics.length === 0 && !isLoading && (
-          <span className="text-muted-foreground text-sm">暂无漫画</span>
+          <span className="text-ink-slate-400 text-sm">暂无漫画</span>
         )}
       </div>
     </div>

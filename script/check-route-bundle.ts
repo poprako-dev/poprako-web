@@ -7,8 +7,8 @@ const PAGE_MODULES = [
   "_authenticated/_shell/comic-playground/business/ComicPlayground.tsx",
   "_authenticated/_shell/member-list/business/MemberGlance.tsx",
   "_authenticated/_shell/system-mail/business/SystemMailViewer.tsx",
-  "_authenticated/_shell/(setting)/business/SettingsPanel.tsx",
-  "_authenticated/_shell/(utility)/business/Utilities.tsx",
+  "_authenticated/_shell/settings/business/SettingsPanel.tsx",
+  "_authenticated/_shell/utilities/business/Utilities.tsx",
   "_authenticated/translator/business/remote/WebTranslator.tsx",
 ];
 

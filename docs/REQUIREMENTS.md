@@ -41,8 +41,8 @@ script/              # repository tooling
 
 The source roots are singular, full words, and kebab-case. `route` and
 `test-resource` are deliberate project names; `api` is a deliberate independent
-boundary. Setting and utility route groups live below the authenticated route
-tree and are pathless groups, not top-level source roots. Do not create
+boundary. Concrete page names, including `settings` and `utilities`, retain their
+URL names under the route tree; the singular-directory rule does not rename pages. Do not create
 `features`, `entities`, `pages`, `layouts`, `components`, `hooks`, `types`, or
 compatibility barrels as alternate business layers. Keep route-specific helpers,
 tests, and stories with their owning route. Use `test-resource` only for
@@ -102,8 +102,10 @@ set a global a11y `todo` or suppress a whole rule.
 
 Use named exports for source modules and components. TanStack route files export
 the required named `Route`; registered tool configs and Storybook metadata may
-use framework-required default exports. Use PascalCase `.tsx` component/story
-files and kebab-case `.ts` modules. Props are named `type Props`; data shapes
+use framework-required default exports. Use PascalCase for every `.tsx` file, including route entries, tests and stories,
+and kebab-case for `.ts` modules. Configure TanStack with `Index` and `Route`
+tokens. Its required `__root.ts` is the sole handwritten TS naming exception;
+keep root JSX in `business/ApplicationRoot.tsx`. Props are named `type Props`; data shapes
 use `type`, pure callable contracts may use `interface`. Prefer required props
 and explicit real empty/error states over placeholder IDs, no-op callbacks,
 non-null assertions, or broad optionality.

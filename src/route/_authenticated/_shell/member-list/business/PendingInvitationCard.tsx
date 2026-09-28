@@ -16,26 +16,27 @@ export function PendingInvitationCard({ invitation, onCopy, onDelete }: Props): 
   return (
     <div
       className={clsx(
-        "rounded-md border border-border bg-surface-panel p-3",
-        "shadow-sm transition-all hover:border-border hover:shadow-md",
+        "rounded-md border border-line-slate-200/80 bg-surface-white p-3",
+        "shadow-[0_1px_3px_rgb(0,0,0,0.04)]",
+        "transition-all hover:border-line-slate-200 hover:shadow-[0_2px_6px_rgb(0,0,0,0.06)]",
       )}
     >
       {/* QQ + code */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <User className="h-3 w-3 text-muted-foreground" />
-          <span className="font-mono text-sm font-bold text-text-secondary">
+          <User className="h-3 w-3 text-ink-slate-300" />
+          <span className="font-mono text-sm font-bold text-ink-slate-600">
             {invitation.inviteeQq}
           </span>
         </div>
 
         <div
           className={clsx(
-            "flex items-center gap-0.5 rounded-md border border-border bg-muted",
+            "flex items-center gap-0.5 rounded-md border border-line-slate-200 bg-surface-slate-50",
             "px-2 py-1",
           )}
         >
-          <code className="font-mono text-[11px] font-bold tracking-tight text-muted-foreground">
+          <code className="font-mono text-[11px] font-bold tracking-tight text-ink-slate-400">
             {invitation.invitationCode}
           </code>
           <button
@@ -43,7 +44,7 @@ export function PendingInvitationCard({ invitation, onCopy, onDelete }: Props): 
             onClick={() => {
               onCopy(invitation.invitationCode);
             }}
-            className="text-muted-foreground transition-colors hover:text-muted-foreground"
+            className="text-ink-slate-300 transition-colors hover:text-ink-slate-500"
             title="复制邀请码"
           >
             <Copy className="h-3 w-3" />
@@ -52,7 +53,7 @@ export function PendingInvitationCard({ invitation, onCopy, onDelete }: Props): 
       </div>
 
       {/* Role chips + delete */}
-      <div className="mt-1 flex items-center justify-between gap-2 border-t border-border pt-1">
+      <div className="mt-1 flex items-center justify-between gap-2 border-t border-line-slate-50 pt-1">
         <div className="flex flex-wrap gap-1">
           {roleConfigs.map((rc) => (
             <span
@@ -70,7 +71,7 @@ export function PendingInvitationCard({ invitation, onCopy, onDelete }: Props): 
             onClick={() => {
               onDelete(invitation.id);
             }}
-            className="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
+            className="shrink-0 text-ink-slate-300 transition-colors hover:text-ink-red-400"
             title="撤销邀请"
           >
             <Trash2 size={11} strokeWidth={2.5} />

@@ -33,11 +33,11 @@ export function UserTag({ name, userId, role, onRemove }: Props): ReactElement {
         title={name}
         className={clsx(
           "relative flex items-center gap-1",
-          "bg-surface-panel/70 border border-border",
+          "bg-surface-white/70 border border-line-slate-100",
           "rounded-sm py-0.5",
-          "text-[10px] font-semibold text-foreground",
+          "text-[10px] font-semibold text-ink-slate-600",
           "transition-colors duration-150",
-          onRemove ? "pl-1.5 pr-4 hover:border-border" : "px-1.5",
+          onRemove ? "pl-1.5 pr-4 hover:border-line-slate-300" : "px-1.5",
         )}
       >
         <span className="leading-none">{displayName}</span>
@@ -50,7 +50,7 @@ export function UserTag({ name, userId, role, onRemove }: Props): ReactElement {
             }}
             className={clsx(
               "absolute right-0.5 top-1/2 -translate-y-1/2",
-              "text-muted-foreground hover:text-destructive",
+              "text-ink-slate-400 hover:text-ink-red-400",
               "p-0",
             )}
             title={`移除 ${name} 的${ROLE_LABEL[role]}角色`}

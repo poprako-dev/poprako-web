@@ -74,12 +74,30 @@ describe("assignment invitation protocol", () => {
     expect(fetchImpl.mock.calls[0]?.[1]?.body).toBe(
       JSON.stringify({ chapter_id: "chapter", invitee_qid: "10000", roles: 2 }),
     );
-    fetchImpl.mockImplementation(() => Promise.resolve(new Response(null, { status: 204 })));
-    expect(await joinAssignmentInvitation(client, "keep_this_code")).toEqual({
+    fetchImpl.mockImplementation(() =>
+      Promise.resolve(
+        Response.json(
+          {
+            code: 0,
+            data: {
+              id: "assignment",
+              chapter_id: "chapter",
+              user_id: "user",
+              roles: 2,
+              created_at: 1,
+              updated_at: 2,
+            },
+          },
+          { status: 201 },
+        ),
+      ),
+    );
+    expect(await joinAssignmentInvitation(client, "keep_this_code")).toMatchObject({
       success: true,
-      data: undefined,
+      data: { id: "assignment", chapterId: "chapter", userId: "user" },
     });
     expect(fetchImpl.mock.calls[1]?.[1]?.body).toBe('{"code":"keep_this_code"}');
+    fetchImpl.mockImplementation(() => Promise.resolve(new Response(null, { status: 204 })));
     expect(await deleteAssignmentInvitation(client, "invite")).toEqual({
       success: true,
       data: undefined,

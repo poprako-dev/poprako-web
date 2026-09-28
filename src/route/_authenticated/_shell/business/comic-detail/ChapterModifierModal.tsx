@@ -35,24 +35,24 @@ export function ChapterModifierModal({ chapter, onUpdate, onClose }: Props): JSX
     <div
       className={clsx(
         "fixed inset-0 z-90 flex items-center justify-center p-4",
-        "bg-surface-panel/60 backdrop-blur-sm",
+        "bg-surface-white/60 backdrop-blur-sm",
         "animate-in fade-in duration-200",
       )}
     >
       <div
         className={clsx(
           "w-full max-w-70 rounded-xl overflow-hidden",
-          "bg-surface-panel",
-          "border border-status-success/30",
+          "bg-surface-white",
+          "border border-(--brand-leaf-border)",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
       >
-        <div className="h-1 w-full opacity-20" style={{ background: "var(--status-success)" }} />
+        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
 
         <div className="pt-4 pb-2 text-center">
-          <h3 className="text-base font-bold text-foreground">修改章节信息</h3>
-          <p className="mt-1 text-[11px] text-muted-foreground">
+          <h3 className="text-base font-bold text-ink-slate-800">修改章节信息</h3>
+          <p className="mt-1 text-[11px] text-ink-slate-400">
             #{chapter.index + 1} {chapter.subtitle || "无标题"}
           </p>
         </div>
@@ -77,8 +77,8 @@ export function ChapterModifierModal({ chapter, onUpdate, onClose }: Props): JSX
               className={clsx(
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "transition-all duration-200 active:scale-[0.98]",
-                "text-muted-foreground bg-surface-workspace hover:bg-surface-hover",
-                "border border-border",
+                "text-ink-slate-400 bg-surface-slate-50 hover:bg-surface-slate-100",
+                "border border-line-slate-100",
               )}
             >
               取消
@@ -90,9 +90,9 @@ export function ChapterModifierModal({ chapter, onUpdate, onClose }: Props): JSX
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "flex items-center justify-center gap-1",
                 "transition-all duration-200 active:scale-[0.98]",
-                "bg-status-success/10 text-status-success",
-                "border border-status-success/30",
-                "hover:bg-status-success/10",
+                "bg-surface-green-50 text-ink-green-500",
+                "border border-(--brand-leaf-border)",
+                "hover:bg-surface-green-100",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >

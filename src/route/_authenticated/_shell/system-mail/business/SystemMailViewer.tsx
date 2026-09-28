@@ -97,8 +97,8 @@ export function SystemMailViewer(): JSX.Element {
         </div>
       ) : mails.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-2">
-          <Mail size={28} className="text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">暂无系统消息</p>
+          <Mail size={28} className="text-ink-slate-300" />
+          <p className="text-sm text-ink-slate-400">暂无系统消息</p>
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto px-4 pb-2">
@@ -174,12 +174,12 @@ function SectionLabel({ label, hasTopMargin }: SectionLabelProps): JSX.Element {
       <div
         className={clsx(
           "absolute -left-4.75 top-1/2 -translate-y-1/2 w-2.75 h-2.75 rounded-full",
-          "border-2 border-border bg-surface-panel z-10",
+          "border-2 border-line-stone-300 bg-page-paper z-10",
         )}
       />
       {/* line from below-dot to bottom, connecting to next items */}
-      <div className="absolute -left-3.5 top-[calc(50%+6px)] bottom-0 w-px bg-border" />
-      <span className="block py-2 text-md font-semibold text-muted-foreground">{label}</span>
+      <div className="absolute -left-3.5 top-[calc(50%+6px)] bottom-0 w-px bg-surface-stone-200" />
+      <span className="block py-2 text-md font-semibold text-ink-stone-500">{label}</span>
     </div>
   );
 }
@@ -202,13 +202,13 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps): JSX.Element {
           className={clsx(
             "w-2.5 h-2.5 rounded-full shrink-0 z-10",
             "transition-colors duration-300",
-            mail.isRead ? "border-2 border-border bg-surface-panel" : "bg-status-success",
+            mail.isRead ? "border-2 border-line-stone-300 bg-page-paper" : "bg-surface-green-500",
           )}
         />
         {/* gap below dot — clean break before line */}
         <div className="h-2 shrink-0" />
         {/* line segment extending down through content */}
-        {!isLast && <div className="w-px flex-1 bg-border" />}
+        {!isLast && <div className="w-px flex-1 bg-surface-stone-200" />}
       </div>
 
       <div className="flex items-start gap-2">
@@ -218,20 +218,20 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps): JSX.Element {
               className={clsx(
                 "leading-snug",
                 mail.isRead
-                  ? "text-sm font-medium text-muted-foreground"
-                  : "text-base font-semibold text-foreground",
+                  ? "text-sm font-medium text-ink-stone-500"
+                  : "text-base font-semibold text-ink-stone-800",
               )}
             >
               {mail.title}
             </h3>
-            <span className="text-xs text-muted-foreground shrink-0">
+            <span className="text-xs text-ink-stone-400 shrink-0">
               {formatMailDate(mail.createdAt)}
             </span>
           </div>
           <p
             className={clsx(
               "text-sm leading-relaxed mt-0.5",
-              mail.isRead ? "text-muted-foreground" : "text-text-secondary",
+              mail.isRead ? "text-ink-stone-400" : "text-ink-stone-600",
             )}
           >
             {mail.content}
@@ -249,11 +249,11 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps): JSX.Element {
             "shrink-0 p-1.5 rounded-md mt-0.5",
             "transition-all duration-200",
             mail.isRead
-              ? "text-muted-foreground cursor-default"
+              ? "text-ink-stone-300 cursor-default"
               : [
                   "opacity-0 group-hover:opacity-100 max-sm:opacity-100",
-                  "text-muted-foreground hover:text-primary-text",
-                  "hover:bg-primary-subtle",
+                  "text-ink-stone-400 hover:text-ink-green-500",
+                  "hover:bg-surface-green-50",
                 ],
           )}
         >

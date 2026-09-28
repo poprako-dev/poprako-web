@@ -32,8 +32,8 @@ function ViewButton({ active, label, onClick, children }: ViewButtonProps): JSX.
         "transition-all duration-200",
         "focus-visible:outline-2 focus-visible:outline-primary/60",
         active
-          ? "bg-muted text-foreground shadow-(--shadow-sm)"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          ? "bg-surface-stone-200 text-ink-stone-700 shadow-(--shadow-sm)"
+          : "text-ink-stone-400 hover:bg-surface-stone-100 hover:text-ink-stone-600",
       )}
     >
       {children}
@@ -76,19 +76,19 @@ export function ComicDetailContent({
   }, [activeView, displayedView]);
 
   return (
-    <section className="flex h-full min-h-0 w-full flex-col bg-surface-workspace">
+    <section className="flex h-full min-h-0 w-full flex-col bg-surface-stone-50">
       <div className="flex shrink-0 items-center gap-3 px-4 py-0.5">
         <div
           aria-hidden="true"
           className={clsx(
             "h-px min-w-0 flex-1",
-            "bg-linear-to-r from-border via-border/50 to-transparent",
+            "bg-linear-to-r from-gradient-stone-300 via-gradient-stone-200 to-transparent",
           )}
         />
         <div
           role="group"
           aria-label="章节内容视图"
-          className="flex rounded-md bg-surface-hover/90 p-0.5"
+          className="flex rounded-md bg-surface-stone-100/90 p-0.5"
         >
           <ViewButton
             active={activeView === "pages"}
@@ -113,7 +113,7 @@ export function ComicDetailContent({
 
       <div
         className={clsx(
-          "min-h-0 flex-1 bg-surface-hover",
+          "min-h-0 flex-1 bg-surface-stone-100",
           "shadow-[inset_0_2px_6px_rgba(0,0,0,0.05)]",
         )}
       >
@@ -132,7 +132,7 @@ export function ComicDetailContent({
                 tabIndex={0}
                 className={clsx(
                   "h-full overflow-y-auto p-4",
-                  "scrollbar-thin scrollbar-thumb-border focus-visible:outline-primary",
+                  "scrollbar-thin scrollbar-thumb-scrollbar-stone-300",
                 )}
               >
                 {pageList}

@@ -14,7 +14,7 @@ export function HighlightedText({ text, phrase }: Props): TranslatorImportedType
         segment.matched ? (
           <mark
             key={`${String(index)}-${segment.text}`}
-            className={clsx("rounded-sm bg-destructive/10 px-0.5 text-destructive")}
+            className={clsx("rounded-sm bg-(--danger-faint) px-0.5 text-(--danger-soft)")}
           >
             {segment.text}
           </mark>

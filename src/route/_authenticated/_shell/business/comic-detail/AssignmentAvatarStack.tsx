@@ -38,7 +38,7 @@ function AvatarTooltip({ name }: { name: string }): JSX.Element {
       className={clsx(
         "pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2",
         "whitespace-nowrap rounded-sm px-2 py-1",
-        "bg-foreground text-[10px] font-medium text-primary-foreground shadow-sm",
+        "bg-surface-stone-700 text-[10px] font-medium text-ink-stone-50 shadow-sm",
         "invisible opacity-0 transition-opacity duration-150",
         "group-hover/avatar:visible group-hover/avatar:opacity-100",
         "group-focus/avatar:visible group-focus/avatar:opacity-100",
@@ -60,8 +60,8 @@ function MemberAvatar({ assignment, canRemove, onRequestRemove }: MemberAvatarPr
   const className = clsx(
     "group/avatar relative -ml-2 flex h-8 w-8 shrink-0 first:ml-0",
     "items-center justify-center overflow-visible rounded-full",
-    "border-2 border-border bg-surface-hover",
-    "text-[11px] font-bold text-foreground shadow-[0_1px_2px_rgba(0,0,0,0.08)]",
+    "border-2 border-line-stone-50 bg-surface-stone-200",
+    "text-[11px] font-bold text-ink-stone-600 shadow-[0_1px_2px_rgba(0,0,0,0.08)]",
     "focus-visible:z-20 focus-visible:outline-2 focus-visible:outline-primary/60",
     canRemove ? "cursor-pointer hover:z-20" : "cursor-default",
   );
@@ -133,9 +133,9 @@ function OverflowMembers({
         }}
         className={clsx(
           "flex h-8 w-8 items-center justify-center rounded-full",
-          "border-2 border-border bg-surface-hover",
-          "text-[10px] font-bold text-muted-foreground shadow-[0_1px_2px_rgba(0,0,0,0.06)]",
-          "hover:z-20 hover:bg-surface-hover",
+          "border-2 border-line-stone-50 bg-surface-stone-100",
+          "text-[10px] font-bold text-ink-stone-500 shadow-[0_1px_2px_rgba(0,0,0,0.06)]",
+          "hover:z-20 hover:bg-surface-stone-200",
           "focus-visible:z-20 focus-visible:outline-2 focus-visible:outline-primary/60",
         )}
       >
@@ -154,8 +154,8 @@ function OverflowMembers({
         <div
           role="list"
           className={clsx(
-            "max-h-44 overflow-y-auto rounded-sm border border-border",
-            "bg-surface-workspace p-1.5 shadow-lg",
+            "max-h-44 overflow-y-auto rounded-sm border border-line-stone-200",
+            "bg-surface-stone-50 p-1.5 shadow-lg",
           )}
         >
           {assignments.map((assignment) => {
@@ -165,7 +165,7 @@ function OverflowMembers({
                 <div
                   key={assignment.userId}
                   role="listitem"
-                  className="break-words px-2 py-1 text-xs text-foreground"
+                  className="break-words px-2 py-1 text-xs text-ink-stone-600"
                 >
                   {name}
                 </div>
@@ -186,8 +186,8 @@ function OverflowMembers({
                 className={clsx(
                   "block w-full rounded-sm px-2 py-1 text-left text-xs",
                   "whitespace-normal break-words",
-                  "text-foreground hover:bg-destructive/10 hover:text-destructive",
-                  "focus-visible:outline-2 focus-visible:outline-destructive/50",
+                  "text-ink-stone-600 hover:bg-surface-rose-50 hover:text-ink-rose-500",
+                  "focus-visible:outline-2 focus-visible:outline-outline-rose-300",
                 )}
               >
                 {name}
@@ -213,7 +213,7 @@ export function AssignmentAvatarStack({
         {[0, 1, 2].map((item) => (
           <span
             key={item}
-            className="h-8 w-8 animate-pulse rounded-full border-2 border-border bg-surface-hover"
+            className="h-8 w-8 animate-pulse rounded-full border-2 border-line-stone-50 bg-surface-stone-200"
           />
         ))}
       </div>
@@ -233,7 +233,7 @@ export function AssignmentAvatarStack({
     return showEmpty ? (
       <span
         aria-hidden="true"
-        className="h-8 w-8 rounded-full border border-dashed border-border bg-surface-workspace"
+        className="h-8 w-8 rounded-full border border-dashed border-line-stone-300 bg-surface-stone-50/70"
       />
     ) : null;
   }

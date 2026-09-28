@@ -40,33 +40,33 @@ export function ChapterCreatorModal({
     <div
       className={clsx(
         "fixed inset-0 z-50 flex items-center justify-center p-4",
-        "bg-surface-panel/60 backdrop-blur-sm",
+        "bg-surface-white/60 backdrop-blur-sm",
         "animate-in fade-in duration-200",
       )}
     >
       <div
         className={clsx(
           "w-full max-w-70 rounded-xl overflow-hidden",
-          "bg-surface-panel",
-          "border border-status-success/30",
+          "bg-surface-white",
+          "border border-(--brand-leaf-border)",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
       >
         {/* 顶部品牌色条 */}
-        <div className="h-1 w-full opacity-20" style={{ background: "var(--status-success)" }} />
+        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
 
         <div className="pt-4 pb-2 text-center">
-          <h3 className="text-base font-bold text-foreground">新建章节</h3>
+          <h3 className="text-base font-bold text-ink-slate-800">新建章节</h3>
           <div className="mt-2 flex items-center justify-center gap-1.5 px-4">
             <div
               className={clsx(
                 "flex items-center gap-1 px-2 py-0.5 rounded-md",
-                "bg-status-success/10 border border-status-success/30",
+                "bg-surface-green-50 border border-(--brand-leaf-border)",
               )}
             >
-              <Layers className="w-2.5 h-2.5 text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground truncate max-w-24">
+              <Layers className="w-2.5 h-2.5 text-ink-slate-400" />
+              <span className="text-[11px] text-ink-slate-500 truncate max-w-24">
                 {comicInfo.title || "未知作品"}
               </span>
             </div>
@@ -99,8 +99,8 @@ export function ChapterCreatorModal({
               className={clsx(
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "transition-all duration-200 active:scale-[0.98]",
-                "text-muted-foreground bg-surface-workspace hover:bg-surface-hover",
-                "border border-border",
+                "text-ink-slate-400 bg-surface-slate-50 hover:bg-surface-slate-100",
+                "border border-line-slate-100",
               )}
             >
               取消
@@ -112,9 +112,9 @@ export function ChapterCreatorModal({
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "flex items-center justify-center gap-1",
                 "transition-all duration-200 active:scale-[0.98]",
-                "bg-status-success/10 text-status-success",
-                "border border-status-success/30",
-                "hover:bg-status-success/10",
+                "bg-surface-green-50 text-ink-green-500",
+                "border border-(--brand-leaf-border)",
+                "hover:bg-surface-green-100",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >

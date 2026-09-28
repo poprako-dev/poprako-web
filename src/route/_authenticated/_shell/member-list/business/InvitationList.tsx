@@ -16,8 +16,8 @@ export function InvitationList({
   onRequestDelete,
 }: Props): JSX.Element {
   return (
-    <div className="flex-1 bg-muted px-6 py-6">
-      <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+    <div className="flex-1 bg-surface-slate-50/60 px-6 py-6">
+      <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-ink-slate-400">
         Pending
       </p>
       <div className="max-h-105 space-y-2 overflow-y-auto pr-0.5">
@@ -30,7 +30,7 @@ export function InvitationList({
           />
         ))}
         {invitations.length === 0 && (
-          <p className="py-8 text-center text-xs text-muted-foreground">暂无待处理的邀请</p>
+          <p className="py-8 text-center text-xs text-ink-slate-300">暂无待处理的邀请</p>
         )}
       </div>
     </div>

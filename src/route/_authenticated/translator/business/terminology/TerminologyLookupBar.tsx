@@ -228,7 +228,7 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
               "absolute bottom-[calc(100%+0.25rem)] left-0 flex w-full flex-col",
               "max-h-[min(18rem,calc(100vh-5rem))] overflow-hidden rounded-lg",
               "sm:h-[20dvh]",
-              "border border-border bg-surface-panel/95",
+              "border border-(--brand-leaf-border) bg-surface-white/95",
               "shadow-(--shadow-sm)",
               "backdrop-blur-md duration-150 motion-reduce:animate-none",
               isExpanded
@@ -274,8 +274,8 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
         <div
           className={clsx(
             "flex h-8 overflow-hidden rounded-lg",
-            "border border-border",
-            "bg-surface-panel/95 shadow-(--shadow-sm) backdrop-blur-md",
+            "border border-(--brand-leaf-border)",
+            "bg-surface-white/95 shadow-(--shadow-sm) backdrop-blur-md",
           )}
         >
           <button
@@ -290,10 +290,10 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
             onClick={handleToggleTermbases}
             className={clsx(
               "flex size-8 shrink-0 items-center justify-center border-r",
-              "border-border text-xs font-semibold text-text-secondary",
-              "transition-colors hover:bg-surface-hover focus-visible:outline-2",
+              "border-line-stone-200 text-xs font-semibold text-ink-stone-600",
+              "transition-colors hover:bg-surface-stone-100 focus-visible:outline-2",
               "focus-visible:outline-offset-[-2px] focus-visible:outline-primary-border",
-              selectedTermbase ? "bg-primary/10" : "bg-surface-panel/80",
+              selectedTermbase ? "bg-surface-green-50" : "bg-surface-white/80",
             )}
           >
             {selectedTermbase ? firstGrapheme(selectedTermbase.name) : "术"}
@@ -305,7 +305,7 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
               strokeWidth={1.8}
               className={clsx(
                 "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2",
-                selectedTermbase ? "text-muted-foreground" : "text-muted-foreground",
+                selectedTermbase ? "text-ink-stone-400" : "text-ink-stone-300",
               )}
             />
             <span className="sr-only">搜索术语原文</span>
@@ -322,10 +322,10 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
               }}
               placeholder={selectedTermbase ? "搜索原文…" : "先选择术语库"}
               className={clsx(
-                "h-full w-full bg-surface-hover/45 pl-7.5 pr-2.5 text-xs text-foreground",
-                "outline-none placeholder:text-muted-foreground focus:bg-surface-panel",
-                "disabled:cursor-not-allowed disabled:bg-surface-hover/70",
-                "disabled:text-muted-foreground disabled:placeholder:text-muted-foreground",
+                "h-full w-full bg-surface-stone-50/45 pl-7.5 pr-2.5 text-xs text-ink-stone-700",
+                "outline-none placeholder:text-ink-stone-400 focus:bg-surface-white",
+                "disabled:cursor-not-allowed disabled:bg-surface-stone-50/70",
+                "disabled:text-ink-stone-400 disabled:placeholder:text-ink-stone-400",
               )}
             />
           </label>

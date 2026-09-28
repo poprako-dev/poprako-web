@@ -35,7 +35,7 @@ export async function listMyAssignments(
 export function upsertAssignment(
   client: ApiClient,
   args: UpsertAssignmentArgs,
-): Promise<Result<{ id: string }>> {
+): Promise<Result<undefined>> {
   return assignmentApi.upsertAssignment(client, args.chapterId, args.userId, args.roles);
 }
 export function deleteAssignment(client: ApiClient, id: string): Promise<Result<undefined>> {

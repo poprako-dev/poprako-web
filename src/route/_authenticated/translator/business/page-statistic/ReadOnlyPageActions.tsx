@@ -91,10 +91,10 @@ export function ReadOnlyPageActions({
             disabled={isDisabled || isLoadingNext}
             className={clsx(
               "flex size-8 items-center justify-center rounded-md border",
-              "border-border bg-surface-panel text-text-secondary shadow-sm",
-              "transition-colors hover:bg-surface-panel hover:text-foreground",
-              "focus-visible:outline-border disabled:opacity-60",
-              isOpen && "bg-surface-panel text-foreground",
+              "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
+              "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
+              "focus-visible:outline-outline-stone-400 disabled:opacity-60",
+              isOpen && "bg-surface-white text-ink-gray-900",
             )}
           >
             <ChartNoAxesGantt size={16} strokeWidth={1.8} />
@@ -110,7 +110,7 @@ export function ReadOnlyPageActions({
             className={clsx(
               "z-60 flex w-76 max-w-[calc(100vw-16px)] flex-col overflow-hidden",
               "max-h-[min(24rem,var(--radix-popover-content-available-height))]",
-              "rounded-sm border border-foreground/5 bg-popover shadow-2xl backdrop-blur-md",
+              "rounded-sm border border-line-black/5 bg-surface-white/95 shadow-2xl backdrop-blur-md",
               "outline-none",
             )}
           >
@@ -136,9 +136,9 @@ export function ReadOnlyPageActions({
         }}
         className={clsx(
           "flex size-8 items-center justify-center rounded-md border",
-          "border-border bg-surface-panel text-text-secondary shadow-sm",
-          "transition-colors hover:bg-surface-panel hover:text-foreground",
-          "focus-visible:outline-border disabled:opacity-60",
+          "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
+          "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
+          "focus-visible:outline-outline-stone-400 disabled:opacity-60",
         )}
       >
         {isLoadingNext ? (

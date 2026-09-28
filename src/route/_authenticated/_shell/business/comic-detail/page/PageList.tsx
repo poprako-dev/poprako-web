@@ -152,9 +152,9 @@ export function PageList({
             type="button"
             onClick={() => inputRef.current?.click()}
             className={clsx(
-              "aspect-3/4 rounded-sm border border-dashed border-border",
+              "aspect-3/4 rounded-sm border border-dashed border-line-slate-200",
               "flex flex-col items-center justify-center gap-2",
-              "text-muted-foreground hover:text-muted-foreground hover:border-border hover:bg-surface-workspace",
+              "text-ink-slate-300 hover:text-ink-slate-500 hover:border-line-slate-300 hover:bg-surface-slate-50",
               "transition-all active:scale-[0.98]",
             )}
             aria-label="追加页面图片"
@@ -181,11 +181,11 @@ export function PageList({
             <div
               className={clsx(
                 "absolute inset-0 z-20 flex flex-col items-center justify-center gap-2",
-                "rounded-sm border-2 border-dashed border-border bg-surface-panel/80 backdrop-blur-sm",
+                "rounded-sm border-2 border-dashed border-line-slate-400 bg-surface-white/80 backdrop-blur-sm",
               )}
             >
-              <UploadCloud className="w-8 h-8 text-muted-foreground" />
-              <span className="text-xs font-bold text-muted-foreground">松开以批量上传</span>
+              <UploadCloud className="w-8 h-8 text-ink-slate-400" />
+              <span className="text-xs font-bold text-ink-slate-500">松开以批量上传</span>
             </div>
           )}
         </>

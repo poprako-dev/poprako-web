@@ -48,20 +48,20 @@ function TermbaseRow({ termbase, isSelected, onSelect, onEdit }: RowProps): Reac
       title={onEdit ? "长按编辑术语库" : undefined}
       className={clsx(
         "flex min-h-7 w-full items-center gap-3 px-2.5 py-1 text-left",
-        "border-b border-border/60 last:border-b-0",
-        "transition-colors hover:bg-surface-hover",
+        "border-b border-line-stone-200/55 last:border-b-0",
+        "transition-colors hover:bg-surface-stone-50",
         onEdit && "touch-none select-none",
-        isSelected && "bg-primary/10",
+        isSelected && "bg-surface-green-50",
       )}
     >
       <span className="flex min-w-0 max-w-[68%] items-center gap-1.5">
-        <span className="min-w-0 truncate text-xs font-medium text-foreground">
+        <span className="min-w-0 truncate text-xs font-medium text-ink-stone-700">
           {termbase.name}
         </span>
         <span
           className={clsx(
-            "shrink-0 border-l border-border pl-1.5",
-            "text-[10px] tabular-nums text-muted-foreground",
+            "shrink-0 border-l border-line-stone-200 pl-1.5",
+            "text-[10px] tabular-nums text-ink-stone-400",
           )}
         >
           {termbase.termCount} 条
@@ -71,14 +71,14 @@ function TermbaseRow({ termbase, isSelected, onSelect, onEdit }: RowProps): Reac
             "shrink-0 rounded-md border px-1 py-px",
             "text-[9px] font-medium leading-none",
             termbase.comicId
-              ? "border-primary/20 bg-primary/10 text-primary-text"
-              : "border-border bg-surface-hover text-muted-foreground",
+              ? "border-line-green-100 bg-surface-green-50 text-ink-stone-600"
+              : "border-line-stone-200 bg-surface-stone-50 text-ink-stone-500",
           )}
         >
           {scope}
         </span>
       </span>
-      <span className="min-w-0 flex-1 truncate text-right text-[10px] text-muted-foreground">
+      <span className="min-w-0 flex-1 truncate text-right text-[10px] text-ink-stone-400">
         {termbase.description ?? "暂无描述"}
       </span>
     </button>
@@ -121,14 +121,14 @@ export function TermbasePanel({
 
   return (
     <>
-      <div className="flex gap-1.5 border-b border-border/80 p-1.5">
+      <div className="flex gap-1.5 border-b border-line-stone-200/80 p-1.5">
         <label className="relative min-w-0 flex-1">
           <Search
             size={14}
             strokeWidth={1.8}
             className={clsx(
               "pointer-events-none absolute left-2 top-1/2 -translate-y-1/2",
-              "text-muted-foreground",
+              "text-ink-stone-400",
             )}
           />
           <span className="sr-only">搜索术语库名称</span>
@@ -139,10 +139,10 @@ export function TermbasePanel({
             }}
             placeholder="搜索术语库名称"
             className={clsx(
-              "h-7 w-full rounded-md border border-border bg-surface-panel",
-              "pl-7 pr-2.5 text-[11px] text-foreground outline-none",
-              "shadow-sm shadow-foreground/5 placeholder:text-muted-foreground",
-              "focus:border-border",
+              "h-7 w-full rounded-md border border-line-slate-200 bg-surface-white",
+              "pl-7 pr-2.5 text-[11px] text-ink-stone-700 outline-none",
+              "shadow-sm shadow-shadow-slate-100 placeholder:text-ink-stone-400",
+              "focus:border-line-slate-300",
             )}
           />
         </label>
@@ -153,8 +153,8 @@ export function TermbasePanel({
           onClick={onCreate}
           className={clsx(
             "flex size-7 shrink-0 items-center justify-center rounded-md border",
-            "border-border bg-surface-panel text-muted-foreground transition-colors",
-            "hover:border-primary/20 hover:bg-primary/15 hover:text-foreground",
+            "border-line-stone-200 bg-surface-white text-ink-stone-500 transition-colors",
+            "hover:border-line-green-100 hover:bg-surface-green-50 hover:text-ink-stone-700",
           )}
         >
           <Plus size={13} />

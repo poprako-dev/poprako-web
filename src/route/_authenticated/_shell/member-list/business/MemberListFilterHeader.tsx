@@ -23,37 +23,37 @@ const ROLE_BUTTONS: RoleButton[] = [
   {
     key: "rawProvider",
     label: "图",
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-amber-50 text-ink-amber-500 border-line-amber-200",
   },
   {
     key: "translator",
     label: "翻",
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-blue-50 text-ink-blue-500 border-line-blue-200",
   },
   {
     key: "proofreader",
     label: "校",
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-emerald-50 text-ink-emerald-500 border-line-emerald-200",
   },
   {
     key: "typesetter",
     label: "嵌",
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-violet-50 text-ink-violet-400 border-line-violet-200",
   },
   {
     key: "redrawer",
     label: "美",
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-pink-50 text-ink-pink-500 border-line-pink-200",
   },
   {
     key: "reviewer",
     label: "监",
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-indigo-50 text-ink-indigo-400 border-line-indigo-200",
   },
   {
     key: "publisher",
     label: "传",
-    activeClass: "bg-primary-subtle text-primary-text border-primary-border",
+    activeClass: "bg-surface-rose-50 text-ink-rose-400 border-line-rose-200",
   },
 ];
 
@@ -101,8 +101,8 @@ export function MemberListFilterHeader({
           title="添加成员"
           className={clsx(
             "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-            "border border-border bg-surface-panel text-muted-foreground transition-all",
-            "hover:border-border hover:bg-muted hover:text-foreground",
+            "border border-line-slate-200 bg-surface-white text-ink-slate-500 transition-all",
+            "hover:border-line-slate-300 hover:bg-surface-slate-50 hover:text-ink-slate-700",
           )}
         >
           <CirclePlus size={24} />
@@ -126,8 +126,8 @@ export function MemberListFilterHeader({
                 isActive
                   ? activeClass
                   : clsx(
-                      "bg-surface-panel text-muted-foreground border-border",
-                      "hover:border-border hover:text-muted-foreground",
+                      "bg-surface-white text-ink-slate-400 border-line-slate-200",
+                      "hover:border-line-slate-300 hover:text-ink-slate-500",
                     ),
               )}
             >

@@ -36,30 +36,33 @@ export function FirstRegistrationGuideDialog({ onClose, onOpenSettings }: Props)
         </div>
       }
     >
-      <div className="border-y border-border">
+      <div className="border-y border-line-slate-100">
         {guideItems.map((item, index) => (
           <div
             key={item.title}
-            className={clsx("flex items-center gap-3 py-3", index > 0 && "border-t border-border")}
+            className={clsx(
+              "flex items-center gap-3 py-3",
+              index > 0 && "border-t border-line-slate-100",
+            )}
           >
             <span
               className={clsx(
                 "flex size-9 shrink-0 items-center justify-center rounded-full",
-                "bg-status-success/10 text-status-success",
+                "bg-surface-green-50 text-ink-green-600",
               )}
             >
               <item.icon size={17} />
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-semibold text-foreground">{item.title}</span>
-              <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
+              <span className="block text-sm font-semibold text-ink-slate-700">{item.title}</span>
+              <span className="mt-0.5 block text-xs text-ink-slate-400">{item.description}</span>
             </span>
           </div>
         ))}
       </div>
 
-      <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-        <GraduationCap className="mt-0.5 size-4 shrink-0 text-status-warning" />
+      <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-slate-500">
+        <GraduationCap className="mt-0.5 size-4 shrink-0 text-ink-amber-500" />
         <span>
           想先熟悉流程？可以在
           <a
@@ -67,8 +70,8 @@ export function FirstRegistrationGuideDialog({ onClose, onOpenSettings }: Props)
             target="_blank"
             rel="noreferrer"
             className={clsx(
-              "mx-1 inline-flex items-center gap-0.5 font-semibold text-status-success",
-              "underline decoration-green-200 underline-offset-2 hover:text-status-success",
+              "mx-1 inline-flex items-center gap-0.5 font-semibold text-ink-green-600",
+              "underline decoration-decoration-green-200 underline-offset-2 hover:text-ink-green-700",
             )}
           >
             白杨子 T 网站

@@ -18,8 +18,8 @@ await writeFile(
   `<div id="root" style="height:100dvh"></div><script type="module">
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Utilities } from '/src/route/_authenticated/_shell/(utility)/business/Utilities.tsx';
-import { prepareBoundedArchive } from '/src/route/_authenticated/_shell/(utility)/business/bounded-compression.ts';
+import { Utilities } from '/src/route/_authenticated/_shell/utilities/business/Utilities.tsx';
+import { prepareBoundedArchive } from '/src/route/_authenticated/_shell/utilities/business/bounded-compression.ts';
 import { ZipReader, BlobReader, BlobWriter } from '@zip.js/zip.js';
 import '/src/application/style.css';
 createRoot(document.getElementById('root')).render(React.createElement(Utilities));
