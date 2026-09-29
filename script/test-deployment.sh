@@ -21,14 +21,17 @@ trap cleanup EXIT INT TERM
 
 cd "$project_root"
 
-if RELEASE_DIR="$release_test_root" \
-    RELEASE_SHA="$release_sha" \
-    RELEASE_TAG=v0.1.0-untrusted \
-    sh script/ci-release.sh \
-        >/dev/null 2>&1; then
-    echo "release accepted a non-semantic tag" >&2
-    exit 1
-fi
+for invalid_tag in v0.1.0-untrusted v01.2.3 v1.02.3 v1.2.03; do
+    if RELEASE_DIR="$release_test_root" \
+        RELEASE_SHA="$release_sha" \
+        RELEASE_TAG="$invalid_tag" \
+        sh script/ci-release.sh \
+            >"$release_test_root/invalid-tag.log" 2>&1; then
+        echo "release accepted invalid tag: $invalid_tag" >&2
+        exit 1
+    fi
+    grep -q 'RELEASE_TAG must use vMAJOR.MINOR.PATCH format' "$release_test_root/invalid-tag.log"
+done
 
 RELEASE_DIR="$release_test_root" \
 RELEASE_SHA="$release_sha" \

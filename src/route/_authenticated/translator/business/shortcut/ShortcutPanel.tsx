@@ -1,4 +1,4 @@
-import type { ReactPortal as TranslatorImportedType0 } from "react";
+import type { ReactPortal } from "react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
@@ -24,7 +24,7 @@ export function ShortcutPanel({
   configurableShortcuts,
   onUpdateConfigurableShortcuts,
   onClose,
-}: Props): TranslatorImportedType0 {
+}: Props): ReactPortal {
   const [recordingIndex, setRecordingIndex] = useState<number | null>(null);
   const recordedKeysRef = useRef(new Set<string>());
   const showToast = useToastStore((s) => s.showToast);

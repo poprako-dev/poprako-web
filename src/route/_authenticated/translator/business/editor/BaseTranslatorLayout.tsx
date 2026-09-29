@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import type { ReactNode } from "react";
 import clsx from "clsx";
 
@@ -7,7 +7,7 @@ type Props = {
   sidebar: ReactNode;
 };
 
-export function BaseTranslatorLayout({ canvas, sidebar }: Props): TranslatorImportedType0.Element {
+export function BaseTranslatorLayout({ canvas, sidebar }: Props): JSX.Element {
   return (
     <div className="flex w-full h-full overflow-hidden portrait:flex-col">
       <div

@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef } from "react";
 import clsx from "clsx";
 import {
@@ -58,7 +58,7 @@ export function TranslateModeUnitItem({
   specialCharsBar,
   onSpecialCharUse,
   onSpecialCharInserted,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastInsertedRequestIdRef = useRef<number | undefined>(undefined);
 

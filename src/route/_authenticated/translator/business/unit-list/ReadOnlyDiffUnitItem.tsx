@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
 import { useEffect, useMemo, useRef } from "react";
 import {
@@ -31,7 +31,7 @@ export function ReadOnlyDiffUnitItem({
   dataUnitId,
   translator,
   proofreader,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const contentRef = useRef<HTMLDivElement>(null);
   const translatedText = unitTranslatedText(unit);
   const proofreadText = unitProofreadText(unit);

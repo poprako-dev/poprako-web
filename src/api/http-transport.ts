@@ -102,7 +102,8 @@ async function withResponse<Value>(
       signal: scope.signal,
     });
     return await consume(response);
-  } catch {
+  } catch (error) {
+    console.error("HTTP transport failed", error);
     return scope.failure();
   } finally {
     scope.dispose();

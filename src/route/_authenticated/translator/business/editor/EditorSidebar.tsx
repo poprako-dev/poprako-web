@@ -1,10 +1,10 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
 import { UnitList } from "@/route/_authenticated/translator/business/unit-list/UnitList";
 import { StatusOptionBar } from "@/route/_authenticated/translator/business/StatusOptionBar";
 import type { EditorSession } from "./use-editor-session";
 type Props = { session: EditorSession };
-export function EditorSidebar({ session }: Props): TranslatorImportedType0.Element {
+export function EditorSidebar({ session }: Props): JSX.Element {
   const {
     onResolveUser,
     unitBuf,

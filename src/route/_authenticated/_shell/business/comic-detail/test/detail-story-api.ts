@@ -99,7 +99,7 @@ export function createDetailStoryApi(scenario: Scenario): ApiClient {
                 typeof body.roles === "number"
               )
                 value.roles = body.roles;
-          return ok({ id: "a-dual" });
+          return new Response(null, { status: 204 });
         }
         if (method === "DELETE" && path.endsWith("/a-dual"))
           for (const [key, values] of assignments)

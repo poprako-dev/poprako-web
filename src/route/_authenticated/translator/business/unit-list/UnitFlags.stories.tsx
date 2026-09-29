@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
@@ -33,7 +33,7 @@ type Props = {
   onLoad: () => Promise<PageUnitFlaggedStats[]>;
 };
 
-function FlaggedEditor({ mode, isDisabled, onLoad }: Props): TranslatorImportedType0.Element {
+function FlaggedEditor({ mode, isDisabled, onLoad }: Props): JSX.Element {
   const [units, setUnits] = useState<UnitInfo[]>(() =>
     [0, 1].map((index) => ({
       ...createUnit(0.2, 0.3, true),
@@ -54,8 +54,8 @@ function FlaggedEditor({ mode, isDisabled, onLoad }: Props): TranslatorImportedT
   }
 
   return (
-    <div className="flex h-120 w-full max-w-96 flex-col border border-border">
-      <div className="flex items-center justify-between bg-surface-workspace p-2">
+    <div className="flex h-120 w-full max-w-96 flex-col border border-line-stone-200">
+      <div className="flex items-center justify-between bg-surface-stone-50 p-2">
         <output aria-label="当前页">当前页 {pageIndex + 1}</output>
         <TranslatorPaginator
           key={mode === "readOnly" ? "readOnly" : "editable"}

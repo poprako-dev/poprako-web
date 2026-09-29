@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { useEffect, useRef, useState } from "react";
 import { Popover } from "radix-ui";
 import { ChartNoAxesGantt, CircleArrowRight, Loader2 } from "lucide-react";
@@ -28,7 +28,7 @@ export function ReadOnlyPageActions({
   onOpenChange,
   onListPageUnitDiffStats,
   onNavigate,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const [isLoadingNext, setIsLoadingNext] = useState(false);
   const requestRef = useRef(0);
   const showToast = useToastStore((state) => state.showToast);

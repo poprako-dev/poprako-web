@@ -17,8 +17,8 @@ const meta: Meta<typeof AppDialog> = {
           aria-label="名称"
           placeholder="名称"
           className={[
-            "h-8 w-full rounded-md border border-input bg-background px-3 text-sm",
-            "shadow-sm outline-none focus:border-ring",
+            "h-8 w-full rounded-md border border-line-slate-200 px-3 text-sm",
+            "shadow-sm shadow-shadow-slate-100 outline-none focus:border-line-slate-300",
           ].join(" ")}
         />
         <textarea
@@ -26,9 +26,9 @@ const meta: Meta<typeof AppDialog> = {
           placeholder="描述（选填）"
           rows={3}
           className={[
-            "w-full resize-none rounded-md border border-input bg-background px-3 py-2",
-            "text-sm shadow-sm outline-none",
-            "focus:border-ring",
+            "w-full resize-none rounded-md border border-line-slate-200 px-3 py-2",
+            "text-sm shadow-sm shadow-shadow-slate-100 outline-none",
+            "focus:border-line-slate-300",
           ].join(" ")}
         />
       </div>
@@ -104,9 +104,9 @@ export const Warning: Story = {
     tone: "warning",
     size: "compact",
     children: (
-      <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2.5">
-        <p className="text-sm font-semibold text-foreground">角色称谓</p>
-        <p className="mt-1 text-xs text-destructive">该操作无法撤销。</p>
+      <div className="rounded-md border border-line-red-100 bg-surface-red-50/60 px-3 py-2.5">
+        <p className="text-sm font-semibold text-ink-slate-700">角色称谓</p>
+        <p className="mt-1 text-xs text-ink-red-500">该操作无法撤销。</p>
       </div>
     ),
     footer: (
@@ -125,8 +125,11 @@ export const LongContent: Story = {
     children: (
       <div className="space-y-2">
         {Array.from({ length: 20 }, (_, index) => (
-          <div key={index} className="rounded-lg border border-border bg-muted px-3 py-2">
-            <p className="text-sm font-medium text-muted-foreground">内容项 {index + 1}</p>
+          <div
+            key={index}
+            className="rounded-lg border border-line-slate-100 bg-surface-slate-50 px-3 py-2"
+          >
+            <p className="text-sm font-medium text-ink-slate-600">内容项 {index + 1}</p>
           </div>
         ))}
       </div>

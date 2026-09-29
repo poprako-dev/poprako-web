@@ -166,7 +166,7 @@ export function renderAtWidth(
   return (args: { dataSource: TerminologyDataSource }): ReactElement => (
     <div
       data-testid="terminology-canvas"
-      className="@container relative h-112 overflow-hidden bg-foreground"
+      className="@container relative h-112 overflow-hidden bg-surface-stone-600"
       style={{ width }}
     >
       <TerminologyLookupBar {...args} />

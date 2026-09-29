@@ -1,6 +1,6 @@
-import type { RefObject as TranslatorImportedType0 } from "react";
-import type { Dispatch as TranslatorImportedType1 } from "react";
-import type { SetStateAction as TranslatorImportedType2 } from "react";
+import type { RefObject } from "react";
+import type { Dispatch } from "react";
+import type { SetStateAction } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Transform, useCanvasViewport } from "./use-canvas-viewport.ts";
 
@@ -37,10 +37,10 @@ export function useCanvasInteraction({
   onAddUnit,
   onDeleteUnit,
 }: Args): {
-  containerRef: TranslatorImportedType0<HTMLDivElement | null>;
-  imgRef: TranslatorImportedType0<HTMLImageElement | null>;
+  containerRef: RefObject<HTMLDivElement | null>;
+  imgRef: RefObject<HTMLImageElement | null>;
   transform: Transform;
-  setTransform: TranslatorImportedType1<TranslatorImportedType2<Transform>>;
+  setTransform: Dispatch<SetStateAction<Transform>>;
   containerSize: { w: number; h: number };
   dragMarker: { id: string; x: number; y: number } | null;
   isPanning: boolean;

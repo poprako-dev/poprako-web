@@ -14,7 +14,10 @@ const config: StorybookConfig = {
     "@storybook/addon-docs",
     "@storybook/addon-onboarding",
   ],
-  framework: "@storybook/react-vite",
+  framework: {
+    name: "@storybook/react-vite",
+    options: { builder: { viteConfigPath: "storybook.vite.config.ts" } },
+  },
   viteFinal(viteConfig) {
     const base = createViteBase(false);
     return mergeConfig(viteConfig, {

@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { BaseTranslator } from "@/route/_authenticated/translator/business/BaseTranslator";
 import type { UnitSearchTransformDataSource } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
@@ -44,12 +44,7 @@ type Props = {
   startMode: TranslatorMode | "auto";
 };
 
-export function WebTranslator({
-  chapterId,
-  startPageId,
-  onExit,
-  startMode,
-}: Props): TranslatorImportedType0.Element {
+export function WebTranslator({ chapterId, startPageId, onExit, startMode }: Props): JSX.Element {
   const client = useApiClient();
   const { state, setState } = useTranslatorProject(chapterId);
   const activeRef = useRef(false);

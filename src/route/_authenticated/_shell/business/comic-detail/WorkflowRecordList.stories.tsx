@@ -21,7 +21,7 @@ const meta: Meta<typeof WorkflowRecordList> = {
   component: WorkflowRecordList,
   decorators: [
     (Story) => (
-      <div className="min-h-screen bg-surface-hover p-4">
+      <div className="min-h-screen bg-surface-stone-100 p-4">
         <div className="mx-auto h-[min(640px,calc(100vh-32px))] w-full max-w-240">
           <Story />
         </div>

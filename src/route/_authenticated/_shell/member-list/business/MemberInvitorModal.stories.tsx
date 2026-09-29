@@ -94,12 +94,12 @@ export const Default: Story = {
     };
 
     return (
-      <div className="min-h-screen bg-surface-hover">
+      <div className="min-h-screen bg-surface-slate-100">
         {!open && (
           <div className="flex items-center justify-center pt-32">
             <button
               type="button"
-              className="rounded-lg bg-status-info px-4 py-2 text-primary-foreground hover:bg-status-info"
+              className="rounded-lg bg-ink-blue-500 px-4 py-2 text-ink-white hover:bg-ink-blue-600"
               onClick={() => {
                 setOpen(true);
               }}
@@ -143,7 +143,7 @@ export const EmptyPending: Story = {
     };
 
     return (
-      <div className="min-h-screen bg-surface-hover">
+      <div className="min-h-screen bg-surface-slate-100">
         {open && (
           <MemberInvitorModal
             teamId="team-1"
@@ -182,7 +182,7 @@ export const LoadError: Story = {
     };
 
     return (
-      <div className="min-h-screen bg-surface-hover">
+      <div className="min-h-screen bg-surface-slate-100">
         {open && (
           <MemberInvitorModal
             teamId="team-1"
@@ -223,7 +223,7 @@ export const SubmitError: Story = {
     };
 
     return (
-      <div className="min-h-screen bg-surface-hover">
+      <div className="min-h-screen bg-surface-slate-100">
         {open && (
           <MemberInvitorModal
             teamId="team-1"
@@ -275,7 +275,7 @@ export const AllRoles: Story = {
     };
 
     return (
-      <div className="min-h-screen bg-surface-hover">
+      <div className="min-h-screen bg-surface-slate-100">
         {open && (
           <MemberInvitorModal
             teamId="team-1"
@@ -327,7 +327,7 @@ export const LongList: Story = {
     };
 
     return (
-      <div className="min-h-screen bg-surface-hover">
+      <div className="min-h-screen bg-surface-slate-100">
         {open && (
           <MemberInvitorModal
             teamId="team-1"

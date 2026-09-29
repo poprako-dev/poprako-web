@@ -1,5 +1,7 @@
 /* Exact aliases of the original 68cedc0 light appearance. Do not approximate values. */
 @theme inline {
+  --color-navigation-glass: var(--navigation-glass);
+  --color-focus-amber-200: var(--focus-amber-200);
   --color-brand-leaf: var(--brand-leaf);
   --color-brand-leaf-border: var(--brand-leaf-border);
   --color-brand-leaf-faint: var(--brand-leaf-faint);
@@ -204,6 +206,7 @@
 }
 
 :root {
+  --focus-amber-200: var(--color-amber-200);
   --brand-leaf: var(--color-green-500);
   --brand-leaf-border: var(--color-border-green-200);
   --brand-leaf-faint: var(--color-green-50);
@@ -336,6 +339,8 @@
   --navigation-ink: #3d3028;
   --navigation-muted: #7a6d63;
   --navigation-paper: #e8dcc4;
+  /* Preserve the original build-time color mix and its rounding. */
+  --navigation-glass: color-mix(in oklab, #e8dcc4 95%, transparent);
   --outline-rose-300: var(--color-rose-300);
   --outline-stone-400: var(--color-stone-400);
   --outline-stone-500: var(--color-stone-500);

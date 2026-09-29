@@ -86,7 +86,7 @@ function InteractiveWorksetSidebar(): JSX.Element {
   };
 
   return (
-    <div className="flex justify-end h-screen bg-muted">
+    <div className="flex justify-end h-screen bg-surface-slate-50">
       <WorksetSidebar
         activeWorksetId={activeId}
         worksets={worksets}
@@ -110,7 +110,7 @@ export const Interactive: Story = {
 export const Empty: Story = {
   name: "空列表",
   render: () => (
-    <div className="flex justify-end h-screen bg-muted">
+    <div className="flex justify-end h-screen bg-surface-slate-50">
       <WorksetSidebar
         activeWorksetId=""
         worksets={[]}
@@ -131,7 +131,7 @@ export const Empty: Story = {
 export const SingleWorkset: Story = {
   name: "单个工作区",
   render: () => (
-    <div className="flex justify-end h-screen bg-muted">
+    <div className="flex justify-end h-screen bg-surface-slate-50">
       <WorksetSidebar
         activeWorksetId="ws-1"
         worksets={[required(mockWorksets[0])]}

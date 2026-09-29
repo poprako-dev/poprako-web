@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
@@ -24,7 +24,7 @@ type Props = {
   readOnly: boolean;
 };
 
-function LayoutFixture({ width, mode, readOnly }: Props): TranslatorImportedType0.Element {
+function LayoutFixture({ width, mode, readOnly }: Props): JSX.Element {
   const [containerWidth, setContainerWidth] = useState(width);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>(undefined);
   const [units, setUnits] = useState<UnitInfo[]>(() =>

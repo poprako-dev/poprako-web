@@ -1,4 +1,4 @@
-import type { RefObject as TranslatorImportedType0 } from "react";
+import type { RefObject } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { showLocalCaughtError } from "@/route/business/request-error";
 import { unitId } from "@/route/_authenticated/translator/business/unit/unit";
@@ -11,7 +11,7 @@ import { type EditorState, useEditorState } from "./use-editor-state";
 import { useEditorUnitActions } from "./use-editor-unit-actions";
 import { useEditorKeyboard } from "./use-editor-keyboard";
 type EditorSessionAdditions = {
-  pageLoadGenerationRef: TranslatorImportedType0<number>;
+  pageLoadGenerationRef: RefObject<number>;
   isSpecialCharsBarSuspended: boolean;
   isSpecialCharsBarVisible: boolean;
   canInsertSpecialChar: boolean;

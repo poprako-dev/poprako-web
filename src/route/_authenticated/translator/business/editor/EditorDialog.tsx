@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
 import { ShortcutPanel } from "@/route/_authenticated/translator/business/shortcut/ShortcutPanel";
 import { SpecialCharPanel } from "@/route/_authenticated/translator/business/special-character/SpecialCharPanel";
@@ -6,7 +6,7 @@ import { UnitSearchTransformDialog } from "@/route/_authenticated/translator/bus
 import { FloatingSpecialCharsBar } from "@/route/_authenticated/translator/business/FloatingSpecialCharsBar";
 import type { EditorSession } from "./use-editor-session";
 type Props = { session: EditorSession };
-export function EditorDialog({ session }: Props): TranslatorImportedType0.Element {
+export function EditorDialog({ session }: Props): JSX.Element {
   const {
     project,
     unitSearchTransform,

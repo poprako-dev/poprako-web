@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
 import { type PointerEvent as ReactPointerEvent, useEffect, useRef } from "react";
 import {
@@ -42,7 +42,7 @@ export function BaseUnitItem({
   contributors,
   children,
   dataUnitId,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isBubble = unitIsBubble(unit);

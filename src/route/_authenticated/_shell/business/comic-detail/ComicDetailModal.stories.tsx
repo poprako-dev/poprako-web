@@ -66,9 +66,11 @@ const meta = {
   },
   decorators: [
     (Story, context) => (
-      <StoryProvider scenario={(context.parameters["scenario"] ?? "default") as Scenario}>
-        <Story />
-      </StoryProvider>
+      <div className="min-h-screen bg-surface-slate-100/60 flex items-center justify-center p-4">
+        <StoryProvider scenario={(context.parameters["scenario"] ?? "default") as Scenario}>
+          <Story />
+        </StoryProvider>
+      </div>
     ),
   ],
 } satisfies Meta<typeof ComicDetailModal>;

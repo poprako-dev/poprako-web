@@ -5,7 +5,7 @@ import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/
 import type { MemberInfo } from "@/route/business/identity/member";
 import type { UserInfo } from "@/route/business/identity/user";
 
-export const now = Date.now();
+export const now = Date.UTC(2026, 4, 28, 12);
 
 export function required<T>(value: T | undefined): T {
   if (value === undefined) {

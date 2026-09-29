@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
 import { CaseSensitive, Check, Command, Loader2, ReplaceAll, SquareArrowRight } from "lucide-react";
 import { TranslatorPaginator } from "@/route/_authenticated/translator/business/page-statistic/TranslatorPaginator";
@@ -9,7 +9,7 @@ import { TerminologyLookupBar } from "@/route/_authenticated/translator/business
 import { ReadOnlyPageActions } from "@/route/_authenticated/translator/business/page-statistic/ReadOnlyPageActions";
 import type { EditorSession } from "./use-editor-session";
 type Props = { session: EditorSession };
-export function EditorCanvas({ session }: Props): TranslatorImportedType0.Element {
+export function EditorCanvas({ session }: Props): JSX.Element {
   const {
     project,
     onListPageUnitDiffStats,

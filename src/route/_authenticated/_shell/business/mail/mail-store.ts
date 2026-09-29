@@ -93,8 +93,9 @@ export const useMailStore = create<MailData & MailActions>((set, get) => ({
     }
 
     const batch = result.data.slice(0, pageSize);
-    const seen = new Set(current.mails.map((mail) => mail.id));
-    const mails = [...current.mails, ...batch.filter((mail) => !seen.has(mail.id))];
+    const latestMails = get().mails;
+    const seen = new Set(latestMails.map((mail) => mail.id));
+    const mails = [...latestMails, ...batch.filter((mail) => !seen.has(mail.id))];
     set({
       mails,
       hasMore: result.data.length > pageSize,

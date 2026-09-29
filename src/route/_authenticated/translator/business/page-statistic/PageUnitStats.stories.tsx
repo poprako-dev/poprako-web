@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { act, type ComponentProps, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
@@ -7,7 +7,7 @@ import type { PageUnitDiffStats } from "@/route/_authenticated/business/page/pag
 
 type Props = ComponentProps<typeof ReadOnlyPageActions>;
 
-function StatsPreview(props: Props): TranslatorImportedType0.Element {
+function StatsPreview(props: Props): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPageId, setCurrentPageId] = useState(props.currentPageId);
 
@@ -18,7 +18,7 @@ function StatsPreview(props: Props): TranslatorImportedType0.Element {
   }
 
   return (
-    <div className="relative h-dvh bg-foreground">
+    <div className="relative h-dvh bg-surface-stone-700">
       <div className="absolute bottom-3 right-3">
         <ReadOnlyPageActions
           {...props}

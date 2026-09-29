@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { useMemo, useSyncExternalStore } from "react";
 import { Paginator } from "@/shared/component/Paginator";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
@@ -26,7 +26,7 @@ export function TranslatorPaginator({
   isEnabled,
   onLoad,
   onNavigate,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const controller = useMemo(() => createPageFlaggedStatsController(onLoad), [onLoad]);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
   const showToast = useToastStore((state) => state.showToast);

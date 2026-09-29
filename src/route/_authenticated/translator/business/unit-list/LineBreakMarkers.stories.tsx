@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, within } from "storybook/test";
@@ -14,7 +14,7 @@ const sampleText =
   "这是一段足够长的文字，会随着侧边栏宽度自动折行，但只有句末是真实换行。\n" +
   "\n他说：「请保留引号、空格  和换行。」\n";
 
-function LineBreakExample(): TranslatorImportedType0.Element {
+function LineBreakExample(): JSX.Element {
   const [unit, setUnit] = useState<UnitInfo>(() => ({
     ...createUnit(0, 0, true),
     id: "line-break-example",
@@ -29,7 +29,7 @@ function LineBreakExample(): TranslatorImportedType0.Element {
 
   return (
     <div className="flex h-160 w-95 max-w-full resize-x flex-col overflow-auto">
-      <div className="flex flex-wrap items-center gap-3 border-b border-border p-2 text-sm">
+      <div className="flex flex-wrap items-center gap-3 border-b border-line-stone-200 p-2 text-sm">
         <select
           aria-label="视图"
           value={mode}
@@ -50,7 +50,7 @@ function LineBreakExample(): TranslatorImportedType0.Element {
           onResolveUser={() => Promise.resolve({ success: false, error: "No contributor" })}
         />
       </div>
-      <output aria-label="保存的翻译" className="whitespace-pre-wrap text-xs text-muted-foreground">
+      <output aria-label="保存的翻译" className="whitespace-pre-wrap text-xs text-ink-stone-500">
         {unit.translatedText}
       </output>
     </div>

@@ -1,4 +1,4 @@
-import type { RefObject as TranslatorImportedType0 } from "react";
+import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { showLocalCaughtError } from "@/route/business/request-error";
 import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
@@ -25,7 +25,7 @@ type Args = {
 };
 
 export function useUnitPersistence(args: Args): {
-  unitBufRef: TranslatorImportedType0<UnitInfo[]>;
+  unitBufRef: RefObject<UnitInfo[]>;
   pendingAction: PendingAction | null;
   saving: boolean;
   saveState: SaveSnapshot;

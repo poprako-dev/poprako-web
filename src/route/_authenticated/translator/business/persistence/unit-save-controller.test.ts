@@ -1,6 +1,6 @@
-import type { SaveSnapshot as TranslatorImportedType0 } from "@/route/_authenticated/translator/business/persistence/unit-save-controller";
-import type { SaveUnits as TranslatorImportedType1 } from "../contract/type";
-import type { Mock as TranslatorImportedType2 } from "vitest";
+import type { SaveSnapshot } from "@/route/_authenticated/translator/business/persistence/unit-save-controller";
+import type { SaveUnits } from "../contract/type";
+import type { Mock } from "vitest";
 import { describe, expect, test, vi } from "vitest";
 import { ApiRequestError } from "@/route/business/request-error";
 import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
@@ -39,16 +39,16 @@ function setup(initial = [unit()]): {
     saveOnce: () => Promise<void>;
     flush: () => Promise<void>;
     refresh: () => Promise<void>;
-    getSnapshot: () => TranslatorImportedType0;
+    getSnapshot: () => SaveSnapshot;
     setSuspended: (shouldSuspend: boolean) => void;
     setActive: (shouldActivate: boolean) => void;
   };
   pages: Map<string, UnitInfo[]>;
-  backend: TranslatorImportedType1;
-  save: TranslatorImportedType2<TranslatorImportedType1>;
-  reload: TranslatorImportedType2<(pageId: string) => Promise<UnitInfo[]>>;
-  changed: TranslatorImportedType2<(snapshot: TranslatorImportedType0) => void>;
-  failed: TranslatorImportedType2<(error: unknown, phase: "save" | "refresh") => void>;
+  backend: SaveUnits;
+  save: Mock<SaveUnits>;
+  reload: Mock<(pageId: string) => Promise<UnitInfo[]>>;
+  changed: Mock<(snapshot: SaveSnapshot) => void>;
+  failed: Mock<(error: unknown, phase: "save" | "refresh") => void>;
 } {
   const pages = new Map([["p1", initial]]);
   const backend = createUnitSaveFixture(pages);

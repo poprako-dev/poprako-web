@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef } from "react";
 import clsx from "clsx";
 import { Check, Copy, X } from "lucide-react";
@@ -61,7 +61,7 @@ export function ProofreadModeUnitItem({
   specialCharsBar,
   onSpecialCharUse,
   onSpecialCharInserted,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const proofRef = useRef<HTMLTextAreaElement>(null);
   const lastInsertedRequestIdRef = useRef<number | undefined>(undefined);
   const hasProofreadText = Boolean(unitProofreadText(unit));

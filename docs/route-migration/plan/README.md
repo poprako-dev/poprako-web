@@ -1,6 +1,6 @@
 # Route migration plans
 
-The current plan series is R001–R008 in this directory. Requirements are defined
+The current plan series is R001–R009 in this directory. Requirements are defined
 in [../REQUIREMENTS.md](../../REQUIREMENTS.md); this index defines execution
 order and status only. The former P001–P012 documents are retained as historical
 planning records and are not completion evidence or current policy where they
@@ -45,9 +45,17 @@ flowchart LR
 | [R006](R006-translator-and-utility.md)          | Translator and utility workflows                        | R003, R007   | done             |
 | [R007](R007-shared-interface-and-appearance.md) | Shared interfaces and light-only appearance             | R001         | done             |
 | [R008](R008-acceptance.md)                      | Integrated acceptance and delivery                      | R004–R007    | locally verified |
+| [R009](R009-restore-original-appearance.md)     | Restore original UI without redesign                    | R007         | in progress      |
 
 ## Execution ledger
 
-R001–R007 implemented; R008 local acceptance passed. Final results and remaining platform limits: [implementation-results](../review/implementation-results.md). Latest AGENTS forbids unified-purpose fan-out; prior workers stopped and root completed remaining implementation serially. No commit or remote deployment.
+R001–R007 have implementation records; they do not establish current acceptance.
+R008 passed the complete local check on 2026-09-29. The user requested preserving
+the original palette and registering its contrast debt separately; exact
+registered entries are retained, while new or changed violations fail.
+See the [original contrast register](../review/original-contrast-register.md).
+R009 tracks appearance corrections without redesigning the original palette.
+Current evidence: [review corrections](../review/review-finding-correction.md)
+and [appearance restoration](../review/appearance-restoration.md).
 
-Final evidence: [implementation results](../review/implementation-results.md).
+Earlier snapshot: [implementation results](../review/implementation-results.md).

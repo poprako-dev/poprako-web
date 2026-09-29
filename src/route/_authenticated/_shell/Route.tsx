@@ -29,7 +29,7 @@ function MobileBottomNav(): ReactElement {
       className={clsx(
         "fixed bottom-0 left-0 right-0 z-50 sm:hidden",
         "flex h-14 items-center justify-around",
-        "bg-navigation-paper/95 backdrop-blur-sm border-t border-line-stone-200",
+        "bg-navigation-glass backdrop-blur-sm border-t border-line-stone-200",
       )}
     >
       {mobileNavItems.map((item) => {

@@ -1,4 +1,4 @@
-import type { RefObject as TranslatorImportedType0 } from "react";
+import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { isBeyondDragThreshold } from "@/route/_authenticated/translator/business/unit-list/drag-threshold";
@@ -47,7 +47,7 @@ export function useDetachableSpecialCharsBar({ enabled, interactionKey }: Option
   position: Position | null;
   isGripHeld: boolean;
   placeholderHeight: number | null;
-  floatingRef: TranslatorImportedType0<HTMLDivElement | null>;
+  floatingRef: RefObject<HTMLDivElement | null>;
   handleGripPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void;
   dock: () => void;
 } {

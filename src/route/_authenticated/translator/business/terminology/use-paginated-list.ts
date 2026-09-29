@@ -1,4 +1,4 @@
-import type { PaginationPhase as TranslatorImportedType0 } from "@/route/_authenticated/translator/business/terminology/pagination";
+import type { PaginationPhase } from "@/route/_authenticated/translator/business/terminology/pagination";
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from "react";
 import type { Result, ResultFailure } from "@/shared/utility/result";
 import {
@@ -29,7 +29,7 @@ export function usePaginatedList<T extends { id: string }>({
   items: T[];
   offset: number;
   hasMore: boolean;
-  phase: TranslatorImportedType0;
+  phase: PaginationPhase;
   error?: string | undefined;
   requestVersion: number;
 } {

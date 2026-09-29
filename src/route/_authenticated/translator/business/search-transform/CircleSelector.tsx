@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
 
 export type SelectionState = "checked" | "unchecked" | "mixed";
@@ -10,12 +10,7 @@ type Props = {
   onClick: () => void;
 };
 
-export function CircleSelector({
-  label,
-  state,
-  disabled = false,
-  onClick,
-}: Props): TranslatorImportedType0.Element {
+export function CircleSelector({ label, state, disabled = false, onClick }: Props): JSX.Element {
   return (
     <button
       type="button"

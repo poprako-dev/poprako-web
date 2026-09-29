@@ -6,11 +6,11 @@ release_root=${RELEASE_DIR:?RELEASE_DIR is required}
 release_sha=${RELEASE_SHA:?RELEASE_SHA is required}
 release_tag=${RELEASE_TAG:?RELEASE_TAG is required}
 
-is_digits() {
+is_version_identifier() {
     value=$1
 
     case "$value" in
-        "" | *[!0-9]*) return 1 ;;
+        "" | *[!0-9]* | 0[0-9]*) return 1 ;;
     esac
 }
 
@@ -24,9 +24,9 @@ if [ "$version" = "$release_tag" ] || \
     [ "$minor_patch" = "$version" ] || \
     [ "$patch" = "$minor_patch" ] || \
     [ "$patch" != "${patch%%.*}" ] || \
-    ! is_digits "$major" || \
-    ! is_digits "$minor" || \
-    ! is_digits "$patch"; then
+    ! is_version_identifier "$major" || \
+    ! is_version_identifier "$minor" || \
+    ! is_version_identifier "$patch"; then
     echo "RELEASE_TAG must use vMAJOR.MINOR.PATCH format" >&2
     exit 1
 fi

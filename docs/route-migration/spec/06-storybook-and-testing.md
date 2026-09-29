@@ -118,6 +118,10 @@ Windows/macOS 不要求另装系统 Google Chrome。现有 browser 脚本的
 6. 更新 `.storybook/preview` 样式引用和主题 decorator，复用 S05 主题实现。a11y
    自动检查 从 `todo` 改为
    `error`；修复有效场景中的实际问题，工具误报有精确规则/故事例外。
+   2026-09-29 用户明确要求原色不变、原有对比度问题单独登记：浏览器门禁保留
+   完整 axe 检查，仅允许登记中精确匹配的旧 `color-contrast` 元素；新增规则、
+   颜色/字体/选择器变化或数量增加仍失败。登记及验证见
+   [原色对比度记录](../review/original-contrast-register.md)。不得自动接受新结果。
 
 ## S06.6 夹具隔离和清理契约
 

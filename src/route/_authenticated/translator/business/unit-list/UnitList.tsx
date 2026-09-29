@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
 import { ListCheck } from "lucide-react";
 import { Tooltip } from "radix-ui";
@@ -57,7 +57,7 @@ export function UnitList({
   specialCharsBar,
   onSpecialCharUse,
   onSpecialCharInserted,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const onModifyUnit = editing?.modifyUnit;
   const onReorderUnit = editing?.reorderUnit;
   const readOnly = enableReadOnly || editing === null || mode === "readOnly";

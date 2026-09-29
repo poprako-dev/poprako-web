@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import clsx from "clsx";
@@ -14,12 +14,7 @@ type Props = {
   onClose: () => void;
 };
 
-export function TermbaseEditorDialog({
-  termbase,
-  onSave,
-  onDelete,
-  onClose,
-}: Props): TranslatorImportedType0.Element {
+export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Props): JSX.Element {
   const [name, setName] = useState(termbase?.name ?? "");
   const [description, setDescription] = useState(termbase?.description ?? "");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);

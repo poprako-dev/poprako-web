@@ -1,4 +1,4 @@
-import type { ReactPortal as TranslatorImportedType0 } from "react";
+import type { ReactPortal } from "react";
 import { createPortal } from "react-dom";
 import { SpecialCharsBar } from "@/route/_authenticated/translator/business/unit-list/SpecialCharsBar";
 import type { SpecialCharsBarController } from "@/route/_authenticated/translator/business/preference/use-detachable-special-chars-bar";
@@ -13,7 +13,7 @@ export function FloatingSpecialCharsBar({
   controller,
   isDisabled,
   onInsert,
-}: Props): TranslatorImportedType0 | null {
+}: Props): ReactPortal | null {
   const { position, floatingRef } = controller;
   if (!position) return null;
 

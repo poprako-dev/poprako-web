@@ -2,6 +2,31 @@ import { parseRequestBody } from "@/test-resource/api-client";
 import { expect, test, vi } from "vitest";
 import { createApiClient } from "./client";
 import { decodeVoid } from "./contract";
+
+test.each(["fetch", "body"])("preserves %s rejection diagnostics", async (stage) => {
+  const error = new TypeError("Failed to fetch");
+  const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  const response = new Response();
+  vi.spyOn(response, "text").mockRejectedValue(error);
+  const request = vi.fn<typeof fetch>();
+  if (stage === "fetch") request.mockRejectedValue(error);
+  else request.mockResolvedValue(response);
+  const client = createApiClient({
+    baseUrl: "/api",
+    getAccessToken: () => null,
+    fetchImpl: request,
+  });
+  try {
+    expect(await client.get("/offline", { decode: decodeVoid })).toMatchObject({
+      success: false,
+      error: "网络连接失败",
+      failureKind: "network",
+    });
+    expect(log).toHaveBeenCalledWith("HTTP transport failed", error);
+  } finally {
+    log.mockRestore();
+  }
+});
 test("queries repeat includes, preserve false and zero, and omit missing values", async () => {
   const request = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }));
   const client = createApiClient({

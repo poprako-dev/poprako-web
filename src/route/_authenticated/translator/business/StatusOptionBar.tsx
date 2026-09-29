@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import {
   CheckCheck,
   CircleSlash,
@@ -64,7 +64,7 @@ export function StatusOptionBar({
   onToggleProofreadPreviewClick,
   onToggleImageQualityClick,
   onSaveClick,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const btnBase = clsx(
     "flex-1 flex items-center justify-center py-2 transition-colors",
     "text-ink-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",

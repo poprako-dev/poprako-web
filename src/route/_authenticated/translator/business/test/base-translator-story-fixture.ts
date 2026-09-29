@@ -1,4 +1,4 @@
-import type { UserInfo as TranslatorImportedType0 } from "../../../../business/identity/user";
+import type { UserInfo } from "../../../../business/identity/user";
 import type { ComponentProps } from "react";
 import type { BaseTranslator } from "@/route/_authenticated/translator/business/BaseTranslator";
 import {
@@ -28,7 +28,7 @@ async function mockCompleteStage(stage: "translate" | "proofread"): Promise<void
 async function mockResolveUser(userId: string): Promise<
   | {
       success: true;
-      data: TranslatorImportedType0;
+      data: UserInfo;
       error?: never;
     }
   | { success: false; error: string; data?: never }

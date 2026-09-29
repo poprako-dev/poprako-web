@@ -1,7 +1,7 @@
-import type { SaveUnits as TranslatorImportedType0 } from "../contract/type";
-import type { Mock as TranslatorImportedType1 } from "vitest";
-import type { UnitInfo as TranslatorImportedType2 } from "@/route/_authenticated/translator/business/unit/unit";
-import type { SaveSnapshot as TranslatorImportedType3 } from "@/route/_authenticated/translator/business/persistence/unit-save-controller";
+import type { SaveUnits } from "../contract/type";
+import type { Mock } from "vitest";
+import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
+import type { SaveSnapshot } from "@/route/_authenticated/translator/business/persistence/unit-save-controller";
 import { describe, expect, test, vi } from "vitest";
 import { createUnit } from "@/route/_authenticated/translator/business/unit/unit";
 import { isUnitSame } from "@/route/_authenticated/translator/business/unit/unit-comparison";
@@ -72,15 +72,15 @@ function setup(): {
       proofreaderComment?: string | undefined;
     }[]
   >;
-  backend: TranslatorImportedType0;
-  save: TranslatorImportedType1<TranslatorImportedType0>;
+  backend: SaveUnits;
+  save: Mock<SaveUnits>;
   controller: {
-    load: (id: string, units: TranslatorImportedType2[]) => void;
-    commit: (units: TranslatorImportedType2[]) => void;
+    load: (id: string, units: UnitInfo[]) => void;
+    commit: (units: UnitInfo[]) => void;
     saveOnce: () => Promise<void>;
     flush: () => Promise<void>;
     refresh: () => Promise<void>;
-    getSnapshot: () => TranslatorImportedType3;
+    getSnapshot: () => SaveSnapshot;
     setSuspended: (shouldSuspend: boolean) => void;
     setActive: (shouldActivate: boolean) => void;
   };

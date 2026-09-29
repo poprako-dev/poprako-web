@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
@@ -47,7 +47,7 @@ export function UnitSearchTransformDialog({
   onRefreshCurrentPage,
   onNavigate,
   onClose,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const [searchValue, setSearchValue] = useState("");
   const [targetValue, setTargetValue] = useState("");
   const [searchState, setSearchState] = useState<SearchState>({

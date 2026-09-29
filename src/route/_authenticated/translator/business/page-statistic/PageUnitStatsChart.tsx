@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { useEffect, useRef, useState } from "react";
 import { CheckCheck, Files, FileType, Loader2, Plus, RefreshCcw } from "lucide-react";
 import clsx from "clsx";
@@ -27,7 +27,7 @@ export function PageUnitStatsChart({
   isDisabled,
   onLoad,
   onNavigate,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
   const [revision, setRevision] = useState(0);
   const currentRowRef = useRef<HTMLButtonElement>(null);

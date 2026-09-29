@@ -70,7 +70,7 @@ export const SlowNetwork: Story = {
     };
 
     return (
-      <div className="min-h-screen bg-surface-hover">
+      <div className="min-h-screen bg-surface-slate-100">
         {open && (
           <MemberInvitorModal
             teamId="team-1"

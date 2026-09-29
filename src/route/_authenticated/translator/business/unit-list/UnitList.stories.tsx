@@ -1,5 +1,5 @@
 import { expect, within } from "storybook/test";
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import clsx from "clsx";
 import { useState } from "react";
@@ -218,7 +218,7 @@ function UnitListWrapper({
   initialMode,
   readOnly = false,
   initialUnitInfos = initialUnits,
-}: UnitListWrapperProps): TranslatorImportedType0.Element {
+}: UnitListWrapperProps): JSX.Element {
   const [mode, setMode] = useState<TranslatorMode>(initialMode);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>("2");
   const [units, setUnits] = useState<UnitInfo[]>(initialUnitInfos);
@@ -232,25 +232,23 @@ function UnitListWrapper({
   };
 
   return (
-    <div
-      className={clsx("flex h-screen w-full flex-col bg-surface-workspace font-sans antialiased")}
-    >
+    <div className={clsx("flex h-screen w-full flex-col bg-surface-gray-50 font-sans antialiased")}>
       <header
         className={clsx(
-          "flex shrink-0 items-center justify-between border-b bg-surface-panel",
-          "border-border px-6 py-4 shadow-sm",
+          "flex shrink-0 items-center justify-between border-b bg-surface-white",
+          "border-line-gray-200 px-6 py-4 shadow-sm",
         )}
       >
         <div>
-          <h1 className="text-lg font-bold text-foreground">UnitList 交互演示</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h1 className="text-lg font-bold text-ink-gray-800">UnitList 交互演示</h1>
+          <p className="text-xs text-ink-gray-500 mt-0.5">
             {readOnly
               ? "只读模式 · 点击序号仍可聚焦"
               : "拖动序号排序 · 轻触序号切换气泡状态 · " + "支持输入和模式切换"}
           </p>
         </div>
         {!readOnly && (
-          <div className="flex bg-surface-hover p-1 rounded-lg border border-border">
+          <div className="flex bg-surface-gray-100 p-1 rounded-lg border border-line-gray-200">
             <button
               type="button"
               onClick={() => {
@@ -259,8 +257,8 @@ function UnitListWrapper({
               className={clsx(
                 "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
                 mode === "translate"
-                  ? "bg-surface-panel text-foreground shadow-sm"
-                  : "text-text-secondary hover:text-foreground",
+                  ? "bg-surface-white text-ink-gray-800 shadow-sm"
+                  : "text-ink-gray-500 hover:text-ink-gray-700",
               )}
             >
               翻译模式
@@ -273,8 +271,8 @@ function UnitListWrapper({
               className={clsx(
                 "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
                 mode === "proofread"
-                  ? "bg-surface-panel text-foreground shadow-sm"
-                  : "text-text-secondary hover:text-foreground",
+                  ? "bg-surface-white text-ink-gray-800 shadow-sm"
+                  : "text-ink-gray-500 hover:text-ink-gray-700",
               )}
             >
               校对模式
@@ -286,7 +284,7 @@ function UnitListWrapper({
       <main
         className={
           "mx-auto flex-1 w-full max-w-3xl overflow-hidden border-x " +
-          "border-border bg-surface-panel p-4 shadow-inner"
+          "border-line-gray-100 bg-surface-white p-4 shadow-inner"
         }
       >
         <UnitList

@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { type RefObject, useLayoutEffect, useRef, useState } from "react";
 
 type Props = {
@@ -13,7 +13,7 @@ type MarkerPosition = {
   height: number;
 };
 
-export function LineBreakOverlay({ targetRef, layoutKey }: Props): TranslatorImportedType0.Element {
+export function LineBreakOverlay({ targetRef, layoutKey }: Props): JSX.Element {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [positions, setPositions] = useState<MarkerPosition[]>([]);
 

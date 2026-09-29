@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import type { ReactNode } from "react";
 import { AppDialog } from "@/shared/component/AppDialog";
 
@@ -16,7 +16,7 @@ export function TerminologyDialogFrame({
   footer,
   locked,
   onClose,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   return (
     <AppDialog title={title} footer={footer} locked={locked} onClose={onClose}>
       {children}

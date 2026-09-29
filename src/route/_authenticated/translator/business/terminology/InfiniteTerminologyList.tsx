@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { type ReactNode, useEffect, useRef } from "react";
 import { BookOpenText, RefreshCcw } from "lucide-react";
 import clsx from "clsx";
@@ -30,7 +30,7 @@ export function InfiniteTerminologyList({
   ariaLabel,
   onLoadMore,
   onRetry,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const previousLoadingRef = useRef(isInitialLoading || isLoadingMore);

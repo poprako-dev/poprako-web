@@ -21,6 +21,7 @@ export default mergeConfig(
             browser: {
               enabled: true,
               headless: true,
+              screenshotFailures: false,
               provider: playwright({}),
               instances: [{ browser: "chromium" }],
             },

@@ -107,3 +107,48 @@ describe("system mail state and session boundary", () => {
     });
   });
 });
+
+test("pagination preserves a read mutation completed while the next page was pending", async () => {
+  useAppStore.getState().setAccessToken("pagination-read-race");
+  let finishPage: (response: Response) => void = () => {
+    throw new Error("Pagination request has not started");
+  };
+  const fetchImpl = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(mailResponse([mail, { ...mail, id: "mail-2" }]))
+    .mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          finishPage = resolve;
+        }),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 204 }));
+  const client = makeClient(fetchImpl);
+  try {
+    await useMailStore.getState().loadInitial(client, 1);
+    const pendingPage = useMailStore.getState().loadMore(client, 2);
+    expect(await useMailStore.getState().markRead(client, mail.id)).toEqual({
+      success: true,
+      data: undefined,
+    });
+    expect(useMailStore.getState().mails[0]?.isRead).toBe(true);
+    finishPage(mailResponse([mail, { ...mail, id: "mail-2" }]));
+    const result = await pendingPage;
+    expect(result).toMatchObject({
+      success: true,
+      data: [
+        { id: "mail-1", isRead: true },
+        { id: "mail-2", isRead: false },
+      ],
+    });
+    expect(useMailStore.getState().mails).toMatchObject([
+      { id: "mail-1", isRead: true },
+      { id: "mail-2", isRead: false },
+    ]);
+    const preserved = await useMailStore.getState().loadInitial(client, 1);
+    expect(preserved).toEqual(result);
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+  } finally {
+    useAppStore.getState().setAccessToken(null);
+  }
+});

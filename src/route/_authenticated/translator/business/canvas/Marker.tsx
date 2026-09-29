@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
 
 export const CIRCLE_SIZE = 32;
@@ -21,7 +21,7 @@ export function Marker({
   isSelected,
   isDragging,
   dimmed,
-}: Props): TranslatorImportedType0.Element {
+}: Props): JSX.Element {
   return (
     <div
       className={`flex flex-col items-center select-none ${

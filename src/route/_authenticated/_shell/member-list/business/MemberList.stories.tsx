@@ -59,7 +59,7 @@ function MemberListDemo(): JSX.Element {
   const [activeRole, setActiveRole] = useState<RoleFilter | null>(null);
 
   return (
-    <div className="h-screen p-6 bg-muted">
+    <div className="h-screen p-6 bg-surface-slate-50">
       <MemberList
         fuzzyName={fuzzyName}
         onChangeFuzzyName={setFuzzyName}
@@ -82,7 +82,7 @@ export const Default: Story = {
 
 export const Embedded: StoryObj<typeof EmbeddedMemberList> = {
   render: () => (
-    <div className="h-screen p-6 bg-muted">
+    <div className="h-screen p-6 bg-surface-slate-50">
       <EmbeddedMemberList onLoadMembers={mockLoadMembers} />
     </div>
   ),
@@ -94,7 +94,7 @@ function FilterHeaderDemo(): JSX.Element {
   const [fuzzyName, setFuzzyName] = useState("");
   const [activeRole, setActiveRole] = useState<RoleFilter | null>(null);
   return (
-    <div className="p-6 bg-muted max-w-xl">
+    <div className="p-6 bg-surface-slate-50 max-w-xl">
       <MemberListFilterHeader
         activeFuzzyName={fuzzyName}
         onChangeFuzzyName={setFuzzyName}

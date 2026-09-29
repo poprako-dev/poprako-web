@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { StatusOptionBar } from "@/route/_authenticated/translator/business/StatusOptionBar";
@@ -22,7 +22,7 @@ function InteractiveWrapper({
 }: {
   initialMode: TranslatorMode;
   availableModes: TranslatorMode[];
-}): TranslatorImportedType0.Element {
+}): JSX.Element {
   const [view, setView] = useState<TranslatorMode>(initialMode);
   const [relocation, setRelocation] = useState(false);
   const [isHighResolution, setIsHighResolution] = useState(false);

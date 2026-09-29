@@ -94,7 +94,7 @@ export function SettingsPanel(): JSX.Element {
           "flex w-full cursor-pointer items-center justify-between",
           "rounded-sm px-6 py-4 transition-colors",
           "bg-surface-white/80 ring-1 shadow-sm ring-focus-black/5",
-          "hover:bg-surface-stone-50/80 hover:ring-focus-stone-200 hover:text-ink-stone-700",
+          "hover:bg-surface-amber-50/80 hover:ring-focus-amber-200 hover:text-ink-amber-700",
         )}
         onClick={() => {
           setIsPasswordDialogOpen(true);
@@ -126,7 +126,7 @@ export function SettingsPanel(): JSX.Element {
           "flex w-full cursor-pointer items-center justify-between",
           "rounded-sm px-6 py-4 transition-colors",
           "bg-surface-white/80 ring-1 shadow-sm ring-focus-black/5",
-          "hover:bg-surface-slate-50/80 hover:ring-focus-slate-200 hover:text-ink-slate-700",
+          "hover:bg-surface-stone-50/80 hover:ring-focus-stone-200 hover:text-ink-stone-700",
         )}
         onClick={handleExportLogs}
       >

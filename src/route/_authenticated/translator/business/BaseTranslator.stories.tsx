@@ -35,11 +35,22 @@ const meta: Meta<typeof BaseTranslator> = {
 export default meta;
 type Story = StoryObj<typeof BaseTranslator>;
 
+async function waitForCanvasImage(canvasElement: HTMLElement): Promise<void> {
+  await waitFor(async () => {
+    const image = canvasElement.querySelector<HTMLImageElement>('[role="application"] img');
+    await expect(image?.complete).toBe(true);
+    await expect(image?.naturalWidth).toBeGreaterThan(0);
+  });
+}
+
 export const WithProofread: Story = {
   args: createStoryArgs({
     canTranslate: true,
     canProofread: true,
   }),
+  play: async ({ canvasElement }) => {
+    await waitForCanvasImage(canvasElement);
+  },
 };
 
 export const TranslatorOnly: Story = {
@@ -75,6 +86,7 @@ export const TranslatorOnly: Story = {
         name: "切换到只读模式",
       }),
     ).toBeVisible();
+    await waitForCanvasImage(canvasElement);
   },
 };
 
@@ -121,6 +133,9 @@ export const WithTerminology: Story = {
       canProofread: true,
     }),
     terminology: mockTerminology,
+  },
+  play: async ({ canvasElement }) => {
+    await waitForCanvasImage(canvasElement);
   },
 };
 

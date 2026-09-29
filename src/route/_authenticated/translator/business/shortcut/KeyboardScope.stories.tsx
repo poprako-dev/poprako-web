@@ -1,11 +1,11 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fireEvent, fn, userEvent, within } from "storybook/test";
 import { useShortcutActions } from "@/route/_authenticated/translator/business/editor/use-shortcut-actions";
 
 type Props = { onAction: () => void };
 
-function ShortcutScope({ onAction }: Props): TranslatorImportedType0.Element {
+function ShortcutScope({ onAction }: Props): JSX.Element {
   useShortcutActions(
     { save: onAction },
     [

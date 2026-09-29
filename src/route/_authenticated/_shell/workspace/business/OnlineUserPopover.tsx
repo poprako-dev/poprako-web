@@ -59,7 +59,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
         )}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-activity-recent" />
-        <span>{status === "error" ? "在线人数未知" : `${String(onlineCount)} 人在线`}</span>
+        <span>{status === "error" ? "在线人数未知" : <>{onlineCount} 人在线</>}</span>
         <ChevronDown
           size={14}
           className={clsx("text-ink-slate-400 transition-transform", isOpen && "rotate-180")}

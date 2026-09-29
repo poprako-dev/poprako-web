@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, LoaderCircle, Plus, X } from "lucide-react";
 import clsx from "clsx";
@@ -18,12 +18,7 @@ type Props = {
   onClose: () => void;
 };
 
-export function TermEditorDialog({
-  term,
-  onSave,
-  onDelete,
-  onClose,
-}: Props): TranslatorImportedType0.Element {
+export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JSX.Element {
   const [source, setSource] = useState(term?.source ?? "");
   const [targets, setTargets] = useState(() =>
     (term && term.targets.length > 0 ? term.targets : [""]).map((value) => ({

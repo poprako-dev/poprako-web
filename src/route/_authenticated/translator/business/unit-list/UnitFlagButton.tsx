@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { Star } from "lucide-react";
 import clsx from "clsx";
 
@@ -8,11 +8,7 @@ type Props = {
   onToggle: () => void;
 };
 
-export function UnitFlagButton({
-  isFlagged,
-  isDisabled,
-  onToggle,
-}: Props): TranslatorImportedType0.Element {
+export function UnitFlagButton({ isFlagged, isDisabled, onToggle }: Props): JSX.Element {
   const label = isFlagged ? "取消标记" : "标记待回看";
   return (
     <button

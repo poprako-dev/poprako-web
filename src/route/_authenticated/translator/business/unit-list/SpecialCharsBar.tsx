@@ -1,4 +1,4 @@
-import type { JSX as TranslatorImportedType0 } from "react/jsx-runtime";
+import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
 import { Grip, Undo2 } from "lucide-react";
 import { useSpecialChars } from "@/route/_authenticated/translator/business/preference/use-special-chars";
@@ -18,7 +18,7 @@ export function SpecialCharsBar({
   controller,
   isFloating = false,
   isDisabled = false,
-}: Props): TranslatorImportedType0.Element | null {
+}: Props): JSX.Element | null {
   const { allChars } = useSpecialChars();
   if (!isFloating && controller?.position) {
     return controller.placeholderHeight === null ? null : (
