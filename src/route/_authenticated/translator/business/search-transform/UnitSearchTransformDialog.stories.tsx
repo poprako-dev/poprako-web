@@ -74,7 +74,9 @@ export const GroupedResults: Story = {
     const dialog = within(page.getByRole("dialog", { name: "搜索与替换" }));
     await userEvent.type(dialog.getByRole("textbox", { name: "查找短语" }), "旧词");
     await userEvent.click(dialog.getByRole("button", { name: "搜索" }));
-    await expect(await dialog.findByText("8 个匹配 Unit")).toBeVisible();
+    await waitFor(async () => {
+      await expect(await dialog.findByText("8 个匹配 Unit")).toBeVisible();
+    });
     const pageSelector = dialog.getByRole("checkbox", {
       name: "选择第 1 页全部匹配项",
     });

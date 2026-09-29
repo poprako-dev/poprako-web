@@ -22,7 +22,7 @@ export default mergeConfig(
               enabled: true,
               headless: true,
               screenshotFailures: false,
-              provider: playwright({}),
+              provider: playwright({ contextOptions: { timezoneId: "Asia/Shanghai" } }),
               instances: [{ browser: "chromium" }],
             },
             setupFiles: [".storybook/vitest.setup.ts"],
