@@ -35,4 +35,7 @@ storybook-static
 .claude/settings.local.json
 .omx/
 
-/test-resources/
+/test-resource/
+
+/src/test-resource/generated/
+/docs/route-migration/review/component-inventory.json

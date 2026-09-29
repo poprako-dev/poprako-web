@@ -1,94 +1,55 @@
-# AGENTS.md
+# Repository guidance
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+Use Deno 2.9 for dependency installation and project tasks. `deno.json` and the
+frozen `deno.lock` are authoritative. Do not use Bun, npm, pnpm, or Yarn as
+package managers. Run `deno task prepare:dependencies` after clean installs;
+normal checks must use their read-only counterparts.
 
-Fanning-out multiple agents(parent-children, children-children) for a **unified purpose** IS FORBIDDEN!!!(For example, "Let read relevant files while the subagents are exploring". STRICTLY BANNED).
+## Architecture
 
-## Build / Dev Commands
+PopRaKo Web remains a browser-based React application using its HTTP backend. It
+is not a Tauri project. Follow [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) as
+the current architecture source of truth.
 
-| Command | What |
-| --- | --- |
-| `deno task dev` | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
-| `deno task build` | Type-check (`tsc -b`) then bundle (`vite build`) |
-| `deno task lint` | Run ESLint |
-| `deno task test:unit` | Run unit tests with Deno |
-| `deno task storybook` | Start Storybook on port 6006 |
-| `sh scripts/ci-check.sh` | Run all required repository checks |
-| `deno run -A npm:shadcn@latest add <comp>` | Add a shadcn/ui component |
+- `src/Main.tsx` starts the app. `src/application/` assembles providers and
+  routing.
+- `src/route/` contains TanStack file routes and route-owned business modules. A
+  route may use its own modules and ancestor business modules, never sibling
+  route internals.
+- `src/api/` is an independent HTTP/API boundary; it does not import route UI or
+  session state.
+- `src/shared/` contains route-independent UI, hooks, and utilities. Setting and
+  utility routes are pathless groups under the authenticated route tree; they
+  are not top-level source directories. `src/test-resource/` contains only test
+  resources shared across modules; keep local fixtures beside their owner.
+- The route tree is generated. Edit route inputs and use the documented
+  generation task; never edit generated output directly.
+- Business modules own request orchestration and raw-to-domain conversion. Reuse
+  the established case conversion implementation; do not hand-map every field.
 
-Unit tests use Vitest's Node environment. Storybook interaction tests use
-Playwright browser mode via `@storybook/addon-vitest`; CI builds Storybook but
-does not run browser tests until the browser suite has a stable fixture policy.
+## Source conventions
 
-**Always use Deno 2.9**. Never Bun, npm, pnpm, or Yarn for package management.
+- Use named exports for source modules and components. TanStack route files
+  export the required named `Route`. Default exports are for framework-required
+  configuration and Storybook metadata.
+- Declare component props with a named `type Props`. Use `type` for data shapes
+  and `interface` only for pure callable contracts.
+- Top-level functions and components use function declarations. Keep source and
+  tests at or below 400 physical lines by splitting cohesive responsibilities
+  without deleting test assertions.
+- Use PascalCase `.tsx` component/story filenames and kebab-case `.ts` modules.
+  Place tests and stories near their subject. Put shared test-only fixtures in
+  `src/test-resource/`.
+- Retain Zustand and Storybook. The interface is light-only; do not add
+  dark/system preferences or theme selection UI.
+- Preserve useful error context, user-facing recovery, keyboard/IME behavior,
+  and accessible labels. Fix findings in the relevant code instead of adding
+  broad suppressions or disabling checks.
 
-## Architecture Overview
+## Checks
 
-**Poprako W (白杨子 W)** — manga/comic translation management platform.
-
-```
-src/
-  main.tsx           # Entry: renders App + NotificationToast
-  App.tsx            # Just wraps <RouterProvider>
-  router/index.ts    # All routes + lazy-loading pattern
-  store/app.ts       # Global zustand store (auth token, login state, selected team)
-  index.css          # Tailwind + shadcn + custom color tokens
-  api/util.ts        # Centralized fetch wrapper (Result<T> pattern, auto Bearer token)
-  components/ui/     # Shared UI (Button, LoadingCircle, NotificationToast, etc.)
-  features/          # Feature modules (see below)
-  pages/             # Route-level page components
-  layouts/           # AppShell layouts
-  types/             # Domain types (camelCase) + raw API types (snake_case)
-```
-
-### Feature Module Convention
-
-Each `src/features/<Name>/` follows this structure:
-
-- `components/business/` — the actual components
-- `layouts/` — optional layout wrapper
-- `api/` — feature-specific API calls
-- `types/` — feature-local types
-- `hook/` — feature-local hooks
-- `index.ts` — re-exports default component
-
-### Data Flow
-
-1. **API**: `src/api/util.ts` exports `api.get/post/put/delete/patch` — each returns `Result<T>` (`{ success, data } | { success, error }`). Auth Bearer token is read from `useAppStore.getState().getAccessToken()` automatically. Set `needAuth: false` for public endpoints.
-
-2. **Raw → Domain types**: API responses use `snake_case` types in `src/types/raw/`. Each has an `unwrapRaw*()` function that converts to the `camelCase` domain type in `src/types/`. Always unwrap as close to the API boundary as possible.
-
-3. **Auth**: `useAppStore` persists `accessToken` + `selectedTeamId` via zustand/persist. `loginState` (derived, not persisted) holds `{ userInfo, memberInfos }`. Both `AppLayout` and `TranslatorPage` independently fetch user + member data on mount and redirect to `/login` on failure. No centralized auth middleware — each protected route handles its own guard.
-
-4. **Notifications**: `NotificationToast` is mounted once in `main.tsx`. Call `useToastStore().showToast(message, type)` anywhere. For unrecoverable errors: call `showToast()` for user-facing message AND `console.error()` for developer details.
-
-5. **Translation engine**: `BaseTranslator` (core UI) expects a project abstraction via callback props (`onLoadUnits`, `onSaveUnits`, `onLoadPageImage`). `WebTranslator` is the API adapter — it fetches from the backend and delegates rendering to `BaseTranslator`. The `UnitDiff` type carries batched edit operations.
-
-### Routing
-
-```
-/login                          — LoginPage
-/translator/:chapterId/:pageId  — TranslatorPage (full-screen, no sidebar)
-/                               — AppLayout (sidebar + mobile bottom nav)
-  /workspace                    — WorkspacePage
-  /comic-playground             — ComicPlaygroundPage
-  /member-list                  — MemberGlancePage
-  /settings                     — SettingsPage
-```
-
-AppLayout requires auth; TranslatorPage requires auth + chapterId + pageId. Root `/` redirects to `/workspace`.
-
-## Coding Style
-
-- Components: `export default function Foo()`, NOT `React.FC`
-- Props: separate `type Props = { ... }` declaration — never inline in function params
-- Props are required unless the caller genuinely may omit them
-- Component-level closures: `function`. Inner closures: arrow functions `() =>`
-- Styles go INSIDE the `return` block; never extract styles to module-level variables
-- Line length max 100 characters; use `clsx` to group Tailwind classes
-- Color tokens defined in `index.css` — reuse them, don't hardcode colors
-- Check `src/components/ui/` for reusable components before creating new ones
-- No "card-style" wrapper components — this degrades visual quality
-- Overall aesthetic: muted, easy on the eyes; avoid purple, deep blue, neon colors
-- Storybook stories go in `src/stories/` matching the source structure
-- Toast + console.error for unrecoverable errors (see Notifications above)
+Use the tasks documented in `deno.json`; the `check` aggregate is the required
+local gate. Migration plans and evidence are indexed at
+[docs/route-migration/plan/README.md](docs/route-migration/plan/README.md).
+Status must reflect recorded evidence; source moves or an earlier successful
+snapshot do not prove the current plan complete.

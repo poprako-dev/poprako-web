@@ -9,9 +9,9 @@ Tailwind CSS 构建。项目目前处于活跃开发阶段。
 
 ## 环境要求
 
-- Deno 2.9
+- Deno 2.9.6
 
-`package.json` 固定了受支持的 Deno 版本范围。请使用 Deno，不要使用 Bun、npm、
+`package.json` 固定了受支持的 Deno 版本。请使用 Deno，不要使用 Bun、npm、
 pnpm 或 Yarn 安装依赖。
 
 ## 本地开发
@@ -28,22 +28,37 @@ deno task dev
 cp .env.example .env.development
 ```
 
+## 架构
+
+页面使用 TanStack Router 文件路由，入口和全局 providers 位于 `src/application/`。
+`src/route/` 按路由组织页面与业务模块；`src/route/business/` 存放跨路由的业务逻辑，
+`src/shared/` 存放不依赖路由的通用组件、hooks 和工具。`src/route-tree.gen.ts` 是生成
+文件，应修改路由输入后运行 `deno task generate`，不要直接编辑它。
+
+路由目录、模块依赖边界、测试和命名规则见 [AGENTS.md](AGENTS.md)。
+
 ## 常用命令
 
 ```sh
 deno task lint
+deno task typecheck
 deno task test:unit
+deno task test:integration
+deno task test:storybook
+deno task test:script
 deno task build
 deno task build-storybook
 deno task storybook
-deno task test:storybook-start
-sh scripts/ci-check.sh
+deno task project:check
+deno task generate:check
+sh script/ci-check.sh
 ```
 
-`scripts/ci-check.sh` 是仓库和 CI 共用的权威检查入口；`justfile` 仅提供本地快捷
-命令，不是 CI/CD 接口。
+`script/ci-check.sh` 是仓库和 CI 共用的权威检查入口；`justfile` 仅提供本地快捷
+命令，不是 CI/CD 接口。`deno task test:storybook` 会在 Chromium 中运行 Storybook
+交互与可访问性测试；`deno task generate:check` 只读检查生成路由文件是否最新。
 
-Storybook 开发服务通过 `scripts/storybook-deno.mjs` 适配 Deno 的依赖读取和命令执行，
+Storybook 开发服务通过 `script/storybook-deno.mjs` 适配 Deno 的依赖读取和命令执行，
 无需安装其他包管理器。CI 同时检查静态构建和开发服务启动。
 
 生产构建由 GitHub Actions `production` environment 的 `API_BASE_URL` secret

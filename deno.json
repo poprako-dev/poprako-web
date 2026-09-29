@@ -3,5 +3,40 @@
   "lock": {
     "frozen": true
   },
-  "allowScripts": ["npm:esbuild@0.28.2", "npm:fsevents@2.3.3", "npm:msw@2.15.0", "npm:node-liblzma@5.1.1"]
+  "allowScripts": ["npm:node-liblzma@5.1.1", "npm:msw@2.15.0"],
+  "tasks": {
+    "prepare:dependencies": "deno run -A script/prepare-dependencies.ts",
+    "prepare:dependencies:check": "deno run -A script/prepare-dependencies.ts --check",
+    "dev": "deno task prepare:dependencies:check && deno run -A npm:vite@8.0.16",
+    "build": "deno task typecheck && deno run -A npm:vite@8.0.16 build",
+    "preview": "deno run -A npm:vite@8.0.16 preview",
+    "generate": "deno run -A script/generate.ts",
+    "generate:check": "deno run -A script/generate.ts --check",
+    "typecheck:app": "deno run -A npm:typescript@6.0.3/tsc -p tsconfig.app.json",
+    "typecheck:test": "deno run -A npm:typescript@6.0.3/tsc -p tsconfig.test.json",
+    "typecheck:storybook": "deno run -A npm:typescript@6.0.3/tsc -p tsconfig.storybook.json",
+    "typecheck:tool": "deno run -A npm:typescript@6.0.3/tsc -p tsconfig.node.json",
+    "typecheck:script": "deno check --check-js script/*.ts script/*.mjs",
+    "typecheck": "deno task prepare:dependencies:check && deno task typecheck:app && deno task typecheck:test && deno task typecheck:storybook && deno task typecheck:tool && deno task typecheck:script",
+    "lint": "deno run -A npm:eslint@9.39.1 . --max-warnings 0",
+    "format": "deno run -A npm:prettier@3.6.2 --write src script .storybook *.json *.ts *.js *.mjs",
+    "format:check": "deno run -A npm:prettier@3.6.2 --check src script .storybook *.json *.ts *.js *.mjs",
+    "test:unit": "deno run -A npm:vitest@4.1.11 run --config vitest.unit.config.ts",
+    "test:integration": "deno run -A npm:vitest@4.1.11 run --config vitest.integration.config.ts",
+    "test:storybook": "deno run -A npm:vitest@4.1.11 run --config vitest.storybook.config.ts --project storybook",
+    "project:check": "deno run -A script/check.ts && deno run -A script/check-test-inventory.ts",
+    "test:script": "deno test -A script",
+    "test:inventory": "deno run -A script/check-test-inventory.ts",
+    "component:audit": "deno run -A script/component-inventory.ts",
+    "test:frontend": "deno task test:unit && deno task test:integration && deno task test:storybook",
+    "test": "deno task test:frontend && deno task test:script",
+    "test:browser-install": "deno run -A npm:playwright@1.63.0 install chromium",
+    "test:compress-browser": "deno run -A script/test-compress-browser.mjs",
+    "test:bounded-browser": "deno run -A script/test-bounded-browser.mjs",
+    "storybook": "deno task prepare:dependencies:check && deno run -A script/storybook-deno.mjs dev -p 6006",
+    "build-storybook": "deno task prepare:dependencies:check && deno run -A script/storybook-deno.mjs build --disable-telemetry",
+    "test:storybook-start": "deno run -A script/test-storybook-start.ts",
+    "check": "deno task format:check && deno task typecheck && deno task lint && deno task project:check && deno task generate:check && deno task test",
+    "audit": "deno audit --frozen --level=high"
+  }
 }

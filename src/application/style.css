@@ -1,0 +1,230 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./appearance.css";
+
+@theme inline {
+  --font-sans:
+    ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+  --font-mono:
+    ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  /* Emerald 主题色 Tailwind 映射 */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-muted: var(--primary-muted);
+  --color-primary-border: var(--primary-border);
+  --color-primary-text: var(--primary-text);
+  --color-on-primary: var(--on-primary);
+  --color-ring-primary: var(--ring-primary);
+  --color-surface-workspace: var(--surface-workspace);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-hover: var(--surface-hover);
+  --color-text-secondary: var(--text-secondary);
+  --color-overlay: var(--overlay);
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-info: var(--status-info);
+  --color-selection: var(--selection);
+  --color-marker-bubble: var(--marker-bubble);
+  --color-marker-bubble-border: var(--marker-bubble-border);
+  --color-marker-note: var(--marker-note);
+  --color-marker-note-border: var(--marker-note-border);
+  --color-annotation: var(--annotation);
+  --color-image-label-overlay: var(--image-label-overlay);
+  --color-image-label-foreground: var(--image-label-foreground);
+  --color-diff-delete-text: var(--diff-delete-text);
+  --color-diff-delete-bg: var(--diff-delete-bg);
+  --color-diff-replaced-text: var(--diff-replaced-text);
+  --color-diff-replaced-bg: var(--diff-replaced-bg);
+  --color-diff-replacement-text: var(--diff-replacement-text);
+  --color-diff-replacement-bg: var(--diff-replacement-bg);
+  --color-diff-insert-text: var(--diff-insert-text);
+  --color-diff-insert-bg: var(--diff-insert-bg);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.13 0.028 261.692);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.13 0.028 261.692);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.13 0.028 261.692);
+  --primary: #059669; /* original emerald-600 */
+  --primary-foreground: #ffffff; /* on-primary */
+  --secondary: oklch(0.967 0 0);
+  --secondary-foreground: oklch(0.21 0 0);
+  --muted: oklch(0.967 0 0);
+  --muted-foreground: oklch(0.551 0 0);
+  --accent: #ecfdf5; /* emerald-50  → primary-subtle */
+  --accent-foreground: #047857; /* emerald-700 → primary-text */
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --border: oklch(0.928 0 0);
+  --input: oklch(0.928 0 0);
+  --ring: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% */
+  color-scheme: light;
+  --surface-workspace: #f7f8f6;
+  --surface-panel: #ffffff;
+  --surface-hover: #f1f4f0;
+  --text-secondary: #626b63;
+  --overlay: rgb(24 32 26 / 48%);
+  --status-success: #39714b;
+  --status-warning: #8b641b;
+  --status-info: #426d62;
+  --selection: #dcefe3;
+  --marker-bubble: #e4bdc9;
+  --marker-bubble-border: #a3687f;
+  --marker-note: #ead39b;
+  --marker-note-border: #967534;
+  --annotation: #fff0bd;
+  --image-label-overlay: rgb(0 0 0 / 76%);
+  --image-label-foreground: #ffffff;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0.002 247.839);
+  --sidebar-foreground: oklch(0.13 0.028 261.692);
+  --sidebar-primary: #059669; /* original emerald-600 */
+  --sidebar-primary-foreground: #ffffff; /* on-primary */
+  --sidebar-accent: #ecfdf5; /* emerald-50  → primary-subtle */
+  --sidebar-accent-foreground: #047857; /* emerald-700 → primary-text */
+  --sidebar-border: oklch(0.928 0 0);
+  --sidebar-ring: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% */
+  /* Reusable green color tokens */
+  --color-green-500: #88b04b;
+  --color-green-50: #f0f4e8;
+  --color-green-100: #edf7f2;
+  --color-border-green-200: #e8f0e8;
+  --color-yellow-500: #e8b428;
+  /* Reusable red color tokens */
+  --color-red-500: #c46868;
+  --color-red-50: #fdf2f2;
+  --color-red-100: #fbe5e5;
+  --color-border-red-200: #fce8e8;
+  /* Translator diff colors: distinct but restrained for long-form proofreading. */
+  --color-unit-stats-translate: var(--color-orange-400);
+  --color-unit-stats-edit: var(--color-pink-400);
+  --color-unit-stats-append: var(--color-green-500);
+  --diff-delete-text: #9f6262;
+  --diff-delete-bg: #f0d2d2;
+  --diff-replaced-text: #6f6a64;
+  --diff-replaced-bg: #dfdcd8;
+  --diff-replacement-text: #704b2c;
+  --diff-replacement-bg: #efd1ac;
+  --diff-insert-text: #3f5c45;
+  --diff-insert-bg: #d7e7d3;
+  --shadow-green-lg: 0 10px 25px rgba(136, 176, 75, 0.4);
+  --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.04);
+  --shadow-green-hover: 0 8px 20px rgba(136, 176, 75, 0.15);
+
+  /* ======================================== */
+  /* Emerald 主题色系统 (Primary Color System)  */
+  /* ======================================== */
+  --primary-hover: #047857; /* emerald-700 */
+  --primary-active: #065f46; /* emerald-800 */
+  --primary-subtle: #ecfdf5; /* emerald-50  → 对应 --accent */
+  --primary-muted: #d1fae5; /* emerald-100 */
+  --primary-border: #a7f3d0; /* emerald-200 */
+  --primary-text: #047857; /* original emerald-700 */
+  --on-primary: #ffffff; /* white       → 对应 --primary-foreground */
+  --ring-primary: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% → 对应 --ring */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    @apply bg-background text-foreground;
+    font-family:
+      ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+      monospace;
+    overflow-x: hidden;
+  }
+}
+
+/* Global scrollbar styles (cross-browser) */
+/* WebKit browsers (Chrome / Edge / Safari) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.06) transparent;
+}
+
+:root {
+  --scroll-thumb: rgba(0, 0, 0, 0.06);
+  --scroll-thumb-hover: rgba(0, 0, 0, 0.12);
+}
+
+/* Apply variables for browsers that support them */
+::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover);
+}

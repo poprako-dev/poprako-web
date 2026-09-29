@@ -1,32 +1,33 @@
-import type { StorybookConfig } from '@storybook/react-vite';
+import type { StorybookConfig } from "@storybook/react-vite";
 import { mergeConfig } from "vite";
+import { createViteBase } from "../src/application/vite-base.ts";
+import { STORYBOOK_STORY_GLOBS } from "../script/test-runner-config.ts";
 
 const STORYBOOK_CHUNK_SIZE_WARNING_LIMIT = 1200;
 
 const config: StorybookConfig = {
-  "stories": [
-    "../src/**/*.mdx",
-    "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"
-  ],
-  "addons": [
+  stories: [...STORYBOOK_STORY_GLOBS],
+  addons: [
     "@chromatic-com/storybook",
     "@storybook/addon-vitest",
     "@storybook/addon-a11y",
     "@storybook/addon-docs",
-    "@storybook/addon-onboarding"
+    "@storybook/addon-onboarding",
   ],
-  "framework": "@storybook/react-vite",
+  framework: {
+    name: "@storybook/react-vite",
+    options: { builder: { viteConfigPath: "storybook.vite.config.ts" } },
+  },
   viteFinal(viteConfig) {
-    // The development inspector still calls ReactDOM.render, removed in React 19.
-    viteConfig.plugins = viteConfig.plugins?.filter((plugin) =>
-      !plugin || typeof plugin !== "object" || !("name" in plugin)
-      || plugin.name !== "vite-plugin-react-inspector",
-    );
+    const base = createViteBase(false);
     return mergeConfig(viteConfig, {
+      ...base,
       build: {
+        ...base.build,
         chunkSizeWarningLimit: STORYBOOK_CHUNK_SIZE_WARNING_LIMIT,
       },
     });
   },
 };
+
 export default config;

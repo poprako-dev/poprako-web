@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": [
+    "*.config.ts",
+    "*.config.js",
+    "*.config.mjs",
+    "vitest.shims.d.ts",
+    "script/deno-namespace.eslint.d.ts",
+    ".storybook/**/*.ts",
+    "script/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ]
+}

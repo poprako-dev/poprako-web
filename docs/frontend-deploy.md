@@ -88,12 +88,12 @@ API_BASE_URL=https://api.poprako.com/api/v1
 
 ## 部署流程
 
-`scripts/ci-deploy-production.sh` 在 GitHub runner 上：
+`script/ci-deploy-production.sh` 在 GitHub runner 上：
 
 1. 使用 frozen lockfile 安装依赖并执行生产构建；
 2. 用完整 commit SHA 创建不可变 tarball；
 3. 通过固定 known-host 校验上传产物和远程脚本；
-4. 调用 `scripts/ga-remote-deploy.sh` 解压并原子切换 symlink；
+4. 调用 `script/ga-remote-deploy.sh` 解压并原子切换 symlink；
 5. 请求 `https://poprako.com/` 验证新站点，失败时恢复旧 symlink。
 
 环境审批、执行者、commit 和结果由 GitHub Actions 保存审计记录。
@@ -104,8 +104,8 @@ API_BASE_URL=https://api.poprako.com/api/v1
 和版本保留：
 
 ```sh
-sh scripts/test-deployment.sh
-sh scripts/ci-check.sh
+sh script/test-deployment.sh
+sh script/ci-check.sh
 ```
 
 成功部署的 job 输出包含 `deployed_commit`、`current_site` 和

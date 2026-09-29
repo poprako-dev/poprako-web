@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vite/client", "node", "vitest/globals"]
+  },
+  "include": [
+    "src/stories/**/*",
+    "src/**/*.stories.ts",
+    "src/**/*.stories.tsx",
+    "src/**/business/**/test/**/*",
+    ".storybook/**/*.ts",
+    "script/fixture/storybook-types.ts"
+  ]
+}
