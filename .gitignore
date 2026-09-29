@@ -37,5 +37,5 @@ storybook-static
 
 /test-resource/
 
-/src/test-resource/
+/src/test-resource/generated/
 /docs/route-migration/review/component-inventory.json
