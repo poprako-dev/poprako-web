@@ -1,4 +1,4 @@
-import { join, normalize, relative, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import ts from "typescript";
 import { routeDirectories, routeRelation, sourceDomain } from "./route-ownership.ts";
 import { checkRuntimeCycles, type ModuleEdge } from "./check-cycle.ts";
@@ -58,8 +58,8 @@ function resolvedPath(
   const result = ts.resolveModuleName(moduleSpecifier, absoluteSource, options, ts.sys)
     .resolvedModule?.resolvedFileName;
   if (!result) return undefined;
-  const path = normalize(result);
-  return path.startsWith(`${root}/`) ? path.slice(root.length + 1) : undefined;
+  const path = relative(root, result).replaceAll("\\", "/");
+  return path === ".." || path.startsWith("../") || isAbsolute(path) ? undefined : path;
 }
 
 function isTestPath(path: string): boolean {
