@@ -15,6 +15,28 @@ const exec = promisify(execFile);
 const root = fileURLToPath(new URL("../", import.meta.url));
 const generated = path.join(root, "test-resource/generated");
 await mkdir(generated, { recursive: true });
+
+async function createBrowserFixtures() {
+  // The archive treats PSD inputs as opaque bytes; keep the standard CI case self-contained.
+  const directory = path.join(generated, "browser-input");
+  await mkdir(directory, { recursive: true });
+  const paths = [];
+  for (const [index, size] of [8, 2, 1].map((mib) => mib * 1024 ** 2).entries()) {
+    const bytes = new Uint8Array(size);
+    let state = index + 1;
+    for (let offset = 0; offset < size; offset++) {
+      state ^= state << 13;
+      state ^= state >>> 17;
+      state ^= state << 5;
+      bytes[offset] = state & 255;
+    }
+    const file = path.join(directory, `sample-${String(index + 1)}.psd`);
+    await writeFile(file, bytes);
+    paths.push(file);
+  }
+  return paths;
+}
+
 const html = path.join(generated, "browser.html");
 await writeFile(
   html,
@@ -84,12 +106,14 @@ try {
   page.on("pageerror", (error) => console.error("pageerror:", error));
   await page.goto("http://127.0.0.1:4178/test-resource/generated/browser.html");
   await page.waitForFunction(() => Boolean(globalThis.testArchive));
-  const paths = (await readdir(path.join(root, "test-resource"), { recursive: true }))
-    .filter((name) => name.toLowerCase().endsWith(".psd"))
-    .sort()
-    .map((name) => path.join(root, "test-resource", name));
+  const paths = process.argv.includes("--large")
+    ? (await readdir(path.join(root, "test-resource"), { recursive: true }))
+        .filter((name) => name.toLowerCase().endsWith(".psd") && !name.startsWith("generated/"))
+        .sort()
+        .map((name) => path.join(root, "test-resource", name))
+    : await createBrowserFixtures();
   if (paths.length === 0) {
-    throw new Error("Put PSD fixtures under test-resource/ first");
+    throw new Error("Large test requires PSD fixtures under test-resource/");
   }
   await page.locator("#files").setInputFiles(paths);
   const report = await page.evaluate(
