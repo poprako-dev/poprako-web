@@ -32,7 +32,8 @@ export type ListPageUnitsResponse = {
   unitInfos?: UnitApiInfo[] | undefined;
 };
 
-export type UnitPatch<Value> = Value | null;
+// Patch fields use explicit tags; omission means Skip, while null cannot Clear.
+export type UnitPatch<Value> = { type: "clear" } | { type: "assign"; value: Value };
 export type UnitCoord = { xCoord: number; yCoord: number };
 export type UnitTranslation = { translatedText: string };
 export type UnitRevision = { isProofread: boolean; proofreadText?: string | undefined };

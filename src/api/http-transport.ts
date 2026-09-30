@@ -185,7 +185,10 @@ function responseFailure(response: Response, body: string): ResultFailure {
       }
     }
   } catch {
-    // Non-JSON error bodies use the status text fallback.
+    // Axum extractor rejections are plain text, outside the API envelope.
+    if (response.headers.get("Content-Type")?.split(";")[0]?.trim() === "text/plain") {
+      message = body.trim();
+    }
   }
   return failure(
     safeMessage(message, response.statusText, response.status, code),

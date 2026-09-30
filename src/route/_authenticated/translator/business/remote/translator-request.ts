@@ -41,9 +41,8 @@ function toApiPatch<Value>(patch: Patch<Value>): ApiUnitPatch<Value> | undefined
     case "skip":
       return undefined;
     case "clear":
-      return null;
     case "assign":
-      return patch.value;
+      return patch;
   }
 }
 

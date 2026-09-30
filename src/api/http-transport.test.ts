@@ -86,3 +86,33 @@ test("malformed HTTP failures and network failures stay distinct", async () => {
     failureKind: "network",
   });
 });
+
+test.each(["json", "text", "blob"])(
+  "preserves plain-text JSON rejection details for %s requests",
+  async (kind) => {
+    const message =
+      "Failed to deserialize the JSON body into the target type: [0]: missing field 'type' at line 1 column 112";
+    const client = createApiClient({
+      baseUrl: "/api",
+      getAccessToken: () => null,
+      fetchImpl: vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(message, {
+          status: 422,
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        }),
+      ),
+    });
+    const result =
+      kind === "json"
+        ? await client.post("/units/save", [], { decode: decodeVoid })
+        : kind === "text"
+          ? await client.getText("/export")
+          : await client.download("/download");
+    expect(result).toEqual({
+      success: false,
+      error: message,
+      httpStatus: 422,
+      failureKind: "http",
+    });
+  },
+);

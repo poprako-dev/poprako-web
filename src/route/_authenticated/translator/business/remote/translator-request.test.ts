@@ -118,12 +118,98 @@ describe("translator unit API adapter", () => {
       {
         edit: "patch",
         id: "unit-1",
-        next_id: null,
+        next_id: { type: "clear" },
         is_flagged: false,
-        translation: null,
-        revision: { is_proofread: false, proofread_text: "" },
+        translation: { type: "clear" },
+        revision: { type: "assign", value: { is_proofread: false, proofread_text: "" } },
       },
     ]);
+  });
+
+  test("preserves assign tags and values for all three patch fields", async () => {
+    const { client, fetchMock } = clientWith(okJson({ created_unit_ids: [] }));
+
+    await saveUnits(
+      client,
+      "page-1",
+      {
+        ops: [
+          {
+            edit: "patch",
+            id: "unit-1",
+            nextId: { type: "assign", value: "unit-2" },
+            translation: { type: "assign", value: { translatedText: "" } },
+            revision: { type: "assign", value: { isProofread: false } },
+          },
+        ],
+      },
+      "save-1",
+    );
+
+    expect(requestBody(fetchMock)).toEqual([
+      {
+        edit: "patch",
+        id: "unit-1",
+        next_id: { type: "assign", value: "unit-2" },
+        translation: { type: "assign", value: { translated_text: "" } },
+        revision: { type: "assign", value: { is_proofread: false } },
+      },
+    ]);
+  });
+
+  test("sends explicit clear tags for all three patch fields", async () => {
+    const { client, fetchMock } = clientWith(okJson({ created_unit_ids: [] }));
+
+    await saveUnits(
+      client,
+      "page-1",
+      {
+        ops: [
+          {
+            edit: "patch",
+            id: "unit-1",
+            nextId: { type: "clear" },
+            translation: { type: "clear" },
+            revision: { type: "clear" },
+          },
+        ],
+      },
+      "save-1",
+    );
+
+    expect(requestBody(fetchMock)).toEqual([
+      {
+        edit: "patch",
+        id: "unit-1",
+        next_id: { type: "clear" },
+        translation: { type: "clear" },
+        revision: { type: "clear" },
+      },
+    ]);
+  });
+
+  test("omits skip fields from the serialized request while preserving a flag edit", async () => {
+    const { client, fetchMock } = clientWith(okJson({ created_unit_ids: [] }));
+
+    await saveUnits(
+      client,
+      "page-1",
+      {
+        ops: [
+          {
+            edit: "patch",
+            id: "unit-1",
+            nextId: { type: "skip" },
+            isFlagged: false,
+            translation: { type: "skip" },
+            revision: { type: "skip" },
+          },
+        ],
+      },
+      "save-1",
+    );
+
+    expect(requestBody(fetchMock)).toEqual([{ edit: "patch", id: "unit-1", is_flagged: false }]);
   });
 
   test("converts search matches and the selected text field", async () => {
