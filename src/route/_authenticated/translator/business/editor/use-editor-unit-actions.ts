@@ -6,6 +6,7 @@ import {
   modifyUnitPosition,
   moveUnitToIndex,
   unitId,
+  unitIsBubble,
   unitPosition,
   unitProofreadText,
   unitTranslatedText,
@@ -13,11 +14,27 @@ import {
 import type { useUnitPersistence } from "@/route/_authenticated/translator/business/persistence/use-unit-persistence";
 import type { EditorState } from "./use-editor-state";
 import type { EditorProps } from "./editor-props";
-type Options = EditorState &
-  ReturnType<typeof useUnitPersistence> &
-  EditorProps & { canInsertSpecialChar: boolean };
+type Options = Pick<
+  EditorState,
+  | "focusedUnitId"
+  | "setFocusedUnitId"
+  | "isLoadingPage"
+  | "isRelocationEnabled"
+  | "setSpecialCharInsertRequest"
+  | "setDeleteConfirmUnitId"
+  | "isCompletingStage"
+  | "canvasRef"
+  | "lastSpecialCharRef"
+  | "specialCharRequestIdRef"
+  | "relocationSuppressedUnitIdRef"
+  | "pendingCenteredUnitIdRef"
+  | "showToast"
+  | "allChars"
+  | "favoriteChars"
+> &
+  Pick<ReturnType<typeof useUnitPersistence>, "unitBufRef" | "commitUnits" | "handleNavigate"> &
+  Pick<EditorProps, "project" | "currentUserId"> & { canInsertSpecialChar: boolean };
 export function useEditorUnitActions({
-  setUnitBuf,
   focusedUnitId,
   setFocusedUnitId,
   isLoadingPage,
@@ -34,7 +51,6 @@ export function useEditorUnitActions({
   allChars,
   favoriteChars,
   unitBufRef,
-  refreshUnits,
   commitUnits,
   handleNavigate,
   project,
@@ -46,13 +62,13 @@ export function useEditorUnitActions({
   handleQuickSpecialCharAt: (index: number) => void;
   handleSpecialCharUse: (char: string) => void;
   handleSpecialCharInserted: (requestId: number, char: string) => void;
+  handleToggleBubble: (targetUnitId: string) => void;
   handleModifyUnit: (targetUnitId: string, updates: UnitEdit) => void;
   handleMoveUnit: (targetUnitId: string, xCoord: number, yCoord: number) => void;
   handleReorderUnit: (targetUnitId: string, targetIndex: number) => void;
   handleAddUnit: (xCoord: number, yCoord: number, isBubble: boolean) => void;
   handleFocusUnit: (targetUnitId: string) => void;
   handlePageImageLoad: () => void;
-  handleRefreshCurrentPage: () => Promise<void>;
   handleSearchResultNavigate: (pageId: string, targetUnitId?: string) => Promise<void>;
   doDeleteUnit: (targetUnitId: string) => void;
   handleDeleteUnit: (targetUnitId: string) => void;
@@ -93,7 +109,6 @@ export function useEditorUnitActions({
         unitBufRef.current.map((unit) =>
           unitId(unit) === targetUnitId ? applyUnitUpdates(unit, updates) : unit,
         ),
-        setUnitBuf,
       );
       return;
     }
@@ -119,8 +134,12 @@ export function useEditorUnitActions({
       unitBufRef.current.map((unit) =>
         unitId(unit) === targetUnitId ? applyUnitUpdates(unit, nextUpdates) : unit,
       ),
-      setUnitBuf,
     );
+  }
+
+  function handleToggleBubble(targetUnitId: string): void {
+    const unit = unitBufRef.current.find((item) => unitId(item) === targetUnitId);
+    if (unit) handleModifyUnit(targetUnitId, { isBubble: !unitIsBubble(unit) });
   }
 
   function handleMoveUnit(targetUnitId: string, xCoord: number, yCoord: number): void {
@@ -128,12 +147,11 @@ export function useEditorUnitActions({
       unitBufRef.current.map((unit) =>
         unitId(unit) === targetUnitId ? modifyUnitPosition(unit, xCoord, yCoord) : unit,
       ),
-      setUnitBuf,
     );
   }
 
   function handleReorderUnit(targetUnitId: string, targetIndex: number): void {
-    commitUnits(moveUnitToIndex(unitBufRef.current, targetUnitId, targetIndex), setUnitBuf);
+    commitUnits(moveUnitToIndex(unitBufRef.current, targetUnitId, targetIndex));
   }
 
   function handleAddUnit(xCoord: number, yCoord: number, isBubble: boolean): void {
@@ -144,7 +162,7 @@ export function useEditorUnitActions({
     }
     const newUnit = createUnit(xCoord, yCoord, isBubble);
 
-    commitUnits([...unitBufRef.current, newUnit], setUnitBuf);
+    commitUnits([...unitBufRef.current, newUnit]);
 
     const newUnitId = unitId(newUnit);
     relocationSuppressedUnitIdRef.current = newUnitId;
@@ -170,10 +188,6 @@ export function useEditorUnitActions({
     canvasRef.current?.centerOn(position.xCoord, position.yCoord);
   }
 
-  async function handleRefreshCurrentPage(): Promise<void> {
-    await refreshUnits();
-  }
-
   async function handleSearchResultNavigate(pageId: string, targetUnitId?: string): Promise<void> {
     const targetIndex = project.pages.findIndex((page) => page.id === pageId);
     if (targetIndex === -1) {
@@ -189,7 +203,7 @@ export function useEditorUnitActions({
     if (isLoadingPage || isCompletingStage) return;
     const filteredUnits = unitBufRef.current.filter((unit) => unitId(unit) !== targetUnitId);
 
-    commitUnits(filteredUnits, setUnitBuf);
+    commitUnits(filteredUnits);
 
     if (focusedUnitId === targetUnitId) {
       setFocusedUnitId(undefined);
@@ -223,13 +237,13 @@ export function useEditorUnitActions({
     handleQuickSpecialCharAt,
     handleSpecialCharUse,
     handleSpecialCharInserted,
+    handleToggleBubble,
     handleModifyUnit,
     handleMoveUnit,
     handleReorderUnit,
     handleAddUnit,
     handleFocusUnit,
     handlePageImageLoad,
-    handleRefreshCurrentPage,
     handleSearchResultNavigate,
     doDeleteUnit,
     handleDeleteUnit,

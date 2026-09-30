@@ -3,7 +3,39 @@ import clsx from "clsx";
 import { UnitList } from "@/route/_authenticated/translator/business/unit-list/UnitList";
 import { StatusOptionBar } from "@/route/_authenticated/translator/business/StatusOptionBar";
 import type { EditorSession } from "./use-editor-session";
-type Props = { session: EditorSession };
+type Props = {
+  session: Pick<
+    EditorSession,
+    | "onResolveUser"
+    | "unitBuf"
+    | "focusedUnitId"
+    | "view"
+    | "proofreadPreviewVisibility"
+    | "setProofreadPreviewVisibility"
+    | "canSwitchView"
+    | "nextView"
+    | "canEditView"
+    | "isHighResolution"
+    | "isLoadingPage"
+    | "isRelocationEnabled"
+    | "toggleRelocation"
+    | "isUnitCreationEnabled"
+    | "setIsUnitCreationEnabled"
+    | "specialCharInsertRequest"
+    | "isCompletingStage"
+    | "saving"
+    | "saveState"
+    | "handleSpecialCharUse"
+    | "handleSpecialCharInserted"
+    | "handleModifyUnit"
+    | "handleReorderUnit"
+    | "handleFocusUnit"
+    | "specialCharsBar"
+    | "handleSave"
+    | "handleToggleImageQuality"
+    | "handleSwitchView"
+  >;
+};
 export function EditorSidebar({ session }: Props): JSX.Element {
   const {
     onResolveUser,

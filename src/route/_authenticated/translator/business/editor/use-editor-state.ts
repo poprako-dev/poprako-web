@@ -44,7 +44,10 @@ export function useEditorState({
   canProofread,
   startPageId,
   startMode,
-}: EditorProps): {
+}: Pick<
+  EditorProps,
+  "project" | "onLoadPageImage" | "canTranslate" | "canProofread" | "startPageId" | "startMode"
+>): {
   initialPageIndex: number;
   pageIndex: number;
   setPageIndex: Dispatch<SetStateAction<number>>;

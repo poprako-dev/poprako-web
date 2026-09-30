@@ -3,6 +3,8 @@ import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { UnitSearchTransformDialog } from "@/route/_authenticated/translator/business/search-transform/UnitSearchTransformDialog";
 import type { UnitSearchMatch } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import type { Page } from "@/route/_authenticated/business/page/page";
+import { createEditorSearchCoordinator } from "../editor/editor-search-coordinator";
+import type { UnitSearchTransformDataSource } from "../contract/unit-search-transform";
 import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
 
 const pages: Page[] = [0, 1, 2].map((index) => ({
@@ -37,20 +39,29 @@ function makeMatch(index: number): UnitSearchMatch {
 
 const groupedMatches = Array.from({ length: 8 }, (_, index) => makeMatch(index));
 
+function makeCoordinator(
+  dataSource: UnitSearchTransformDataSource,
+): ReturnType<typeof createEditorSearchCoordinator> {
+  return createEditorSearchCoordinator({
+    dataSource,
+    part: "translatedText",
+    currentPageId: "page-1",
+    flush: fn(() => Promise.resolve()),
+    runExclusive: async (operation) => {
+      await operation();
+    },
+    refreshCurrentPage: fn(() => Promise.resolve()),
+    navigate: fn(() => Promise.resolve()),
+  });
+}
+
 const meta: Meta<typeof UnitSearchTransformDialog> = {
   title: "Features/BaseTranslator/UnitSearchTransformDialog",
   component: UnitSearchTransformDialog,
   parameters: { layout: "fullscreen" },
   args: {
-    runExclusive: async (operation) => {
-      await operation();
-    },
     pages,
     part: "translatedText",
-    currentPageId: "page-1",
-    onBeforeSearch: fn(() => Promise.resolve()),
-    onRefreshCurrentPage: fn(() => Promise.resolve()),
-    onNavigate: fn(() => Promise.resolve()),
     onClose: fn(),
   },
 };
@@ -60,14 +71,14 @@ type Story = StoryObj<typeof UnitSearchTransformDialog>;
 
 export const GroupedResults: Story = {
   args: {
-    dataSource: {
+    coordinator: makeCoordinator({
       // eslint-disable-next-line @typescript-eslint/require-await
       search: async () => ({ success: true, data: groupedMatches }),
       // eslint-disable-next-line @typescript-eslint/require-await
       transform: async () => ({ success: true, data: undefined }),
       // eslint-disable-next-line @typescript-eslint/require-await
       reloadPage: async () => ({ success: true, data: [] }),
-    },
+    }),
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
@@ -99,7 +110,7 @@ export const GroupedResults: Story = {
 
 export const MoreThanOneHundred: Story = {
   args: {
-    dataSource: {
+    coordinator: makeCoordinator({
       // eslint-disable-next-line @typescript-eslint/require-await
       search: async () => ({
         success: true,
@@ -109,7 +120,7 @@ export const MoreThanOneHundred: Story = {
       transform: async () => ({ success: true, data: undefined }),
       // eslint-disable-next-line @typescript-eslint/require-await
       reloadPage: async () => ({ success: true, data: [] }),
-    },
+    }),
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
@@ -124,14 +135,14 @@ export const MoreThanOneHundred: Story = {
 
 export const Empty: Story = {
   args: {
-    dataSource: {
+    coordinator: makeCoordinator({
       // eslint-disable-next-line @typescript-eslint/require-await
       search: async () => ({ success: true, data: [] }),
       // eslint-disable-next-line @typescript-eslint/require-await
       transform: async () => ({ success: true, data: undefined }),
       // eslint-disable-next-line @typescript-eslint/require-await
       reloadPage: async () => ({ success: true, data: [] }),
-    },
+    }),
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
@@ -146,14 +157,14 @@ export const Empty: Story = {
 
 export const SearchError: Story = {
   args: {
-    dataSource: {
+    coordinator: makeCoordinator({
       // eslint-disable-next-line @typescript-eslint/require-await
       search: async () => ({ success: false, error: "搜索失败，请稍后重试" }),
       // eslint-disable-next-line @typescript-eslint/require-await
       transform: async () => ({ success: true, data: undefined }),
       // eslint-disable-next-line @typescript-eslint/require-await
       reloadPage: async () => ({ success: true, data: [] }),
-    },
+    }),
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
@@ -163,5 +174,98 @@ export const SearchError: Story = {
     await waitFor(async () => {
       await expect(message).toBeVisible();
     });
+  },
+};
+
+const blockedSearch = fn(() => Promise.resolve({ success: true as const, data: groupedMatches }));
+export const SaveFailureBlocksSearch: Story = {
+  args: {
+    coordinator: createEditorSearchCoordinator({
+      dataSource: {
+        search: blockedSearch,
+        transform: fn(() => Promise.resolve({ success: true as const, data: undefined })),
+        reloadPage: fn(() => Promise.resolve({ success: true as const, data: [] })),
+      },
+      part: "translatedText",
+      currentPageId: "page-1",
+      flush: () => Promise.reject(new Error("保存中断")),
+      runExclusive: async (operation) => {
+        await operation();
+      },
+      refreshCurrentPage: fn(() => Promise.resolve()),
+      navigate: fn(() => Promise.resolve()),
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    blockedSearch.mockClear();
+    const page = within(canvasElement.ownerDocument.body);
+    const dialogElement = page.getByRole("dialog", { name: "搜索与替换" });
+    const dialog = within(dialogElement);
+    await waitFor(async () => {
+      await expect(dialogElement).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "搜索" })).toBeEnabled();
+    });
+    await userEvent.click(dialog.getByRole("button", { name: "搜索" }));
+    await waitFor(async () => {
+      await expect(await dialog.findByText("当前页保存失败，未执行搜索")).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "替换" })).toBeDisabled();
+    });
+    await expect(blockedSearch).not.toHaveBeenCalled();
+    await expect(dialog.getByRole("button", { name: "替换" })).toBeDisabled();
+  },
+};
+
+const completedTransform = fn(() => Promise.resolve({ success: true as const, data: undefined }));
+export const CompletedWithRefreshFailure: Story = {
+  args: {
+    coordinator: createEditorSearchCoordinator({
+      dataSource: {
+        search: fn(() => Promise.resolve({ success: true as const, data: groupedMatches })),
+        transform: completedTransform,
+        reloadPage: fn(() => Promise.resolve({ success: true as const, data: [] })),
+      },
+      part: "translatedText",
+      currentPageId: "page-1",
+      flush: fn(() => Promise.resolve()),
+      runExclusive: async (operation) => {
+        await operation();
+      },
+      refreshCurrentPage: () => Promise.reject(new Error("页面刷新中断")),
+      navigate: fn(() => Promise.resolve()),
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    completedTransform.mockClear();
+    const page = within(canvasElement.ownerDocument.body);
+    const dialogElement = page.getByRole("dialog", { name: "搜索与替换" });
+    const dialog = within(dialogElement);
+    await waitFor(async () => {
+      await expect(dialogElement).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "搜索" })).toBeEnabled();
+    });
+    await userEvent.type(dialog.getByRole("textbox", { name: "查找短语" }), "旧词");
+    await userEvent.click(dialog.getByRole("button", { name: "搜索" }));
+    await waitFor(async () => {
+      await expect(await dialog.findByText("8 个匹配 Unit")).toBeVisible();
+      await expect(dialog.getByRole("textbox", { name: "替换短语" })).toBeEnabled();
+    });
+    await userEvent.type(dialog.getByRole("textbox", { name: "替换短语" }), "新词");
+    await waitFor(async () => {
+      await expect(dialog.getByRole("button", { name: "替换" })).toBeEnabled();
+    });
+    await userEvent.click(dialog.getByRole("button", { name: "替换" }));
+    await waitFor(async () => {
+      await expect(
+        await dialog.findByText("替换已完成，但刷新失败。请重新搜索以恢复最新结果。"),
+      ).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "替换" })).toBeDisabled();
+      await expect(dialog.getByRole("button", { name: "搜索" })).toBeEnabled();
+    });
+    await userEvent.click(dialog.getByRole("button", { name: "搜索" }));
+    await waitFor(async () => {
+      await expect(await dialog.findByText("8 个匹配 Unit")).toBeVisible();
+      await expect(dialog.getByRole("textbox", { name: "替换短语" })).toBeEnabled();
+    });
+    await expect(completedTransform).toHaveBeenCalledOnce();
   },
 };

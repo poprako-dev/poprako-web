@@ -8,26 +8,21 @@ import type { Page } from "@/route/_authenticated/business/page/page";
 import { unitId } from "@/route/_authenticated/translator/business/unit/unit";
 import type {
   UnitSearchMatch,
-  UnitSearchTransformDataSource,
   UnitTextPart,
 } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import {
   defaultSelectedUnitIds,
   groupUnitSearchMatches,
   MAX_SELECTED_UNIT_COUNT,
-  normalizeSearchPhrase,
 } from "@/route/_authenticated/translator/business/search-transform/search-transform";
 import { SearchResultList } from "@/route/_authenticated/translator/business/search-transform/SearchResultList";
+
+import type { EditorSearchCoordinator } from "../editor/editor-search-coordinator";
 
 type Props = {
   pages: Page[];
   part: UnitTextPart;
-  currentPageId: string;
-  dataSource: UnitSearchTransformDataSource;
-  onBeforeSearch: () => Promise<void>;
-  runExclusive: (operation: () => Promise<void>) => Promise<void>;
-  onRefreshCurrentPage: () => Promise<void>;
-  onNavigate: (pageId: string, unitId?: string) => Promise<void>;
+  coordinator: EditorSearchCoordinator;
   onClose: () => void;
 };
 
@@ -40,12 +35,7 @@ type SearchState =
 export function UnitSearchTransformDialog({
   pages,
   part,
-  currentPageId,
-  dataSource,
-  onBeforeSearch,
-  runExclusive,
-  onRefreshCurrentPage,
-  onNavigate,
+  coordinator,
   onClose,
 }: Props): JSX.Element {
   const [searchValue, setSearchValue] = useState("");
@@ -79,33 +69,13 @@ export function UnitSearchTransformDialog({
     setSelectedIds(defaultSelectedUnitIds(resultMatches));
   }
 
-  // The boolean selects whether the save phase precedes a search operation.
-  async function search(shouldSaveBeforeSearch: boolean): Promise<boolean> {
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
+  async function search(): Promise<boolean> {
+    const requestId = ++requestIdRef.current;
     setSearchState({ status: "loading" });
     setSelectedIds(new Set());
 
-    if (shouldSaveBeforeSearch) {
-      try {
-        await onBeforeSearch();
-      } catch (error) {
-        if (requestIdRef.current !== requestId) return false;
-        console.error("[UnitSearchTransformDialog] 搜索前保存失败", error);
-        setSearchState({
-          status: "error",
-          message: "当前页保存失败，未执行搜索",
-        });
-        return false;
-      }
-    }
-
     try {
-      const normalizedPhrase = normalizeSearchPhrase(searchValue);
-      const result = await dataSource.search({
-        part,
-        phrase: normalizedPhrase,
-      });
+      const result = await coordinator.search(searchValue);
       if (requestIdRef.current !== requestId) return false;
 
       if (!result.success) {
@@ -113,7 +83,7 @@ export function UnitSearchTransformDialog({
         return false;
       }
 
-      commitSearchResult(result.data, normalizedPhrase);
+      commitSearchResult(result.data.matches, result.data.phrase);
       return true;
     } catch (error) {
       if (requestIdRef.current !== requestId) return false;
@@ -135,43 +105,21 @@ export function UnitSearchTransformDialog({
     setIsTransforming(true);
 
     try {
-      await runExclusive(async () => {
-        const result = await dataSource.transform({
-          part,
-          origin: searchState.phrase,
-          target: targetValue,
-          unitIds: selectedMatches.map((match) => unitId(match.unit)),
+      const result = await coordinator.transform(searchState.phrase, targetValue, selectedMatches);
+      if (result.status === "failed") {
+        showLocalApiFailure(result.failure, showToast);
+      } else if (result.status === "refresh-failed") {
+        requestIdRef.current += 1;
+        setSearchState({
+          status: "error",
+          message: "替换已完成，但刷新失败。请重新搜索以恢复最新结果。",
         });
-        if (!result.success) {
-          console.error("[UnitSearchTransformDialog] 替换失败", result.error);
-          showLocalApiFailure(result, showToast);
-          return;
-        }
-
-        const isAffectsCurrentPage = selectedMatches.some(
-          (match) => match.pageId === currentPageId,
-        );
-        const refreshResult = await Promise.allSettled([
-          search(false),
-          isAffectsCurrentPage ? onRefreshCurrentPage() : Promise.resolve(),
-        ]);
-        const isSearchRefreshed = refreshResult[0].status === "fulfilled" && refreshResult[0].value;
-        const isPageRefreshed = refreshResult[1].status === "fulfilled";
-
-        if (!isSearchRefreshed || !isPageRefreshed) {
-          requestIdRef.current += 1;
-          setSearchState({
-            status: "error",
-            message: "替换已完成，但刷新失败。请重新搜索以恢复最新结果。",
-          });
-          setSelectedIds(new Set());
-          console.error("[UnitSearchTransformDialog] 替换后的数据刷新失败", refreshResult);
-          showToast("替换已完成，但刷新失败", "error");
-          return;
-        }
-
+        setSelectedIds(new Set());
+        showToast("替换已完成，但刷新失败", "error");
+      } else {
+        commitSearchResult(result.matches, searchState.phrase);
         showToast("替换请求已完成", "success");
-      });
+      }
     } catch (error) {
       console.error("[UnitSearchTransformDialog] 替换请求异常", error);
       showLocalCaughtError(error, showToast, "替换失败，请重试");
@@ -184,7 +132,7 @@ export function UnitSearchTransformDialog({
     if (isTransforming) return;
     requestIdRef.current += 1;
     onClose();
-    await onNavigate(pageId, targetUnitId);
+    await coordinator.navigate(pageId, targetUnitId);
   }
 
   return (
@@ -196,7 +144,7 @@ export function UnitSearchTransformDialog({
       footer={
         <div className="grid grid-cols-2 gap-2">
           <AppDialogAction
-            onClick={() => void search(true)}
+            onClick={() => void search()}
             disabled={searchState.status === "loading" || isTransforming}
           >
             {searchState.status === "loading" ? "搜索中" : "搜索"}
@@ -255,7 +203,7 @@ export function UnitSearchTransformDialog({
           <div
             className={clsx(
               "sticky top-0 z-10 flex h-7 items-center justify-between border-b",
-              "border-line-slate-100 bg-surface-white/95 px-3 text-[10px] text-ink-slate-400",
+              "border-line-slate-100 bg-surface-white/95 px-3 text-[10px] text-ink-slate-600",
               "backdrop-blur-sm",
             )}
           >

@@ -1,4 +1,3 @@
-import type { RefObject } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { showLocalCaughtError } from "@/route/business/request-error";
 import { unitId } from "@/route/_authenticated/translator/business/unit/unit";
@@ -7,29 +6,94 @@ import type { UnitTextPart } from "@/route/_authenticated/translator/business/co
 import { useUnitPersistence } from "@/route/_authenticated/translator/business/persistence/use-unit-persistence";
 import { translatorCompletionStage } from "@/route/_authenticated/translator/business/contract/access";
 import type { EditorProps } from "./editor-props";
-import { type EditorState, useEditorState } from "./use-editor-state";
+import { useEditorState } from "./use-editor-state";
 import { useEditorUnitActions } from "./use-editor-unit-actions";
 import { useEditorKeyboard } from "./use-editor-keyboard";
-type EditorSessionAdditions = {
-  pageLoadGenerationRef: RefObject<number>;
-  isSpecialCharsBarSuspended: boolean;
-  isSpecialCharsBarVisible: boolean;
-  canInsertSpecialChar: boolean;
-  specialCharsBar: ReturnType<typeof useDetachableSpecialCharsBar>;
-  loadPage: (idx: number, targetUnitId?: string) => Promise<void>;
-  handleSave: () => Promise<void>;
-  handleToggleImageQuality: () => Promise<void>;
-  handleCompleteStage: () => Promise<void>;
-  completionStage: ReturnType<typeof translatorCompletionStage>;
-  unitSearchPart: UnitTextPart;
-};
+import { createEditorSearchCoordinator } from "./editor-search-coordinator";
 
-export type EditorSession = EditorProps &
-  EditorState &
-  ReturnType<typeof useUnitPersistence> &
-  ReturnType<typeof useEditorUnitActions> &
-  ReturnType<typeof useEditorKeyboard> &
-  EditorSessionAdditions;
+export type EditorSession = Pick<
+  ReturnType<typeof useEditorState>,
+  | "canEditView"
+  | "canSwitchView"
+  | "canvasRef"
+  | "configurableShortcuts"
+  | "deleteConfirmUnitId"
+  | "fixedShortcuts"
+  | "focusedUnitId"
+  | "hasCompletedStage"
+  | "imageUrl"
+  | "isCompleteConfirmOpen"
+  | "isCompletingStage"
+  | "isHighResolution"
+  | "isLoadingPage"
+  | "isPageStatsOpen"
+  | "isReadOnly"
+  | "isRelocationEnabled"
+  | "isShortcutPanelOpen"
+  | "isSpecialCharPanelOpen"
+  | "isUnitCreationEnabled"
+  | "isUnitSearchTransformOpen"
+  | "nextView"
+  | "pageIndex"
+  | "proofreadPreviewVisibility"
+  | "setDeleteConfirmUnitId"
+  | "setIsCompleteConfirmOpen"
+  | "setIsPageStatsOpen"
+  | "setIsShortcutPanelOpen"
+  | "setIsSpecialCharPanelOpen"
+  | "setIsUnitCreationEnabled"
+  | "setIsUnitSearchTransformOpen"
+  | "setProofreadPreviewVisibility"
+  | "specialCharInsertRequest"
+  | "toggleRelocation"
+  | "unitBuf"
+  | "updateConfigurableShortcuts"
+  | "view"
+> &
+  Pick<
+    ReturnType<typeof useEditorUnitActions>,
+    | "doDeleteUnit"
+    | "handleAddUnit"
+    | "handleDeleteUnit"
+    | "handleFocusUnit"
+    | "handleModifyUnit"
+    | "handleMoveUnit"
+    | "handlePageImageLoad"
+    | "handleReorderUnit"
+    | "handleRequestSpecialChar"
+    | "handleSpecialCharInserted"
+    | "handleSpecialCharUse"
+    | "handleToggleBubble"
+  > &
+  Pick<
+    ReturnType<typeof useUnitPersistence>,
+    | "handleDiscardPendingAction"
+    | "handleExit"
+    | "handleNavigate"
+    | "handleRetryPendingAction"
+    | "pendingAction"
+    | "saveState"
+    | "saving"
+  > &
+  Pick<ReturnType<typeof useEditorKeyboard>, "handleSwitchView"> &
+  Pick<
+    EditorProps,
+    | "onListPageUnitDiffStats"
+    | "onListPageUnitFlaggedStats"
+    | "onResolveUser"
+    | "project"
+    | "terminology"
+  > & {
+    completionStage: ReturnType<typeof translatorCompletionStage>;
+    handleCompleteStage: () => Promise<void>;
+    handleToggleImageQuality: () => Promise<void>;
+    isSpecialCharsBarVisible: boolean;
+    searchCoordinator: ReturnType<typeof createEditorSearchCoordinator>;
+    specialCharsBar: ReturnType<typeof useDetachableSpecialCharsBar>;
+    unitSearchPart: UnitTextPart;
+    canInsertSpecialChar: boolean;
+    handleSave: () => Promise<void>;
+  };
 
 export function useEditorSession(props: EditorProps): EditorSession {
   const {
@@ -237,22 +301,85 @@ export function useEditorSession(props: EditorProps): EditorSession {
   });
   const unitSearchPart: UnitTextPart =
     state.view === "translate" ? "translatedText" : "proofreadText";
+  const searchCoordinator = createEditorSearchCoordinator({
+    dataSource: props.unitSearchTransform,
+    part: unitSearchPart,
+    currentPageId: project.pages[pageIndex]?.id,
+    flush: () => flushIfDirty(false),
+    runExclusive,
+    refreshCurrentPage: persistence.refreshUnits,
+    navigate: actions.handleSearchResultNavigate,
+  });
   return {
-    ...props,
-    ...state,
-    ...persistence,
-    ...actions,
-    ...keyboard,
-    pageLoadGenerationRef,
-    isSpecialCharsBarSuspended,
-    isSpecialCharsBarVisible,
+    canEditView: state.canEditView,
     canInsertSpecialChar,
-    specialCharsBar,
-    loadPage,
-    handleSave,
-    handleToggleImageQuality,
-    handleCompleteStage,
+    canSwitchView: state.canSwitchView,
+    canvasRef: state.canvasRef,
     completionStage,
+    configurableShortcuts: state.configurableShortcuts,
+    deleteConfirmUnitId: state.deleteConfirmUnitId,
+    doDeleteUnit: actions.doDeleteUnit,
+    fixedShortcuts: state.fixedShortcuts,
+    focusedUnitId: state.focusedUnitId,
+    handleAddUnit: actions.handleAddUnit,
+    handleCompleteStage,
+    handleDeleteUnit: actions.handleDeleteUnit,
+    handleDiscardPendingAction: persistence.handleDiscardPendingAction,
+    handleExit: persistence.handleExit,
+    handleFocusUnit: actions.handleFocusUnit,
+    handleModifyUnit: actions.handleModifyUnit,
+    handleMoveUnit: actions.handleMoveUnit,
+    handleNavigate: persistence.handleNavigate,
+    handlePageImageLoad: actions.handlePageImageLoad,
+    handleReorderUnit: actions.handleReorderUnit,
+    handleRequestSpecialChar: actions.handleRequestSpecialChar,
+    handleRetryPendingAction: persistence.handleRetryPendingAction,
+    handleSave,
+    handleSpecialCharInserted: actions.handleSpecialCharInserted,
+    handleSpecialCharUse: actions.handleSpecialCharUse,
+    handleSwitchView: keyboard.handleSwitchView,
+    handleToggleBubble: actions.handleToggleBubble,
+    handleToggleImageQuality,
+    hasCompletedStage: state.hasCompletedStage,
+    imageUrl: state.imageUrl,
+    isCompleteConfirmOpen: state.isCompleteConfirmOpen,
+    isCompletingStage: state.isCompletingStage,
+    isHighResolution: state.isHighResolution,
+    isLoadingPage: state.isLoadingPage,
+    isPageStatsOpen: state.isPageStatsOpen,
+    isReadOnly: state.isReadOnly,
+    isRelocationEnabled: state.isRelocationEnabled,
+    isShortcutPanelOpen: state.isShortcutPanelOpen,
+    isSpecialCharPanelOpen: state.isSpecialCharPanelOpen,
+    isSpecialCharsBarVisible,
+    isUnitCreationEnabled: state.isUnitCreationEnabled,
+    isUnitSearchTransformOpen: state.isUnitSearchTransformOpen,
+    nextView: state.nextView,
+    onListPageUnitDiffStats: props.onListPageUnitDiffStats,
+    onListPageUnitFlaggedStats: props.onListPageUnitFlaggedStats,
+    onResolveUser: props.onResolveUser,
+    pageIndex: state.pageIndex,
+    pendingAction: persistence.pendingAction,
+    project: props.project,
+    proofreadPreviewVisibility: state.proofreadPreviewVisibility,
+    saveState: persistence.saveState,
+    saving: persistence.saving,
+    searchCoordinator,
+    setDeleteConfirmUnitId: state.setDeleteConfirmUnitId,
+    setIsCompleteConfirmOpen: state.setIsCompleteConfirmOpen,
+    setIsPageStatsOpen: state.setIsPageStatsOpen,
+    setIsShortcutPanelOpen: state.setIsShortcutPanelOpen,
+    setIsSpecialCharPanelOpen: state.setIsSpecialCharPanelOpen,
+    setIsUnitCreationEnabled: state.setIsUnitCreationEnabled,
+    setIsUnitSearchTransformOpen: state.setIsUnitSearchTransformOpen,
+    setProofreadPreviewVisibility: state.setProofreadPreviewVisibility,
+    specialCharInsertRequest: state.specialCharInsertRequest,
+    specialCharsBar,
+    terminology: props.terminology,
+    toggleRelocation: state.toggleRelocation,
+    unitBuf: state.unitBuf,
     unitSearchPart,
+    updateConfigurableShortcuts: state.updateConfigurableShortcuts,
+    view: state.view,
   };
 }

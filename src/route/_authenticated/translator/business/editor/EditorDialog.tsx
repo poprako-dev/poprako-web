@@ -5,11 +5,43 @@ import { SpecialCharPanel } from "@/route/_authenticated/translator/business/spe
 import { UnitSearchTransformDialog } from "@/route/_authenticated/translator/business/search-transform/UnitSearchTransformDialog";
 import { FloatingSpecialCharsBar } from "@/route/_authenticated/translator/business/FloatingSpecialCharsBar";
 import type { EditorSession } from "./use-editor-session";
-type Props = { session: EditorSession };
+type Props = {
+  session: Pick<
+    EditorSession,
+    | "project"
+    | "pageIndex"
+    | "isShortcutPanelOpen"
+    | "setIsShortcutPanelOpen"
+    | "isSpecialCharPanelOpen"
+    | "setIsSpecialCharPanelOpen"
+    | "isUnitSearchTransformOpen"
+    | "setIsUnitSearchTransformOpen"
+    | "deleteConfirmUnitId"
+    | "setDeleteConfirmUnitId"
+    | "isCompletingStage"
+    | "isCompleteConfirmOpen"
+    | "setIsCompleteConfirmOpen"
+    | "fixedShortcuts"
+    | "configurableShortcuts"
+    | "updateConfigurableShortcuts"
+    | "pendingAction"
+    | "saving"
+    | "handleRetryPendingAction"
+    | "handleDiscardPendingAction"
+    | "handleRequestSpecialChar"
+    | "doDeleteUnit"
+    | "isSpecialCharsBarVisible"
+    | "canInsertSpecialChar"
+    | "specialCharsBar"
+    | "handleCompleteStage"
+    | "completionStage"
+    | "unitSearchPart"
+    | "searchCoordinator"
+  >;
+};
 export function EditorDialog({ session }: Props): JSX.Element {
   const {
     project,
-    unitSearchTransform,
     pageIndex,
     isShortcutPanelOpen,
     setIsShortcutPanelOpen,
@@ -27,13 +59,9 @@ export function EditorDialog({ session }: Props): JSX.Element {
     updateConfigurableShortcuts,
     pendingAction,
     saving,
-    runExclusive,
-    flushIfDirty,
     handleRetryPendingAction,
     handleDiscardPendingAction,
     handleRequestSpecialChar,
-    handleRefreshCurrentPage,
-    handleSearchResultNavigate,
     doDeleteUnit,
     isSpecialCharsBarVisible,
     canInsertSpecialChar,
@@ -41,6 +69,7 @@ export function EditorDialog({ session }: Props): JSX.Element {
     handleCompleteStage,
     completionStage,
     unitSearchPart,
+    searchCoordinator,
   } = session;
   return (
     <>
@@ -72,12 +101,7 @@ export function EditorDialog({ session }: Props): JSX.Element {
         <UnitSearchTransformDialog
           pages={project.pages}
           part={unitSearchPart}
-          currentPageId={project.pages[pageIndex].id}
-          dataSource={unitSearchTransform}
-          onBeforeSearch={() => flushIfDirty(false)}
-          runExclusive={runExclusive}
-          onRefreshCurrentPage={handleRefreshCurrentPage}
-          onNavigate={handleSearchResultNavigate}
+          coordinator={searchCoordinator}
           onClose={() => {
             setIsUnitSearchTransformOpen(false);
           }}

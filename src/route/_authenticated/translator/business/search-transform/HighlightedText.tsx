@@ -14,7 +14,7 @@ export function HighlightedText({ text, phrase }: Props): JSX.Element {
         segment.matched ? (
           <mark
             key={`${String(index)}-${segment.text}`}
-            className={clsx("rounded-sm bg-(--danger-faint) px-0.5 text-(--danger-soft)")}
+            className={clsx("rounded-sm bg-(--danger-faint) px-0.5 text-ink-red-700")}
           >
             {segment.text}
           </mark>

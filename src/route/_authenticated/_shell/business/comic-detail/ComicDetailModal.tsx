@@ -49,9 +49,7 @@ export function ComicDetailModal({
     onCreateChapter,
     onDeleteChapter,
     currentUserId,
-    onAddPages,
     onDeleteChapterPages,
-    onAllocPageUpload,
     onJoinChapterRole,
     onExportChapter,
     onImportChapter,
@@ -148,9 +146,7 @@ export function ComicDetailModal({
     isSelectedChapterAvailable,
     onLoadPages,
     onLoadChapters,
-    onAddPages,
     onDeleteChapterPages,
-    onAllocPageUpload,
     reloadLoadedChapters,
     showToast,
   });
@@ -254,9 +250,7 @@ export function ComicDetailModal({
           onArchiveComic,
           onDeleteComic,
           onNavigateToTranslator,
-          onAddPages,
           onDeleteChapterPages,
-          onAllocPageUpload,
           onExportChapter,
         }}
         activeView={activeView}

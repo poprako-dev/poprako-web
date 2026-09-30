@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
 import type { PageInfo } from "@/route/_authenticated/business/page/page";
@@ -14,7 +14,7 @@ import {
   type PageUploadTaskView,
   usePageUploadTaskStore,
 } from "@/route/_authenticated/_shell/business/comic-detail/upload/page-upload-store";
-import { getPage } from "@/route/_authenticated/business/page/page-request";
+import { usePageResults } from "./use-page-results";
 import { useApiClient } from "@/route/business/api-context";
 
 type ShowToast = (message: string, type: ToastType) => void;
@@ -25,10 +25,8 @@ type Args = {
   isSelectedChapterAvailable: boolean;
   onLoadPages: DetailContract["onLoadPages"];
   onLoadChapters: DetailContract["onLoadChapters"];
-  onAddPages?: DetailContract["onAddPages"] | undefined;
   onDeleteChapterPages?: DetailContract["onDeleteChapterPages"] | undefined;
-  onAllocPageUpload?: DetailContract["onAllocPageUpload"] | undefined;
-  reloadLoadedChapters: () => Promise<unknown>;
+  reloadLoadedChapters: () => Promise<ChapterInfo[] | null>;
   showToast: ShowToast;
 };
 
@@ -40,6 +38,9 @@ type PageState = {
   uploadErrorByPageId: Record<string, string>;
   reuploadingPageIds: Record<string, boolean>;
   isDeletingChapterPages: boolean;
+  pageRecoveryNeeded: boolean;
+  chapterStatsRecoveryNeeded: boolean;
+  retryChapterStats: () => Promise<void>;
   reloadCurrentPages: () => Promise<void>;
   reloadChapterStats: () => Promise<ChapterInfo[] | null>;
   handleAddRawPages: (files: File[]) => Promise<void>;
@@ -69,97 +70,29 @@ export function useComicDetailPages({
   isSelectedChapterAvailable,
   onLoadPages,
   onLoadChapters,
-  onAddPages,
   onDeleteChapterPages,
-  onAllocPageUpload,
   reloadLoadedChapters,
   showToast,
 }: Args): PageState {
   const client = useApiClient();
-  const [serverPages, setServerPages] = useState<PageInfo[]>([]);
-  const [isPagesLoading, setIsPagesLoading] = useState(false);
-  const [isDeletingChapterPages, setIsDeletingChapterPages] = useState(false);
+  const [deletion, setDeletion] = useState<{ isCurrent: () => boolean } | null>(null);
+  const isDeletingChapterPages = deletion?.isCurrent() ?? false;
+  const [statsRecovery, setStatsRecovery] = useState<{ isCurrent: () => boolean } | null>(null);
+  const chapterStatsRecoveryNeeded = statsRecovery?.isCurrent() ?? false;
   const uploadTasks = usePageUploadTaskStore((state) => state.tasks);
   const taskByPageId = useMemo(
     () => latestTasksByPage(uploadTasks, chapterId),
     [chapterId, uploadTasks],
   );
-
-  useEffect(() => {
-    if (chapterId && isSelectedChapterAvailable) return;
-    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
-    setServerPages([]);
-    setIsPagesLoading(false); // eslint-disable-line @eslint-react/set-state-in-effect
-  }, [chapterId, isSelectedChapterAvailable]);
-
-  useEffect(() => {
-    if (!chapterId || !isSelectedChapterAvailable) return;
-    let isCancelled = false;
-    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
-    setServerPages([]);
-    setIsPagesLoading(true); // eslint-disable-line @eslint-react/set-state-in-effect
-    const loadPages = async (): Promise<void> => {
-      try {
-        const res = await onLoadPages(chapterId);
-        if (isCancelled) return;
-        if (!res.success) {
-          console.error("[ComicDetailModal] 加载页面失败:", res);
-          showLocalApiFailure(res, showToast, "加载页面失败");
-          return;
-        }
-        setServerPages(res.data);
-      } catch (error) {
-        if (isCancelled) return;
-        console.error("[ComicDetailModal] 加载页面异常:", error);
-        showLocalCaughtError(error, showToast, "加载页面失败");
-      } finally {
-        if (!isCancelled) setIsPagesLoading(false);
-      }
-    };
-    void loadPages();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [chapterId, isSelectedChapterAvailable, onLoadPages, showToast]);
-
-  const fetchedTaskIdsRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!chapterId) return;
-
-    const fetchSucceededPages = async (): Promise<void> => {
-      for (const task of taskByPageId.values()) {
-        if (task.status !== "succeeded" || !task.pageId) continue;
-        if (fetchedTaskIdsRef.current.has(task.taskId)) continue;
-
-        fetchedTaskIdsRef.current.add(task.taskId);
-
-        const res = await getPage(client, task.pageId);
-        if (!res.success) continue;
-        setServerPages((prev) => {
-          const idx = prev.findIndex((p) => p.id === task.pageId);
-          if (idx !== -1) {
-            const next = [...prev];
-            next[idx] = res.data;
-            return next;
-          }
-          return [...prev, res.data];
-        });
-      }
-    };
-    void fetchSucceededPages();
-  }, [client, chapterId, taskByPageId]);
-
-  const reloadCurrentPages = useCallback(async () => {
-    if (!chapterId) return;
-    const res = await onLoadPages(chapterId);
-    if (!res.success) {
-      showLocalApiFailure(res, showToast);
-      return;
-    }
-    setServerPages(res.data);
-  }, [chapterId, onLoadPages, showToast]);
+  const results = usePageResults({
+    client,
+    chapterId,
+    available: isSelectedChapterAvailable,
+    tasks: taskByPageId,
+    onLoadPages,
+    showToast,
+  });
+  const { serverPages, isPagesLoading, reloadCurrentPages, capture } = results;
 
   const pages = useMemo(() => {
     const merged = serverPages.map((page) => {
@@ -224,11 +157,12 @@ export function useComicDetailPages({
 
   const handleAddRawPages = useCallback(
     async (files: File[]): Promise<void> => {
-      if (!chapterId || !onAddPages) return;
+      if (!chapterId) return;
 
+      const isCurrent = capture();
       try {
         const started = await startChapterPageUpload(client, chapterId, files);
-        if (started.skippedCount > 0) {
+        if (isCurrent() && started.skippedCount > 0) {
           showToast(
             `已跳过 ${String(started.skippedCount)} 张重复图片，` +
               `开始上传 ${String(started.allocatedCount)} 张`,
@@ -237,45 +171,95 @@ export function useComicDetailPages({
         }
 
         void started.completion.then((summary) => {
+          if (!isCurrent()) return;
           const unreportedFailures = summary.failed - summary.reportedValidationFailures;
           if (unreportedFailures > 0) {
             showToast(`${String(unreportedFailures)} 张图片上传失败，可在对应页面重传`, "error");
           }
         });
       } catch (error) {
+        if (!isCurrent()) return;
         console.error("[ComicDetailModal] 分配页面失败:", error);
         showLocalCaughtError(error, showToast, "分配页面失败", true);
       }
     },
-    [chapterId, client, onAddPages, showToast],
+    [chapterId, client, capture, showToast],
   );
 
-  const handleDeleteAllChapterPages = useCallback(async () => {
-    if (!chapterId || !onDeleteChapterPages) return;
-
-    setIsDeletingChapterPages(true);
-    const res = await onDeleteChapterPages(chapterId);
-    setIsDeletingChapterPages(false);
-
-    if (!res.success) {
-      console.error("[ComicDetailModal] 批量删除页面失败:", res);
-      showLocalApiFailure(res, showToast);
-      return;
+  const refreshChapterStats = useCallback(async (): Promise<boolean> => {
+    const isCurrent = capture();
+    try {
+      const chapters = await reloadLoadedChapters();
+      if (!isCurrent()) return false;
+      if (chapters === null) {
+        setStatsRecovery({ isCurrent });
+        return false;
+      }
+      setStatsRecovery(null);
+      return true;
+    } catch (error) {
+      if (!isCurrent()) return false;
+      console.error("[ComicDetailModal] 清空后刷新章节统计异常", { chapterId, error });
+      setStatsRecovery({ isCurrent });
+      showLocalCaughtError(error, showToast, "页面已清空，但章节统计刷新失败，请重新加载章节信息");
+      return false;
     }
+  }, [capture, chapterId, reloadLoadedChapters, showToast]);
+  const retryChapterStats = useCallback(async (): Promise<void> => {
+    await refreshChapterStats();
+  }, [refreshChapterStats]);
 
-    setServerPages([]);
-    clearChapterUploadTasks(chapterId);
-    await reloadLoadedChapters();
-    showToast("页面已清空", "success");
-  }, [chapterId, onDeleteChapterPages, reloadLoadedChapters, showToast]);
+  const handleDeleteAllChapterPages = useCallback(async () => {
+    if (!chapterId || !onDeleteChapterPages || isDeletingChapterPages) return;
+
+    const isCurrent = capture();
+    const isSameSession = results.captureSession();
+    const request = { isCurrent };
+    setDeletion(request);
+    try {
+      const res = await onDeleteChapterPages(chapterId);
+      if (!res.success) {
+        if (isCurrent()) {
+          console.error("[ComicDetailModal] 批量删除页面失败", { chapterId, result: res });
+          showLocalApiFailure(res, showToast);
+        }
+        return;
+      }
+      if (!isSameSession()) return;
+      clearChapterUploadTasks(chapterId);
+      if (!isCurrent()) return;
+      setDeletion((current) => (current === request ? null : current));
+      results.clear();
+      const isClearedOwnerCurrent = results.capture();
+      const refreshed = await refreshChapterStats();
+      if (refreshed && isClearedOwnerCurrent()) showToast("页面已清空", "success");
+    } catch (error) {
+      if (isCurrent()) {
+        console.error("[ComicDetailModal] 批量删除页面异常", { chapterId, error });
+        showLocalCaughtError(error, showToast, "清空页面失败");
+      }
+    } finally {
+      if (isCurrent()) setDeletion((current) => (current === request ? null : current));
+    }
+  }, [
+    chapterId,
+    onDeleteChapterPages,
+    refreshChapterStats,
+    showToast,
+    results,
+    isDeletingChapterPages,
+    capture,
+  ]);
 
   const handleReuploadPage = useCallback(
     async (pageId: string, file: File) => {
-      if (!chapterId || !onAllocPageUpload || reuploadingPageIds[pageId] === true) return;
+      if (!chapterId || reuploadingPageIds[pageId] === true) return;
 
+      const isCurrent = capture();
       try {
         const started = await startPageReupload(client, chapterId, pageId, file);
         void started.completion.then((summary) => {
+          if (!isCurrent()) return;
           if (summary.succeeded > 0) {
             showToast("重上传成功", "success");
             return;
@@ -284,11 +268,12 @@ export function useComicDetailPages({
           showToast("重上传失败，请检查对应页面", "error");
         });
       } catch (error) {
+        if (!isCurrent()) return;
         console.error("[ComicDetailModal] 重上传分配失败:", error);
         showLocalCaughtError(error, showToast, "重上传失败", true);
       }
     },
-    [chapterId, client, onAllocPageUpload, reuploadingPageIds, showToast],
+    [chapterId, client, capture, reuploadingPageIds, showToast],
   );
 
   const reloadChapterStats = useCallback(async () => {
@@ -315,6 +300,9 @@ export function useComicDetailPages({
     reuploadingPageIds,
     isDeletingChapterPages,
     reloadCurrentPages,
+    pageRecoveryNeeded: results.pageRecoveryNeeded,
+    chapterStatsRecoveryNeeded,
+    retryChapterStats,
     reloadChapterStats,
     handleAddRawPages,
     handleDeleteAllChapterPages,

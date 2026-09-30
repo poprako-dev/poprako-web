@@ -3,12 +3,48 @@ import clsx from "clsx";
 import { CaseSensitive, Check, Command, Loader2, ReplaceAll, SquareArrowRight } from "lucide-react";
 import { TranslatorPaginator } from "@/route/_authenticated/translator/business/page-statistic/TranslatorPaginator";
 import { ToolboxDropdown } from "@/shared/component/toolbox-dropdown/ToolboxDropdown";
-import { unitId, unitIsBubble } from "@/route/_authenticated/translator/business/unit/unit";
 import { Canvas } from "@/route/_authenticated/translator/business/canvas/Canvas";
 import { TerminologyLookupBar } from "@/route/_authenticated/translator/business/terminology/TerminologyLookupBar";
 import { ReadOnlyPageActions } from "@/route/_authenticated/translator/business/page-statistic/ReadOnlyPageActions";
 import type { EditorSession } from "./use-editor-session";
-type Props = { session: EditorSession };
+type Props = {
+  session: Pick<
+    EditorSession,
+    | "project"
+    | "onListPageUnitDiffStats"
+    | "onListPageUnitFlaggedStats"
+    | "terminology"
+    | "pageIndex"
+    | "unitBuf"
+    | "focusedUnitId"
+    | "view"
+    | "proofreadPreviewVisibility"
+    | "isReadOnly"
+    | "canEditView"
+    | "imageUrl"
+    | "isLoadingPage"
+    | "isUnitCreationEnabled"
+    | "setIsShortcutPanelOpen"
+    | "setIsSpecialCharPanelOpen"
+    | "setIsUnitSearchTransformOpen"
+    | "isCompletingStage"
+    | "hasCompletedStage"
+    | "setIsCompleteConfirmOpen"
+    | "isPageStatsOpen"
+    | "setIsPageStatsOpen"
+    | "canvasRef"
+    | "saving"
+    | "handleNavigate"
+    | "handleExit"
+    | "handleToggleBubble"
+    | "handleMoveUnit"
+    | "handleAddUnit"
+    | "handleFocusUnit"
+    | "handlePageImageLoad"
+    | "handleDeleteUnit"
+    | "completionStage"
+  >;
+};
 export function EditorCanvas({ session }: Props): JSX.Element {
   const {
     project,
@@ -34,11 +70,10 @@ export function EditorCanvas({ session }: Props): JSX.Element {
     isPageStatsOpen,
     setIsPageStatsOpen,
     canvasRef,
-    unitBufRef,
     saving,
     handleNavigate,
     handleExit,
-    handleModifyUnit,
+    handleToggleBubble,
     handleMoveUnit,
     handleAddUnit,
     handleFocusUnit,
@@ -71,13 +106,6 @@ export function EditorCanvas({ session }: Props): JSX.Element {
           },
         },
       ];
-
-  function handleToggleBubble(targetId: string): void {
-    const targetUnit = unitBufRef.current.find((unit) => unitId(unit) === targetId);
-    if (targetUnit) {
-      handleModifyUnit(targetId, { isBubble: !unitIsBubble(targetUnit) });
-    }
-  }
 
   return (
     <div className="@container relative w-full h-full bg-surface-stone-700">

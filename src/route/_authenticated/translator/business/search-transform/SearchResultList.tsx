@@ -56,7 +56,7 @@ export function SearchResultList({
   if (searchState.status === "error") {
     return (
       <div className="flex h-full items-center justify-center px-6 text-center">
-        <p className="text-xs leading-relaxed text-(--danger-soft)">{searchState.message}</p>
+        <p className="text-xs leading-relaxed text-ink-red-700">{searchState.message}</p>
       </div>
     );
   }

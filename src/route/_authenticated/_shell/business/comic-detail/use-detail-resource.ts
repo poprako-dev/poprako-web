@@ -36,10 +36,7 @@ export function useDetailResource({
   > {
   const client = useApiClient();
   const session = useReadySession();
-  const operations = useMemo(
-    () => createDetailActions(client, { logPrefix: "ComicDetail" }),
-    [client],
-  );
+  const operations = useMemo(() => createDetailActions(client), [client]);
   const onLoadAssignableMembers = useCallback(
     (_chapterId: string, args: AssignableMemberArgs) => listComicMembers(client, comic, args),
     [client, comic],

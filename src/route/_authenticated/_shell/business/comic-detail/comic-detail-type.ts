@@ -1,11 +1,7 @@
 import type { ChangeEvent } from "react";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
-import type {
-  AllocatedPage,
-  PageInfo,
-  UploadProgressCallbacks,
-} from "@/route/_authenticated/business/page/page";
+import type { PageInfo } from "@/route/_authenticated/business/page/page";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import type { MemberInfo } from "@/route/business/identity/member";
 import type { Role } from "@/route/business/identity/role";
@@ -76,19 +72,7 @@ export type DetailContract = {
   onDeleteChapter: (chapterId: string) => Promise<Result<void>>;
   onNavigateToTranslator: (chapterId: string, pageId: string, isReadOnly?: boolean) => void;
   currentUserId: string;
-  onAddPages: (
-    chapterId: string,
-    files: File[],
-    callbacks?: UploadProgressCallbacks,
-  ) => Promise<void>;
   onDeleteChapterPages: (chapterId: string) => Promise<Result<void>>;
-  onAllocPageUpload: (args: {
-    pageId: string;
-    rawIdent?: string | undefined;
-    imageHash: string;
-    newByteLen: number;
-    extension: string;
-  }) => Promise<Result<AllocatedPage>>;
   onJoinChapterRole: (chapterId: string, role: Role) => Promise<Result<void>>;
   onImportChapter: (args: ImportChapterArgs) => Promise<Result<ImportChapterResult>>;
   onExportChapter: (
