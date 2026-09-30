@@ -32,7 +32,7 @@ test("joining immediately refreshes assignments and permissions without reopenin
     getAccessToken: () => "session",
     fetchImpl,
   });
-  const actions = createDetailActions(client, { logPrefix: "test" });
+  const actions = createDetailActions(client);
   const showToast = vi.fn();
   const onWorkflowRecordsChanged = vi.fn();
   const { result, rerender } = renderHook(() =>

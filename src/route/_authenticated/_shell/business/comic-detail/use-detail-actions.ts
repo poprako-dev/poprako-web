@@ -14,11 +14,7 @@ import {
   listChapterWorkflowRecords,
   updateChapter,
 } from "@/route/_authenticated/business/chapter/chapter-request";
-import {
-  allocExistingPageUpload,
-  deleteChapterPages,
-  listPages,
-} from "@/route/_authenticated/business/page/page-request";
+import { deleteChapterPages, listPages } from "@/route/_authenticated/business/page/page-request";
 import { getUser } from "@/route/business/identity/user-request";
 import { roleMask } from "@/route/business/identity/role";
 import type { Role } from "@/route/business/identity/role";
@@ -26,7 +22,6 @@ import type { Result } from "@/shared/utility/result";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import type { WorkflowTransition } from "@/route/_authenticated/business/chapter/chapter-input";
 import type { DetailContract } from "./comic-detail-type";
-import { addChapterPages } from "./upload/page-upload";
 import type { ApiClient } from "@/api/client";
 
 type Action = Required<DetailContract>;
@@ -41,9 +36,7 @@ export type DetailActions = {
   onAddAssignment: NonNullable<Action["onAddAssignment"]>;
   onCreateChapter: NonNullable<Action["onCreateChapter"]>;
   onDeleteChapter: NonNullable<Action["onDeleteChapter"]>;
-  onAddPages: NonNullable<Action["onAddPages"]>;
   onDeleteChapterPages: NonNullable<Action["onDeleteChapterPages"]>;
-  onAllocPageUpload: NonNullable<Action["onAllocPageUpload"]>;
   onJoinChapterRole: NonNullable<Action["onJoinChapterRole"]>;
   onImportChapter: Action["onImportChapter"];
   onExportChapter: NonNullable<Action["onExportChapter"]>;
@@ -113,10 +106,7 @@ export async function removeDetailAssignment(
   return { success: true, data: undefined };
 }
 
-export function createDetailActions(
-  client: ApiClient,
-  { logPrefix }: { logPrefix: string },
-): DetailActions {
+export function createDetailActions(client: ApiClient): DetailActions {
   return {
     onLoadChapters: (...args) => listChapters(client, ...args),
     onLoadAssignments: (...args) => loadDetailAssignments(client, ...args),
@@ -128,10 +118,7 @@ export function createDetailActions(
     onAddAssignment: (...args) => addDetailAssignment(client, ...args),
     onCreateChapter: (...args) => createChapter(client, ...args),
     onDeleteChapter: (...args) => deleteChapter(client, ...args),
-    onAddPages: (chapterId, files, callbacks) =>
-      addDetailPages({ client, chapterId, files, callbacks, logPrefix }),
     onDeleteChapterPages: (chapterId) => deleteChapterPages(client, chapterId),
-    onAllocPageUpload: (args) => allocExistingPageUpload(client, args),
     onJoinChapterRole: (...args) => joinDetailRole(client, ...args),
     onImportChapter: (...args) => importChapter(client, ...args),
     onExportChapter: (...args) => exportChapter(client, ...args),
@@ -143,10 +130,6 @@ function loadDetailPages(
   chapterId: string,
 ): ReturnType<DetailActions["onLoadPages"]> {
   return listPages(client, { chapterId });
-}
-
-function addDetailPages(args: Parameters<typeof addChapterPages>[0]): Promise<void> {
-  return addChapterPages(args);
 }
 
 function joinDetailRole(client: ApiClient, chapterId: string, role: Role): Promise<Result<void>> {

@@ -84,12 +84,12 @@ describe("workflow and value contract", () => {
       {
         edit: "patch",
         id: "unit_1",
-        next_id: null,
+        next_id: { type: "clear" },
         is_bubble: false,
         is_flagged: false,
         coord: { x_coord: 0.3, y_coord: 0.4 },
-        translation: null,
-        revision: { is_proofread: true, proofread_text: "done" },
+        translation: { type: "clear" },
+        revision: { type: "assign", value: { is_proofread: true, proofread_text: "done" } },
       },
       { edit: "delete", id: "unit_deleted" },
     ]);

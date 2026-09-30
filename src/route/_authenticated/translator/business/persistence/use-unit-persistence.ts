@@ -29,7 +29,7 @@ export function useUnitPersistence(args: Args): {
   pendingAction: PendingAction | null;
   saving: boolean;
   saveState: SaveSnapshot;
-  commitUnits: (units: UnitInfo[], _setter: Args["setUnitBuf"]) => void;
+  commitUnits: (units: UnitInfo[]) => void;
   setLoadedUnits: (pageId: string, units: UnitInfo[]) => void;
   flushIfDirty: (shouldShowSuccess?: boolean) => Promise<void>;
   handleNavigate: (newIndex: number, targetUnitId?: string) => Promise<void>;
@@ -116,7 +116,7 @@ export function useUnitPersistence(args: Args): {
   }, [controller]);
 
   const commitUnits = useCallback(
-    (units: UnitInfo[], _setter: Args["setUnitBuf"]) => {
+    (units: UnitInfo[]) => {
       controller.commit(units);
     },
     [controller],

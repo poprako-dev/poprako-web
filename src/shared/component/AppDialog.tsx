@@ -158,11 +158,11 @@ export function AppDialogAction({
         "text-xs font-semibold transition-all duration-200 active:scale-[0.98]",
         "flex-1 disabled:cursor-not-allowed disabled:opacity-50",
         tone === "neutral" && [
-          "border-line-slate-100 bg-surface-slate-50 text-ink-slate-400",
-          "hover:bg-surface-slate-100 hover:text-ink-slate-500",
+          "border-line-slate-100 bg-surface-slate-50 text-ink-slate-600",
+          "hover:bg-surface-slate-100 hover:text-ink-slate-700",
         ],
         tone === "brand" && [
-          "border-(--brand-leaf-border) bg-surface-green-50 text-ink-green-600",
+          "border-(--brand-leaf-border) bg-surface-green-50 text-ink-green-800",
           "hover:bg-surface-green-100",
         ],
         tone === "danger" && [

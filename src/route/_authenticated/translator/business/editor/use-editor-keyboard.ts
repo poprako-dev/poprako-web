@@ -6,10 +6,32 @@ import type { EditorState } from "./use-editor-state";
 import type { EditorUnitActions } from "./use-editor-unit-actions";
 import type { EditorProps } from "./editor-props";
 import type { useUnitPersistence } from "../persistence/use-unit-persistence";
-type Options = EditorState &
-  ReturnType<typeof useUnitPersistence> &
-  EditorUnitActions &
-  EditorProps & { handleSave: () => Promise<void> };
+type Options = Pick<
+  EditorState,
+  | "pageIndex"
+  | "unitBuf"
+  | "focusedUnitId"
+  | "setFocusedUnitId"
+  | "availableModes"
+  | "mode"
+  | "setViewState"
+  | "setProofreadPreviewVisibility"
+  | "isReadOnly"
+  | "canSwitchView"
+  | "toggleRelocation"
+  | "isShortcutPanelOpen"
+  | "isSpecialCharPanelOpen"
+  | "isUnitSearchTransformOpen"
+  | "isPageStatsOpen"
+  | "setIsPageStatsOpen"
+  | "activeShortcuts"
+> &
+  Pick<ReturnType<typeof useUnitPersistence>, "handleNavigate"> &
+  Pick<
+    EditorUnitActions,
+    "handleQuickSpecialChar" | "handleQuickSpecialCharAt" | "handleFocusUnit"
+  > &
+  Pick<EditorProps, "project"> & { handleSave: () => Promise<void> };
 export function useEditorKeyboard({
   pageIndex,
   unitBuf,

@@ -13,6 +13,7 @@ import { ComicDetailSidebar } from "@/route/_authenticated/_shell/business/comic
 import { ComicDetailContent } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailContent";
 import { ComicDetailModalLayout } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailModalLayout";
 import { PageList } from "@/route/_authenticated/_shell/business/comic-detail/page/PageList";
+import { Button } from "@/shared/component/Button";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
 import { canUploadArtwork } from "@/route/_authenticated/_shell/business/comic-detail/upload/artwork-upload";
 
@@ -40,9 +41,7 @@ type Args = {
     | "onArchiveComic"
     | "onDeleteComic"
     | "onNavigateToTranslator"
-    | "onAddPages"
     | "onDeleteChapterPages"
-    | "onAllocPageUpload"
     | "onExportChapter"
   >;
   activeView: ComicDetailView;
@@ -212,7 +211,35 @@ export function ComicDetailMainView({
         <ComicDetailContent
           activeView={activeView}
           chapterId={chapters.selectedChapterId}
-          pageList={pageGrid}
+          pageList={
+            <>
+              {pages.pageRecoveryNeeded && (
+                <div role="alert" className="flex items-center gap-2 p-2">
+                  <span>页面信息加载失败</span>
+                  <Button
+                    onClick={() => {
+                      void pages.reloadCurrentPages();
+                    }}
+                  >
+                    重新加载页面
+                  </Button>
+                </div>
+              )}
+              {pages.chapterStatsRecoveryNeeded && (
+                <div role="alert" className="flex items-center gap-2 p-2">
+                  <span>页面已清空，章节统计刷新失败</span>
+                  <Button
+                    onClick={() => {
+                      void pages.retryChapterStats();
+                    }}
+                  >
+                    重新加载章节信息
+                  </Button>
+                </div>
+              )}
+              {pageGrid}
+            </>
+          }
           workflowPanel={workflowPanel}
           onChangeView={onChangeView}
         />
