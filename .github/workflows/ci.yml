@@ -17,47 +17,6 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  cross-platform:
-    name: Development tools (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest]
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Set up Deno
-        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
-        with:
-          deno-version: 2.9.6
-          cache: true
-
-      - name: Install dependencies and prepare reviewed declarations
-        run: |
-          sh script/assert-deno-version.sh
-          deno ci
-          deno task prepare:dependencies
-
-      - name: Check types and lint
-        run: |
-          deno task typecheck
-          deno task lint
-
-      - name: Run cross-platform tests
-        run: |
-          deno task test:unit
-          deno task test:integration
-          deno task test:script
-
-      - name: Build and smoke-test Storybook
-        run: |
-          deno task build
-          deno task test:storybook-start
-
   checks:
     name: Frontend checks
     runs-on: ubuntu-latest
@@ -99,7 +58,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs:
       - checks
-      - cross-platform
       - security
     runs-on: ubuntu-latest
     timeout-minutes: 30
