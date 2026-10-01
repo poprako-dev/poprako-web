@@ -11,8 +11,12 @@ import type { TerminologyDataSource } from "@/route/_authenticated/translator/bu
 import type { UnitSearchTransformDataSource } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import type { UnitUserResolver } from "@/route/_authenticated/translator/business/unit-list/unit-contributor-cache";
 import type { TranslatorCompletionStage } from "@/route/_authenticated/translator/business/contract/access";
+import type { DraftStore } from "../persistence/draft-store";
 
 export type EditorProps = {
+  drafts?: DraftStore | undefined;
+  canWrite?: boolean | undefined;
+  registerLeaveGuard?: ((guard: (() => Promise<boolean>) | null) => void) | undefined;
   project: Project;
   // 懒加载的 units 获取器，BaseTranslator 只负责在需要时调用它来获取 units 列表
   onLoadUnits: (pageId: string) => Promise<UnitInfo[]>;

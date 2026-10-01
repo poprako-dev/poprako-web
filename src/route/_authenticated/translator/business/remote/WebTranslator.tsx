@@ -1,5 +1,7 @@
 import type { JSX } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useBlocker } from "@tanstack/react-router";
+import { chapterDraftStore } from "../persistence/draft-store";
 import { BaseTranslator } from "@/route/_authenticated/translator/business/BaseTranslator";
 import type { UnitSearchTransformDataSource } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import type {
@@ -59,6 +61,18 @@ export function WebTranslator({ chapterId, startPageId, onExit, startMode }: Pro
   }, [chapterId]);
   const { userInfo: currentUser } = useReadySession();
   const currentUserId = currentUser.id;
+  const drafts = useMemo(
+    () => chapterDraftStore(currentUserId, chapterId),
+    [currentUserId, chapterId],
+  );
+  const leaveGuardRef = useRef<(() => Promise<boolean>) | null>(null);
+  const registerLeaveGuard = useCallback((guard: (() => Promise<boolean>) | null) => {
+    leaveGuardRef.current = guard;
+  }, []);
+  useBlocker({
+    shouldBlockFn: () => leaveGuardRef.current?.() ?? false,
+    enableBeforeUnload: false,
+  });
 
   const handleResolveUser = useCallback(
     async (userId: string): Promise<Result<UserInfo>> => {
@@ -246,7 +260,10 @@ export function WebTranslator({ chapterId, startPageId, onExit, startMode }: Pro
 
   return (
     <BaseTranslator
-      key={chapterId}
+      key={`${chapterId}:${currentUserId}`}
+      drafts={drafts}
+      canWrite={state.canTranslate || state.canProofread}
+      registerLeaveGuard={registerLeaveGuard}
       project={state.project}
       onLoadUnits={handleLoadUnits}
       onSaveUnits={handleSaveUnits}

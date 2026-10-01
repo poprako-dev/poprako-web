@@ -54,14 +54,17 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
           <span className="flex items-center gap-1.5">
             <span
               className={clsx(
-                "size-1.5 shrink-0 rounded-full",
+                "size-2 shrink-0 rounded-full",
+                page.hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--color-ink-orange-400)]",
                 page.totalUnits > 0 && page.proofreadUnits >= page.totalUnits
                   ? "bg-surface-green-500"
                   : page.totalUnits > 0 && page.translatedUnits >= page.totalUnits
                     ? "bg-surface-orange-400"
                     : "bg-surface-gray-400",
               )}
-              aria-hidden
+              role={page.hasLocalDraft ? "img" : undefined}
+              aria-label={page.hasLocalDraft ? "有未保存草稿" : undefined}
+              title={page.hasLocalDraft ? "有未保存草稿" : undefined}
             />
             <span className="text-ink-stone-700 font-medium">P{index + 1}</span>
             {page.flaggedUnits !== undefined && page.flaggedUnits > 0 && (

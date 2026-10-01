@@ -11,6 +11,7 @@ type Props = {
   session: Pick<
     EditorSession,
     | "project"
+    | "drafts"
     | "onListPageUnitDiffStats"
     | "onListPageUnitFlaggedStats"
     | "terminology"
@@ -188,6 +189,7 @@ export function EditorCanvas({ session }: Props): JSX.Element {
       )}
       <div className="absolute top-2 right-2">
         <TranslatorPaginator
+          drafts={session.drafts}
           key={`${project.id}-${String(isReadOnly)}`}
           pages={project.pages}
           currentPageIndex={pageIndex}

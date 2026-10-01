@@ -10,7 +10,7 @@ import { createUnitPatch } from "@/route/_authenticated/translator/business/unit
 import { createUnitSaveFixture } from "@/route/_authenticated/translator/business/test/unit-save-fixture";
 import { buildUnitDiff } from "@/route/_authenticated/translator/business/persistence/unit-diff";
 import { createUnitSaveController } from "@/route/_authenticated/translator/business/persistence/unit-save-controller";
-import { mergeSavedUnits } from "@/route/_authenticated/translator/business/persistence/unit-save-merge";
+import { replayEdits } from "./draft-sequence";
 
 function fixture(): {
   id: string;
@@ -139,13 +139,13 @@ describe("unit flags", () => {
     const base = fixture();
     const local = { ...base, isFlagged: true };
     const remote = { ...base, translatedText: "remote text" };
-    expect(mergeSavedUnits([base], [local], [remote])[0]).toMatchObject({
+    expect(replayEdits([remote], buildUnitDiff([local], [base]))[0]).toMatchObject({
       isFlagged: true,
       translatedText: "remote text",
     });
-    expect(mergeSavedUnits([base], [base], [{ ...remote, isFlagged: true }])[0]?.isFlagged).toBe(
-      true,
-    );
+    expect(
+      replayEdits([{ ...remote, isFlagged: true }], buildUnitDiff([base], [base]))[0]?.isFlagged,
+    ).toBe(true);
   });
 
   test("retains edits after failure and retries with the original save identity", async () => {

@@ -1,4 +1,5 @@
 export type PageStat = {
+  hasLocalDraft?: boolean | undefined;
   pageId: string;
   flaggedUnits?: number;
   totalUnits: number;

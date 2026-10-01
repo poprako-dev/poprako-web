@@ -14,6 +14,7 @@ import { BaseUnitItem } from "@/route/_authenticated/translator/business/unit-li
 import { LineBreakOverlay } from "@/route/_authenticated/translator/business/unit-list/LineBreakOverlay";
 
 type Props = {
+  hasLocalDraft?: boolean | undefined;
   unit: UnitInfo;
   isFocused: boolean;
   onSelect?: ((unitId: string) => void) | undefined;
@@ -25,6 +26,7 @@ type Props = {
 
 export function ReadOnlyDiffUnitItem({
   unit,
+  hasLocalDraft,
   isFocused,
   onSelect,
   onIndexActivate,
@@ -138,8 +140,12 @@ export function ReadOnlyDiffUnitItem({
         </div>
         <div className="flex size-7 shrink-0 items-center justify-center rounded p-1">
           <div
+            role={hasLocalDraft ? "img" : undefined}
+            aria-label={hasLocalDraft ? "有未保存草稿" : undefined}
+            title={hasLocalDraft ? "有未保存草稿" : undefined}
             className={clsx(
               "size-2 rounded-full",
+              hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--color-ink-orange-400)]",
               unitIsProofread(unit) ? "bg-[var(--brand-leaf)]" : "bg-surface-gray-200",
             )}
           />

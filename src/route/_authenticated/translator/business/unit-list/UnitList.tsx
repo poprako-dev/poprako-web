@@ -30,6 +30,7 @@ export type SpecialCharInsertRequest = {
 
 type Props = {
   units: UnitInfo[];
+  pendingUnitIds?: string[] | undefined;
   focusedUnitId?: string | undefined;
   mode: TranslatorMode;
   onFocusUnit?: ((unitId: string) => void) | undefined;
@@ -47,6 +48,7 @@ type Props = {
 
 export function UnitList({
   units,
+  pendingUnitIds,
   focusedUnitId,
   mode,
   onFocusUnit,
@@ -115,6 +117,7 @@ export function UnitList({
           {orderedUnits.map((unit) => {
             const commonProps = {
               unit,
+              hasLocalDraft: pendingUnitIds?.includes(unitId(unit)),
               isFocused: focusedUnitId === unitId(unit),
               onSelect: onFocusUnit,
               onIndexActivate: activateIndex,

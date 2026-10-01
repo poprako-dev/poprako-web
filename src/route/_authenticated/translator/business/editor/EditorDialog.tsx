@@ -24,10 +24,6 @@ type Props = {
     | "fixedShortcuts"
     | "configurableShortcuts"
     | "updateConfigurableShortcuts"
-    | "pendingAction"
-    | "saving"
-    | "handleRetryPendingAction"
-    | "handleDiscardPendingAction"
     | "handleRequestSpecialChar"
     | "doDeleteUnit"
     | "isSpecialCharsBarVisible"
@@ -57,10 +53,6 @@ export function EditorDialog({ session }: Props): JSX.Element {
     fixedShortcuts,
     configurableShortcuts,
     updateConfigurableShortcuts,
-    pendingAction,
-    saving,
-    handleRetryPendingAction,
-    handleDiscardPendingAction,
     handleRequestSpecialChar,
     doDeleteUnit,
     isSpecialCharsBarVisible,
@@ -104,25 +96,6 @@ export function EditorDialog({ session }: Props): JSX.Element {
           coordinator={searchCoordinator}
           onClose={() => {
             setIsUnitSearchTransformOpen(false);
-          }}
-        />
-      )}
-      {pendingAction && (
-        <ConfirmDialog
-          title="保存失败，是否继续？"
-          description="可以选择再次重试保存；或放弃本页未保存修改并继续操作。"
-          confirmLabel="再次重试"
-          cancelLabel="放弃并继续"
-          loading={saving}
-          onConfirm={() => {
-            void handleRetryPendingAction().catch((error: unknown) => {
-              console.error("[Translator] 保存重试失败:", error);
-            });
-          }}
-          onCancel={() => {
-            void handleDiscardPendingAction().catch((error: unknown) => {
-              console.error("[Translator] 放弃未保存修改失败:", error);
-            });
           }}
         />
       )}
