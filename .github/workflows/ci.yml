@@ -17,10 +17,14 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  checks:
-    name: Frontend checks
+  frontend:
+    name: Frontend checks (${{ matrix.suite }})
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 4
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [static, browser, build]
 
     steps:
       - name: Check out repository
@@ -33,7 +37,16 @@ jobs:
           cache: true
 
       - name: Run required checks
-        run: sh script/ci-check.sh
+        run: sh script/ci-check.sh ${{ matrix.suite }}
+
+  checks:
+    name: Frontend checks
+    if: ${{ always() }}
+    needs: frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every frontend suite to pass
+        run: test "${{ needs.frontend.result }}" = success
 
   security:
     name: Dependency security
