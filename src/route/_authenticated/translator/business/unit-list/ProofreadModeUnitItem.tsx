@@ -20,6 +20,7 @@ import type { SpecialCharInsertRequest } from "@/route/_authenticated/translator
 import type { SpecialCharsBarController } from "@/route/_authenticated/translator/business/preference/use-detachable-special-chars-bar";
 
 type Props = {
+  hasLocalDraft?: boolean | undefined;
   unit: UnitInfo;
   isFocused: boolean;
   onSelect?: ((unitId: string) => void) | undefined;
@@ -44,6 +45,7 @@ type Props = {
 
 export function ProofreadModeUnitItem({
   unit,
+  hasLocalDraft,
   isFocused,
   onSelect,
   onIndexActivate,
@@ -176,8 +178,12 @@ export function ProofreadModeUnitItem({
           />
           <div className="shrink-0 w-7 h-7 p-1 rounded flex items-center justify-center">
             <div
+              role={hasLocalDraft ? "img" : undefined}
+              aria-label={hasLocalDraft ? "有未保存草稿" : undefined}
+              title={hasLocalDraft ? "有未保存草稿" : undefined}
               className={clsx(
                 "w-2 h-2 rounded-full",
+                hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--color-ink-orange-400)]",
                 unitIsProofread(unit) ? "bg-[var(--brand-leaf)]" : "bg-surface-gray-200",
               )}
             />

@@ -1,19 +1,17 @@
 import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { showLocalCaughtError } from "@/route/business/request-error";
-import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
+import type { UnitInfo } from "../unit/unit";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
-import type { SaveUnits } from "@/route/_authenticated/translator/business/contract/type";
+import type { SaveUnits } from "../contract/type";
 import {
   createUnitSaveController,
+  LocalDraftSavedError,
   type SaveSnapshot,
-} from "@/route/_authenticated/translator/business/persistence/unit-save-controller";
-import { startAutoSaveSchedule } from "@/route/_authenticated/translator/business/persistence/auto-save-schedule";
-
-export type PendingAction =
-  | { type: "navigate"; newIndex: number; targetUnitId?: string | undefined }
-  | { type: "exit" };
-
+} from "./unit-save-controller";
+import { startAutoSaveSchedule } from "./auto-save-schedule";
+import type { DraftStore } from "./draft-store";
+import { syncChapterDrafts } from "./chapter-draft-sync";
 type Args = {
   onSaveUnits: SaveUnits;
   onReloadUnits: (pageId: string) => Promise<UnitInfo[]>;
@@ -22,32 +20,31 @@ type Args = {
   loadPage: (index: number, targetUnitId?: string) => Promise<void>;
   setUnitBuf: (units: UnitInfo[]) => void;
   autoSaveEnabled: boolean;
+  drafts?: DraftStore | undefined;
+  canWrite?: boolean | undefined;
+  registerLeaveGuard?: ((guard: (() => Promise<boolean>) | null) => void) | undefined;
 };
-
 export function useUnitPersistence(args: Args): {
   unitBufRef: RefObject<UnitInfo[]>;
-  pendingAction: PendingAction | null;
   saving: boolean;
   saveState: SaveSnapshot;
   commitUnits: (units: UnitInfo[]) => void;
   setLoadedUnits: (pageId: string, units: UnitInfo[]) => void;
-  flushIfDirty: (shouldShowSuccess?: boolean) => Promise<void>;
-  handleNavigate: (newIndex: number, targetUnitId?: string) => Promise<void>;
+  flushIfDirty: (showSuccess?: boolean) => Promise<void>;
+  handleNavigate: (index: number, targetUnitId?: string) => Promise<void>;
   handleExit: () => Promise<void>;
-  handleRetryPendingAction: () => Promise<void>;
-  handleDiscardPendingAction: () => Promise<void>;
   runExclusive: (operation: () => Promise<void>) => Promise<void>;
   refreshUnits: () => Promise<void>;
+  retryRecovery: () => Promise<void>;
 } {
   const latestRef = useRef(args);
   useLayoutEffect(() => {
     latestRef.current = args;
   });
   const unitBufRef = useRef<UnitInfo[]>([]);
-  const navigatingRef = useRef(false);
-  const exclusiveRef = useRef(false);
-  const pendingRef = useRef<PendingAction | null>(null);
-  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const busyRef = useRef(false);
+  const approvedExitRef = useRef(false);
+  const activeRef = useRef(true);
   const [state, setState] = useState<SaveSnapshot>({
     units: [],
     dirty: false,
@@ -60,8 +57,10 @@ export function useUnitPersistence(args: Args): {
   // eslint-disable-next-line react-hooks/refs
   const [controller] = useState(() =>
     createUnitSaveController({
-      save: (pageId, diff, saveId) => latestRef.current.onSaveUnits(pageId, diff, saveId),
-      reload: (pageId) => latestRef.current.onReloadUnits(pageId),
+      drafts: args.drafts,
+      canWrite: () => latestRef.current.canWrite ?? true,
+      save: (id, diff, saveId) => latestRef.current.onSaveUnits(id, diff, saveId),
+      reload: (id) => latestRef.current.onReloadUnits(id),
       changed: (next) => {
         if (unitBufRef.current !== next.units) {
           unitBufRef.current = next.units;
@@ -70,37 +69,42 @@ export function useUnitPersistence(args: Args): {
         setState(next);
       },
       failed: (error, phase) => {
-        console.error(`[BaseTranslator] ${phase} failed`, error);
-        showLocalCaughtError(
-          error,
-          latestRef.current.showToast,
-          phase === "refresh" ? "保存已完成，但刷新失败；本地修改已保留" : "保存失败，修改已保留",
-          true,
-        );
+        if (phase === "save")
+          showLocalCaughtError(
+            error,
+            latestRef.current.showToast,
+            "远程保存失败，已暂存为本地草稿",
+          );
+        else
+          showLocalCaughtError(
+            error,
+            latestRef.current.showToast,
+            phase === "refresh"
+              ? "保存成功，页面刷新失败"
+              : "远程和本地保存均失败，修改仍在当前页面，请勿关闭",
+          );
       },
     }),
   );
-
   useEffect(() => {
+    activeRef.current = true;
     controller.setActive(true);
     const schedule = startAutoSaveSchedule(() => {
-      if (
-        !latestRef.current.autoSaveEnabled ||
-        navigatingRef.current ||
-        exclusiveRef.current ||
-        pendingRef.current
-      )
-        return;
+      if (!latestRef.current.autoSaveEnabled || busyRef.current) return;
       void controller.saveOnce().catch(() => {
-        /* Reported by the controller. */
+        /* Controller reports failure. */
       });
     });
     function visible(): void {
       if (document.visibilityState === "visible") schedule.check();
     }
     function beforeUnload(event: BeforeUnloadEvent): void {
-      const snapshot = controller.getSnapshot();
-      if (!snapshot.dirty && !snapshot.saving) return;
+      if (
+        !controller.getSnapshot().dirty &&
+        !controller.getSnapshot().saving &&
+        !Object.keys(latestRef.current.drafts?.getState().drafts ?? {}).length
+      )
+        return;
       event.preventDefault();
       // eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy beforeunload support.
       event.returnValue = "";
@@ -108,118 +112,131 @@ export function useUnitPersistence(args: Args): {
     document.addEventListener("visibilitychange", visible);
     window.addEventListener("beforeunload", beforeUnload);
     return () => {
+      activeRef.current = false;
       schedule.stop();
       document.removeEventListener("visibilitychange", visible);
       window.removeEventListener("beforeunload", beforeUnload);
       controller.setActive(false);
     };
   }, [controller]);
-
-  const commitUnits = useCallback(
-    (units: UnitInfo[]) => {
-      controller.commit(units);
-    },
+  const flushChapter = useCallback(
+    () =>
+      syncChapterDrafts({
+        current: controller,
+        drafts: latestRef.current.drafts,
+        save: latestRef.current.onSaveUnits,
+        reload: latestRef.current.onReloadUnits,
+        canWrite: () => latestRef.current.canWrite ?? true,
+        failed: (error, phase) => {
+          showLocalCaughtError(
+            error,
+            latestRef.current.showToast,
+            phase === "save"
+              ? "远程保存失败，已暂存为本地草稿"
+              : phase === "local"
+                ? "远程和本地保存均失败，修改仍在当前页面，请勿关闭"
+                : "页面刷新失败",
+          );
+        },
+      }),
     [controller],
   );
-
-  const setLoadedUnits = useCallback(
-    (pageId: string, units: UnitInfo[]) => {
-      controller.load(pageId, units);
-    },
-    [controller],
-  );
-
   const flushIfDirty = useCallback(
-    async (shouldShowSuccess = true) => {
-      const hasChanges = controller.getSnapshot().dirty;
-      await controller.flush();
-      if (shouldShowSuccess && hasChanges && !controller.getSnapshot().refreshError) {
-        latestRef.current.showToast("保存成功", "success");
+    async (showSuccess = true) => {
+      if (busyRef.current) throw new Error("请等待当前操作完成后重试");
+      busyRef.current = true;
+      try {
+        await flushChapter();
+        if (showSuccess) latestRef.current.showToast("保存成功", "success");
+      } finally {
+        busyRef.current = false;
       }
     },
-    [controller],
+    [flushChapter],
   );
-
   const runExclusive = useCallback(
     async (operation: () => Promise<void>) => {
-      if (exclusiveRef.current || navigatingRef.current || pendingRef.current) {
-        throw new Error("请等待当前操作完成后重试");
-      }
-      exclusiveRef.current = true;
+      if (busyRef.current) throw new Error("请等待当前操作完成后重试");
+      busyRef.current = true;
       try {
-        await controller.flush();
+        await flushChapter();
         controller.setSuspended(true);
         await operation();
       } finally {
         controller.setSuspended(false);
-        exclusiveRef.current = false;
+        busyRef.current = false;
       }
     },
-    [controller],
+    [controller, flushChapter],
   );
-
-  const perform = useCallback(
-    async (action: PendingAction, shouldDiscard = false) => {
-      if (navigatingRef.current || exclusiveRef.current) return;
-      navigatingRef.current = true;
-      pendingRef.current = null;
-      setPendingAction(null);
+  const leave = useCallback(
+    async (action: () => void | Promise<void>): Promise<boolean> => {
+      if (busyRef.current) return true;
+      busyRef.current = true;
       try {
-        if (!shouldDiscard) await controller.flush();
-      } catch {
-        pendingRef.current = action;
-        setPendingAction(action);
-        navigatingRef.current = false;
-        return;
-      }
-      controller.setSuspended(true);
-      try {
-        if (action.type === "navigate") {
-          await latestRef.current.loadPage(action.newIndex, action.targetUnitId);
-        } else {
-          latestRef.current.onExit();
+        try {
+          await controller.flush();
+        } catch (error) {
+          if (!(error instanceof LocalDraftSavedError)) return true;
         }
+        if (!activeRef.current) return true;
+        controller.setSuspended(true);
+        await action();
+        return false;
       } catch (error) {
-        console.error("[BaseTranslator] 页面切换失败", error);
         showLocalCaughtError(error, latestRef.current.showToast, "页面加载失败，请重试");
+        return true;
       } finally {
         controller.setSuspended(false);
-        navigatingRef.current = false;
+        busyRef.current = false;
       }
     },
     [controller],
   );
-
   const handleNavigate = useCallback(
-    async (newIndex: number, targetUnitId?: string) => {
-      if (pendingRef.current) return;
-      await perform({ type: "navigate", newIndex, targetUnitId });
+    async (index: number, targetUnitId?: string) => {
+      await leave(() => latestRef.current.loadPage(index, targetUnitId));
     },
-    [perform],
+    [leave],
   );
   const handleExit = useCallback(async () => {
-    if (!pendingRef.current) await perform({ type: "exit" });
-  }, [perform]);
-  const handleRetryPendingAction = useCallback(async () => {
-    if (pendingRef.current) await perform(pendingRef.current);
-  }, [perform]);
-  const handleDiscardPendingAction = useCallback(async () => {
-    if (pendingRef.current) await perform(pendingRef.current, true);
-  }, [perform]);
-
+    await leave(() => {
+      approvedExitRef.current = true;
+      latestRef.current.onExit();
+    });
+  }, [leave]);
+  const registerLeaveGuard = args.registerLeaveGuard;
+  useEffect(() => {
+    registerLeaveGuard?.(() => {
+      if (approvedExitRef.current) {
+        approvedExitRef.current = false;
+        return Promise.resolve(false);
+      }
+      return leave(() => {
+        /* Router continues after this guard resolves. */
+      });
+    });
+    return () => registerLeaveGuard?.(null);
+  }, [registerLeaveGuard, leave]);
   return {
     unitBufRef,
-    pendingAction,
     saving: state.saving,
     saveState: state,
-    commitUnits,
-    setLoadedUnits,
+    commitUnits: controller.commit,
+    setLoadedUnits: controller.load,
     flushIfDirty,
     handleNavigate,
     handleExit,
-    handleRetryPendingAction,
-    handleDiscardPendingAction,
     runExclusive,
     refreshUnits: controller.refresh,
+    retryRecovery: async () => {
+      if (busyRef.current) throw new Error("请等待当前操作完成后重试");
+      busyRef.current = true;
+      try {
+        await controller.retryRecovery();
+      } finally {
+        busyRef.current = false;
+      }
+    },
   };
 }

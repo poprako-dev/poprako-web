@@ -170,7 +170,9 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
     }
   }
 
-  for (let index = 0; index < current.length; index++) {
+  // The server pre-registers creations, then moves them in request order.
+  // Position successors first so moving a new anchor cannot strand its predecessor.
+  for (let index = current.length - 1; index >= 0; index--) {
     const unit = current[index];
     if (!unit) continue;
     if (baselineById.has(unitId(unit))) continue;

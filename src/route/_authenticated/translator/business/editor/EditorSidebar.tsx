@@ -2,10 +2,15 @@ import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
 import { UnitList } from "@/route/_authenticated/translator/business/unit-list/UnitList";
 import { StatusOptionBar } from "@/route/_authenticated/translator/business/StatusOptionBar";
+import { DraftRecoveryNotice } from "../persistence/DraftRecoveryNotice";
 import type { EditorSession } from "./use-editor-session";
 type Props = {
   session: Pick<
     EditorSession,
+    | "drafts"
+    | "project"
+    | "pageIndex"
+    | "retryRecovery"
     | "onResolveUser"
     | "unitBuf"
     | "focusedUnitId"
@@ -67,14 +72,10 @@ export function EditorSidebar({ session }: Props): JSX.Element {
     handleToggleImageQuality,
     handleSwitchView,
   } = session;
-  function saveStatusLabel():
-    | "已保存，刷新失败"
-    | "保存失败，修改已保留"
-    | "保存中"
-    | "待保存"
-    | "已保存" {
+  function saveStatusLabel(): string {
+    if (saveState.storageError) return "草稿存储错误";
     if (saveState.error) {
-      return saveState.refreshError ? "已保存，刷新失败" : "保存失败，修改已保留";
+      return saveState.refreshError ? "等待远端核对" : "保存失败，修改已保留";
     }
     if (saving) return "保存中";
     return saveState.dirty ? "待保存" : "已保存";
@@ -82,6 +83,11 @@ export function EditorSidebar({ session }: Props): JSX.Element {
 
   return (
     <>
+      <DraftRecoveryNotice
+        store={session.drafts}
+        pageId={session.project.pages[session.pageIndex]?.id}
+        onRetry={session.retryRecovery}
+      />
       <div className="flex items-center border-b-2 border-line-stone-200 shrink-0 bg-surface-stone-50">
         <div className="flex-1 min-w-0">
           <StatusOptionBar
@@ -117,6 +123,7 @@ export function EditorSidebar({ session }: Props): JSX.Element {
       >
         <UnitList
           units={unitBuf}
+          pendingUnitIds={saveState.pendingUnitIds}
           focusedUnitId={focusedUnitId}
           mode={view}
           onFocusUnit={handleFocusUnit}

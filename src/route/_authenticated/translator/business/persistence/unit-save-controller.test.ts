@@ -48,7 +48,7 @@ function setup(initial = [unit()]): {
   save: Mock<SaveUnits>;
   reload: Mock<(pageId: string) => Promise<UnitInfo[]>>;
   changed: Mock<(snapshot: SaveSnapshot) => void>;
-  failed: Mock<(error: unknown, phase: "save" | "refresh") => void>;
+  failed: Mock<(error: unknown, phase: "save" | "refresh" | "local") => void>;
 } {
   const pages = new Map([["p1", initial]]);
   const backend = createUnitSaveFixture(pages);
@@ -67,6 +67,18 @@ function setup(initial = [unit()]): {
 }
 
 describe("Unit save coordination", () => {
+  test("confirmed requests accept the current server result without compensating writes", async () => {
+    const { controller, reload } = setup();
+    reload.mockResolvedValueOnce([unit()]);
+    controller.commit([
+      { ...unit("existing", "saved translation"), proofreadText: "saved revision" },
+    ]);
+    await controller.saveOnce();
+    expect(controller.getSnapshot().units[0]).toMatchObject({
+      translatedText: "before",
+    });
+    expect(controller.getSnapshot().refreshError).toBe(false);
+  });
   test("unmount before dispatch prevents network work and preserves the pending save", async () => {
     const { controller, save, reload } = setup();
     controller.commit([unit("existing", "edited")]);
@@ -87,6 +99,53 @@ describe("Unit save coordination", () => {
     await controller.flush();
     expect(save).not.toHaveBeenCalled();
     expect(reload).not.toHaveBeenCalled();
+  });
+
+  test("dependent batches complete in order before the final refresh", async () => {
+    const initial = Array.from({ length: 100 }, (_, index) => ({
+      ...unit(`old-${String(index)}`),
+      index,
+    }));
+    const { controller, save, reload, pages } = setup(initial);
+    const wait = deferred();
+    reload.mockImplementationOnce(async () => {
+      await wait.promise;
+      return pages.get("p1") ?? [];
+    });
+    controller.commit(initial.map((item, index) => ({ ...item, id: `new-${String(index)}` })));
+    const saving = controller.saveOnce();
+    await vi.waitFor(() => {
+      expect(reload).toHaveBeenCalledWith("p1");
+    });
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(controller.getSnapshot().saving).toBe(true);
+    wait.resolve();
+    await saving;
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(reload.mock.calls).toEqual([["p1"]]);
+    expect(save.mock.invocationCallOrder[1]).toBeLessThan(reload.mock.invocationCallOrder[0] ?? 0);
+    expect(controller.getSnapshot().dirty).toBe(false);
+  });
+
+  test("a failed final refresh never resends either completed batch", async () => {
+    const initial = Array.from({ length: 100 }, (_, index) => ({
+      ...unit(`old-${String(index)}`),
+      index,
+    }));
+    const { controller, save, reload, failed, pages } = setup(initial);
+    reload.mockRejectedValueOnce(new Error("read failed"));
+    controller.commit(initial.map((item, index) => ({ ...item, id: `new-${String(index)}` })));
+    await controller.saveOnce();
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(pages.get("p1")).toHaveLength(100);
+    expect(controller.getSnapshot()).toMatchObject({ dirty: false, refreshError: true });
+    expect(failed).toHaveBeenCalledWith(expect.any(Error), "refresh");
+    await controller.flush();
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(reload).toHaveBeenCalledTimes(2);
+    expect(save.mock.calls.map((call) => call[1].ops[0]?.edit)).toEqual(["delete", "create"]);
+    expect(pages.get("p1")).toHaveLength(100);
+    expect(controller.getSnapshot()).toMatchObject({ dirty: false, refreshError: false });
   });
 
   test("keeps edits made while the save is pending for the next cycle", async () => {
@@ -219,17 +278,18 @@ describe("Unit save coordination", () => {
     expect(controller.getSnapshot().saving).toBe(false);
   });
 
-  test("protocol errors retain the draft and halt retries", async () => {
+  test("protocol errors retain the identical batch for retries", async () => {
     const { controller, save } = setup([]);
     save.mockResolvedValue({ createdUnitIds: [] });
     controller.commit([unit("local")]);
     await expect(controller.saveOnce()).rejects.toBeInstanceOf(UnitSaveProtocolError);
     await expect(controller.saveOnce()).rejects.toBeInstanceOf(UnitSaveProtocolError);
-    expect(save).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(save.mock.calls[1]).toEqual(save.mock.calls[0]);
     expect(controller.getSnapshot().dirty).toBe(true);
   });
 
-  test("a rejected payload can be corrected with a new save ID", async () => {
+  test("a rejected immutable batch retains its save ID before subsequent edits", async () => {
     const { controller, save } = setup();
     save.mockRejectedValueOnce(
       new ApiRequestError({
@@ -242,7 +302,8 @@ describe("Unit save coordination", () => {
     await expect(controller.saveOnce()).rejects.toThrow("invalid");
     controller.commit([unit("existing", "corrected")]);
     await controller.flush();
-    expect(save.mock.calls[1]?.[2]).not.toBe(save.mock.calls[0]?.[2]);
+    expect(save.mock.calls[1]).toEqual(save.mock.calls[0]);
+    expect(save.mock.calls[2]?.[2]).not.toBe(save.mock.calls[0]?.[2]);
     expect(controller.getSnapshot().dirty).toBe(false);
   });
 

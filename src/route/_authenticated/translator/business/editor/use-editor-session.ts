@@ -67,13 +67,7 @@ export type EditorSession = Pick<
   > &
   Pick<
     ReturnType<typeof useUnitPersistence>,
-    | "handleDiscardPendingAction"
-    | "handleExit"
-    | "handleNavigate"
-    | "handleRetryPendingAction"
-    | "pendingAction"
-    | "saveState"
-    | "saving"
+    "handleExit" | "handleNavigate" | "saveState" | "saving" | "retryRecovery"
   > &
   Pick<ReturnType<typeof useEditorKeyboard>, "handleSwitchView"> &
   Pick<
@@ -83,6 +77,7 @@ export type EditorSession = Pick<
     | "onResolveUser"
     | "project"
     | "terminology"
+    | "drafts"
   > & {
     completionStage: ReturnType<typeof translatorCompletionStage>;
     handleCompleteStage: () => Promise<void>;
@@ -149,6 +144,9 @@ export function useEditorSession(props: EditorProps): EditorSession {
   });
 
   const persistence = useUnitPersistence({
+    drafts: props.drafts,
+    canWrite: props.canWrite,
+    registerLeaveGuard: props.registerLeaveGuard,
     onSaveUnits,
     onReloadUnits: onLoadUnits,
     onExit,
@@ -158,7 +156,7 @@ export function useEditorSession(props: EditorProps): EditorSession {
     autoSaveEnabled:
       !isLoadingPage && !isReadOnly && !isUnitSearchTransformOpen && !isCompletingStage,
   });
-  const { pendingAction, runExclusive, setLoadedUnits, flushIfDirty } = persistence;
+  const { runExclusive, setLoadedUnits, flushIfDirty } = persistence;
 
   const pageLoadGenerationRef = useRef(0);
 
@@ -166,7 +164,6 @@ export function useEditorSession(props: EditorProps): EditorSession {
     isShortcutPanelOpen ||
     isSpecialCharPanelOpen ||
     isUnitSearchTransformOpen ||
-    pendingAction !== null ||
     deleteConfirmUnitId !== undefined ||
     isCompleteConfirmOpen;
   const isSpecialCharsBarVisible = !isReadOnly && !isSpecialCharsBarSuspended;
@@ -203,7 +200,11 @@ export function useEditorSession(props: EditorProps): EditorSession {
     setIsLoadingPage(true);
     try {
       const [units, img] = await Promise.all([
-        onLoadUnits(page.id),
+        props.drafts
+          ? props.drafts.ready.then(
+              () => props.drafts?.getState().drafts[page.id]?.units ?? onLoadUnits(page.id),
+            )
+          : onLoadUnits(page.id),
         onLoadPageImage(page.id, imageQuality),
       ]);
       if (generation !== pageLoadGenerationRef.current) return;
@@ -324,7 +325,8 @@ export function useEditorSession(props: EditorProps): EditorSession {
     handleAddUnit: actions.handleAddUnit,
     handleCompleteStage,
     handleDeleteUnit: actions.handleDeleteUnit,
-    handleDiscardPendingAction: persistence.handleDiscardPendingAction,
+    drafts: props.drafts,
+    retryRecovery: persistence.retryRecovery,
     handleExit: persistence.handleExit,
     handleFocusUnit: actions.handleFocusUnit,
     handleModifyUnit: actions.handleModifyUnit,
@@ -333,7 +335,6 @@ export function useEditorSession(props: EditorProps): EditorSession {
     handlePageImageLoad: actions.handlePageImageLoad,
     handleReorderUnit: actions.handleReorderUnit,
     handleRequestSpecialChar: actions.handleRequestSpecialChar,
-    handleRetryPendingAction: persistence.handleRetryPendingAction,
     handleSave,
     handleSpecialCharInserted: actions.handleSpecialCharInserted,
     handleSpecialCharUse: actions.handleSpecialCharUse,
@@ -359,7 +360,6 @@ export function useEditorSession(props: EditorProps): EditorSession {
     onListPageUnitFlaggedStats: props.onListPageUnitFlaggedStats,
     onResolveUser: props.onResolveUser,
     pageIndex: state.pageIndex,
-    pendingAction: persistence.pendingAction,
     project: props.project,
     proofreadPreviewVisibility: state.proofreadPreviewVisibility,
     saveState: persistence.saveState,
