@@ -165,7 +165,7 @@ export function TranslateModeUnitItem({
             title={hasLocalDraft ? "有未保存草稿" : undefined}
             className={clsx(
               "w-2 h-2 rounded-full",
-              hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--color-ink-orange-400)]",
+              hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--status-local-draft)]",
               unitTranslatedText(unit) ? "bg-[var(--brand-leaf)]" : "bg-surface-gray-200",
             )}
           />

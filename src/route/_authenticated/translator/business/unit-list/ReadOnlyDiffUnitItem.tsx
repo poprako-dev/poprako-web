@@ -78,7 +78,7 @@ export function ReadOnlyDiffUnitItem({
               isFocused ? "font-medium text-ink-stone-900" : "text-ink-stone-700",
             )}
           >
-            {parts.length === 0 && <span className="text-ink-gray-300">无翻译内容</span>}
+            {parts.length === 0 && <span className="text-ink-gray-500">无翻译内容</span>}
             {parts.map((part, index) => {
               const key = `${String(index)}-${part.kind}-${part.text}`;
               if (part.kind === "deleted" || part.kind === "replacement-removed") {
@@ -145,7 +145,7 @@ export function ReadOnlyDiffUnitItem({
             title={hasLocalDraft ? "有未保存草稿" : undefined}
             className={clsx(
               "size-2 rounded-full",
-              hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--color-ink-orange-400)]",
+              hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--status-local-draft)]",
               unitIsProofread(unit) ? "bg-[var(--brand-leaf)]" : "bg-surface-gray-200",
             )}
           />

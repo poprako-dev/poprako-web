@@ -55,7 +55,7 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
             <span
               className={clsx(
                 "size-2 shrink-0 rounded-full",
-                page.hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--color-ink-orange-400)]",
+                page.hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--status-local-draft)]",
                 page.totalUnits > 0 && page.proofreadUnits >= page.totalUnits
                   ? "bg-surface-green-500"
                   : page.totalUnits > 0 && page.translatedUnits >= page.totalUnits
