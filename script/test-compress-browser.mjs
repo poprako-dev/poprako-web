@@ -67,12 +67,13 @@ const browser = context.browser();
 if (!browser) {
   throw new Error("Chromium context did not create a browser");
 }
-const session = await browser.newBrowserCDPSession();
+const profiling = process.argv.includes("--profile");
+const session = profiling ? await browser.newBrowserCDPSession() : undefined;
 /** @type {{ time: number; rssMiB: number }[]} */
 const memorySamples = [];
 let sampling = false;
 const sampleMemory = async () => {
-  if (sampling) {
+  if (!session || sampling) {
     return;
   }
   sampling = true;
@@ -98,8 +99,8 @@ const sampleMemory = async () => {
     sampling = false;
   }
 };
-await sampleMemory();
-const memoryTimer = setInterval(sampleMemory, 1000);
+if (profiling) await sampleMemory();
+const memoryTimer = profiling ? setInterval(sampleMemory, 1000) : undefined;
 try {
   const page = await context.newPage();
   page.on("console", (message) => console.log("browser:", message.text()));
@@ -312,22 +313,24 @@ try {
   const completeReport = report;
   completeReport.remainingArchiveWorkers = archiveWorkers.length;
   completeReport.browserVersion = browser.version();
-  completeReport.memory = {
-    scope: "Sampled whole Chromium process tree RSS, including verification",
-    baselineMiB: memorySamples[0]?.rssMiB,
-    peakMiB: Math.max(...memorySamples.map((sample) => sample.rssMiB)),
-    samples: memorySamples,
-  };
-  await writeFile(
-    path.join(
-      generated,
-      process.argv.includes("--large") ? "browser-large-report.json" : "browser-report.json",
-    ),
-    JSON.stringify(report, null, 2),
-  );
+  if (profiling) {
+    completeReport.memory = {
+      scope: "Sampled whole Chromium process tree RSS, including verification",
+      baselineMiB: memorySamples[0]?.rssMiB,
+      peakMiB: Math.max(...memorySamples.map((sample) => sample.rssMiB)),
+      samples: memorySamples,
+    };
+    await writeFile(
+      path.join(
+        generated,
+        process.argv.includes("--large") ? "browser-large-report.json" : "browser-report.json",
+      ),
+      JSON.stringify(report, null, 2),
+    );
+  }
   const summary = {
     ...completeReport,
-    memory: { ...completeReport.memory, samples: undefined },
+    ...(profiling ? { memory: { ...completeReport.memory, samples: undefined } } : {}),
   };
   console.log(JSON.stringify(summary, null, 2));
 } finally {

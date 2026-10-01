@@ -18,10 +18,12 @@ await writeFile(
   `<div id="root" style="height:100dvh"></div><script type="module">
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Utilities } from '/src/route/_authenticated/_shell/utilities/business/Utilities.tsx';
-import { prepareBoundedArchive } from '/src/route/_authenticated/_shell/utilities/business/bounded-compression.ts';
-import { ZipReader, BlobReader, BlobWriter } from '@zip.js/zip.js';
 import '/src/application/style.css';
+const [{ Utilities }, { prepareBoundedArchive }, { ZipReader, BlobReader, BlobWriter }] = await Promise.all([
+  import('/src/route/_authenticated/_shell/utilities/business/Utilities.tsx'),
+  import('/src/route/_authenticated/_shell/utilities/business/bounded-compression.ts'),
+  import('@zip.js/zip.js'),
+]);
 createRoot(document.getElementById('root')).render(React.createElement(Utilities));
 globalThis.boundedTest = { prepareBoundedArchive, ZipReader, BlobReader, BlobWriter };
 </script>`,
@@ -204,7 +206,9 @@ try {
   await page.getByRole("button", { name: "开始压缩", exact: true }).click();
   await page.getByRole("link", { name: "下载 ZIP" }).waitFor({ timeout: 60000 });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({ path: path.join(generated, "mobile.png") });
+  if (process.argv.includes("--screenshot")) {
+    await page.screenshot({ path: path.join(generated, "mobile.png") });
+  }
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );
