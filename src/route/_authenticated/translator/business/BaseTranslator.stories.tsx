@@ -310,6 +310,22 @@ export const FlaggedSave: Story = {
     });
     await userEvent.click(star);
     await expect(canvas.getByRole("button", { name: "保存 · 待保存" })).toBeEnabled();
+    await expect(canvas.getByRole("img", { name: "有未保存草稿" })).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Open page list" }));
+    const currentPage = within(canvas.getByRole("button", { name: /\bP1\b/ }));
+    const pageDraft = currentPage.getByRole("img", { name: "有未保存草稿" });
+    await expect(pageDraft).toBeVisible();
+    await expect(pageDraft.previousElementSibling).toBe(
+      currentPage.getByLabelText("1 个待回看的标记"),
+    );
+    for (const name of [/\bP2\b/, /\bP3\b/]) {
+      await expect(
+        within(canvas.getByRole("button", { name })).queryByRole("img", {
+          name: "有未保存草稿",
+        }),
+      ).toBeNull();
+    }
+    await userEvent.click(canvas.getByRole("button", { name: "Close page list" }));
     await userEvent.click(canvas.getByRole("button", { name: "Next page" }));
     await waitFor(async () => {
       await expect(args.onSaveUnits).toHaveBeenCalledTimes(1);
@@ -317,6 +333,7 @@ export const FlaggedSave: Story = {
     });
     await userEvent.click(canvas.getByRole("button", { name: "Open page list" }));
     await expect(await canvas.findByLabelText("1 个待回看的标记")).toBeVisible();
+    await expect(canvas.queryByLabelText("有未保存草稿")).toBeNull();
     await userEvent.click(canvas.getByRole("button", { name: "Close page list" }));
     await userEvent.click(canvas.getByRole("button", { name: "Previous page" }));
     const restored = await canvas.findByRole("button", { name: "取消标记" });

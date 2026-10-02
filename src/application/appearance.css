@@ -150,7 +150,6 @@
   --color-shadow-slate-100: var(--shadow-slate-100);
   --color-shadow-slate-200: var(--shadow-slate-200);
   --color-status-flag: var(--status-flag);
-  --color-status-local-draft: var(--status-local-draft);
   --color-surface-amber-100: var(--surface-amber-100);
   --color-surface-amber-200: var(--surface-amber-200);
   --color-surface-amber-300: var(--surface-amber-300);
@@ -358,7 +357,6 @@
   --shadow-slate-100: var(--color-slate-100);
   --shadow-slate-200: var(--color-slate-200);
   --status-flag: var(--color-yellow-500);
-  --status-local-draft: #634832;
   --surface-amber-100: var(--color-amber-100);
   --surface-amber-200: var(--color-amber-200);
   --surface-amber-300: var(--color-amber-300);

@@ -37,6 +37,7 @@ function DraftIndicators({ mode }: Props): JSX.Element {
           translatedUnits: status > 0 ? 1 : 0,
           proofreadUnits: status > 1 ? 1 : 0,
           hasLocalDraft,
+          ...(status < 2 ? { flaggedUnits: status === 0 ? 2 : 0 } : {}),
         }))}
         pageListFooter={
           <button
@@ -73,26 +74,76 @@ async function checkDraftIndicators({
   canvasElement: HTMLElement;
 }): Promise<void> {
   const canvas = within(canvasElement);
-  await expect(canvas.getAllByLabelText("有未保存草稿")).toHaveLength(3);
-  await userEvent.click(canvas.getByRole("button", { name: "Open page list" }));
-  const dots = canvas.getAllByLabelText("有未保存草稿");
-  await expect(dots).toHaveLength(6);
-  const fills = dots.map((dot) => getComputedStyle(dot).backgroundColor);
-  await expect(new Set(fills.slice(0, 3)).size).toBe(3);
-  for (const dot of dots) {
+  const unitDots = canvas.getAllByLabelText("有未保存草稿");
+  await expect(unitDots).toHaveLength(3);
+  const unitColors = unitDots.map((dot) => getComputedStyle(dot).color);
+  await expect(new Set(unitColors).size).toBe(2);
+  const unitLayouts = unitDots.map((dot) => {
+    const row = dot.closest<HTMLElement>("[data-unit-id]");
+    const input = row?.querySelector<HTMLElement>('textarea, [role="textbox"]');
+    if (!row || !input) throw new Error("Missing unit layout");
+    return {
+      row,
+      input,
+      rowRect: row.getBoundingClientRect(),
+      inputRect: input.getBoundingClientRect(),
+    };
+  });
+  for (const dot of unitDots) {
     const style = getComputedStyle(dot);
-    await expect(style.boxShadow).toContain("rgb(99, 72, 50)");
-    await expect(style.boxShadow).toContain("inset");
-    await expect(style.boxShadow).not.toContain(style.backgroundColor);
-    await expect(style.width).toBe("8px");
-    await expect(style.height).toBe("8px");
+    await expect(style.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    await expect(style.borderColor).toBe(style.color);
+    await expect(style.borderStyle).toBe("solid");
+    // Chromium may round fractional borders down to a physical pixel.
+    await expect(Number.parseFloat(style.borderWidth)).toBeGreaterThanOrEqual(2);
+    await expect(Number.parseFloat(style.borderWidth)).toBeLessThanOrEqual(2.5);
+    await expect(style.boxShadow).toBe("none");
+    await expect(style.width).toBe("10px");
+    await expect(style.height).toBe("10px");
   }
+  await userEvent.click(canvas.getByRole("button", { name: "Open page list" }));
+  await expect(canvas.getAllByLabelText("有未保存草稿")).toHaveLength(6);
+  const pageDots: HTMLElement[] = [];
+  const draftIcons: HTMLElement[] = [];
+  for (const index of [0, 1, 2]) {
+    const pageLabel = `P${String(index + 1)}`;
+    const page = canvas.getByRole("button", { name: new RegExp(`\\b${pageLabel}\\b`) });
+    const row = within(page);
+    const draft = row.getByRole("img", { name: "有未保存草稿" });
+    await expect(draft.querySelector("svg")).not.toBeNull();
+    await expect(draft).toHaveAttribute("title", "有未保存草稿");
+    await expect(draft.previousElementSibling).toBe(
+      index === 0 ? row.getByLabelText("2 个待回看的标记") : row.getByText(pageLabel),
+    );
+    const dot = page.querySelector<HTMLElement>("span.rounded-full");
+    if (!dot) throw new Error("Missing page completion indicator");
+    await expect(dot).not.toBe(draft);
+    await expect(getComputedStyle(dot).boxShadow).not.toContain("inset");
+    pageDots.push(dot);
+    draftIcons.push(draft);
+  }
+  const pageFills = pageDots.map((dot) => getComputedStyle(dot).backgroundColor);
+  await expect(new Set(pageFills).size).toBe(3);
   await userEvent.click(canvas.getByRole("button", { name: "模拟保存成功" }));
   await expect(canvas.queryAllByLabelText("有未保存草稿")).toHaveLength(0);
-  for (const [index, dot] of dots.entries()) {
+  for (const icon of draftIcons) await expect(icon).not.toBeInTheDocument();
+  for (const [index, dot] of unitDots.entries()) {
+    const style = getComputedStyle(dot);
     await expect(dot).toBeInTheDocument();
-    await expect(getComputedStyle(dot).boxShadow).not.toContain("inset");
-    await expect(getComputedStyle(dot).backgroundColor).toBe(fills[index]);
+    await expect(style.backgroundColor).toBe(unitColors[index]);
+    await expect(style.color).toBe(unitColors[index]);
+    await expect(style.borderWidth).toBe("0px");
+    await expect(style.width).toBe("10px");
+    await expect(style.height).toBe("10px");
+  }
+  for (const { row, input, rowRect, inputRect } of unitLayouts) {
+    await expect(row.getBoundingClientRect().width).toBe(rowRect.width);
+    await expect(row.getBoundingClientRect().height).toBe(rowRect.height);
+    await expect(input.getBoundingClientRect().width).toBe(inputRect.width);
+  }
+  for (const [index, dot] of pageDots.entries()) {
+    await expect(dot).toBeInTheDocument();
+    await expect(getComputedStyle(dot).backgroundColor).toBe(pageFills[index]);
   }
 }
 export const Translation: Story = { play: checkDraftIndicators };

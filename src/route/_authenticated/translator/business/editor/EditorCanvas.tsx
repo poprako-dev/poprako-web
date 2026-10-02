@@ -35,6 +35,7 @@ type Props = {
     | "setIsPageStatsOpen"
     | "canvasRef"
     | "saving"
+    | "saveState"
     | "handleNavigate"
     | "handleExit"
     | "handleToggleBubble"
@@ -193,6 +194,7 @@ export function EditorCanvas({ session }: Props): JSX.Element {
           key={`${project.id}-${String(isReadOnly)}`}
           pages={project.pages}
           currentPageIndex={pageIndex}
+          currentPageHasDraft={!isLoadingPage && session.saveState.dirty}
           currentUnits={isLoadingPage ? undefined : unitBuf}
           isEnabled={!isReadOnly}
           onLoad={onListPageUnitFlaggedStats}

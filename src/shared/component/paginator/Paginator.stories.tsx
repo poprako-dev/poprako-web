@@ -57,6 +57,62 @@ export const PageList: Story = {
   },
 };
 
+const draftPages: PageStat[] = Array.from({ length: 6 }, (_, index) => {
+  const status = Math.floor(index / 2);
+  return {
+    pageId: `draft-page-${String(index + 1)}`,
+    totalUnits: 6,
+    translatedUnits: status > 0 ? 6 : 0,
+    proofreadUnits: status > 1 ? 6 : 0,
+    hasLocalDraft: index % 2 === 1,
+    ...(status < 2 ? { flaggedUnits: status === 0 ? 2 : 0 } : {}),
+  };
+});
+
+export const PageDraftIndicators: Story = {
+  args: {
+    mode: "list",
+    currPageIndex: 0,
+    totalPageCount: draftPages.length,
+    onPageIndexChange: fn(),
+    pageStats: draftPages,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "Open page list" }));
+    await expect(canvas.getAllByRole("img", { name: "有未保存草稿" })).toHaveLength(3);
+    for (const index of [0, 2, 4]) {
+      const saved = canvas.getByRole("button", {
+        name: new RegExp(`\\bP${String(index + 1)}\\b`),
+      });
+      const pending = canvas.getByRole("button", {
+        name: new RegExp(`\\bP${String(index + 2)}\\b`),
+      });
+      await expect(within(saved).queryByLabelText("有未保存草稿")).toBeNull();
+      if (index === 0) {
+        for (const row of [saved, pending]) {
+          await expect(within(row).getByLabelText("2 个待回看的标记")).toHaveTextContent("");
+        }
+      }
+      const draft = within(pending).getByRole("img", { name: "有未保存草稿" });
+      await expect(draft).toBeVisible();
+      await expect(draft.querySelector("svg")).not.toBeNull();
+      await expect(draft.previousElementSibling).toBe(
+        index === 0
+          ? within(pending).getByLabelText("2 个待回看的标记")
+          : within(pending).getByText(`P${String(index + 2)}`),
+      );
+      const savedDot = saved.querySelector("span.rounded-full");
+      const pendingDot = pending.querySelector("span.rounded-full");
+      if (!savedDot || !pendingDot) throw new Error("Missing page completion indicator");
+      await expect(getComputedStyle(pendingDot).backgroundColor).toBe(
+        getComputedStyle(savedDot).backgroundColor,
+      );
+      await expect(getComputedStyle(pendingDot).boxShadow).not.toContain("inset");
+    }
+  },
+};
+
 export const CompositionKeepsFocus: Story = {
   play: async ({ args, canvasElement }) => {
     if (args.mode !== "input") {
