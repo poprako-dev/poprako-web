@@ -182,9 +182,11 @@ export function ProofreadModeUnitItem({
               aria-label={hasLocalDraft ? "有未保存草稿" : undefined}
               title={hasLocalDraft ? "有未保存草稿" : undefined}
               className={clsx(
-                "w-2 h-2 rounded-full",
-                hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--color-ink-orange-400)]",
-                unitIsProofread(unit) ? "bg-[var(--brand-leaf)]" : "bg-surface-gray-200",
+                "size-2.5 rounded-full",
+                hasLocalDraft ? "border-[2.5px] border-current" : "bg-current",
+                unitIsProofread(unit)
+                  ? "text-[var(--brand-leaf)]"
+                  : "text-[var(--surface-gray-200)]",
               )}
             />
           </div>

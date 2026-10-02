@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactElement, type ReactNode } from "react";
-import { Star } from "lucide-react";
+import { PencilLine, Star } from "lucide-react";
 import clsx from "clsx";
 import type { PageStat } from "./page-stat";
 
@@ -55,26 +55,31 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
             <span
               className={clsx(
                 "size-2 shrink-0 rounded-full",
-                page.hasLocalDraft && "shadow-[inset_0_0_0_1.5px_var(--color-ink-orange-400)]",
                 page.totalUnits > 0 && page.proofreadUnits >= page.totalUnits
                   ? "bg-surface-green-500"
                   : page.totalUnits > 0 && page.translatedUnits >= page.totalUnits
                     ? "bg-surface-orange-400"
                     : "bg-surface-gray-400",
               )}
-              role={page.hasLocalDraft ? "img" : undefined}
-              aria-label={page.hasLocalDraft ? "有未保存草稿" : undefined}
-              title={page.hasLocalDraft ? "有未保存草稿" : undefined}
             />
             <span className="text-ink-stone-700 font-medium">P{index + 1}</span>
             {page.flaggedUnits !== undefined && page.flaggedUnits > 0 && (
               <span
                 title={`${String(page.flaggedUnits)} 个待回看的标记`}
                 aria-label={`${String(page.flaggedUnits)} 个待回看的标记`}
-                className="flex items-center gap-0.5 text-[var(--status-flag)]"
+                className="flex shrink-0 items-center text-[var(--status-flag)]"
               >
                 <Star size={12} fill="currentColor" aria-hidden />
-                {page.flaggedUnits}
+              </span>
+            )}
+            {page.hasLocalDraft && (
+              <span
+                role="img"
+                aria-label="有未保存草稿"
+                title="有未保存草稿"
+                className="flex shrink-0 items-center text-ink-stone-400"
+              >
+                <PencilLine size={12} aria-hidden />
               </span>
             )}
           </span>

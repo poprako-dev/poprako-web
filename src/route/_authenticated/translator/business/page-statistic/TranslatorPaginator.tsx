@@ -25,6 +25,7 @@ type Props = {
   drafts?: DraftStore | undefined;
   pages: Page[];
   currentPageIndex: number;
+  currentPageHasDraft?: boolean | undefined;
   currentUnits: UnitInfo[] | undefined;
   isEnabled: boolean;
   onLoad: () => Promise<PageUnitFlaggedStats[]>;
@@ -35,6 +36,7 @@ export function TranslatorPaginator({
   drafts,
   pages,
   currentPageIndex,
+  currentPageHasDraft,
   currentUnits,
   isEnabled,
   onLoad,
@@ -88,7 +90,9 @@ export function TranslatorPaginator({
             : undefined;
           return {
             pageId: page.id,
-            hasLocalDraft: Boolean(draftState.drafts[page.id]),
+            hasLocalDraft:
+              Boolean(draftState.drafts[page.id]) ||
+              (page.id === currentPageId && currentPageHasDraft === true),
             totalUnits: page.totalUnitCount,
             translatedUnits: page.translatedUnitCount,
             proofreadUnits: page.proofreadUnitCount,
