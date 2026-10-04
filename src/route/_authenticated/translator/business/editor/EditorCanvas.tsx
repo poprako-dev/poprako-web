@@ -163,7 +163,7 @@ export function EditorCanvas({ session }: Props): JSX.Element {
               "flex size-8 items-center justify-center rounded-md border",
               "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
               "transition-colors hover:border-line-green-200 hover:bg-surface-green-50",
-              "hover:text-ink-green-600 disabled:cursor-not-allowed disabled:opacity-60",
+              "hover:text-text-green disabled:cursor-not-allowed disabled:opacity-60",
             )}
           >
             {isCompletingStage ? (

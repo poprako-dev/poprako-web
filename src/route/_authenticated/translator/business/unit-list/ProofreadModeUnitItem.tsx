@@ -162,9 +162,9 @@ export function ProofreadModeUnitItem({
               onFocus={() => onSelect?.(unitId(unit))}
               placeholder="无翻译内容"
               className={clsx(
-                "cursor-default text-base font-normal leading-relaxed placeholder:text-ink-gray-300",
+                "cursor-default text-base font-normal leading-relaxed placeholder:text-text-muted-neutral",
                 hasProofreadText
-                  ? "text-ink-gray-400"
+                  ? "text-ink-gray-600"
                   : isFocused
                     ? "text-ink-gray-900"
                     : "text-ink-gray-700",
@@ -178,15 +178,14 @@ export function ProofreadModeUnitItem({
           />
           <div className="shrink-0 w-7 h-7 p-1 rounded flex items-center justify-center">
             <div
+              data-contrast={hasLocalDraft ? "border" : "fill"}
               role={hasLocalDraft ? "img" : undefined}
               aria-label={hasLocalDraft ? "有未保存草稿" : undefined}
               title={hasLocalDraft ? "有未保存草稿" : undefined}
               className={clsx(
                 "size-2.5 rounded-full",
                 hasLocalDraft ? "border-[2.5px] border-current" : "bg-current",
-                unitIsProofread(unit)
-                  ? "text-[var(--brand-leaf)]"
-                  : "text-[var(--surface-gray-200)]",
+                unitIsProofread(unit) ? "text-text-leaf" : "text-text-muted-neutral",
               )}
             />
           </div>
@@ -212,7 +211,7 @@ export function ProofreadModeUnitItem({
                   placeholder="输入校对..."
                   readOnly={enableReadOnly}
                   className={clsx(
-                    "text-base font-normal leading-relaxed placeholder:text-ink-gray-300",
+                    "text-base font-normal leading-relaxed placeholder:text-text-muted-neutral",
                     isFocused ? "text-ink-gray-900" : "text-ink-gray-700",
                   )}
                 />
@@ -233,7 +232,7 @@ export function ProofreadModeUnitItem({
                     }}
                     className={clsx(
                       "shrink-0 p-1 rounded",
-                      "text-ink-gray-400 hover:text-ink-green-600",
+                      "text-text-muted-neutral hover:text-text-green",
                       "transition-colors",
                     )}
                   >
@@ -255,8 +254,8 @@ export function ProofreadModeUnitItem({
                     className={clsx(
                       "shrink-0 p-1 rounded",
                       unitIsProofread(unit)
-                        ? "text-ink-gray-400 hover:text-ink-red-500"
-                        : "text-ink-gray-400 hover:text-ink-green-600",
+                        ? "text-text-muted-neutral hover:text-text-danger"
+                        : "text-text-muted-neutral hover:text-text-green",
                       "transition-colors",
                     )}
                   >

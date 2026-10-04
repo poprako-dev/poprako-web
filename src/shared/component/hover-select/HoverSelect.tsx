@@ -158,13 +158,13 @@ export function HoverSelect({
       >
         <span
           className={clsx("truncate", {
-            "font-normal text-ink-slate-400": !selectedOption,
+            "font-normal text-text-muted-cool": !selectedOption,
           })}
         >
           {selectedOption ? selectedOption.text : hintText}
         </span>
         <ChevronDown
-          className={clsx("h-4 w-4 text-ink-slate-400 transition-transform duration-300", {
+          className={clsx("h-4 w-4 text-text-muted-cool transition-transform duration-300", {
             "rotate-180": isOpen,
           })}
         />
@@ -172,6 +172,8 @@ export function HoverSelect({
 
       {/* 下拉菜单列表 */}
       <div
+        data-contrast-plate
+        inert={!isOpen}
         className={clsx(
           "absolute z-50 mt-2 w-full overflow-hidden",
           "origin-top transform-gpu rounded-sm border transition-all duration-300 ease-in-out",
@@ -214,7 +216,7 @@ export function HoverSelect({
             );
           })}
           {options.length === 0 && (
-            <div className="px-4 py-8 text-center text-xs text-ink-slate-400">无可用选项</div>
+            <div className="px-4 py-8 text-center text-xs text-text-muted-cool">无可用选项</div>
           )}
         </div>
       </div>

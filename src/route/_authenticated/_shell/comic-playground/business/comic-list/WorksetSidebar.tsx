@@ -94,7 +94,7 @@ export function WorksetSidebar({
             type="button"
             onClick={onClose}
             aria-label="关闭作品集面板"
-            className="text-ink-slate-400 hover:text-ink-slate-600 transition-colors p-0.5 rounded"
+            className="text-text-muted-cool hover:text-ink-slate-600 transition-colors p-0.5 rounded"
           >
             <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
           </button>
@@ -124,7 +124,7 @@ export function WorksetSidebar({
                     "pr-7 select-none touch-none cursor-pointer",
                     activeWorksetId === ws.id
                       ? "text-navigation-active"
-                      : "text-ink-slate-500 hover:bg-surface-slate-50",
+                      : "text-text-muted-cool hover:bg-surface-slate-50",
                   )}
                   title="长按修改作品集信息"
                 >
@@ -133,7 +133,7 @@ export function WorksetSidebar({
                   </span>
                   <span
                     className={clsx(
-                      "text-[11px] font-semibold text-ink-slate-400 shrink-0 flex",
+                      "text-[11px] font-semibold text-text-muted-cool shrink-0 flex",
                       "items-center gap-0.5",
                     )}
                   >
@@ -153,7 +153,7 @@ export function WorksetSidebar({
                     "pr-7",
                     activeWorksetId === ws.id
                       ? "text-navigation-active"
-                      : "text-ink-slate-500 hover:bg-surface-slate-50",
+                      : "text-text-muted-cool hover:bg-surface-slate-50",
                   )}
                 >
                   <span className="text-[12px] font-bold truncate pr-2">
@@ -161,7 +161,7 @@ export function WorksetSidebar({
                   </span>
                   <span
                     className={clsx(
-                      "text-[11px] font-semibold text-ink-slate-400 shrink-0 flex",
+                      "text-[11px] font-semibold text-text-muted-cool shrink-0 flex",
                       "items-center gap-0.5",
                     )}
                   >
@@ -193,7 +193,7 @@ export function WorksetSidebar({
               className={clsx(
                 "w-full flex items-center justify-center gap-1.5",
                 "py-1 rounded-md border border-dashed border-line-slate-200",
-                "text-ink-slate-400 hover:text-ink-slate-500 hover:bg-surface-slate-50",
+                "text-text-muted-cool hover:text-text-muted-cool hover:bg-surface-slate-50",
                 "transition-colors text-[12px]",
               )}
             >

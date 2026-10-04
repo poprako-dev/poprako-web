@@ -48,7 +48,7 @@ export function SearchResultList({
 
   if (searchState.status === "loading") {
     return (
-      <div className="flex h-full items-center justify-center text-ink-slate-300">
+      <div className="flex h-full items-center justify-center text-text-muted-cool">
         <Loader2 className="animate-spin" size={20} />
       </div>
     );
@@ -63,7 +63,7 @@ export function SearchResultList({
   if (searchState.status === "ready" && searchState.matches.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-xs text-ink-slate-300">没有找到匹配内容</p>
+        <p className="text-xs text-text-muted-cool">没有找到匹配内容</p>
       </div>
     );
   }
@@ -122,7 +122,7 @@ export function SearchResultList({
               <span
                 className={clsx(
                   "min-w-5 text-right text-[10px] font-medium",
-                  "tabular-nums text-ink-slate-400",
+                  "tabular-nums text-text-muted-cool",
                 )}
               >
                 {group.matches.length}
@@ -139,7 +139,7 @@ export function SearchResultList({
                     return nextIds;
                   });
                 }}
-                className="flex size-6 items-center justify-center text-ink-slate-300"
+                className="flex size-6 items-center justify-center text-text-muted-cool"
               >
                 <ChevronRight
                   size={15}

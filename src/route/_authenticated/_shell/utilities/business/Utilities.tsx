@@ -50,7 +50,7 @@ export function Utilities(): JSX.Element {
                     "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm",
                     "transition-colors focus-visible:outline-2 focus-visible:outline-ring",
                     mode === item.id
-                      ? "bg-surface-green-50 font-semibold text-ink-green-600"
+                      ? "bg-surface-green-50 font-semibold text-text-green"
                       : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
                   )}
                 >

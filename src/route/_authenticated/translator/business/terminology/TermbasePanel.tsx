@@ -61,7 +61,7 @@ function TermbaseRow({ termbase, isSelected, onSelect, onEdit }: RowProps): Reac
         <span
           className={clsx(
             "shrink-0 border-l border-line-stone-200 pl-1.5",
-            "text-[10px] tabular-nums text-ink-stone-400",
+            "text-[10px] tabular-nums text-text-muted-warm",
           )}
         >
           {termbase.termCount} 条
@@ -72,13 +72,13 @@ function TermbaseRow({ termbase, isSelected, onSelect, onEdit }: RowProps): Reac
             "text-[9px] font-medium leading-none",
             termbase.comicId
               ? "border-line-green-100 bg-surface-green-50 text-ink-stone-600"
-              : "border-line-stone-200 bg-surface-stone-50 text-ink-stone-500",
+              : "border-line-stone-200 bg-surface-stone-50 text-text-muted-warm",
           )}
         >
           {scope}
         </span>
       </span>
-      <span className="min-w-0 flex-1 truncate text-right text-[10px] text-ink-stone-400">
+      <span className="min-w-0 flex-1 truncate text-right text-[10px] text-text-muted-warm">
         {termbase.description ?? "暂无描述"}
       </span>
     </button>
@@ -128,7 +128,7 @@ export function TermbasePanel({
             strokeWidth={1.8}
             className={clsx(
               "pointer-events-none absolute left-2 top-1/2 -translate-y-1/2",
-              "text-ink-stone-400",
+              "text-text-muted-warm",
             )}
           />
           <span className="sr-only">搜索术语库名称</span>
@@ -139,10 +139,10 @@ export function TermbasePanel({
             }}
             placeholder="搜索术语库名称"
             className={clsx(
-              "h-7 w-full rounded-md border border-line-slate-200 bg-surface-white",
+              "h-7 w-full rounded-md border border-control-border bg-surface-white",
               "pl-7 pr-2.5 text-[11px] text-ink-stone-700 outline-none",
-              "shadow-sm shadow-shadow-slate-100 placeholder:text-ink-stone-400",
-              "focus:border-line-slate-300",
+              "shadow-sm shadow-shadow-slate-100 placeholder:text-text-muted-warm",
+              "focus:border-control-border",
             )}
           />
         </label>
@@ -153,7 +153,7 @@ export function TermbasePanel({
           onClick={onCreate}
           className={clsx(
             "flex size-7 shrink-0 items-center justify-center rounded-md border",
-            "border-line-stone-200 bg-surface-white text-ink-stone-500 transition-colors",
+            "border-line-stone-200 bg-surface-white text-text-muted-warm transition-colors",
             "hover:border-line-green-100 hover:bg-surface-green-50 hover:text-ink-stone-700",
           )}
         >

@@ -75,7 +75,7 @@ export function MemberInvitorModal({
           aria-label="关闭邀请窗口"
           className={clsx(
             "absolute right-3 top-3 z-10 rounded-full p-1.5",
-            "text-ink-slate-300 transition-colors hover:bg-surface-slate-50 hover:text-ink-slate-500",
+            "text-text-muted-cool transition-colors hover:bg-surface-slate-50 hover:text-text-muted-cool",
           )}
         >
           <X className="h-4 w-4" />

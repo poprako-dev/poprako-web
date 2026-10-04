@@ -61,8 +61,7 @@ function TeamAvatar({
         "transition-all duration-300",
         canUpload && "group/avatar",
         isListOpen ? "shadow-md scale-105" : "",
-        !resolvedAvatarUrl && isListOpen && "bg-[var(--brand-leaf)]",
-        !resolvedAvatarUrl && !isListOpen && "bg-[var(--brand-leaf)]/80",
+        !resolvedAvatarUrl && "bg-action-leaf",
         canUpload ? "cursor-pointer" : "cursor-default",
       )}
     >
@@ -97,6 +96,7 @@ function TeamAvatar({
         <div
           className={clsx(
             "absolute inset-0 z-10 flex items-center justify-center",
+            "bg-image-label-overlay",
             "pointer-events-none opacity-0 group-hover/avatar:opacity-100",
             "transition-opacity duration-200",
           )}
@@ -106,11 +106,13 @@ function TeamAvatar({
       )}
 
       {isUploading && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center">
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-image-label-overlay">
           {uploadProgress !== null && uploadProgress < 100 ? (
-            <span className="text-[10px] font-bold text-ink-white/95">{uploadProgress}%</span>
+            <span className="text-[10px] font-bold text-image-label-foreground">
+              {uploadProgress}%
+            </span>
           ) : (
-            <span className="text-[10px] font-bold text-ink-white/95">...</span>
+            <span className="text-[10px] font-bold text-image-label-foreground">...</span>
           )}
         </div>
       )}
@@ -306,7 +308,7 @@ export function TeamOption({
           className={clsx(
             "absolute left-14 right-2 h-full outline-none",
             "flex flex-col justify-center",
-            "opacity-0 group-hover:opacity-100",
+            "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
             "transition-opacity duration-100 delay-0",
             "group-hover:duration-300",
             "group-hover:delay-150",

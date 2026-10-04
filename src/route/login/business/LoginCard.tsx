@@ -135,7 +135,7 @@ export function LoginCard(): ReactElement {
               "transition-all duration-200 focus:outline-none",
               mode === m
                 ? "bg-surface-white text-ink-slate-800 shadow-(--shadow-sm)"
-                : "text-ink-slate-400 hover:text-ink-slate-600",
+                : "text-text-muted-cool hover:text-ink-slate-600",
             )}
           >
             {m === "login" ? "登录" : "注册"}
@@ -164,6 +164,7 @@ export function LoginCard(): ReactElement {
           {/* 注册专属字段 — 伸缩动画 */}
           <div
             aria-hidden={mode !== "register"}
+            inert={mode !== "register"}
             className={clsx(
               "flex flex-col gap-2.5 overflow-hidden",
               "transition-all duration-300 ease-in-out",
@@ -196,7 +197,7 @@ export function LoginCard(): ReactElement {
           }}
           className={clsx(
             "mt-4 w-full rounded-lg py-2 text-sm font-semibold",
-            "bg-surface-green-50 text-ink-green-500",
+            "bg-surface-green-50 text-text-leaf",
             "border border-(--brand-leaf-border)",
             "transition-all duration-200 active:scale-[0.98]",
             "hover:bg-surface-green-100",

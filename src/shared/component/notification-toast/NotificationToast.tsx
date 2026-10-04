@@ -18,7 +18,7 @@ const borderColorMap: Record<ToastType, string> = {
 const iconColorMap: Record<ToastType, string> = {
   info: "text-ink-blue-600",
   error: "text-ink-red-600",
-  success: "text-ink-green-600",
+  success: "text-text-green",
 };
 
 const iconMap: Record<ToastType, ReactElement> = {
@@ -91,7 +91,7 @@ export function NotificationToast(): ReactElement | null {
           onClick={handleClose}
           className={clsx(
             "ml-2 p-1 rounded-md shrink-0",
-            "text-ink-slate-400 hover:text-ink-slate-600",
+            "text-text-muted-cool hover:text-ink-slate-600",
             "hover:bg-surface-slate-100 transition-colors",
           )}
           aria-label="关闭通知"

@@ -18,7 +18,7 @@ function getActivityStatusColor(lastActiveAt: number | undefined): string {
   const diff = Date.now() - lastActiveAt;
   const threeMonths = 1000 * 60 * 60 * 24 * 90;
   if (diff <= threeMonths) {
-    return "bg-surface-green-800/60 text-ink-white/85";
+    return "bg-surface-green-800 text-ink-white";
   }
   const sixMonths = 1000 * 60 * 60 * 24 * 180;
   if (diff <= sixMonths) {
@@ -40,10 +40,10 @@ function DataTag({ icon, value }: { icon: React.ReactNode; value: number }): Rea
     <div
       className={clsx(
         "flex flex-1 items-center justify-center gap-1 py-0.5",
-        "text-[11px] font-semibold text-ink-stone-500",
+        "text-[11px] font-semibold text-text-muted-warm",
       )}
     >
-      <span className="text-ink-stone-400 flex items-center justify-center">{icon}</span>
+      <span className="text-text-muted-warm flex items-center justify-center">{icon}</span>
       <span className="leading-none">{value}</span>
     </div>
   );
@@ -91,7 +91,7 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <FileText size={20} className="text-ink-stone-300" />
+            <FileText size={20} className="text-text-muted-warm" />
           </div>
         )}
       </div>
@@ -115,15 +115,15 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
         </div>
 
         {/* 第二行：序号 + 日期 + 页数 */}
-        <div className="flex items-center gap-1 text-[11px] text-ink-stone-400/80 font-mono">
+        <div className="flex items-center gap-1 text-[11px] text-text-muted-warm font-mono">
           <Hash size={11} strokeWidth={2.5} />
           <span>{displayChapter ? displayChapter.index + 1 : "—"}</span>
-          <span className="text-ink-stone-200">|</span>
+          <span className="text-text-muted-warm">|</span>
           <div className="flex items-center gap-1 shrink-0">
             <Clock size={11} strokeWidth={2.5} />
             <span className="tracking-tighter">{formatDate(comicInfo.lastActiveAt)}</span>
           </div>
-          <span className="text-ink-stone-200">|</span>
+          <span className="text-text-muted-warm">|</span>
           <div className="flex items-center gap-1 shrink-0">
             <FileText size={11} strokeWidth={2.5} />
             <span>{pageCount}P</span>

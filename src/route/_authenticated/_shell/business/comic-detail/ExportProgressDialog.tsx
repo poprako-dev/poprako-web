@@ -38,7 +38,7 @@ export function ExportProgressDialog({
       <div className="flex items-center gap-3">
         <LoadingCircle
           size={20}
-          className="inline-flex shrink-0 animate-spin text-ink-green-500"
+          className="inline-flex shrink-0 animate-spin text-text-leaf"
           aria-label="exporting"
         />
         <div className="min-w-0 flex-1">

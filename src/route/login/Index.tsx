@@ -25,7 +25,7 @@ function LoginPage(): ReactElement {
             "absolute top-full left-1/2 mt-3 flex w-max -translate-x-1/2 " +
             "items-start gap-2.5 whitespace-nowrap " +
             "rounded-lg bg-surface-green-50 px-4 py-3 " +
-            "text-ink-green-600"
+            "text-text-green"
           }
         >
           <Info aria-hidden="true" className="mt-0.5 shrink-0" size={15} />

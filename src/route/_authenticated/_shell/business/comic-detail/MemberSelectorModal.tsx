@@ -113,7 +113,7 @@ export function MemberSelectorModal({
             "focus-within:border-line-slate-300",
           )}
         >
-          <Search size={14} className="text-ink-slate-400" />
+          <Search size={14} className="text-text-muted-cool" />
           <input
             value={keyword}
             onChange={(event) => {
@@ -122,7 +122,7 @@ export function MemberSelectorModal({
             placeholder="搜索昵称 / QQ"
             className={clsx(
               "w-full bg-transparent text-sm text-ink-slate-700 outline-none",
-              "placeholder:text-ink-slate-300",
+              "placeholder:text-text-muted-cool",
             )}
           />
         </div>
@@ -149,7 +149,7 @@ export function MemberSelectorModal({
                 className={clsx(
                   "flex h-9 w-9 shrink-0 items-center justify-center",
                   "overflow-hidden rounded-full bg-surface-slate-100",
-                  "text-xs font-bold text-ink-slate-500",
+                  "text-xs font-bold text-text-muted-cool",
                 )}
               >
                 {member.user?.avatarThumbnailUrl ? (
@@ -175,14 +175,14 @@ export function MemberSelectorModal({
                         className={clsx(
                           "inline-block rounded px-1 py-px",
                           "text-[10px] font-bold leading-tight",
-                          "bg-surface-slate-100 text-ink-slate-500",
+                          "bg-surface-slate-100 text-text-muted-cool",
                         )}
                       >
                         {ROLE_LABEL[r] ?? r}
                       </span>
                     ))}
                   {unmaskRoles(member.roles).filter((r) => r !== "admin").length === 0 && (
-                    <span className="text-xs text-ink-slate-300">
+                    <span className="text-xs text-text-muted-cool">
                       {member.user?.qq ?? member.userId}
                     </span>
                   )}
@@ -191,7 +191,7 @@ export function MemberSelectorModal({
               <div
                 className={clsx(
                   "flex size-7 shrink-0 items-center justify-center rounded-md",
-                  "border border-line-green-100 bg-surface-green-50 text-ink-green-500",
+                  "border border-line-green-100 bg-surface-green-50 text-text-leaf",
                 )}
               >
                 {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
@@ -200,7 +200,7 @@ export function MemberSelectorModal({
           ))}
 
           {isFetching && (
-            <div className="flex h-24 items-center justify-center text-sm text-ink-slate-400">
+            <div className="flex h-24 items-center justify-center text-sm text-text-muted-cool">
               <Loader2 size={16} className="animate-spin" />
             </div>
           )}
@@ -212,7 +212,7 @@ export function MemberSelectorModal({
           )}
 
           {!isFetching && !loadError && members.length === 0 && (
-            <div className="flex h-24 items-center justify-center text-sm text-ink-slate-400">
+            <div className="flex h-24 items-center justify-center text-sm text-text-muted-cool">
               没有可添加的成员
             </div>
           )}

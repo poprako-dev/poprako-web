@@ -50,8 +50,8 @@ export function ArchiveOutput({ tool, isCompress }: Props): JSX.Element {
               asChild
               variant="outline"
               className={clsx(
-                "border-(--brand-leaf-border) bg-surface-green-50 text-ink-green-600 shadow-none",
-                "hover:bg-surface-green-100 hover:text-ink-green-600",
+                "border-(--brand-leaf-border) bg-surface-green-50 text-text-green shadow-none",
+                "hover:bg-surface-green-100 hover:text-text-green",
               )}
             >
               <a href={tool.result.url} download={tool.outputName}>
@@ -80,7 +80,7 @@ export function ArchiveOutput({ tool, isCompress }: Props): JSX.Element {
           </span>
         )}
         {tool.phase === "done" && tool.result && (
-          <span className="flex items-center gap-2 text-ink-green-600">
+          <span className="flex items-center gap-2 text-text-green">
             <Check size={15} /> 已完成 · {formatSize(tool.result.file.size)}
           </span>
         )}
@@ -143,7 +143,7 @@ export function ArchiveOutput({ tool, isCompress }: Props): JSX.Element {
                   >
                     <Select.Value />
                     <Select.Icon asChild>
-                      <ChevronDown size={16} className="text-ink-slate-400" />
+                      <ChevronDown size={16} className="text-text-muted-cool" />
                     </Select.Icon>
                   </Select.Trigger>
                   <Select.Portal>
@@ -165,9 +165,9 @@ export function ArchiveOutput({ tool, isCompress }: Props): JSX.Element {
                             className={clsx(
                               "relative flex h-9 cursor-pointer select-none items-center",
                               "rounded-sm px-3 pr-8 text-sm text-ink-slate-600 outline-none",
-                              "data-[highlighted]:bg-surface-green-50 data-[highlighted]:text-ink-green-600",
+                              "data-[highlighted]:bg-surface-green-50 data-[highlighted]:text-text-green",
                               "data-[state=checked]:font-semibold",
-                              "data-[state=checked]:text-ink-green-600",
+                              "data-[state=checked]:text-text-green",
                             )}
                           >
                             <Select.ItemText>{option.text}</Select.ItemText>

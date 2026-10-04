@@ -72,7 +72,7 @@ export function PageUnitStatsChart({
       <div
         role={load.status === "error" ? "alert" : "status"}
         aria-label={load.status === "error" ? "统计加载失败" : "正在加载统计"}
-        className="flex h-20 items-center justify-center text-ink-stone-400"
+        className="flex h-20 items-center justify-center text-text-muted-warm"
       >
         {load.status === "error" ? (
           <button
@@ -101,7 +101,7 @@ export function PageUnitStatsChart({
       <div
         role="status"
         aria-label="当前章节暂无页面"
-        className="flex h-20 items-center justify-center text-ink-stone-300"
+        className="flex h-20 items-center justify-center text-text-muted-warm"
       >
         <Files size={16} />
       </div>
@@ -124,7 +124,7 @@ export function PageUnitStatsChart({
       <div
         className={clsx(
           "sticky top-0 z-10 grid grid-cols-[1.75rem_minmax(0,1fr)_4.5rem] items-center",
-          "h-7 gap-x-2 bg-surface-stone-50 px-2.5 text-[10px] text-ink-stone-400",
+          "h-7 gap-x-2 bg-surface-stone-50 px-2.5 text-[10px] text-text-muted-warm",
         )}
       >
         <span aria-hidden="true" />
@@ -139,7 +139,7 @@ export function PageUnitStatsChart({
           <span title="编辑（包含在翻译中）" className="text-(--color-unit-stats-edit)">
             <CheckCheck size={12} strokeWidth={1.8} />
           </span>
-          <span title="追加" className="text-(--brand-leaf)">
+          <span title="追加" className="text-text-leaf">
             <Plus size={12} strokeWidth={1.8} />
           </span>
         </div>
@@ -176,7 +176,7 @@ export function PageUnitStatsChart({
               <span
                 className={clsx(
                   "text-left",
-                  isCurrent ? "font-semibold text-ink-stone-800" : "text-ink-stone-500",
+                  isCurrent ? "font-semibold text-ink-stone-800" : "text-text-muted-warm",
                 )}
               >
                 P{row.index + 1}
@@ -226,7 +226,7 @@ export function PageUnitStatsChart({
                   <span
                     key={column}
                     className={clsx(
-                      count === 0 ? "text-ink-stone-300" : "text-ink-stone-600",
+                      count === 0 ? "text-text-muted-warm" : "text-ink-stone-600",
                       isCurrent && count > 0 && "font-medium text-ink-stone-800",
                     )}
                   >

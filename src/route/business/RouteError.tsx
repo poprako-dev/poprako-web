@@ -22,15 +22,13 @@ function ErrorView({ code, title, message, onGoHome, retry }: ErrorViewProps): R
       )}
     >
       <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-surface-emerald-50 animate-pulse">
-        <TreePine className="h-10 w-10 text-ink-emerald-500" aria-hidden />
+        <TreePine className="h-10 w-10 text-text-emerald" aria-hidden />
       </div>
-      <p className="mb-2 text-sm font-medium tracking-widest uppercase text-ink-emerald-600/80">
-        {code}
-      </p>
+      <p className="mb-2 text-sm font-medium tracking-widest uppercase text-text-emerald">{code}</p>
       <h1 className="mb-4 text-3xl font-light tracking-tight text-ink-slate-800 sm:text-4xl">
         {title}
       </h1>
-      <p className="mb-10 max-w-md text-center text-base leading-relaxed text-ink-slate-500">
+      <p className="mb-10 max-w-md text-center text-base leading-relaxed text-text-muted-cool">
         {message}
       </p>
       <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
@@ -40,7 +38,7 @@ function ErrorView({ code, title, message, onGoHome, retry }: ErrorViewProps): R
             onClick={retry}
             className={clsx(
               "inline-flex items-center justify-center rounded-full bg-surface-white px-8 py-3",
-              "text-sm font-medium text-ink-slate-500 border border-line-slate-200",
+              "text-sm font-medium text-text-muted-cool border border-line-slate-200",
               "transition-colors duration-200 hover:bg-surface-slate-50 hover:text-ink-slate-700",
             )}
           >
@@ -52,8 +50,8 @@ function ErrorView({ code, title, message, onGoHome, retry }: ErrorViewProps): R
           onClick={onGoHome}
           className={clsx(
             "inline-flex items-center justify-center rounded-full",
-            "border-2 border-line-emerald-300/50 px-8 py-3 text-sm font-medium text-ink-emerald-400",
-            "transition-colors duration-200 hover:text-ink-emerald-600",
+            "border-2 border-line-emerald-300/50 px-8 py-3 text-sm font-medium text-text-emerald",
+            "transition-colors duration-200 hover:text-text-emerald",
             "focus:outline-none focus:ring-2 focus:ring-focus-emerald-500 focus:ring-offset-2",
           )}
         >

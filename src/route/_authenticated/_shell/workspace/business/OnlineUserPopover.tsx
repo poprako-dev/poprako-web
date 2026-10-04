@@ -54,7 +54,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
         }}
         className={clsx(
           "flex items-center gap-2 rounded-md px-2.5 py-1.5",
-          "text-sm font-medium text-ink-slate-500 transition-colors",
+          "text-sm font-medium text-text-muted-cool transition-colors",
           "hover:bg-surface-stone-100/80 hover:text-ink-slate-700",
         )}
       >
@@ -62,7 +62,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
         <span>{status === "error" ? "在线人数未知" : <>{onlineCount} 人在线</>}</span>
         <ChevronDown
           size={14}
-          className={clsx("text-ink-slate-400 transition-transform", isOpen && "rotate-180")}
+          className={clsx("text-text-muted-cool transition-transform", isOpen && "rotate-180")}
         />
       </button>
 
@@ -77,7 +77,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
           )}
         >
           <div className="mb-2 flex items-center gap-2 text-left">
-            <UsersRound size={15} className="text-ink-slate-400" />
+            <UsersRound size={15} className="text-text-muted-cool" />
             <p className="text-sm font-semibold text-ink-slate-600">在线组员</p>
           </div>
 
@@ -90,7 +90,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
                   <div
                     className={clsx(
                       "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden",
-                      "rounded-full bg-surface-stone-100 text-xs font-semibold text-ink-stone-500",
+                      "rounded-full bg-surface-stone-100 text-xs font-semibold text-text-muted-warm",
                     )}
                   >
                     {avatarUrl ? (
@@ -105,7 +105,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
             })}
 
             {status === "loading" && (
-              <div className="flex items-center gap-2 px-1.5 py-2 text-xs text-ink-slate-400">
+              <div className="flex items-center gap-2 px-1.5 py-2 text-xs text-text-muted-cool">
                 <UserRound size={14} />
                 正在加载在线组员
               </div>
@@ -116,7 +116,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
             )}
 
             {status === "ready" && onlineCount === 0 && (
-              <p className="px-1.5 py-2 text-xs text-ink-slate-400">暂无在线组员</p>
+              <p className="px-1.5 py-2 text-xs text-text-muted-cool">暂无在线组员</p>
             )}
           </div>
         </div>

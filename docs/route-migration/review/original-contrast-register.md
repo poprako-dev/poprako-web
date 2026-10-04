@@ -1,5 +1,11 @@
 # Original-color contrast register
 
+> Historical migration evidence. On 2026-10-04 the user approved correcting
+> contrast while retaining the light visual direction. The runtime debt matcher
+> and its baseline have been removed. The current strict gate is documented in
+> [the README](../../../README.md#配色与对比度); the measurements below describe
+> the earlier restoration, not current acceptance.
+
 The user explicitly chose on 2026-09-29: preserve the original colors and
 register existing contrast issues separately. The visual reference is `68cedc0`.
 This does not authorize a global accessibility exemption or a palette redesign.

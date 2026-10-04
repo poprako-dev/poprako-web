@@ -17,6 +17,9 @@ export function ComicDetailModalLayout({ header, sidebar, content }: Props): JSX
     >
       <div
         data-comic-detail-boundary
+        role="dialog"
+        aria-modal="true"
+        aria-label="漫画详情"
         className={clsx(
           "relative w-full max-w-240 h-[85vh]",
           "bg-surface-stone-50 rounded-sm border border-line-stone-200",

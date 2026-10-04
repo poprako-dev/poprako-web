@@ -24,8 +24,13 @@ export function AppSidebarLayout({
   return (
     /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */
     <nav
+      data-contrast-plate
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onFocus={onMouseEnter}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) onMouseLeave();
+      }}
       className={clsx(
         "fixed left-0 top-0 z-50",
         "hidden sm:flex h-screen flex-col",

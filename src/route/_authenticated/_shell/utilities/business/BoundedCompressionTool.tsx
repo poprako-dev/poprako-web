@@ -70,7 +70,7 @@ export function BoundedCompressionTool(): JSX.Element {
           "focus-visible:outline-2 focus-visible:outline-ring",
         )}
       >
-        <FilePlus2 size={20} className="text-ink-green-600" />
+        <FilePlus2 size={20} className="text-text-green" />
         {tool.items.length > 0 ? "添加图片" : "选择或拖入多张图片"}
       </button>
       <p className="my-2 shrink-0 text-xs leading-relaxed text-muted-foreground">
@@ -87,7 +87,7 @@ export function BoundedCompressionTool(): JSX.Element {
                   {item.file.name}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  <span className={index === 0 ? "text-ink-green-600" : undefined}>
+                  <span className={index === 0 ? "text-text-green" : undefined}>
                     {index === 0 ? "封面" : "正文"}
                   </span>
                   {" · "}

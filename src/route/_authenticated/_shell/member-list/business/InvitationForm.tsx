@@ -81,7 +81,7 @@ export function InvitationForm({
             "focus-within:border-line-slate-300 transition-all",
           )}
         >
-          <MessageCircle className="h-3.5 w-3.5 shrink-0 text-ink-slate-400" />
+          <MessageCircle className="h-3.5 w-3.5 shrink-0 text-text-muted-cool" />
           <input
             type="text"
             value={qq}
@@ -90,7 +90,7 @@ export function InvitationForm({
             }}
             className={clsx(
               "w-full bg-transparent text-sm text-ink-slate-700",
-              "placeholder:text-ink-slate-400 outline-none",
+              "placeholder:text-text-muted-cool outline-none",
             )}
             placeholder="QQ 号"
           />
@@ -112,8 +112,8 @@ export function InvitationForm({
                   isActive
                     ? role.activeClass
                     : [
-                        "border-line-slate-200 bg-surface-white text-ink-slate-400",
-                        "hover:border-line-slate-300 hover:text-ink-slate-500",
+                        "border-line-slate-200 bg-surface-white text-text-muted-cool",
+                        "hover:border-line-slate-300 hover:text-text-muted-cool",
                       ],
                 )}
               >
@@ -134,11 +134,11 @@ export function InvitationForm({
             "transition-all duration-300",
             generatedCode
               ? "border-line-slate-200 bg-surface-white shadow-sm shadow-shadow-slate-100 opacity-100"
-              : "border-line-slate-100 bg-surface-slate-50 opacity-60",
+              : "border-line-slate-100 bg-surface-slate-50",
           )}
         >
           <div className="flex items-center gap-2">
-            <KeyRound className="h-3.5 w-3.5 shrink-0 text-ink-slate-400" />
+            <KeyRound className="h-3.5 w-3.5 shrink-0 text-text-muted-cool" />
             <span className="font-mono text-sm font-bold tracking-widest text-ink-slate-600">
               {generatedCode || "— — — — — —"}
             </span>
@@ -148,7 +148,7 @@ export function InvitationForm({
                 onClick={() => {
                   copyCode(generatedCode);
                 }}
-                className="text-ink-slate-400 transition-colors hover:text-ink-slate-600"
+                className="text-text-muted-cool transition-colors hover:text-ink-slate-600"
                 title="复制"
               >
                 <Copy className="h-3.5 w-3.5" />
@@ -163,7 +163,7 @@ export function InvitationForm({
             onClick={onClose}
             className={clsx(
               "flex-1 rounded-lg py-2 text-xs font-semibold transition-all active:scale-[0.98]",
-              "bg-surface-slate-50 text-ink-slate-400 hover:bg-surface-slate-100 border border-line-slate-100",
+              "bg-surface-slate-50 text-text-muted-cool hover:bg-surface-slate-100 border border-line-slate-100",
             )}
           >
             取消
@@ -180,10 +180,10 @@ export function InvitationForm({
               isFormValid && !isSubmitting
                 ? [
                     "bg-surface-slate-50 text-ink-slate-600 border border-line-slate-100",
-                    "hover:bg-surface-emerald-50 hover:text-ink-emerald-600",
+                    "hover:bg-surface-emerald-50 hover:text-text-emerald",
                     "hover:border-line-emerald-100",
                   ]
-                : "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100",
+                : "bg-surface-slate-50 text-text-muted-cool cursor-not-allowed border border-line-slate-100",
             )}
           >
             {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : "邀请"}

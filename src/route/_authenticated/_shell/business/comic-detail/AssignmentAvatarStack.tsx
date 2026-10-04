@@ -134,7 +134,7 @@ function OverflowMembers({
         className={clsx(
           "flex h-8 w-8 items-center justify-center rounded-full",
           "border-2 border-line-stone-50 bg-surface-stone-100",
-          "text-[10px] font-bold text-ink-stone-500 shadow-[0_1px_2px_rgba(0,0,0,0.06)]",
+          "text-[10px] font-bold text-text-muted-warm shadow-[0_1px_2px_rgba(0,0,0,0.06)]",
           "hover:z-20 hover:bg-surface-stone-200",
           "focus-visible:z-20 focus-visible:outline-2 focus-visible:outline-primary/60",
         )}
@@ -186,7 +186,7 @@ function OverflowMembers({
                 className={clsx(
                   "block w-full rounded-sm px-2 py-1 text-left text-xs",
                   "whitespace-normal break-words",
-                  "text-ink-stone-600 hover:bg-surface-rose-50 hover:text-ink-rose-500",
+                  "text-ink-stone-600 hover:bg-surface-rose-50 hover:text-text-rose",
                   "focus-visible:outline-2 focus-visible:outline-outline-rose-300",
                 )}
               >

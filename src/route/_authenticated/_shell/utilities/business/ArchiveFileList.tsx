@@ -128,7 +128,7 @@ export function ArchiveFileList({ files, isBusy, onChange }: Props): JSX.Element
               "font-semibold text-foreground outline-none",
             )}
           />
-          <span className="pr-2 text-ink-slate-300">/</span>
+          <span className="pr-2 text-text-muted-cool">/</span>
           <span className="min-w-5 pr-1 text-center">{pageCount}</span>
         </span>
         <Button

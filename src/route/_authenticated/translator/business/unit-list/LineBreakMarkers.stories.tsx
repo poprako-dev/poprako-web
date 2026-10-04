@@ -50,7 +50,7 @@ function LineBreakExample(): JSX.Element {
           onResolveUser={() => Promise.resolve({ success: false, error: "No contributor" })}
         />
       </div>
-      <output aria-label="保存的翻译" className="whitespace-pre-wrap text-xs text-ink-stone-500">
+      <output aria-label="保存的翻译" className="whitespace-pre-wrap text-xs text-text-muted-warm">
         {unit.translatedText}
       </output>
     </div>

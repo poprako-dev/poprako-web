@@ -58,7 +58,7 @@ function TermRow({ term, onEdit }: RowProps): React.ReactElement {
             </div>
           ))
         ) : (
-          <span className="text-[11px] text-ink-stone-400">暂无译名</span>
+          <span className="text-[11px] text-text-muted-warm">暂无译名</span>
         )}
       </div>
     </div>
@@ -113,7 +113,7 @@ export function TermPanel({
             "shrink-0 rounded-md border px-1 py-px text-[9px] font-medium",
             termbase.comicId
               ? "border-line-green-100 bg-surface-green-50 text-ink-stone-600"
-              : "border-line-stone-200 bg-surface-stone-50 text-ink-stone-500",
+              : "border-line-stone-200 bg-surface-stone-50 text-text-muted-warm",
           )}
         >
           {termbase.comicId ? "本作" : "团队"}
@@ -126,7 +126,7 @@ export function TermPanel({
             onClick={onCreate}
             className={clsx(
               "flex size-7 shrink-0 items-center justify-center rounded-md border",
-              "border-line-stone-200 bg-surface-white text-ink-stone-500 transition-colors",
+              "border-line-stone-200 bg-surface-white text-text-muted-warm transition-colors",
               "hover:border-line-green-100 hover:bg-surface-green-50 hover:text-ink-stone-700",
             )}
           >

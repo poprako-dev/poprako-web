@@ -23,11 +23,11 @@ const acknowledgments = {
 export function AcknowledgementsFooter(): JSX.Element {
   return (
     <footer className="mt-8 w-full max-w-md text-center">
-      <span className="text-xs tracking-wide text-ink-slate-400">致谢</span>
+      <span className="text-xs tracking-wide text-text-muted-cool">致谢</span>
       <div
         className={clsx(
           "mt-1.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5",
-          "text-[11px] text-ink-slate-400",
+          "text-[11px] text-text-muted-cool",
         )}
       >
         {acknowledgments.people.map((p, i) => (
@@ -38,7 +38,7 @@ export function AcknowledgementsFooter(): JSX.Element {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={clsx(
-                  "inline-flex items-center gap-0.5 font-medium text-ink-slate-500",
+                  "inline-flex items-center gap-0.5 font-medium text-text-muted-cool",
                   "transition-colors hover:text-ink-emerald-700 hover:underline",
                 )}
               >
@@ -46,15 +46,15 @@ export function AcknowledgementsFooter(): JSX.Element {
                 <ExternalLink size={9} className="opacity-60" />
               </a>
             ) : (
-              <span className="font-medium text-ink-slate-500">{p.name}</span>
+              <span className="font-medium text-text-muted-cool">{p.name}</span>
             )}
             {i < acknowledgments.people.length - 1 && (
-              <span className="select-none text-ink-slate-300">·</span>
+              <span className="select-none text-text-muted-cool">·</span>
             )}
           </span>
         ))}
 
-        <span className="select-none text-ink-slate-200">•</span>
+        <span className="select-none text-text-muted-cool">•</span>
 
         {acknowledgments.repositories.map((r, i) => (
           <span key={r.name}>
@@ -62,17 +62,17 @@ export function AcknowledgementsFooter(): JSX.Element {
               href={r.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-ink-slate-500 transition-colors hover:text-ink-emerald-700 hover:underline"
+              className="text-text-muted-cool transition-colors hover:text-ink-emerald-700 hover:underline"
             >
               {r.name}
             </a>
             {i < acknowledgments.repositories.length - 1 && (
-              <span className="select-none text-ink-slate-300">·</span>
+              <span className="select-none text-text-muted-cool">·</span>
             )}
           </span>
         ))}
 
-        <span className="select-none text-ink-slate-200">•</span>
+        <span className="select-none text-text-muted-cool">•</span>
 
         {acknowledgments.techStack.map((t, i) => (
           <span key={t.name}>
@@ -80,12 +80,12 @@ export function AcknowledgementsFooter(): JSX.Element {
               href={t.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-ink-slate-400 transition-colors hover:text-ink-emerald-700 hover:underline"
+              className="text-text-muted-cool transition-colors hover:text-ink-emerald-700 hover:underline"
             >
               {t.name}
             </a>
             {i < acknowledgments.techStack.length - 1 && (
-              <span className="text-ink-slate-300">·</span>
+              <span className="text-text-muted-cool">·</span>
             )}
           </span>
         ))}

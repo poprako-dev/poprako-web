@@ -78,7 +78,7 @@ export function ReadOnlyDiffUnitItem({
               isFocused ? "font-medium text-ink-stone-900" : "text-ink-stone-700",
             )}
           >
-            {parts.length === 0 && <span className="text-ink-gray-500">无翻译内容</span>}
+            {parts.length === 0 && <span className="text-ink-gray-600">无翻译内容</span>}
             {parts.map((part, index) => {
               const key = `${String(index)}-${part.kind}-${part.text}`;
               if (part.kind === "deleted" || part.kind === "replacement-removed") {
@@ -141,12 +141,13 @@ export function ReadOnlyDiffUnitItem({
         <div className="flex size-7 shrink-0 items-center justify-center rounded p-1">
           <div
             role={hasLocalDraft ? "img" : undefined}
+            data-contrast={hasLocalDraft ? "border" : "fill"}
             aria-label={hasLocalDraft ? "有未保存草稿" : undefined}
             title={hasLocalDraft ? "有未保存草稿" : undefined}
             className={clsx(
               "size-2.5 rounded-full",
               hasLocalDraft ? "border-[2.5px] border-current" : "bg-current",
-              unitIsProofread(unit) ? "text-[var(--brand-leaf)]" : "text-[var(--surface-gray-200)]",
+              unitIsProofread(unit) ? "text-text-leaf" : "text-text-muted-neutral",
             )}
           />
         </div>

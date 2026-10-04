@@ -79,7 +79,7 @@ export function PasswordResetDialog({ userId, onClose }: Props): JSX.Element {
           mode="password"
         />
         {confirmedPassword && !isMatching && (
-          <p className="text-left text-xs text-ink-red-500">两次输入的新密码不一致</p>
+          <p className="text-left text-xs text-text-danger">两次输入的新密码不一致</p>
         )}
       </div>
     </ConfirmDialog>

@@ -44,7 +44,7 @@ export function AnnouncementRow({ announcement, hiddenOnMobile, onOpen }: Props)
               "shrink-0 w-6 h-6 rounded",
               "border border-line-slate-200 bg-surface-slate-50",
               "flex items-center justify-center",
-              "text-[10px] font-bold text-ink-slate-500",
+              "text-[10px] font-bold text-text-muted-cool",
             )}
           >
             {announcement.user?.avatarThumbnailUrl ? (
@@ -60,8 +60,8 @@ export function AnnouncementRow({ announcement, hiddenOnMobile, onOpen }: Props)
         </div>
         <p
           className={clsx(
-            "text-sm text-ink-slate-400 leading-snug",
-            "line-clamp-2 group-hover:text-ink-slate-500",
+            "text-sm text-text-muted-cool leading-snug",
+            "line-clamp-2 group-hover:text-text-muted-cool",
             "transition-colors",
           )}
         >
@@ -74,7 +74,7 @@ export function AnnouncementRow({ announcement, hiddenOnMobile, onOpen }: Props)
           "flex items-center justify-between",
         )}
       >
-        <span className="text-[10px] text-ink-slate-400/60 font-mono">
+        <span className="text-[10px] text-text-muted-cool font-mono">
           {formatAnnouncementDate(announcement.createdAt)}
         </span>
       </div>

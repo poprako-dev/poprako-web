@@ -122,6 +122,20 @@ const configuration = tseslint.config(
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
+    files: ["script/contrast-dom.mjs", "script/contrast-visibility.mjs"],
+    languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ["script/test-contrast-browser.mjs", "script/fixture/contrast-proof-browser.mjs"],
+    languageOptions: {
+      globals: { ...globals.browser, axe: "readonly", contrastAudit: "readonly" },
+    },
+  },
+  {
+    files: ["script/contrast-evidence.mjs"],
+    languageOptions: { globals: { __CONTRAST_EVIDENCE__: "readonly" } },
+  },
+  {
     files: ["script/**/*.mjs"],
     languageOptions: { globals: { ...globals.node, Deno: "readonly" } },
   },

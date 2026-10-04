@@ -92,20 +92,19 @@ export function PageCard({
         "transition-all group",
         isInteractive ? "cursor-pointer" : "cursor-default",
         "bg-surface-white border-line-slate-100 overflow-hidden",
-        isPending && "opacity-60",
       )}
     >
       {/* Index badge — top left */}
       <div
         className={clsx(
           "absolute top-2 left-2 z-10",
-          "bg-surface-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded",
+          "bg-image-label-overlay px-1.5 py-1 rounded",
           "flex items-center justify-center",
         )}
       >
         <span
           data-page-index={page.index}
-          className="text-[10px] font-bold text-ink-white/90 leading-none"
+          className="text-[10px] font-bold text-image-label-foreground leading-none"
         >
           P{page.index + 1}
         </span>
@@ -116,7 +115,7 @@ export function PageCard({
         <div
           className={clsx(
             "absolute top-2 right-2 z-10",
-            "bg-surface-slate-900/40 backdrop-blur-sm px-1.5 py-1 rounded",
+            "bg-image-label-overlay px-1.5 py-1 rounded",
             "flex items-center justify-center",
           )}
         >
@@ -129,17 +128,18 @@ export function PageCard({
         <LazyImage
           src={page.imageThumbnailUrl}
           alt={`Page ${String(page.index)}`}
-          className="absolute inset-0 w-full h-full object-cover"
+          className={clsx("absolute inset-0 w-full h-full object-cover", isPending && "opacity-60")}
         />
       ) : (
         <div
           className={clsx(
             "absolute inset-0 flex flex-col items-center justify-center gap-1.5",
-            "bg-surface-slate-100 animate-pulse",
+            "bg-surface-white",
           )}
         >
-          <Upload className="w-4 h-4 text-ink-slate-300" />
-          <span className="text-[10px] font-bold text-ink-slate-300 tracking-tighter">
+          <div aria-hidden className="absolute inset-0 bg-surface-slate-100 animate-pulse" />
+          <Upload className="relative w-4 h-4 text-text-muted-cool" />
+          <span className="relative text-[10px] font-bold text-text-muted-cool tracking-tighter">
             P{page.index + 1}
           </span>
         </div>
@@ -155,7 +155,7 @@ export function PageCard({
 
       {clampedUploadProgress !== null &&
         (clampedUploadProgress < 100 || uploadStatus === "confirming") && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/25">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-image-label-overlay">
             <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
               <circle
                 cx="20"
@@ -180,7 +180,7 @@ export function PageCard({
                 className="transition-all duration-300 ease-out"
               />
             </svg>
-            <span className="absolute text-[11px] font-bold text-ink-white/90">
+            <span className="absolute text-[11px] font-bold text-image-label-foreground">
               {uploadStatus === "confirming" ? "确认中" : `${String(clampedUploadProgress)}%`}
             </span>
           </div>
@@ -190,7 +190,7 @@ export function PageCard({
         <div
           className={clsx(
             "absolute inset-x-1.5 bottom-1.5 z-20 rounded-sm px-1.5 py-1",
-            "bg-surface-rose-600/90 text-center text-[9px] font-bold text-ink-white",
+            "bg-surface-rose-600 text-center text-[9px] font-bold text-ink-white",
           )}
           title={uploadError}
         >
@@ -220,6 +220,7 @@ export function PageCard({
       {/* Delete button */}
       {enableDelete && onDelete && !isPending && (
         <button
+          aria-label={`删除第 ${String(page.index + 1)} 页`}
           type="button"
           onClick={(e) => {
             e.stopPropagation();
@@ -227,9 +228,9 @@ export function PageCard({
           }}
           className={clsx(
             "absolute bottom-3 right-1.5 z-10 p-1.5 rounded-sm",
-            "bg-surface-white/90 backdrop-blur-sm border border-line-slate-100 shadow-sm",
-            "text-ink-slate-400 hover:text-ink-rose-500 hover:bg-surface-rose-50 hover:border-line-rose-100",
-            "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all active:scale-95",
+            "bg-surface-white border border-line-slate-100 shadow-sm",
+            "text-text-muted-cool hover:text-text-rose hover:bg-surface-rose-50 hover:border-line-rose-100",
+            "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 transition-all active:scale-95",
           )}
         >
           <Trash2 className="w-3 h-3" />
@@ -255,6 +256,8 @@ export function PageCard({
             )}
           >
             <button
+              data-contrast-plate
+              data-contrast="icon"
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
@@ -263,14 +266,15 @@ export function PageCard({
               disabled={isReuploading}
               className={clsx(
                 "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-sm",
-                "bg-surface-slate-50/20 backdrop-blur-[1px] border border-line-slate-300/20",
-                "text-ink-slate-400 hover:text-ink-slate-600",
-                "hover:bg-surface-slate-50/35 hover:border-line-slate-300/45",
-                "opacity-100 sm:opacity-0 sm:group-hover:opacity-100",
+                "bg-surface-slate-50 border border-line-slate-300",
+                "text-text-muted-cool hover:text-ink-slate-600",
+                "hover:bg-surface-slate-100 hover:border-line-slate-400",
+                "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100",
                 "transition-all active:scale-95",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
               )}
               title="重上传"
+              aria-label={`重上传第 ${String(page.index + 1)} 页`}
             >
               <Upload className="h-3 w-3" strokeWidth={2.25} />
             </button>

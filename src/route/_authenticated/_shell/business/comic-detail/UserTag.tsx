@@ -50,7 +50,7 @@ export function UserTag({ name, userId, role, onRemove }: Props): ReactElement {
             }}
             className={clsx(
               "absolute right-0.5 top-1/2 -translate-y-1/2",
-              "text-ink-slate-400 hover:text-ink-red-400",
+              "text-text-muted-cool hover:text-text-danger",
               "p-0",
             )}
             title={`移除 ${name} 的${ROLE_LABEL[role]}角色`}

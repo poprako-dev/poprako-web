@@ -190,7 +190,7 @@ export function UserAvatarUploadModal({ user, onClose }: Props): JSX.Element {
             {resolvedAvatarUrl ? (
               <img src={resolvedAvatarUrl} alt={user.name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-ink-slate-300">
+              <div className="flex h-full w-full items-center justify-center text-text-muted-cool">
                 <UserIcon size={30} />
               </div>
             )}
@@ -208,6 +208,7 @@ export function UserAvatarUploadModal({ user, onClose }: Props): JSX.Element {
               <div
                 className={clsx(
                   "absolute inset-0 flex items-center justify-center",
+                  "bg-image-label-overlay",
                   "opacity-0 transition-opacity group-hover/avatar:opacity-100",
                 )}
               >
@@ -216,8 +217,8 @@ export function UserAvatarUploadModal({ user, onClose }: Props): JSX.Element {
             )}
 
             {isUploading && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[11px] font-bold text-ink-white/95">
+              <div className="absolute inset-0 flex items-center justify-center bg-image-label-overlay">
+                <span className="text-[11px] font-bold text-image-label-foreground">
                   {uploadProgress !== null && uploadProgress < 100
                     ? `${String(uploadProgress)}%`
                     : "..."}

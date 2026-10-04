@@ -1,0 +1,55 @@
+/* Readable roles are separate from the original decorative palette in appearance.css. */
+@theme inline {
+  --color-text-muted-cool: var(--text-muted-cool);
+  --color-text-muted-warm: var(--text-muted-warm);
+  --color-text-muted-neutral: var(--text-muted-neutral);
+  --color-text-leaf: var(--text-leaf);
+  --color-text-green: var(--text-green);
+  --color-text-emerald: var(--text-emerald);
+  --color-text-danger: var(--text-danger);
+  --color-text-rose: var(--text-rose);
+  --color-text-warning: var(--text-warning);
+  --color-text-amber: var(--text-amber);
+  --color-text-pink: var(--text-pink);
+  --color-text-violet: var(--text-violet);
+  --color-text-indigo: var(--text-indigo);
+  --color-text-sky: var(--text-sky);
+  --color-text-blue: var(--text-blue);
+  --color-action-leaf: var(--action-leaf);
+  --color-action-leaf-hover: var(--action-leaf-hover);
+  --color-action-danger: var(--action-danger);
+  --color-action-danger-hover: var(--action-danger-hover);
+  --color-control-border: var(--control-border);
+  --color-focus-indicator: var(--focus-indicator);
+}
+
+:root {
+  --text-muted-cool: oklch(0.536231635 0.04 256.788);
+  --text-muted-warm: oklch(0.537162153 0.01 56.259);
+  --text-muted-neutral: oklch(0.536510409 0.022 261.325);
+  --text-leaf: oklch(0.527250749 0.130594254 127.634555797);
+  --text-green: oklch(0.521039056 0.1455625 149.214);
+  --text-emerald: oklch(0.519264877 0.111375 163.223);
+  --text-danger: oklch(0.532823131 0.117479617 20.986961303);
+  --text-rose: oklch(0.551227942 0.117 11.638);
+  --text-warning: oklch(0.543788824 0.1201875 66.29);
+  --text-amber: oklch(0.542622272 0.116125 70.08);
+  --text-pink: oklch(0.563323944 0.202 349.761);
+  --text-violet: oklch(0.555006504 0.183 293.541);
+  --text-indigo: oklch(0.549455583 0.182 276.935);
+  --text-sky: oklch(0.532216865 0.115875 237.323);
+  --text-blue: oklch(0.545874761 0.214 259.815);
+  --action-leaf: oklch(0.553019077 0.137467636 127.634555797);
+  --action-leaf-hover: oklch(0.51 0.13 127.634555797);
+  --action-danger: oklch(0.576838924 0.117479617 20.986961303);
+  --action-danger-hover: oklch(0.53 0.117479617 20.986961303);
+  --control-border: oklch(0.63257841 0.013 255.508);
+  --focus-indicator: #173c2b;
+}
+
+/* Two visible edges keep keyboard focus identifiable on pale and solid controls. */
+:focus-visible {
+  outline: 2px solid var(--focus-indicator);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--surface-white);
+}

@@ -91,10 +91,9 @@ export function ComicDetailHeader({
       <div className="flex items-center gap-2 min-w-0">
         <div
           className={clsx(
-            "px-2 py-0.5 rounded-xs text-md opacity-80 font-black text-ink-white",
+            "px-2 py-0.5 rounded-xs text-md font-black text-ink-white bg-action-leaf",
             "leading-none shrink-0",
           )}
-          style={{ backgroundColor: "var(--brand-leaf)" }}
         >
           #{comicInfo.index + 1}
         </div>
@@ -113,7 +112,7 @@ export function ComicDetailHeader({
           type="button"
           onClick={onClose}
           aria-label="关闭漫画详情"
-          className="text-ink-stone-400 hover:text-ink-stone-700 transition-colors p-1 shrink-0"
+          className="text-text-muted-warm hover:text-ink-stone-700 transition-colors p-1 shrink-0"
         >
           <X size={18} />
         </button>

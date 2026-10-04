@@ -7,6 +7,8 @@ import { createViteBase } from "./src/application/vite-base.ts";
 export default mergeConfig(
   createViteBase(),
   defineConfig({
+    define: { __CONTRAST_EVIDENCE__: process.env["POPRAKO_CONTRAST_EVIDENCE"] === "1" },
+    optimizeDeps: { include: ["apcach", "colorjs.io"] },
     test: {
       projects: [
         {
@@ -21,7 +23,8 @@ export default mergeConfig(
             browser: {
               enabled: true,
               headless: true,
-              screenshotFailures: false,
+              screenshotFailures: true,
+              screenshotDirectory: "test-resource/generated/contrast/story-failures",
               provider: playwright({ contextOptions: { timezoneId: "Asia/Shanghai" } }),
               instances: [{ browser: "chromium" }],
             },

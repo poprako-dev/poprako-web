@@ -95,12 +95,12 @@ export function EmbeddedMemberList({ onLoadMembers, onMemberClick }: Props): JSX
 
       {/* 无限滚动触发器 */}
       <div ref={loadMoreRef} className="flex justify-center py-6">
-        {isLoading && <LoaderCircle size={18} className="animate-spin text-ink-slate-300" />}
+        {isLoading && <LoaderCircle size={18} className="animate-spin text-text-muted-cool" />}
         {!isLoading && !hasMore && members.length > 0 && (
-          <span className="text-sm text-ink-slate-400">没有更多成员了 O^O</span>
+          <span className="text-sm text-text-muted-cool">没有更多成员了 O^O</span>
         )}
         {!isLoading && !hasMore && members.length === 0 && (
-          <span className="text-xs text-ink-slate-400">暂无成员</span>
+          <span className="text-xs text-text-muted-cool">暂无成员</span>
         )}
       </div>
     </div>

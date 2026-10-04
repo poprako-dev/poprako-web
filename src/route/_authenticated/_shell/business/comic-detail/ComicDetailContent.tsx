@@ -33,7 +33,7 @@ function ViewButton({ active, label, onClick, children }: ViewButtonProps): JSX.
         "focus-visible:outline-2 focus-visible:outline-primary/60",
         active
           ? "bg-surface-stone-200 text-ink-stone-700 shadow-(--shadow-sm)"
-          : "text-ink-stone-400 hover:bg-surface-stone-100 hover:text-ink-stone-600",
+          : "text-text-muted-warm hover:bg-surface-stone-100 hover:text-ink-stone-600",
       )}
     >
       {children}

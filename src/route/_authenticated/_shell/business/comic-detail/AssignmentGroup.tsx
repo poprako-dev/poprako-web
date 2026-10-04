@@ -78,9 +78,9 @@ function ActionButton({
         "flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border",
         "border-transparent transition-colors",
         danger
-          ? "text-ink-rose-300 hover:border-line-rose-200 hover:bg-surface-rose-50 hover:text-ink-rose-500"
+          ? "text-text-rose hover:border-line-rose-200 hover:bg-surface-rose-50 hover:text-text-rose"
           : [
-              "text-ink-stone-300 hover:border-line-stone-200",
+              "text-text-muted-warm hover:border-line-stone-200",
               "hover:bg-surface-stone-100 hover:text-ink-stone-600",
             ],
         "focus-visible:outline-2 focus-visible:outline-primary/60",

@@ -128,7 +128,7 @@ export function TeamList({
             className={clsx(
               "text-[11px] font-black uppercase",
               "tracking-widest text-left",
-              "text-ink-gray-400",
+              "text-text-muted-neutral",
             )}
           >
             切换汉化组
@@ -146,8 +146,8 @@ export function TeamList({
                     "items-center justify-center overflow-hidden",
                     "font-black text-sm relative",
                     isSelected
-                      ? "bg-[var(--brand-leaf)] text-ink-white"
-                      : "bg-surface-gray-100 text-ink-gray-400",
+                      ? "bg-action-leaf text-ink-white"
+                      : "bg-surface-gray-100 text-text-muted-neutral",
                   )}
                 >
                   {(t.avatarThumbnailUrl ?? t.avatarUrl) ? (
@@ -162,18 +162,20 @@ export function TeamList({
                 </div>
                 <div className={clsx("flex flex-col items-start min-w-0", "text-left")}>
                   <span className="text-sm font-bold truncate w-full">{t.name}</span>
-                  <span className="text-[10px] opacity-60 truncate w-full">{t.desc}</span>
+                  <span className="text-[10px] text-text-muted-neutral truncate w-full">
+                    {t.desc}
+                  </span>
                 </div>
-                {isSelected && (
-                  <Check size={16} className={clsx("ml-auto", "text-ink-green-500")} />
-                )}
+                {isSelected && <Check size={16} className={clsx("ml-auto", "text-text-leaf")} />}
               </>
             );
 
             const baseClasses = clsx(
               "w-full flex items-center gap-4",
               "px-4 py-3 rounded-sm transition-all",
-              isSelected ? "bg-surface-green-50" : "text-ink-gray-500 hover:bg-surface-gray-50",
+              isSelected
+                ? "bg-surface-green-50"
+                : "text-text-muted-neutral hover:bg-surface-gray-50",
               isSelected ? "text-ink-green-800" : "hover:text-ink-gray-900",
             );
 
@@ -215,7 +217,7 @@ export function TeamList({
         <div
           className={clsx("border-t border-line-gray-100", "px-3 py-2", "flex items-center gap-2")}
         >
-          <Plus size={14} className="text-ink-gray-300 shrink-0" />
+          <Plus size={14} className="text-text-muted-neutral shrink-0" />
           <input
             type="text"
             value={inviteCode}
@@ -229,7 +231,7 @@ export function TeamList({
               "flex-1 min-w-0",
               "text-xs text-ink-gray-600",
               "bg-transparent outline-none",
-              "placeholder:text-ink-gray-300",
+              "placeholder:text-text-muted-neutral",
               isJoining && "opacity-50",
             )}
           />

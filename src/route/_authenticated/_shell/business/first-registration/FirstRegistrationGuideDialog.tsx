@@ -48,21 +48,21 @@ export function FirstRegistrationGuideDialog({ onClose, onOpenSettings }: Props)
             <span
               className={clsx(
                 "flex size-9 shrink-0 items-center justify-center rounded-full",
-                "bg-surface-green-50 text-ink-green-600",
+                "bg-surface-green-50 text-text-green",
               )}
             >
               <item.icon size={17} />
             </span>
             <span className="min-w-0">
               <span className="block text-sm font-semibold text-ink-slate-700">{item.title}</span>
-              <span className="mt-0.5 block text-xs text-ink-slate-400">{item.description}</span>
+              <span className="mt-0.5 block text-xs text-text-muted-cool">{item.description}</span>
             </span>
           </div>
         ))}
       </div>
 
-      <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-slate-500">
-        <GraduationCap className="mt-0.5 size-4 shrink-0 text-ink-amber-500" />
+      <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-text-muted-cool">
+        <GraduationCap className="mt-0.5 size-4 shrink-0 text-text-amber" />
         <span>
           想先熟悉流程？可以在
           <a
@@ -70,7 +70,7 @@ export function FirstRegistrationGuideDialog({ onClose, onOpenSettings }: Props)
             target="_blank"
             rel="noreferrer"
             className={clsx(
-              "mx-1 inline-flex items-center gap-0.5 font-semibold text-ink-green-600",
+              "mx-1 inline-flex items-center gap-0.5 font-semibold text-text-green",
               "underline decoration-decoration-green-200 underline-offset-2 hover:text-ink-green-700",
             )}
           >

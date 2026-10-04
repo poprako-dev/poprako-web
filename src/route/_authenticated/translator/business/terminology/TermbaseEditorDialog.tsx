@@ -74,7 +74,7 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
       >
         <div className="rounded-md border border-line-red-100 bg-surface-red-50/60 px-3 py-2.5">
           <p className="text-sm font-semibold text-ink-slate-700">{termbase.name}</p>
-          <p className="mt-1 text-xs leading-relaxed text-ink-red-500">
+          <p className="mt-1 text-xs leading-relaxed text-text-danger">
             删除后，其中全部术语也会一并删除。
           </p>
         </div>
@@ -120,7 +120,7 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
     >
       <div className="space-y-3">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-ink-slate-500">名称</span>
+          <span className="mb-1 block text-xs font-medium text-text-muted-cool">名称</span>
           <input
             value={name}
             disabled={isSubmitting}
@@ -128,14 +128,14 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
               setName(event.target.value);
             }}
             className={clsx(
-              "h-8 w-full rounded-md border border-line-slate-200 bg-surface-white px-2.5",
+              "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
               "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-              "transition-colors focus:border-line-slate-300",
+              "transition-colors focus:border-control-border",
             )}
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-ink-slate-500">描述</span>
+          <span className="mb-1 block text-xs font-medium text-text-muted-cool">描述</span>
           <textarea
             rows={3}
             value={description}
@@ -145,9 +145,9 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
             }}
             placeholder="选填"
             className={clsx(
-              "w-full resize-none rounded-md border border-line-slate-200 bg-surface-white px-2.5 py-2",
+              "w-full resize-none rounded-md border border-control-border bg-surface-white px-2.5 py-2",
               "text-sm leading-relaxed text-ink-slate-700 shadow-sm shadow-shadow-slate-100",
-              "outline-none placeholder:text-ink-slate-300 focus:border-line-slate-300",
+              "outline-none placeholder:text-text-muted-cool focus:border-control-border",
             )}
           />
         </label>

@@ -16,7 +16,7 @@ cd "$project_root"
 
 suite=${1:-all}
 case "$suite" in
-    all | static | browser | build) ;;
+    all | static | browser | build | contrast) ;;
     *)
         echo "Unknown frontend check suite: $suite" >&2
         exit 1
@@ -56,9 +56,13 @@ check_static() {
 
 check_browser() {
     run_deno run -A npm:playwright@1.63.0 install --with-deps chromium
-    run_deno task test:storybook
     run_deno task test:compress-browser
     run_deno task test:bounded-browser
+}
+
+check_contrast() {
+    run_deno run -A npm:playwright@1.63.0 install --with-deps chromium
+    run_deno task contrast:check
 }
 
 check_build() {
@@ -71,6 +75,7 @@ case "$suite" in
     static) check_static ;;
     browser) check_browser ;;
     build) check_build ;;
+    contrast) check_contrast ;;
     all)
         check_static &
         static_pid=$!
@@ -78,6 +83,8 @@ case "$suite" in
         browser_pid=$!
         check_build &
         build_pid=$!
-        wait_checks "$static_pid" "$browser_pid" "$build_pid"
+        check_contrast &
+        contrast_pid=$!
+        wait_checks "$static_pid" "$browser_pid" "$build_pid" "$contrast_pid"
         ;;
 esac

@@ -38,10 +38,10 @@ function RoleTag({ label, isActive, isFirst, isLast }: RoleTagProps): JSX.Elemen
     <div
       className={clsx(
         "flex flex-1 items-center justify-center py-0.5",
-        "text-[11px] font-semibold transition-all duration-150",
+        "text-[11px] font-semibold text-text-muted-warm transition-all duration-150",
         isFirst && "rounded-l-[2px]",
         isLast && "rounded-r-[2px]",
-        isActive ? "bg-role-active text-ink-stone-500" : "text-ink-stone-200",
+        isActive && "bg-role-active",
       )}
     >
       {label}
@@ -94,7 +94,7 @@ export function MemberCard({ member, onClick }: Props): JSX.Element {
               )}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-ink-stone-300">
+            <div className="w-full h-full flex items-center justify-center text-text-muted-warm">
               <UserIcon size={24} />
             </div>
           )}
@@ -106,7 +106,7 @@ export function MemberCard({ member, onClick }: Props): JSX.Element {
               "bg-surface-white rounded-full p-0.5 shadow-sm border border-line-stone-100",
             )}
           >
-            <ShieldCheck size={14} className="text-ink-amber-500 fill-fill-amber-50" />
+            <ShieldCheck size={14} className="text-text-amber fill-fill-amber-50" />
           </div>
         )}
       </div>
@@ -127,12 +127,12 @@ export function MemberCard({ member, onClick }: Props): JSX.Element {
         </div>
 
         {/* QQ + 最后登录 */}
-        <div className="flex items-center gap-2 text-[11px] text-ink-stone-400/80 font-mono py-2">
+        <div className="flex items-center gap-2 text-[11px] text-text-muted-warm font-mono py-2">
           <div className="flex items-center gap-1 shrink-0">
             <UserIcon size={12} strokeWidth={3.5} />
             <span className="tracking-tight ">{user?.qq ?? "—"}</span>
           </div>
-          <span className="text-ink-stone-200">|</span>
+          <span className="text-text-muted-warm">|</span>
           <div className="flex items-center gap-1 truncate">
             <Clock size={12} strokeWidth={3.5} />
             <span className="truncate tracking-tighter">{formatDate(user?.lastActiveAt)}</span>

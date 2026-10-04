@@ -79,8 +79,8 @@ export function ComicCreatorModal({
                 "bg-surface-green-50 border border-(--brand-leaf-border)",
               )}
             >
-              <Layers className="w-2.5 h-2.5 text-ink-slate-400" />
-              <span className="text-[11px] text-ink-slate-500 truncate max-w-20">
+              <Layers className="w-2.5 h-2.5 text-text-muted-cool" />
+              <span className="text-[11px] text-text-muted-cool truncate max-w-20">
                 {currWorkset.name}
               </span>
             </div>
@@ -130,13 +130,13 @@ export function ComicCreatorModal({
                 "focus-within:border-line-slate-300 transition-all",
               )}
             >
-              <AlignLeft className="w-3.5 h-3.5 text-ink-slate-400 mt-0.5 shrink-0" />
+              <AlignLeft className="w-3.5 h-3.5 text-text-muted-cool mt-0.5 shrink-0" />
               <textarea
                 placeholder="描述（选填）"
                 rows={2}
                 className={clsx(
                   "w-full bg-transparent text-sm text-ink-slate-700",
-                  "placeholder:text-ink-slate-400 outline-none resize-none",
+                  "placeholder:text-text-muted-cool outline-none resize-none",
                 )}
                 value={formData.description}
                 onChange={(e) => {
@@ -159,7 +159,7 @@ export function ComicCreatorModal({
               className={clsx(
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "transition-all duration-200 active:scale-[0.98]",
-                "text-ink-slate-400 bg-surface-slate-50 hover:bg-surface-slate-100",
+                "text-text-muted-cool bg-surface-slate-50 hover:bg-surface-slate-100",
                 "border border-line-slate-100",
               )}
             >
@@ -174,11 +174,11 @@ export function ComicCreatorModal({
                 "transition-all duration-200 active:scale-[0.98]",
                 isValid
                   ? [
-                      "bg-surface-green-50 text-ink-green-500",
+                      "bg-surface-green-50 text-text-leaf",
                       "border border-(--brand-leaf-border)",
                       "hover:bg-surface-green-100",
                     ]
-                  : "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100",
+                  : "bg-surface-slate-50 text-text-muted-cool cursor-not-allowed border border-line-slate-100",
               )}
             >
               {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : "确认"}

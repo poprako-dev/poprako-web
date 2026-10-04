@@ -17,8 +17,8 @@ const meta: Meta<typeof AppDialog> = {
           aria-label="名称"
           placeholder="名称"
           className={[
-            "h-8 w-full rounded-md border border-line-slate-200 px-3 text-sm",
-            "shadow-sm shadow-shadow-slate-100 outline-none focus:border-line-slate-300",
+            "h-8 w-full rounded-md border border-control-border px-3 text-sm",
+            "shadow-sm shadow-shadow-slate-100 outline-none focus:border-control-border",
           ].join(" ")}
         />
         <textarea
@@ -26,9 +26,9 @@ const meta: Meta<typeof AppDialog> = {
           placeholder="描述（选填）"
           rows={3}
           className={[
-            "w-full resize-none rounded-md border border-line-slate-200 px-3 py-2",
+            "w-full resize-none rounded-md border border-control-border px-3 py-2",
             "text-sm shadow-sm shadow-shadow-slate-100 outline-none",
-            "focus:border-line-slate-300",
+            "focus:border-control-border",
           ].join(" ")}
         />
       </div>
@@ -106,7 +106,7 @@ export const Warning: Story = {
     children: (
       <div className="rounded-md border border-line-red-100 bg-surface-red-50/60 px-3 py-2.5">
         <p className="text-sm font-semibold text-ink-slate-700">角色称谓</p>
-        <p className="mt-1 text-xs text-ink-red-500">该操作无法撤销。</p>
+        <p className="mt-1 text-xs text-text-danger">该操作无法撤销。</p>
       </div>
     ),
     footer: (

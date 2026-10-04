@@ -45,7 +45,9 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
       <div className={clsx("flex items-center justify-between", "mb-2 px-0.5")}>
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-surface-slate-300 shrink-0" />
-          <span className="text-sm font-semibold text-ink-slate-500 tracking-tight">当前公告</span>
+          <span className="text-sm font-semibold text-text-muted-cool tracking-tight">
+            当前公告
+          </span>
         </div>
         <div className="flex-1 mx-2 h-0.5 bg-surface-slate-200" />
         {isAdmin && (
@@ -68,14 +70,14 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
 
       {/* Body */}
       {loading ? (
-        <div className="flex items-center justify-center h-24 text-ink-slate-400">
+        <div className="flex items-center justify-center h-24 text-text-muted-cool">
           <LoadingCircle size={18} />
         </div>
       ) : announcements.length === 0 ? (
         <div
           className={clsx(
             "flex items-center justify-center h-20",
-            "text-xs text-ink-slate-300 border border-dashed",
+            "text-xs text-text-muted-cool border border-dashed",
             "border-line-slate-200 rounded-md",
           )}
         >
@@ -134,8 +136,8 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                 className={clsx(
                   "w-full resize-none rounded-md px-2 py-1.5 mb-3",
                   "text-sm font-bold text-ink-slate-700 leading-relaxed",
-                  "border border-line-slate-200 bg-surface-white",
-                  "focus:border-line-slate-300 focus:outline-none",
+                  "border border-control-border bg-surface-white",
+                  "focus:border-control-border focus:outline-none",
                 )}
                 value={draft.title}
                 onChange={(event) => {
@@ -155,9 +157,9 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                 aria-label="公告内容"
                 className={clsx(
                   "w-full flex-1 min-h-24 resize-none rounded-md px-2 py-1.5",
-                  "text-xs text-ink-slate-500 leading-relaxed",
-                  "border border-line-slate-200 bg-surface-white",
-                  "focus:border-line-slate-300 focus:outline-none",
+                  "text-xs text-text-muted-cool leading-relaxed",
+                  "border border-control-border bg-surface-white",
+                  "focus:border-control-border focus:outline-none",
                 )}
                 value={draft.content}
                 onChange={(event) => {
@@ -170,7 +172,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
             ) : (
               <p
                 className={clsx(
-                  "text-xs text-ink-slate-500 leading-relaxed",
+                  "text-xs text-text-muted-cool leading-relaxed",
                   "whitespace-pre-wrap flex-1",
                 )}
               >
@@ -181,7 +183,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
               className={clsx(
                 "pt-3 border-t border-line-slate-100",
                 "flex items-center justify-between",
-                "text-[10px] text-ink-slate-400 font-mono",
+                "text-[10px] text-text-muted-cool font-mono",
               )}
             >
               <span className="flex items-center gap-1.5">
@@ -189,7 +191,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                   className={clsx(
                     "w-4 h-4 rounded border border-line-slate-200",
                     "bg-surface-slate-50 flex items-center justify-center",
-                    "text-[9px] font-bold text-ink-slate-500",
+                    "text-[9px] font-bold text-text-muted-cool",
                   )}
                 >
                   {selected.user?.avatarThumbnailUrl ? (
@@ -223,11 +225,11 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                     "transition-all duration-200 active:scale-[0.98]",
                     isEditing
                       ? [
-                          "text-ink-slate-400 bg-surface-slate-50 hover:bg-surface-slate-100",
+                          "text-text-muted-cool bg-surface-slate-50 hover:bg-surface-slate-100",
                           "border border-line-slate-100",
                         ]
                       : [
-                          "text-ink-red-500 bg-surface-red-50 hover:bg-surface-red-100",
+                          "text-text-danger bg-surface-red-50 hover:bg-surface-red-100",
                           "border border-(--danger-border)",
                         ],
                     isSaving && "opacity-60 cursor-not-allowed",
@@ -250,9 +252,9 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                     "flex items-center justify-center gap-1",
                     "transition-all duration-200 active:scale-[0.98]",
                     isEditing && !canPublish
-                      ? "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100"
+                      ? "bg-surface-slate-50 text-text-muted-cool cursor-not-allowed border border-line-slate-100"
                       : [
-                          "bg-surface-green-50 text-ink-green-500 hover:bg-surface-green-100",
+                          "bg-surface-green-50 text-text-leaf hover:bg-surface-green-100",
                           "border border-(--brand-leaf-border)",
                         ],
                   )}

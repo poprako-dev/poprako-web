@@ -241,7 +241,7 @@ function UnitListWrapper({
       >
         <div>
           <h1 className="text-lg font-bold text-ink-gray-800">UnitList 交互演示</h1>
-          <p className="text-xs text-ink-gray-500 mt-0.5">
+          <p className="text-xs text-text-muted-neutral mt-0.5">
             {readOnly
               ? "只读模式 · 点击序号仍可聚焦"
               : "拖动序号排序 · 轻触序号切换气泡状态 · " + "支持输入和模式切换"}
@@ -258,7 +258,7 @@ function UnitListWrapper({
                 "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
                 mode === "translate"
                   ? "bg-surface-white text-ink-gray-800 shadow-sm"
-                  : "text-ink-gray-500 hover:text-ink-gray-700",
+                  : "text-text-muted-neutral hover:text-ink-gray-700",
               )}
             >
               翻译模式
@@ -272,7 +272,7 @@ function UnitListWrapper({
                 "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
                 mode === "proofread"
                   ? "bg-surface-white text-ink-gray-800 shadow-sm"
-                  : "text-ink-gray-500 hover:text-ink-gray-700",
+                  : "text-text-muted-neutral hover:text-ink-gray-700",
               )}
             >
               校对模式
