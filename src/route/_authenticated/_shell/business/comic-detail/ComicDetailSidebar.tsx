@@ -281,7 +281,6 @@ export function ComicDetailSidebar({
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content
-                data-contrast-plate
                 side={menuSide}
                 align="center"
                 sideOffset={menuSide === "right" ? 20 : 8}

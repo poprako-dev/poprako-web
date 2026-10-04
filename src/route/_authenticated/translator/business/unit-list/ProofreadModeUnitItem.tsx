@@ -178,7 +178,6 @@ export function ProofreadModeUnitItem({
           />
           <div className="shrink-0 w-7 h-7 p-1 rounded flex items-center justify-center">
             <div
-              data-contrast={hasLocalDraft ? "border" : "fill"}
               role={hasLocalDraft ? "img" : undefined}
               aria-label={hasLocalDraft ? "有未保存草稿" : undefined}
               title={hasLocalDraft ? "有未保存草稿" : undefined}

@@ -31,9 +31,6 @@
     "@radix-ui/react-dialog": "1.1.23"
   },
   "devDependencies": {
-    "apcach": "0.6.4",
-    "axe-core": "4.13.0",
-    "colorjs.io": "0.7.1",
     "@babel/preset-env": "7.29.7",
     "@babel/preset-react": "7.29.7",
     "@babel/preset-typescript": "7.29.7",

@@ -256,8 +256,6 @@ export function PageCard({
             )}
           >
             <button
-              data-contrast-plate
-              data-contrast="icon"
               type="button"
               onClick={(event) => {
                 event.stopPropagation();

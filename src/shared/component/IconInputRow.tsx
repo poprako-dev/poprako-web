@@ -36,7 +36,6 @@ export function IconInputRow({
         {icon}
       </div>
       <input
-        data-contrast="border"
         className={clsx(
           "block w-full transition-all duration-200 ease-in-out",
           "h-8 rounded-md py-1 pl-9 text-sm",
@@ -61,7 +60,6 @@ export function IconInputRow({
       />
       {isPassword && (
         <button
-          data-contrast="icon"
           type="button"
           onClick={() => {
             setShowPassword((current) => !current);

@@ -52,7 +52,6 @@ export function ToolboxDropdown({ options, direction = "down" }: Props): ReactEl
         {/* 纵向图标长条面板 */}
         {isOpen && (
           <div
-            data-contrast-plate
             className={clsx(
               "absolute left-0 w-8 bg-surface-white rounded-lg shadow-xl border",
               "border-line-gray-100 overflow-hidden z-50 animate-in fade-in duration-300",

@@ -20,14 +20,11 @@ const staticChecks = [
 ];
 const browserChecks = [
   "run -A npm:playwright@1.63.0 install --with-deps chromium",
+  "task test:storybook",
   "task test:compress-browser",
   "task test:bounded-browser",
 ];
 const buildChecks = ["run -A npm:vite@8.0.16 build", "deployment"];
-const contrastChecks = [
-  "run -A npm:playwright@1.63.0 install --with-deps chromium",
-  "task contrast:check",
-];
 
 async function runSuite(
   suite?: string,
@@ -91,7 +88,6 @@ for (const [suite, checks] of [
   ["static", staticChecks],
   ["browser", browserChecks],
   ["build", buildChecks],
-  ["contrast", contrastChecks],
 ] as const) {
   void test(`CI ${suite} suite runs its correctness checks`, async () => {
     const result = await runSuite(suite);
@@ -107,7 +103,7 @@ void test("default CI covers every suite with one typecheck and no demo builds",
   assert.deepEqual(result.calls.slice(0, 2), ["ci", "task prepare:dependencies"]);
   assert.deepEqual(
     result.calls.slice(2).sort(),
-    [...staticChecks, ...browserChecks, ...buildChecks, ...contrastChecks].sort(),
+    [...staticChecks, ...browserChecks, ...buildChecks].sort(),
   );
 });
 
@@ -116,14 +112,6 @@ void test("CI fails on an unsuccessful correctness check", async () => {
   assert.equal(result.success, false);
   assert.ok(result.calls.includes("task lint"));
   assert.ok(result.calls.includes("task test:script"));
-});
-
-void test("contrast failures fail both the dedicated and aggregate CI gates", async () => {
-  for (const suite of ["contrast", "all"]) {
-    const result = await runSuite(suite, "task contrast:check");
-    assert.equal(result.success, false);
-    assert.ok(result.calls.includes("task contrast:check"));
-  }
 });
 
 void test("unknown CI suites fail before dependency installation", async () => {

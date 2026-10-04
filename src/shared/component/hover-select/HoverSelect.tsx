@@ -172,7 +172,6 @@ export function HoverSelect({
 
       {/* 下拉菜单列表 */}
       <div
-        data-contrast-plate
         inert={!isOpen}
         className={clsx(
           "absolute z-50 mt-2 w-full overflow-hidden",

@@ -141,7 +141,6 @@ export function ReadOnlyDiffUnitItem({
         <div className="flex size-7 shrink-0 items-center justify-center rounded p-1">
           <div
             role={hasLocalDraft ? "img" : undefined}
-            data-contrast={hasLocalDraft ? "border" : "fill"}
             aria-label={hasLocalDraft ? "有未保存草稿" : undefined}
             title={hasLocalDraft ? "有未保存草稿" : undefined}
             className={clsx(

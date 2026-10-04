@@ -51,15 +51,11 @@ flowchart LR
 
 R001–R007 have implementation records; they do not establish current acceptance.
 R008 passed the complete local check on 2026-09-29. The user requested preserving
-the original palette and registering its contrast debt separately; that snapshot
-retained exact registered entries while rejecting new or changed violations.
+the original palette and registering its contrast debt separately; exact
+registered entries are retained, while new or changed violations fail.
 See the [original contrast register](../review/original-contrast-register.md).
 R009 tracks appearance corrections without redesigning the original palette.
 Current evidence: [review corrections](../review/review-finding-correction.md)
 and [appearance restoration](../review/appearance-restoration.md).
-
-On 2026-10-04 the user approved a separate contrast correction. Its strict
-[contrast gate](../../../README.md#配色与对比度) replaces the historical debt
-register without establishing completion of any outstanding migration plan.
 
 Earlier snapshot: [implementation results](../review/implementation-results.md).

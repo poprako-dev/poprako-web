@@ -59,7 +59,6 @@ export function AppDialog({
         />
         <Dialog.Content
           data-app-dialog
-          aria-modal="true"
           onKeyDown={(event) => {
             event.stopPropagation();
           }}

@@ -24,7 +24,6 @@ export function AppSidebarLayout({
   return (
     /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */
     <nav
-      data-contrast-plate
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onFocus={onMouseEnter}

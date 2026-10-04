@@ -29,12 +29,9 @@
     "npm:@vitest/browser-playwright@4.1.11": "4.1.11_playwright@1.63.0_vitest@4.1.11_@types+node@26.6.2_@vitest+coverage-v8@4.1.11_jsdom@30.1.1_vite@8.0.16",
     "npm:@vitest/coverage-v8@4.1.11": "4.1.11_@vitest+browser@4.1.11_vitest@4.1.11_@types+node@26.6.2_@vitest+browser-playwright@4.1.11_jsdom@30.1.1_vite@8.0.16",
     "npm:@zip.js/zip.js@2.11.1": "2.11.1",
-    "npm:apcach@0.6.4": "0.6.4",
-    "npm:axe-core@4.13.0": "4.13.0",
     "npm:browser-image-compression@2.0.2": "2.0.2",
     "npm:class-variance-authority@0.7.1": "0.7.1",
     "npm:clsx@2.1.1": "2.1.1",
-    "npm:colorjs.io@0.7.1": "0.7.1",
     "npm:diff@9.0.0": "9.0.0",
     "npm:eslint-config-prettier@10.1.8": "10.1.8_eslint@9.39.1",
     "npm:eslint-plugin-jsx-a11y@6.10.2": "6.10.2_eslint@9.39.1",
@@ -3787,20 +3784,6 @@
     "ansis@4.4.0": {
       "integrity": "sha512-9k3v7xcHwgdO/DruxGIg4HtjvlAZlcnsX/mzqUb1t3NkYnl9kK2UJ+Gq0io+vQf7iT//BD/HB/NBkUR1LWxoeA=="
     },
-    "apca-w3@0.1.9": {
-      "integrity": "sha512-Zrf6AeBeQjNe/fxK7U1jCo5zfdjDl6T4/kdw5Xlky3G7u+EJTZkyItjMYQGtwf9pkftsINxcYyOpuLkzKf1ITQ==",
-      "dependencies": [
-        "colorparsley"
-      ]
-    },
-    "apcach@0.6.4": {
-      "integrity": "sha512-btUArMSP/xPuI1eBFp2TrrgTy4vRsqekLDaxNbnY9nygd/oJCinFm5LunR3FX/81c+/25Fuol6pPYYg79uH7pw==",
-      "dependencies": [
-        "apca-w3",
-        "culori",
-        "wcag-contrast"
-      ]
-    },
     "argparse@2.0.1": {
       "integrity": "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="
     },
@@ -4148,12 +4131,6 @@
     "color-name@1.1.4": {
       "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA=="
     },
-    "colorjs.io@0.7.1": {
-      "integrity": "sha512-LY7OHnJZxHwT5UlzNa9bbhHHDbzB6yE5+3MIPwJEQKRvSCt/T4G7epsj+9j2BExUIIfXFIJGsIXUKdfrK9Q5tA=="
-    },
-    "colorparsley@0.1.8": {
-      "integrity": "sha512-rObESTTTE6G5qO5WFwFxWPggpw4KfpxnLC6Ssl8bITBnNVRhDsyCeTRAUxWQNVTx2pRknKlO2nddYTxjkdNFaw=="
-    },
     "commander@11.1.0": {
       "integrity": "sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ=="
     },
@@ -4258,9 +4235,6 @@
     },
     "csstype@3.2.3": {
       "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ=="
-    },
-    "culori@3.3.0": {
-      "integrity": "sha512-pHJg+jbuFsCjz9iclQBqyL3B2HLCBF71BwVNujUYEvCeQMvV97R59MNK3R2+jgJ3a1fcZgI9B3vYgz8lzr/BFQ=="
     },
     "damerau-levenshtein@1.0.8": {
       "integrity": "sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA=="
@@ -4858,9 +4832,6 @@
       ],
       "deprecated": true,
       "bin": true
-    },
-    "esm@3.2.25": {
-      "integrity": "sha512-U1suiZ2oDVWv4zPO56S0NcR5QriEahGtdN2OR6FiOG4WJvcjBVFB0qI4+eKoWFH483PKGuLuu6V8Z4T5g63UVA=="
     },
     "espree@10.4.0": {
       "integrity": "sha512-j6PAQ2uUr79PZhBjP5C5fhl8e39FmRnOjsD5lGnWrFU8i2G776tBK7+nP8KuQUTTyAZUwfQqXAgrVH5MbH9CYQ==",
@@ -6850,12 +6821,6 @@
       ],
       "bin": true
     },
-    "relative-luminance@2.0.1": {
-      "integrity": "sha512-wFuITNthJilFPwkK7gNJcULxXBcfFZvZORsvdvxeOdO44wCeZnuQkf3nFFzOR/dpJNxYsdRZJLsepWbyKhnMww==",
-      "dependencies": [
-        "esm"
-      ]
-    },
     "require-directory@2.1.1": {
       "integrity": "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="
     },
@@ -7758,12 +7723,6 @@
         "xml-name-validator"
       ]
     },
-    "wcag-contrast@3.0.0": {
-      "integrity": "sha512-RWbpg/S7FOXDCwqC2oFhN/vh8dHzj0OS6dpyOSDHyQFSmqmR+lAUStV/ziTT1GzDqL9wol+nZQB4vCi5yEak+w==",
-      "dependencies": [
-        "relative-luminance"
-      ]
-    },
     "web-streams-polyfill@3.3.3": {
       "integrity": "sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw=="
     },
@@ -7993,12 +7952,9 @@
         "npm:@vitest/browser-playwright@4.1.11",
         "npm:@vitest/coverage-v8@4.1.11",
         "npm:@zip.js/zip.js@2.11.1",
-        "npm:apcach@0.6.4",
-        "npm:axe-core@4.13.0",
         "npm:browser-image-compression@2.0.2",
         "npm:class-variance-authority@0.7.1",
         "npm:clsx@2.1.1",
-        "npm:colorjs.io@0.7.1",
         "npm:diff@9.0.0",
         "npm:eslint-config-prettier@10.1.8",
         "npm:eslint-plugin-jsx-a11y@6.10.2",

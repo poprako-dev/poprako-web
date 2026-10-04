@@ -26,7 +26,6 @@ dist-ssr
 
 *storybook.log
 storybook-static
-/.vitest-attachments/
 
 # .env
 .env*

@@ -34,7 +34,6 @@ export function Marker({
       }}
     >
       <div
-        data-contrast-plate
         className={clsx(
           "relative rounded-full flex items-center justify-center",
           "border-2 shadow-lg",
@@ -64,7 +63,6 @@ export function Marker({
         </span>
       </div>
       <div
-        data-contrast-plate
         className={clsx(
           "rounded-full -mt-px shadow-sm border-2 border-focus-indicator",
           isBubble
