@@ -30,7 +30,7 @@ function RecoveryPreview(): JSX.Element {
         <textarea
           aria-label="当前译文"
           defaultValue="服务器内容"
-          className="w-full border border-line-stone-200 bg-surface-white p-2 text-ink-stone-700"
+          className="w-full border border-control-border bg-surface-white p-2 text-ink-stone-700"
         />
       </label>
     </div>

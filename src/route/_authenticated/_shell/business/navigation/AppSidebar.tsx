@@ -131,7 +131,7 @@ export function AppSidebar(): ReactElement {
             onAvatarUploadingChange={setIsAvatarUploading}
           />
         ) : (
-          <p className="px-3 py-2 text-xs text-muted-foreground">尚未加入团队</p>
+          <p className="px-3 py-2 text-xs text-navigation-muted">尚未加入团队</p>
         )
       }
       nav={

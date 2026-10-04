@@ -154,7 +154,7 @@ export function ComicList({
                   "transition-all duration-200 focus:outline-none",
                   activeMode === "translator"
                     ? "bg-surface-gray-200 text-ink-gray-800 shadow-(--shadow-sm)"
-                    : "text-ink-slate-400 hover:text-ink-slate-600",
+                    : "text-text-muted-cool hover:text-ink-slate-600",
                 )}
               >
                 <PencilLine size={16} />
@@ -171,7 +171,7 @@ export function ComicList({
                   "transition-all duration-200 focus:outline-none",
                   activeMode === "reviewer"
                     ? "bg-surface-gray-200 text-ink-gray-800 shadow-(--shadow-sm)"
-                    : "text-ink-slate-400 hover:text-ink-slate-600",
+                    : "text-text-muted-cool hover:text-ink-slate-600",
                 )}
               >
                 <Eye size={16} />

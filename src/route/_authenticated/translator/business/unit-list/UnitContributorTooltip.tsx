@@ -152,7 +152,7 @@ export function UnitContributorTooltip({ contributors, children }: Props): React
                   key={`${role}:${user.id}`}
                   className="flex max-w-full items-center justify-center gap-1.5 text-xs"
                 >
-                  <span className="w-10 shrink-0 text-right text-ink-stone-300">
+                  <span className="w-10 shrink-0 text-right text-text-muted-warm">
                     {role === "translator" ? "翻译：" : "校对："}
                   </span>
                   <ContributorAvatar user={user} />

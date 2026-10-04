@@ -86,7 +86,7 @@ export function LineBreakOverlay({ targetRef, layoutKey }: Props): JSX.Element {
         <span
           key={position.offset}
           data-line-break-marker
-          className={"absolute font-normal text-ink-stone-400 after:content-['↵']"}
+          className={"absolute font-normal text-text-muted-warm after:content-['↵']"}
           style={{
             left: position.left,
             top: position.top,

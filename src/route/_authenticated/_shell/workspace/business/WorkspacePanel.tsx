@@ -67,7 +67,7 @@ export function WorkspacePanel({
         <div>
           {username && (
             <>
-              <p className={clsx("text-md text-ink-slate-400")}>欢迎回来</p>
+              <p className={clsx("text-md text-text-muted-cool")}>欢迎回来</p>
               <h1 className={clsx("mt-0.5 ml-1 text-3xl font-bold text-ink-slate-700")}>
                 {username}
               </h1>
@@ -181,7 +181,7 @@ function SectionHeading({ label }: { label: "任务列表" | "留言板" }): JSX
   return (
     <div className={clsx("flex items-center gap-2 px-1 mb-2 shrink-0")}>
       <span className="w-1.5 h-1.5 rounded-full bg-surface-slate-300 shrink-0" />
-      <span className="text-sm font-semibold text-ink-slate-500 tracking-tight">{label}</span>
+      <span className="text-sm font-semibold text-text-muted-cool tracking-tight">{label}</span>
       <div
         className={clsx(
           "flex-1 h-0.5",
@@ -212,7 +212,7 @@ function TabButton({
       <span
         className={clsx(
           "text-sm font-semibold tracking-tight",
-          active ? "text-ink-slate-600" : "text-ink-slate-400",
+          active ? "text-ink-slate-600" : "text-text-muted-cool",
         )}
       >
         {label}

@@ -164,13 +164,13 @@ export function ComicTranslationList({ onLoadComics, onComicClick }: Props): Rea
           className={clsx("flex h-16 w-full items-center justify-center py-4")}
         >
           {isLoading && (
-            <LoaderCircle className={clsx("h-5 w-5 animate-spin text-ink-stone-300")} />
+            <LoaderCircle className={clsx("h-5 w-5 animate-spin text-text-muted-warm")} />
           )}
           {!hasMore && comics.length > 0 && (
-            <span className={clsx("text-ink-slate-400 text-sm")}>没有更多漫画了 O^O</span>
+            <span className={clsx("text-text-muted-cool text-sm")}>没有更多漫画了 O^O</span>
           )}
           {!hasMore && comics.length === 0 && !isLoading && (
-            <span className={clsx("text-ink-slate-400 text-sm")}>暂无漫画 o.O</span>
+            <span className={clsx("text-text-muted-cool text-sm")}>暂无漫画 o.O</span>
           )}
         </div>
       </div>

@@ -37,10 +37,10 @@ const STATUS_LABELS: Record<WorkflowStatus, string> = {
 };
 
 const STATUS_COLOR: Record<WorkflowStatus, string> = {
-  pending: "text-ink-slate-400",
-  ongoing: "text-ink-orange-400",
-  completed: "text-ink-emerald-400",
-  unset: "text-ink-slate-300",
+  pending: "text-text-muted-cool",
+  ongoing: "text-text-warning",
+  completed: "text-text-emerald",
+  unset: "text-text-muted-cool",
 };
 
 const PHASE_ORDER: WorkflowStatus[] = ["pending", "ongoing", "completed"];
@@ -141,16 +141,16 @@ export function TransitionDialog({
                   "inline-block rounded-md px-2 py-0.5 text-xs transition-colors",
                   isCurrent &&
                     "border border-line-slate-200 bg-surface-slate-50 text-ink-slate-600",
-                  !isCurrent && !isRevertTarget && !isForwardTarget && "text-ink-slate-300/70",
+                  !isCurrent && !isRevertTarget && !isForwardTarget && "text-text-muted-cool",
                   isRevertTarget && !isCurrent && "bg-surface-amber-50 text-ink-amber-600",
-                  isForwardTarget && !isCurrent && "bg-surface-green-50 text-ink-green-600",
+                  isForwardTarget && !isCurrent && "bg-surface-green-50 text-text-green",
                 )}
               >
                 {PHASE_LABELS[phase]}
               </span>
 
               {index < PHASE_ORDER.length - 1 && (
-                <span className="text-xs text-ink-slate-200">→</span>
+                <span className="text-xs text-text-muted-cool">→</span>
               )}
             </span>
           );

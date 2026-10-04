@@ -9,7 +9,6 @@ const buttonVariants = cva(
   clsx(
     "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm",
     "font-medium whitespace-nowrap transition-all outline-none",
-    "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
     "disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive",
     "aria-invalid:ring-destructive/20 ",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -17,12 +16,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: clsx(
-          "bg-destructive text-ink-white hover:bg-destructive/90",
-          "focus-visible:ring-destructive/20 ",
-          "",
-        ),
+        default:
+          "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-active",
+        destructive: "bg-action-danger text-ink-white hover:bg-action-danger-hover",
         outline: clsx(
           "border bg-background shadow-xs hover:bg-accent",
           "hover:text-accent-foreground  ",
@@ -30,7 +26,7 @@ const buttonVariants = cva(
         ),
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground ",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-primary-text underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

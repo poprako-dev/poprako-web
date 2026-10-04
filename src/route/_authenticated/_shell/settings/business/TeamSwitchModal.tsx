@@ -30,7 +30,7 @@ export function TeamSwitchModal({ teams, activeTeamId, onSelect, onClose }: Prop
                 isSelected
                   ? "border-line-green-100 bg-surface-green-50 text-ink-green-800"
                   : [
-                      "border-transparent text-ink-slate-500",
+                      "border-transparent text-text-muted-cool",
                       "hover:border-line-slate-100 hover:bg-surface-slate-50",
                     ],
               )}
@@ -40,17 +40,19 @@ export function TeamSwitchModal({ teams, activeTeamId, onSelect, onClose }: Prop
                   "flex size-9 shrink-0 items-center justify-center rounded-lg",
                   "text-sm font-bold",
                   isSelected
-                    ? "bg-(--brand-leaf) text-ink-white"
-                    : "bg-surface-slate-100 text-ink-slate-400",
+                    ? "bg-action-leaf text-ink-white"
+                    : "bg-surface-slate-100 text-text-muted-cool",
                 )}
               >
                 {team.short}
               </div>
               <div className="flex min-w-0 flex-1 flex-col items-start text-left">
                 <span className="w-full truncate text-sm font-semibold">{team.name}</span>
-                <span className="w-full truncate text-[10px] text-ink-slate-400">{team.desc}</span>
+                <span className="w-full truncate text-[10px] text-text-muted-cool">
+                  {team.desc}
+                </span>
               </div>
-              {isSelected && <Check size={16} className="text-ink-green-500" />}
+              {isSelected && <Check size={16} className="text-text-leaf" />}
             </button>
           );
         })}

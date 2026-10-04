@@ -130,8 +130,8 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
             type="button"
             aria-label="关闭特殊符号面板"
             className={clsx(
-              "flex size-7 items-center justify-center rounded-md text-ink-slate-300",
-              "transition-colors hover:bg-surface-slate-50 hover:text-ink-slate-500",
+              "flex size-7 items-center justify-center rounded-md text-text-muted-cool",
+              "transition-colors hover:bg-surface-slate-50 hover:text-text-muted-cool",
             )}
             onClick={onClose}
           >
@@ -156,7 +156,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
                     "transition-all duration-200",
                     mode === m
                       ? "bg-surface-white font-medium text-ink-slate-700 shadow-sm"
-                      : "text-ink-slate-400 hover:text-ink-slate-600",
+                      : "text-text-muted-cool hover:text-ink-slate-600",
                   )}
                 >
                   {m === "select" ? "优选" : "删除"}
@@ -190,13 +190,13 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
                   "h-12 rounded-lg text-sm transition-all duration-200",
                   "outline-none active:scale-95 overflow-hidden",
                   "cursor-grab active:cursor-grabbing",
-                  draggingId === char.id && "opacity-60 ring-2 ring-primary/30",
+                  draggingId === char.id && "ring-2 ring-focus-indicator",
                   mode === "select"
                     ? char.isFavorite
                       ? [
                           "bg-[var(--brand-leaf-faint)]",
-                          "text-[var(--brand-leaf)]",
-                          "hover:opacity-80",
+                          "text-text-leaf",
+                          "hover:bg-surface-green-100",
                         ]
                       : ["bg-muted text-muted-foreground", "hover:bg-accent hover:text-foreground"]
                     : [
@@ -229,7 +229,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
                       "text-center text-sm font-mono",
                       "bg-background text-foreground",
                       "rounded-lg border border-border outline-none resize-none",
-                      "pt-3 placeholder:text-muted-foreground/50",
+                      "pt-3 placeholder:text-muted-foreground",
                     )}
                   />
                 ) : (
@@ -241,7 +241,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
                     }}
                     className={clsx(
                       "w-full h-full flex items-center justify-center",
-                      "rounded-lg bg-muted/60 text-muted-foreground/60",
+                      "rounded-lg bg-muted/60 text-muted-foreground",
                       "transition-all duration-200 outline-none",
                       "hover:bg-accent hover:text-muted-foreground",
                       "active:scale-95",
@@ -255,7 +255,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
           </div>
 
           {/* Hint */}
-          <p className="mt-4 text-xs text-muted-foreground/70 text-center">
+          <p className="mt-4 text-xs text-muted-foreground text-center">
             {mode === "select"
               ? "点击切换是否出现在符号栏中，拖动可排序"
               : "点击符号将其删除，拖动可排序"}

@@ -18,7 +18,7 @@ export function StatItem({ icon: Icon, label, value }: Props): JSX.Element {
     >
       <div
         className={clsx(
-          "flex items-center gap-2 text-ink-stone-400",
+          "flex items-center gap-2 text-text-muted-warm",
           "group-hover:text-ink-stone-600 transition-colors",
         )}
       >

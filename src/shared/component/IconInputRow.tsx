@@ -28,7 +28,7 @@ export function IconInputRow({
       <div
         className={clsx(
           "pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3",
-          "text-ink-slate-400 transition-colors duration-200",
+          "text-text-muted-cool transition-colors duration-200",
           "group-focus-within:text-ink-slate-600",
         )}
         aria-hidden
@@ -40,13 +40,12 @@ export function IconInputRow({
           "block w-full transition-all duration-200 ease-in-out",
           "h-8 rounded-md py-1 pl-9 text-sm",
           isPassword ? "pr-9" : "pr-3",
-          "bg-surface-white text-ink-slate-700 placeholder:text-ink-slate-400",
-          "border border-line-slate-200",
+          "bg-surface-white text-ink-slate-700 placeholder:text-text-muted-cool",
+          "border border-control-border",
           "shadow-sm shadow-shadow-slate-100",
           // 悬停样式：平滑变深 + 极其微小的外发光感
-          "hover:border-line-slate-300",
-          // 移除 Focus 时的强烈对比，保持纯净
-          "focus:border-line-slate-300 focus:ring-0 focus:outline-none",
+          "hover:border-ink-slate-500",
+          "focus:border-focus-indicator focus:ring-0",
         )}
         type={isPassword && !showPassword ? "password" : "text"}
         inputMode={isNumeric ? "numeric" : undefined}
@@ -67,7 +66,7 @@ export function IconInputRow({
           }}
           className={clsx(
             "absolute inset-y-0 right-0 flex items-center pr-2",
-            "text-ink-slate-400 hover:text-ink-slate-600",
+            "text-text-muted-cool hover:text-ink-slate-600",
             "transition-colors duration-200 focus:outline-none",
           )}
           aria-label={showPassword ? "隐藏密码" : "显示密码"}

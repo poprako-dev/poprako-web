@@ -99,7 +99,7 @@ export function AppDialog({
           <div className="relative shrink-0 px-5 pb-2 pt-4 text-center">
             <Dialog.Title className="text-base font-bold text-ink-slate-800">{title}</Dialog.Title>
             {description && (
-              <Dialog.Description className="mt-1 text-xs leading-relaxed text-ink-slate-400">
+              <Dialog.Description className="mt-1 text-xs leading-relaxed text-text-muted-cool">
                 {description}
               </Dialog.Description>
             )}
@@ -114,8 +114,8 @@ export function AppDialog({
                 onClick={onClose}
                 className={clsx(
                   "absolute right-4 top-3.5 flex size-7 items-center justify-center",
-                  "rounded-md text-ink-slate-300 transition-colors",
-                  "hover:bg-surface-slate-50 hover:text-ink-slate-500",
+                  "rounded-md text-text-muted-cool transition-colors",
+                  "hover:bg-surface-slate-50 hover:text-text-muted-cool",
                   "disabled:cursor-not-allowed disabled:opacity-40",
                 )}
               >
@@ -166,7 +166,7 @@ export function AppDialogAction({
           "hover:bg-surface-green-100",
         ],
         tone === "danger" && [
-          "border-(--danger-border) bg-surface-red-50 text-ink-red-500",
+          "border-(--danger-border) bg-surface-red-50 text-text-danger",
           "hover:bg-surface-red-100",
         ],
         tone === "warning" && [

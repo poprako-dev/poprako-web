@@ -65,7 +65,7 @@ export function ArchiveTool({ mode }: Props): JSX.Element {
             : "border-input bg-muted/30 hover:border-(--brand-leaf-border) hover:bg-muted/50",
         )}
       >
-        <FilePlus2 size={hasFiles ? 18 : 32} strokeWidth={1.4} className="text-ink-green-600" />
+        <FilePlus2 size={hasFiles ? 18 : 32} strokeWidth={1.4} className="text-text-green" />
         <span className="text-sm font-medium">
           {hasFiles ? (isCompress ? "添加文件" : "重新选择文件") : "选择或拖入文件"}
         </span>

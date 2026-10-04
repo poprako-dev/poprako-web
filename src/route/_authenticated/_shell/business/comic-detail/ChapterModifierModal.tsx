@@ -52,7 +52,7 @@ export function ChapterModifierModal({ chapter, onUpdate, onClose }: Props): JSX
 
         <div className="pt-4 pb-2 text-center">
           <h3 className="text-base font-bold text-ink-slate-800">修改章节信息</h3>
-          <p className="mt-1 text-[11px] text-ink-slate-400">
+          <p className="mt-1 text-[11px] text-text-muted-cool">
             #{chapter.index + 1} {chapter.subtitle || "无标题"}
           </p>
         </div>
@@ -77,7 +77,7 @@ export function ChapterModifierModal({ chapter, onUpdate, onClose }: Props): JSX
               className={clsx(
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "transition-all duration-200 active:scale-[0.98]",
-                "text-ink-slate-400 bg-surface-slate-50 hover:bg-surface-slate-100",
+                "text-text-muted-cool bg-surface-slate-50 hover:bg-surface-slate-100",
                 "border border-line-slate-100",
               )}
             >
@@ -90,7 +90,7 @@ export function ChapterModifierModal({ chapter, onUpdate, onClose }: Props): JSX
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "flex items-center justify-center gap-1",
                 "transition-all duration-200 active:scale-[0.98]",
-                "bg-surface-green-50 text-ink-green-500",
+                "bg-surface-green-50 text-text-leaf",
                 "border border-(--brand-leaf-border)",
                 "hover:bg-surface-green-100",
                 "disabled:opacity-50 disabled:cursor-not-allowed",

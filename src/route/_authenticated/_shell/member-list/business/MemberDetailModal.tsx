@@ -19,42 +19,42 @@ const ROLE_CONFIG: RoleConfig[] = [
   {
     label: "图",
     value: 1,
-    activeClass: "bg-surface-amber-50 text-ink-amber-500 border-line-amber-200",
+    activeClass: "bg-surface-amber-50 text-text-amber border-line-amber-200",
   },
   {
     label: "翻",
     value: 2,
-    activeClass: "bg-surface-sky-50 text-ink-sky-500 border-line-sky-200",
+    activeClass: "bg-surface-sky-50 text-text-sky border-line-sky-200",
   },
   {
     label: "校",
     value: 4,
-    activeClass: "bg-surface-emerald-50 text-ink-emerald-500 border-line-emerald-200",
+    activeClass: "bg-surface-emerald-50 text-text-emerald border-line-emerald-200",
   },
   {
     label: "嵌",
     value: 8,
-    activeClass: "bg-surface-violet-50 text-ink-violet-500 border-line-violet-200",
+    activeClass: "bg-surface-violet-50 text-text-violet border-line-violet-200",
   },
   {
     label: "美",
     value: 16,
-    activeClass: "bg-surface-pink-50 text-ink-pink-500 border-line-pink-200",
+    activeClass: "bg-surface-pink-50 text-text-pink border-line-pink-200",
   },
   {
     label: "监",
     value: 32,
-    activeClass: "bg-surface-indigo-50 text-ink-indigo-400 border-line-indigo-200",
+    activeClass: "bg-surface-indigo-50 text-text-indigo border-line-indigo-200",
   },
   {
     label: "传",
     value: 64,
-    activeClass: "bg-surface-rose-50 text-ink-rose-400 border-line-rose-200",
+    activeClass: "bg-surface-rose-50 text-text-rose border-line-rose-200",
   },
   {
     label: "管",
     value: 128,
-    activeClass: "bg-surface-stone-100 text-ink-stone-500 border-line-stone-200",
+    activeClass: "bg-surface-stone-100 text-text-muted-warm border-line-stone-200",
   },
 ];
 
@@ -141,14 +141,14 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
               {user?.name ?? "未知成员"}
             </span>
             {user?.qq && (
-              <span className="text-xs font-semibold text-ink-slate-400 font-mono leading-none mt-0.5">
+              <span className="text-xs font-semibold text-text-muted-cool font-mono leading-none mt-0.5">
                 {user.qq}
               </span>
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0 ml-4">
-            <Clock className="h-3 w-3 text-ink-slate-300" />
-            <span className="text-[11px] text-ink-slate-400 font-mono">{lastActive}</span>
+            <Clock className="h-3 w-3 text-text-muted-cool" />
+            <span className="text-[11px] text-text-muted-cool font-mono">{lastActive}</span>
           </div>
         </div>
 
@@ -172,7 +172,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
                 <div
                   className={clsx(
                     "w-full h-full flex items-center",
-                    "justify-center text-ink-slate-300",
+                    "justify-center text-text-muted-cool",
                   )}
                 >
                   <UserIcon size={28} />
@@ -187,7 +187,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
                   "shadow-sm border border-line-slate-100",
                 )}
               >
-                <ShieldCheck size={16} className="text-ink-amber-500 fill-fill-amber-50" />
+                <ShieldCheck size={16} className="text-text-amber fill-fill-amber-50" />
               </div>
             )}
           </div>
@@ -210,8 +210,8 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
                     isActive
                       ? role.activeClass
                       : clsx(
-                          "border-line-slate-200 bg-surface-white text-ink-slate-400",
-                          "hover:border-line-slate-300 hover:text-ink-slate-500",
+                          "border-line-slate-200 bg-surface-white text-text-muted-cool",
+                          "hover:border-line-slate-300 hover:text-text-muted-cool",
                         ),
                   )}
                 >
@@ -234,7 +234,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
             onClick={onClose}
             className={clsx(
               "rounded-sm px-4 py-1.5 text-xs font-semibold w-full",
-              "bg-surface-slate-50 text-ink-slate-400 border border-line-slate-100",
+              "bg-surface-slate-50 text-text-muted-cool border border-line-slate-100",
               "transition-all hover:bg-surface-slate-100 active:scale-[0.98]",
             )}
           >
@@ -252,10 +252,10 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
               isDirty && !isSubmitting
                 ? [
                     "bg-surface-slate-50 text-ink-slate-600 border border-line-slate-100",
-                    "hover:bg-surface-emerald-50 hover:text-ink-emerald-600",
+                    "hover:bg-surface-emerald-50 hover:text-text-emerald",
                     "hover:border-line-emerald-100",
                   ]
-                : "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100",
+                : "bg-surface-slate-50 text-text-muted-cool cursor-not-allowed border border-line-slate-100",
             )}
           >
             {isSubmitting && <Loader2 className="h-3 w-3 animate-spin" />}

@@ -225,13 +225,13 @@ export function ArtworkUploadDialog({
           "flex min-h-24 w-full items-center justify-center gap-3 rounded-lg",
           "border border-dashed transition-colors",
           isRetrying
-            ? "border-(--danger-border) bg-surface-red-50 text-ink-red-500"
-            : "border-line-stone-200 bg-surface-stone-50/60 text-ink-slate-400",
+            ? "border-(--danger-border) bg-surface-red-50 text-text-danger"
+            : "border-line-stone-200 bg-surface-stone-50/60 text-text-muted-cool",
           canSelect && "hover:border-(--brand-leaf-border) hover:bg-surface-green-50",
           !canSelect && "cursor-default",
         )}
       >
-        {isBusy && <LoaderCircle size={22} className="animate-spin text-ink-green-500" />}
+        {isBusy && <LoaderCircle size={22} className="animate-spin text-text-leaf" />}
         {!isBusy && isRetrying && <CircleAlert size={22} />}
         {!isBusy && !isRetrying && files.length > 0 && <FileStack size={22} />}
         {!isBusy && !isRetrying && files.length === 0 && <FileUp size={22} />}
@@ -244,7 +244,7 @@ export function ArtworkUploadDialog({
 
       {isBusy && (
         <div className="mt-4 flex items-center gap-3">
-          <CloudUpload size={15} className="shrink-0 text-ink-green-500" />
+          <CloudUpload size={15} className="shrink-0 text-text-leaf" />
           <div
             role="progressbar"
             aria-label="上传进度"
@@ -258,7 +258,7 @@ export function ArtworkUploadDialog({
               style={{ width: `${String(progress)}%` }}
             />
           </div>
-          <span className="text-xs font-semibold tabular-nums text-ink-slate-400">
+          <span className="text-xs font-semibold tabular-nums text-text-muted-cool">
             {Math.round(progress)}%
           </span>
         </div>

@@ -65,8 +65,8 @@ export function ChapterCreatorModal({
                 "bg-surface-green-50 border border-(--brand-leaf-border)",
               )}
             >
-              <Layers className="w-2.5 h-2.5 text-ink-slate-400" />
-              <span className="text-[11px] text-ink-slate-500 truncate max-w-24">
+              <Layers className="w-2.5 h-2.5 text-text-muted-cool" />
+              <span className="text-[11px] text-text-muted-cool truncate max-w-24">
                 {comicInfo.title || "未知作品"}
               </span>
             </div>
@@ -99,7 +99,7 @@ export function ChapterCreatorModal({
               className={clsx(
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "transition-all duration-200 active:scale-[0.98]",
-                "text-ink-slate-400 bg-surface-slate-50 hover:bg-surface-slate-100",
+                "text-text-muted-cool bg-surface-slate-50 hover:bg-surface-slate-100",
                 "border border-line-slate-100",
               )}
             >
@@ -112,7 +112,7 @@ export function ChapterCreatorModal({
                 "flex-1 py-2 text-xs font-semibold rounded-lg",
                 "flex items-center justify-center gap-1",
                 "transition-all duration-200 active:scale-[0.98]",
-                "bg-surface-green-50 text-ink-green-500",
+                "bg-surface-green-50 text-text-leaf",
                 "border border-(--brand-leaf-border)",
                 "hover:bg-surface-green-100",
                 "disabled:opacity-50 disabled:cursor-not-allowed",

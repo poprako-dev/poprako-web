@@ -25,10 +25,10 @@ export function ComicDetailExportOptionsDialog({
         <div
           className={clsx(
             "mb-3 flex h-8 items-center gap-2 rounded-lg px-2",
-            "text-xs font-medium text-ink-slate-500 hover:bg-surface-slate-50",
+            "text-xs font-medium text-text-muted-cool hover:bg-surface-slate-50",
           )}
         >
-          <ImageIcon size={14} className="text-ink-slate-400" />
+          <ImageIcon size={14} className="text-text-muted-cool" />
           <label htmlFor="export-raw-image-names" className="flex-1 cursor-pointer">
             使用原始图片名
           </label>
@@ -62,7 +62,7 @@ export function ComicDetailExportOptionsDialog({
               "flex flex-1 items-center justify-center gap-1 py-2",
               "rounded-lg text-xs font-semibold",
               "transition-all duration-200 active:scale-[0.98]",
-              "border border-line-slate-100 bg-surface-slate-50 text-ink-slate-500",
+              "border border-line-slate-100 bg-surface-slate-50 text-text-muted-cool",
               "hover:bg-surface-slate-100",
             )}
           >
@@ -81,7 +81,7 @@ export function ComicDetailExportOptionsDialog({
               "flex flex-1 items-center justify-center gap-1 py-2",
               "rounded-lg text-xs font-semibold",
               "transition-all duration-200 active:scale-[0.98]",
-              "border border-line-green-200 bg-surface-green-50 text-ink-green-600",
+              "border border-line-green-200 bg-surface-green-50 text-text-green",
               "hover:bg-surface-green-100",
             )}
           >

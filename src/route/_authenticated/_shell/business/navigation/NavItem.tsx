@@ -60,7 +60,7 @@ export function NavItem({
           "text-sm font-medium tracking-wide",
           "opacity-0 -translate-x-1",
           "transition-all duration-100 delay-0",
-          "group-hover:opacity-100",
+          "group-hover:opacity-100 group-focus-within:opacity-100",
           "group-hover:translate-x-0",
           "group-hover:duration-300 group-hover:delay-150",
         )}

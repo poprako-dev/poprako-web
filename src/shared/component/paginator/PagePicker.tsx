@@ -77,18 +77,18 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
                 role="img"
                 aria-label="有未保存草稿"
                 title="有未保存草稿"
-                className="flex shrink-0 items-center text-ink-stone-400"
+                className="flex shrink-0 items-center text-text-muted-warm"
               >
                 <PencilLine size={12} aria-hidden />
               </span>
             )}
           </span>
           <span className="flex items-center font-mono text-[11px]">
-            <span className="text-ink-stone-400">{page.totalUnits}</span>
-            <span className="text-ink-stone-300 mx-px">/</span>
-            <span className="text-ink-orange-400">{page.translatedUnits}</span>
-            <span className="text-ink-stone-300 mx-px">/</span>
-            <span className="text-ink-pink-400">{page.proofreadUnits}</span>
+            <span className="text-text-muted-warm">{page.totalUnits}</span>
+            <span className="text-text-muted-warm mx-px">/</span>
+            <span className="text-text-warning">{page.translatedUnits}</span>
+            <span className="text-text-muted-warm mx-px">/</span>
+            <span className="text-text-pink">{page.proofreadUnits}</span>
           </span>
         </button>
       ))}

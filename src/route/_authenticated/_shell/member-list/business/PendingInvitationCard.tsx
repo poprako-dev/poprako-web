@@ -24,7 +24,7 @@ export function PendingInvitationCard({ invitation, onCopy, onDelete }: Props): 
       {/* QQ + code */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <User className="h-3 w-3 text-ink-slate-300" />
+          <User className="h-3 w-3 text-text-muted-cool" />
           <span className="font-mono text-sm font-bold text-ink-slate-600">
             {invitation.inviteeQq}
           </span>
@@ -36,7 +36,7 @@ export function PendingInvitationCard({ invitation, onCopy, onDelete }: Props): 
             "px-2 py-1",
           )}
         >
-          <code className="font-mono text-[11px] font-bold tracking-tight text-ink-slate-400">
+          <code className="font-mono text-[11px] font-bold tracking-tight text-text-muted-cool">
             {invitation.invitationCode}
           </code>
           <button
@@ -44,7 +44,7 @@ export function PendingInvitationCard({ invitation, onCopy, onDelete }: Props): 
             onClick={() => {
               onCopy(invitation.invitationCode);
             }}
-            className="text-ink-slate-300 transition-colors hover:text-ink-slate-500"
+            className="text-text-muted-cool transition-colors hover:text-text-muted-cool"
             title="复制邀请码"
           >
             <Copy className="h-3 w-3" />
@@ -71,7 +71,7 @@ export function PendingInvitationCard({ invitation, onCopy, onDelete }: Props): 
             onClick={() => {
               onDelete(invitation.id);
             }}
-            className="shrink-0 text-ink-slate-300 transition-colors hover:text-ink-red-400"
+            className="shrink-0 text-text-muted-cool transition-colors hover:text-text-danger"
             title="撤销邀请"
           >
             <Trash2 size={11} strokeWidth={2.5} />

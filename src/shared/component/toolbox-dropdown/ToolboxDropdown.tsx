@@ -30,7 +30,7 @@ export function ToolboxDropdown({ options, direction = "down" }: Props): ReactEl
   return (
     <div>
       {/* 相对定位组件容器，包含按钮和下拉栏  */}
-      <div style={{ opacity: 0.85 }} className={clsx("relative")} ref={dropdownRef}>
+      <div className={clsx("relative")} ref={dropdownRef}>
         <button
           type="button"
           onClick={() => {

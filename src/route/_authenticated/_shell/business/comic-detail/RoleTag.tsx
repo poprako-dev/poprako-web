@@ -49,23 +49,23 @@ type StatusConfig = {
 
 const STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
   pending: {
-    labelText: "text-ink-slate-300",
-    hoverLabelText: "group-hover:text-ink-slate-500",
+    labelText: "text-text-muted-cool",
+    hoverLabelText: "group-hover:text-text-muted-cool",
     barColor: "bg-surface-slate-300",
   },
   ongoing: {
-    labelText: "text-ink-orange-300",
+    labelText: "text-text-warning",
     hoverLabelText: "group-hover:text-ink-orange-600",
     barColor: "bg-surface-orange-300",
   },
   completed: {
-    labelText: "text-ink-emerald-400",
-    hoverLabelText: "group-hover:text-ink-emerald-600",
+    labelText: "text-text-emerald",
+    hoverLabelText: "group-hover:text-text-emerald",
     barColor: "bg-surface-emerald-400",
   },
   unset: {
-    labelText: "text-ink-slate-200",
-    hoverLabelText: "group-hover:text-ink-slate-400",
+    labelText: "text-text-muted-cool",
+    hoverLabelText: "group-hover:text-text-muted-cool",
     barColor: "bg-surface-slate-200",
   },
 };
@@ -161,7 +161,7 @@ export function RoleTag({
         {/* User tags */}
         <div className="flex flex-1 items-center flex-wrap gap-1.5 min-h-5">
           {assignments.length === 0 ? (
-            <span className="text-[10px] text-ink-slate-300 italic leading-none">未分配</span>
+            <span className="text-[10px] text-text-muted-cool italic leading-none">未分配</span>
           ) : (
             assignments.map((a) => (
               <UserTag
@@ -185,7 +185,7 @@ export function RoleTag({
             }}
             className={clsx(
               "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
-              "text-ink-slate-300/70 hover:text-ink-slate-700 hover:bg-surface-slate-100/80",
+              "text-text-muted-cool hover:text-ink-slate-700 hover:bg-surface-slate-100/80",
               "border border-transparent hover:border-line-slate-200",
             )}
             title="添加成员"
@@ -204,7 +204,7 @@ export function RoleTag({
             disabled={isJoiningSelf}
             className={clsx(
               "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
-              "text-ink-slate-300/70 hover:text-ink-slate-700 hover:bg-surface-slate-100/80",
+              "text-text-muted-cool hover:text-ink-slate-700 hover:bg-surface-slate-100/80",
               "border border-transparent hover:border-line-slate-200",
               "disabled:opacity-60 disabled:cursor-not-allowed",
             )}
@@ -224,7 +224,7 @@ export function RoleTag({
             disabled={isLeavingSelf}
             className={clsx(
               "shrink-0 w-5 h-5 flex items-center justify-center rounded-sm",
-              "text-ink-slate-300/70 hover:text-ink-slate-700 hover:bg-surface-slate-100/80",
+              "text-text-muted-cool hover:text-ink-slate-700 hover:bg-surface-slate-100/80",
               "border border-transparent hover:border-line-slate-200",
               "disabled:opacity-60 disabled:cursor-not-allowed",
             )}

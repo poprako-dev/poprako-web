@@ -97,8 +97,8 @@ export function SystemMailViewer(): JSX.Element {
         </div>
       ) : mails.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-2">
-          <Mail size={28} className="text-ink-slate-300" />
-          <p className="text-sm text-ink-slate-400">暂无系统消息</p>
+          <Mail size={28} className="text-text-muted-cool" />
+          <p className="text-sm text-text-muted-cool">暂无系统消息</p>
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto px-4 pb-2">
@@ -179,7 +179,7 @@ function SectionLabel({ label, hasTopMargin }: SectionLabelProps): JSX.Element {
       />
       {/* line from below-dot to bottom, connecting to next items */}
       <div className="absolute -left-3.5 top-[calc(50%+6px)] bottom-0 w-px bg-surface-stone-200" />
-      <span className="block py-2 text-md font-semibold text-ink-stone-500">{label}</span>
+      <span className="block py-2 text-md font-semibold text-text-muted-warm">{label}</span>
     </div>
   );
 }
@@ -218,20 +218,20 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps): JSX.Element {
               className={clsx(
                 "leading-snug",
                 mail.isRead
-                  ? "text-sm font-medium text-ink-stone-500"
+                  ? "text-sm font-medium text-text-muted-warm"
                   : "text-base font-semibold text-ink-stone-800",
               )}
             >
               {mail.title}
             </h3>
-            <span className="text-xs text-ink-stone-400 shrink-0">
+            <span className="text-xs text-text-muted-warm shrink-0">
               {formatMailDate(mail.createdAt)}
             </span>
           </div>
           <p
             className={clsx(
               "text-sm leading-relaxed mt-0.5",
-              mail.isRead ? "text-ink-stone-400" : "text-ink-stone-600",
+              mail.isRead ? "text-text-muted-warm" : "text-ink-stone-600",
             )}
           >
             {mail.content}
@@ -249,10 +249,10 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps): JSX.Element {
             "shrink-0 p-1.5 rounded-md mt-0.5",
             "transition-all duration-200",
             mail.isRead
-              ? "text-ink-stone-300 cursor-default"
+              ? "text-text-muted-warm cursor-default"
               : [
-                  "opacity-0 group-hover:opacity-100 max-sm:opacity-100",
-                  "text-ink-stone-400 hover:text-ink-green-500",
+                  "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-sm:opacity-100",
+                  "text-text-muted-warm hover:text-text-leaf",
                   "hover:bg-surface-green-50",
                 ],
           )}

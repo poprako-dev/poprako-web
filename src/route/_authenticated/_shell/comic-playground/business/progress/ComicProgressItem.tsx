@@ -57,22 +57,22 @@ const WORKFLOW_STEPS = [
 
 const STATUS_CONFIG: Record<WorkflowStatus, { text: string; bg: string; dot: string }> = {
   pending: {
-    text: "text-ink-slate-300",
+    text: "text-text-muted-cool",
     bg: "bg-surface-slate-50",
     dot: "bg-surface-slate-200",
   },
   ongoing: {
-    text: "text-ink-orange-400",
+    text: "text-text-warning",
     bg: "bg-surface-orange-50",
     dot: "bg-surface-orange-300",
   },
   completed: {
-    text: "text-ink-emerald-500",
+    text: "text-text-emerald",
     bg: "bg-surface-emerald-50",
     dot: "bg-surface-emerald-400",
   },
   unset: {
-    text: "text-ink-slate-300",
+    text: "text-text-muted-cool",
     bg: "bg-surface-slate-50",
     dot: "bg-surface-slate-200",
   },
@@ -164,7 +164,7 @@ export function ComicProgressItem({
         {/* 漫画序号 */}
         <span // eslint-disable-line jsx-a11y/no-static-element-interactions
           className={clsx(
-            "relative text-xs font-mono text-ink-slate-400",
+            "relative text-xs font-mono text-text-muted-cool",
             "bg-surface-slate-100 px-2 py-0.5 rounded shrink-0",
           )}
           onMouseEnter={() => {
@@ -213,13 +213,15 @@ export function ComicProgressItem({
                 "py-1.5 px-2.5 w-60",
               )}
             >
-              <p className="text-sm font-bold text-ink-stone-500 break-words">{comicInfo.title}</p>
+              <p className="text-sm font-bold text-text-muted-warm break-words">
+                {comicInfo.title}
+              </p>
             </div>
           )}
         </div>
 
         {/* 章节信息 */}
-        <span className="text-[11px] text-ink-slate-400 truncate shrink-0 max-w-[120px]">
+        <span className="text-[11px] text-text-muted-cool truncate shrink-0 max-w-[120px]">
           {chapter?.index ? `[#${String(chapter.index)}]` : "—"}
         </span>
       </div>
@@ -300,11 +302,11 @@ export function ComicProgressItem({
 
                   return (
                     <div key={step.label}>
-                      <div className="text-ink-stone-500">
+                      <div className="text-text-muted-warm">
                         <span className="font-bold">{ROLE_NAMES[step.label]}：</span>
                         <span className="italic">{STATUS_LABELS[status]}</span>
                       </div>
-                      <div className="text-ink-stone-400 italic">
+                      <div className="text-text-muted-warm italic">
                         {names.length > 0 ? names.join("、") : "—"}
                       </div>
                     </div>

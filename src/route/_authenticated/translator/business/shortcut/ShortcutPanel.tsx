@@ -117,8 +117,8 @@ export function ShortcutPanel({
             type="button"
             aria-label="关闭快捷键设置"
             className={clsx(
-              "flex size-7 items-center justify-center rounded-md text-ink-slate-300",
-              "transition-colors hover:bg-surface-slate-50 hover:text-ink-slate-500",
+              "flex size-7 items-center justify-center rounded-md text-text-muted-cool",
+              "transition-colors hover:bg-surface-slate-50 hover:text-text-muted-cool",
             )}
             onClick={onClose}
           >
@@ -163,13 +163,13 @@ export function ShortcutPanel({
                       ? clsx(
                           "border-line-green-200",
                           "bg-surface-green-50",
-                          "text-ink-green-600",
+                          "text-text-green",
                           "ring-1 ring-focus-green-100",
                         )
                       : clsx(
                           "border-line-slate-200",
                           "bg-surface-white",
-                          "text-ink-slate-500",
+                          "text-text-muted-cool",
                           "shadow-sm shadow-shadow-slate-100",
                           "hover:border-line-slate-300",
                         ),

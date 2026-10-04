@@ -1,7 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 @import "./appearance.css";
+@import "./readable-colors.css";
+
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
 
 @theme inline {
   --font-sans:
@@ -92,19 +99,19 @@
   --card-foreground: oklch(0.13 0.028 261.692);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.13 0.028 261.692);
-  --primary: #059669; /* original emerald-600 */
+  --primary: oklch(0.54861612 0.116480617 163.225412563);
   --primary-foreground: #ffffff; /* on-primary */
   --secondary: oklch(0.967 0 0);
   --secondary-foreground: oklch(0.21 0 0);
   --muted: oklch(0.967 0 0);
-  --muted-foreground: oklch(0.551 0 0);
+  --muted-foreground: oklch(0.536546953 0 0);
   --accent: #ecfdf5; /* emerald-50  → primary-subtle */
   --accent-foreground: #047857; /* emerald-700 → primary-text */
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: #ffffff;
   --border: oklch(0.928 0 0);
-  --input: oklch(0.928 0 0);
-  --ring: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% */
+  --input: var(--control-border);
+  --ring: var(--focus-indicator);
   color-scheme: light;
   --surface-workspace: #f7f8f6;
   --surface-panel: #ffffff;
@@ -116,9 +123,9 @@
   --status-info: #426d62;
   --selection: #dcefe3;
   --marker-bubble: #e4bdc9;
-  --marker-bubble-border: #a3687f;
+  --marker-bubble-border: oklch(0.542247361 0.081190227 354.905782803);
   --marker-note: #ead39b;
-  --marker-note-border: #967534;
+  --marker-note-border: oklch(0.533910428 0.092440418 82.036333507);
   --annotation: #fff0bd;
   --image-label-overlay: rgb(0 0 0 / 76%);
   --image-label-foreground: #ffffff;
@@ -129,12 +136,12 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0.002 247.839);
   --sidebar-foreground: oklch(0.13 0.028 261.692);
-  --sidebar-primary: #059669; /* original emerald-600 */
+  --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: #ffffff; /* on-primary */
   --sidebar-accent: #ecfdf5; /* emerald-50  → primary-subtle */
   --sidebar-accent-foreground: #047857; /* emerald-700 → primary-text */
   --sidebar-border: oklch(0.928 0 0);
-  --sidebar-ring: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% */
+  --sidebar-ring: var(--focus-indicator);
   /* Reusable green color tokens */
   --color-green-500: #88b04b;
   --color-green-50: #f0f4e8;
@@ -147,12 +154,12 @@
   --color-red-100: #fbe5e5;
   --color-border-red-200: #fce8e8;
   /* Translator diff colors: distinct but restrained for long-form proofreading. */
-  --color-unit-stats-translate: var(--color-orange-400);
-  --color-unit-stats-edit: var(--color-pink-400);
-  --color-unit-stats-append: var(--color-green-500);
-  --diff-delete-text: #9f6262;
+  --color-unit-stats-translate: var(--text-warning);
+  --color-unit-stats-edit: var(--text-pink);
+  --color-unit-stats-append: var(--text-leaf);
+  --diff-delete-text: oklch(0.49074799 0.079596314 19.861716324);
   --diff-delete-bg: #f0d2d2;
-  --diff-replaced-text: #6f6a64;
+  --diff-replaced-text: oklch(0.489451177 0.011180369 72.564645468);
   --diff-replaced-bg: #dfdcd8;
   --diff-replacement-text: #704b2c;
   --diff-replacement-bg: #efd1ac;
@@ -172,12 +179,12 @@
   --primary-border: #a7f3d0; /* emerald-200 */
   --primary-text: #047857; /* original emerald-700 */
   --on-primary: #ffffff; /* white       → 对应 --primary-foreground */
-  --ring-primary: rgba(16, 185, 129, 0.5); /* emerald-500 / 50% → 对应 --ring */
+  --ring-primary: var(--focus-indicator);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   html,
   body {

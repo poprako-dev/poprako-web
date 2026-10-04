@@ -9,7 +9,7 @@ export function AnnouncementDetailHeader({ onClose }: Props): JSX.Element {
     <div className="flex justify-between items-start mb-5">
       <span
         className={clsx(
-          "text-[10px] font-semibold text-ink-slate-300",
+          "text-[10px] font-semibold text-text-muted-cool",
           "tracking-wide bg-surface-slate-50",
           "px-0 py-1 rounded italic",
         )}
@@ -21,7 +21,7 @@ export function AnnouncementDetailHeader({ onClose }: Props): JSX.Element {
         onClick={onClose}
         className={clsx(
           "p-1 rounded hover:bg-surface-slate-50",
-          "text-ink-slate-400 hover:text-ink-slate-600",
+          "text-text-muted-cool hover:text-ink-slate-600",
           "transition-colors focus:outline-none",
         )}
       >

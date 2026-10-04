@@ -140,7 +140,7 @@ export function SettingsPanel(): JSX.Element {
           "flex cursor-pointer items-center justify-between",
           "rounded-sm px-6 py-4 transition-colors",
           "bg-surface-white/80 ring-1 shadow-sm ring-focus-black/5",
-          "hover:bg-surface-red-50/80 hover:ring-focus-red-200 hover:text-ink-red-500",
+          "hover:bg-surface-red-50/80 hover:ring-focus-red-200 hover:text-text-danger",
         )}
         onClick={() => {
           void handleLogout();
