@@ -99,28 +99,30 @@ export function ComicDetailHeader({
         >
           #{comicInfo.index + 1}
         </div>
-        <h1
-          {...titleLongPress}
-          className={clsx(
-            "text-lg font-black tracking-tight text-ink-stone-700 min-w-0 flex-1",
-            onLongPressTitle && "select-none touch-none",
-          )}
-          title={onLongPressTitle ? "长按修改作品信息" : undefined}
-        >
-          {comicInfo.title}
-        </h1>
-        <button
-          type="button"
-          onClick={onCopyTitle}
-          aria-label="复制格式化标题"
-          title="复制格式化标题"
-          className={clsx(
-            "text-text-muted-warm hover:text-ink-stone-700 transition-colors p-1 shrink-0 rounded-xs",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-stone-700",
-          )}
-        >
-          <Copy size={16} aria-hidden="true" />
-        </button>
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <h1
+            {...titleLongPress}
+            className={clsx(
+              "text-lg font-black tracking-tight text-ink-stone-700 min-w-0",
+              onLongPressTitle && "select-none touch-none",
+            )}
+            title={onLongPressTitle ? "长按修改作品信息" : undefined}
+          >
+            {comicInfo.title}
+          </h1>
+          <button
+            type="button"
+            onClick={onCopyTitle}
+            aria-label="复制格式化标题"
+            title="复制格式化标题"
+            className={clsx(
+              "text-text-muted-warm hover:text-ink-stone-700 transition-colors p-1 shrink-0 rounded-xs",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-stone-700",
+            )}
+          >
+            <Copy size={16} aria-hidden="true" />
+          </button>
+        </div>
         <div className="hidden sm:block shrink-0">{chapterOption}</div>
         <button
           type="button"
