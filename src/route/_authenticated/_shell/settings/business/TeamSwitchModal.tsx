@@ -40,7 +40,7 @@ export function TeamSwitchModal({ teams, activeTeamId, onSelect, onClose }: Prop
                   "flex size-9 shrink-0 items-center justify-center rounded-lg",
                   "text-sm font-bold",
                   isSelected
-                    ? "bg-action-leaf text-ink-white"
+                    ? "bg-brand-leaf text-heading-forest"
                     : "bg-surface-slate-100 text-text-muted-cool",
                 )}
               >

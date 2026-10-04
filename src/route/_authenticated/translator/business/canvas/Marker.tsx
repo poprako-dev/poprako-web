@@ -55,7 +55,6 @@ export function Marker({
               ? "var(--text-leaf)"
               : undefined,
           transition: "background-color 0.2s, border-color 0.2s, box-shadow 0.2s",
-          boxShadow: "0 0 0 1px var(--surface-white), 0 0 0 3px var(--focus-indicator)",
         }}
       >
         <span className="text-[13px] font-black text-heading-forest tabular-nums leading-none">
@@ -64,7 +63,8 @@ export function Marker({
       </div>
       <div
         className={clsx(
-          "rounded-full -mt-px shadow-sm border-2 border-focus-indicator",
+          "rounded-full -mt-px shadow-sm border-2",
+          isBubble ? "border-marker-bubble-border" : "border-marker-note-border",
           isBubble
             ? dimmed
               ? "bg-surface-pink-50"

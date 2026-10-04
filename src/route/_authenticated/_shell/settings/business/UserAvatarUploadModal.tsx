@@ -208,17 +208,19 @@ export function UserAvatarUploadModal({ user, onClose }: Props): JSX.Element {
               <div
                 className={clsx(
                   "absolute inset-0 flex items-center justify-center",
-                  "bg-image-label-overlay",
                   "opacity-0 transition-opacity group-hover/avatar:opacity-100",
                 )}
               >
-                <Upload className="size-5 text-ink-white" strokeWidth={2.5} />
+                <Upload
+                  className="size-7 rounded bg-image-label-overlay p-1 text-ink-white"
+                  strokeWidth={2.5}
+                />
               </div>
             )}
 
             {isUploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-image-label-overlay">
-                <span className="text-[11px] font-bold text-image-label-foreground">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[11px] font-bold text-image-label-foreground bg-image-label-overlay rounded px-1 py-0.5">
                   {uploadProgress !== null && uploadProgress < 100
                     ? `${String(uploadProgress)}%`
                     : "..."}

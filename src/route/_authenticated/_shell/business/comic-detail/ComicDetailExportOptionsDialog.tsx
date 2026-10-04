@@ -28,7 +28,7 @@ export function ComicDetailExportOptionsDialog({
             "text-xs font-medium text-text-muted-cool hover:bg-surface-slate-50",
           )}
         >
-          <ImageIcon size={14} className="text-text-muted-cool" />
+          <ImageIcon size={14} className="text-icon-muted-cool" />
           <label htmlFor="export-raw-image-names" className="flex-1 cursor-pointer">
             使用原始图片名
           </label>

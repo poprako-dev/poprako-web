@@ -81,7 +81,7 @@ export function InvitationForm({
             "focus-within:border-line-slate-300 transition-all",
           )}
         >
-          <MessageCircle className="h-3.5 w-3.5 shrink-0 text-text-muted-cool" />
+          <MessageCircle className="h-3.5 w-3.5 shrink-0 text-icon-muted-cool" />
           <input
             type="text"
             value={qq}
@@ -138,7 +138,7 @@ export function InvitationForm({
           )}
         >
           <div className="flex items-center gap-2">
-            <KeyRound className="h-3.5 w-3.5 shrink-0 text-text-muted-cool" />
+            <KeyRound className="h-3.5 w-3.5 shrink-0 text-icon-muted-cool" />
             <span className="font-mono text-sm font-bold tracking-widest text-ink-slate-600">
               {generatedCode || "— — — — — —"}
             </span>
@@ -183,7 +183,7 @@ export function InvitationForm({
                     "hover:bg-surface-emerald-50 hover:text-text-emerald",
                     "hover:border-line-emerald-100",
                   ]
-                : "bg-surface-slate-50 text-text-muted-cool cursor-not-allowed border border-line-slate-100",
+                : "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100",
             )}
           >
             {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : "邀请"}

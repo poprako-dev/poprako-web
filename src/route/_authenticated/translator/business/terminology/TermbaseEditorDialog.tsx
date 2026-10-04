@@ -120,7 +120,7 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
     >
       <div className="space-y-3">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-text-muted-cool">名称</span>
+          <span className="mb-1 block text-xs font-medium text-ink-slate-500">名称</span>
           <input
             value={name}
             disabled={isSubmitting}
@@ -130,12 +130,12 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
             className={clsx(
               "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
               "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-              "transition-colors focus:border-control-border",
+              "transition-colors focus:border-focus-indicator",
             )}
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-text-muted-cool">描述</span>
+          <span className="mb-1 block text-xs font-medium text-ink-slate-500">描述</span>
           <textarea
             rows={3}
             value={description}
@@ -147,7 +147,7 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
             className={clsx(
               "w-full resize-none rounded-md border border-control-border bg-surface-white px-2.5 py-2",
               "text-sm leading-relaxed text-ink-slate-700 shadow-sm shadow-shadow-slate-100",
-              "outline-none placeholder:text-text-muted-cool focus:border-control-border",
+              "outline-none placeholder:text-text-muted-cool focus:border-focus-indicator",
             )}
           />
         </label>

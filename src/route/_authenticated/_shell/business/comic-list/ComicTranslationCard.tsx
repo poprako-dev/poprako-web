@@ -40,7 +40,7 @@ function DataTag({ icon, value }: { icon: React.ReactNode; value: number }): Rea
     <div
       className={clsx(
         "flex flex-1 items-center justify-center gap-1 py-0.5",
-        "text-[11px] font-semibold text-text-muted-warm",
+        "text-[11px] font-semibold text-ink-stone-500",
       )}
     >
       <span className="text-text-muted-warm flex items-center justify-center">{icon}</span>
@@ -91,7 +91,7 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <FileText size={20} className="text-text-muted-warm" />
+            <FileText size={20} className="text-icon-muted-warm" />
           </div>
         )}
       </div>
@@ -118,12 +118,12 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
         <div className="flex items-center gap-1 text-[11px] text-text-muted-warm font-mono">
           <Hash size={11} strokeWidth={2.5} />
           <span>{displayChapter ? displayChapter.index + 1 : "—"}</span>
-          <span className="text-text-muted-warm">|</span>
+          <span className="text-ink-stone-200">|</span>
           <div className="flex items-center gap-1 shrink-0">
             <Clock size={11} strokeWidth={2.5} />
             <span className="tracking-tighter">{formatDate(comicInfo.lastActiveAt)}</span>
           </div>
-          <span className="text-text-muted-warm">|</span>
+          <span className="text-ink-stone-200">|</span>
           <div className="flex items-center gap-1 shrink-0">
             <FileText size={11} strokeWidth={2.5} />
             <span>{pageCount}P</span>

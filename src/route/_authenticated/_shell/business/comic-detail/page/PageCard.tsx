@@ -138,7 +138,7 @@ export function PageCard({
           )}
         >
           <div aria-hidden className="absolute inset-0 bg-surface-slate-100 animate-pulse" />
-          <Upload className="relative w-4 h-4 text-text-muted-cool" />
+          <Upload className="relative w-4 h-4 text-icon-muted-cool" />
           <span className="relative text-[10px] font-bold text-text-muted-cool tracking-tighter">
             P{page.index + 1}
           </span>
@@ -155,8 +155,11 @@ export function PageCard({
 
       {clampedUploadProgress !== null &&
         (clampedUploadProgress < 100 || uploadStatus === "confirming") && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-image-label-overlay">
-            <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/25">
+            <svg
+              className="h-10 w-10 -rotate-90 rounded-full bg-image-label-overlay"
+              viewBox="0 0 40 40"
+            >
               <circle
                 cx="20"
                 cy="20"

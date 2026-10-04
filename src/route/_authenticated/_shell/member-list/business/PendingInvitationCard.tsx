@@ -24,7 +24,7 @@ export function PendingInvitationCard({ invitation, onCopy, onDelete }: Props): 
       {/* QQ + code */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <User className="h-3 w-3 text-text-muted-cool" />
+          <User className="h-3 w-3 text-icon-muted-cool" />
           <span className="font-mono text-sm font-bold text-ink-slate-600">
             {invitation.inviteeQq}
           </span>

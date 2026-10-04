@@ -99,7 +99,7 @@
   --card-foreground: oklch(0.13 0.028 261.692);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.13 0.028 261.692);
-  --primary: oklch(0.54861612 0.116480617 163.225412563);
+  --primary: #01875e;
   --primary-foreground: #ffffff; /* on-primary */
   --secondary: oklch(0.967 0 0);
   --secondary-foreground: oklch(0.21 0 0);
@@ -122,12 +122,12 @@
   --status-warning: #8b641b;
   --status-info: #426d62;
   --selection: #dcefe3;
-  --marker-bubble: #e4bdc9;
+  --marker-bubble: #fab9dd;
   --marker-bubble-border: oklch(0.542247361 0.081190227 354.905782803);
-  --marker-note: #ead39b;
+  --marker-note: #fddc6a;
   --marker-note-border: oklch(0.533910428 0.092440418 82.036333507);
   --annotation: #fff0bd;
-  --image-label-overlay: rgb(0 0 0 / 76%);
+  --image-label-overlay: rgb(0 0 0 / 54%);
   --image-label-foreground: #ffffff;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -154,9 +154,9 @@
   --color-red-100: #fbe5e5;
   --color-border-red-200: #fce8e8;
   /* Translator diff colors: distinct but restrained for long-form proofreading. */
-  --color-unit-stats-translate: var(--text-warning);
-  --color-unit-stats-edit: var(--text-pink);
-  --color-unit-stats-append: var(--text-leaf);
+  --color-unit-stats-translate: var(--color-orange-400);
+  --color-unit-stats-edit: var(--color-pink-400);
+  --color-unit-stats-append: var(--brand-leaf);
   --diff-delete-text: oklch(0.49074799 0.079596314 19.861716324);
   --diff-delete-bg: #f0d2d2;
   --diff-replaced-text: oklch(0.489451177 0.011180369 72.564645468);
@@ -183,6 +183,10 @@
 }
 
 @layer base {
+  :focus-visible {
+    outline: 1px solid var(--ring);
+    outline-offset: 2px;
+  }
   * {
     @apply border-border outline-ring;
   }

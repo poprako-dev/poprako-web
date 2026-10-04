@@ -61,7 +61,7 @@ export function FirstRegistrationGuideDialog({ onClose, onOpenSettings }: Props)
         ))}
       </div>
 
-      <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-text-muted-cool">
+      <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-slate-500">
         <GraduationCap className="mt-0.5 size-4 shrink-0 text-text-amber" />
         <span>
           想先熟悉流程？可以在

@@ -9,6 +9,7 @@ const buttonVariants = cva(
   clsx(
     "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm",
     "font-medium whitespace-nowrap transition-all outline-none",
+    "focus-visible:outline focus-visible:outline-1 focus-visible:outline-ring focus-visible:outline-offset-2",
     "disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive",
     "aria-invalid:ring-destructive/20 ",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -18,7 +19,7 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-active",
-        destructive: "bg-action-danger text-ink-white hover:bg-action-danger-hover",
+        destructive: "bg-destructive text-ink-white hover:bg-destructive/95",
         outline: clsx(
           "border bg-background shadow-xs hover:bg-accent",
           "hover:text-accent-foreground  ",

@@ -143,7 +143,7 @@ export function ArchiveOutput({ tool, isCompress }: Props): JSX.Element {
                   >
                     <Select.Value />
                     <Select.Icon asChild>
-                      <ChevronDown size={16} className="text-text-muted-cool" />
+                      <ChevronDown size={16} className="text-icon-muted-cool" />
                     </Select.Icon>
                   </Select.Trigger>
                   <Select.Portal>

@@ -101,7 +101,7 @@ export function MemberListFilterHeader({
           title="添加成员"
           className={clsx(
             "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-            "border border-line-slate-200 bg-surface-white text-text-muted-cool transition-all",
+            "border border-line-slate-200 bg-surface-white text-ink-slate-500 transition-all",
             "hover:border-line-slate-300 hover:bg-surface-slate-50 hover:text-ink-slate-700",
           )}
         >

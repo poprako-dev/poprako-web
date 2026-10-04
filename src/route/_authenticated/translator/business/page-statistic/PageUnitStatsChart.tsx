@@ -133,10 +133,10 @@ export function PageUnitStatsChart({
           <span>{limit}</span>
         </div>
         <div className="grid grid-cols-3 justify-items-center">
-          <span title="翻译" className="text-(--color-unit-stats-translate)">
+          <span title="翻译" className="text-text-warning">
             <FileType size={12} strokeWidth={1.8} />
           </span>
-          <span title="编辑（包含在翻译中）" className="text-(--color-unit-stats-edit)">
+          <span title="编辑（包含在翻译中）" className="text-text-pink">
             <CheckCheck size={12} strokeWidth={1.8} />
           </span>
           <span title="追加" className="text-text-leaf">

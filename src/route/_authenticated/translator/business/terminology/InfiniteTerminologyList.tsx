@@ -79,7 +79,7 @@ export function InfiniteTerminologyList({
   if (error && itemCount === 0) {
     return (
       <div className="flex min-h-28 flex-1 flex-col items-center justify-center gap-2 px-4">
-        <p className="text-center text-[11px] leading-4 text-text-muted-warm">{error}</p>
+        <p className="text-center text-[11px] leading-4 text-ink-stone-500">{error}</p>
         <button
           type="button"
           onClick={onRetry}
@@ -99,7 +99,7 @@ export function InfiniteTerminologyList({
   if (itemCount === 0) {
     return (
       <div className="flex min-h-28 flex-1 flex-col items-center justify-center gap-1.5">
-        <BookOpenText size={17} strokeWidth={1.5} className="text-text-muted-warm" />
+        <BookOpenText size={17} strokeWidth={1.5} className="text-icon-muted-warm" />
         <p className="text-[11px] text-text-muted-warm">{emptyMessage}</p>
       </div>
     );

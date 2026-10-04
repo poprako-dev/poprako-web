@@ -101,7 +101,7 @@ export function QuickWorkflowActions({
           "flex min-w-0 items-center justify-center gap-1.5 rounded-sm px-2 py-2",
           "text-xs font-semibold transition-colors",
           "bg-surface-amber-50 text-ink-amber-700 hover:bg-surface-amber-100",
-          "disabled:cursor-not-allowed disabled:bg-surface-stone-100 disabled:text-text-muted-warm",
+          "disabled:cursor-not-allowed disabled:bg-surface-stone-100 disabled:text-ink-stone-300",
         )}
         title={revertAction ? `回退${revertAction.roleDef.fullLabel}` : "暂无可回退阶段"}
       >
@@ -119,7 +119,7 @@ export function QuickWorkflowActions({
           "flex min-w-0 items-center justify-center gap-1.5 rounded-sm px-2 py-2",
           "text-xs font-semibold transition-colors",
           "bg-surface-emerald-50 text-ink-emerald-700 hover:bg-surface-emerald-100",
-          "disabled:cursor-not-allowed disabled:bg-surface-stone-100 disabled:text-text-muted-warm",
+          "disabled:cursor-not-allowed disabled:bg-surface-stone-100 disabled:text-ink-stone-300",
         )}
         title={forwardAction ? `推进${forwardAction.roleDef.fullLabel}` : "暂无可推进阶段"}
       >

@@ -305,7 +305,7 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
               strokeWidth={1.8}
               className={clsx(
                 "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2",
-                "text-text-muted-warm",
+                "text-icon-muted-warm",
               )}
             />
             <span className="sr-only">搜索术语原文</span>
@@ -325,7 +325,7 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
                 "h-full w-full bg-surface-stone-50/45 pl-7.5 pr-2.5 text-xs text-ink-stone-700",
                 "outline-none placeholder:text-text-muted-warm focus:bg-surface-white",
                 "disabled:cursor-not-allowed disabled:bg-surface-stone-50/70",
-                "disabled:text-text-muted-warm disabled:placeholder:text-text-muted-warm",
+                "disabled:text-ink-stone-400 disabled:placeholder:text-ink-stone-400",
               )}
             />
           </label>

@@ -302,7 +302,7 @@ export function ComicProgressItem({
 
                   return (
                     <div key={step.label}>
-                      <div className="text-text-muted-warm">
+                      <div className="text-ink-stone-500">
                         <span className="font-bold">{ROLE_NAMES[step.label]}：</span>
                         <span className="italic">{STATUS_LABELS[status]}</span>
                       </div>

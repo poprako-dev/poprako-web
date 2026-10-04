@@ -90,7 +90,7 @@ export function TeamModifierModal({ team, onUpdate, onClose }: Props): ReactElem
                 "focus-within:border-line-slate-300 transition-all",
               )}
             >
-              <AlignLeft className="w-3.5 h-3.5 text-text-muted-cool mt-0.5 shrink-0" />
+              <AlignLeft className="w-3.5 h-3.5 text-icon-muted-cool mt-0.5 shrink-0" />
               <textarea
                 placeholder="描述（选填）"
                 rows={2}
@@ -132,7 +132,7 @@ export function TeamModifierModal({ team, onUpdate, onClose }: Props): ReactElem
                       "border border-(--brand-leaf-border)",
                       "hover:bg-surface-green-100",
                     ]
-                  : "bg-surface-slate-50 text-text-muted-cool cursor-not-allowed border border-line-slate-100",
+                  : "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100",
               )}
             >
               {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : "确认"}

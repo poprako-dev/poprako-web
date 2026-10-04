@@ -146,7 +146,7 @@ export function TeamList({
                     "items-center justify-center overflow-hidden",
                     "font-black text-sm relative",
                     isSelected
-                      ? "bg-action-leaf text-ink-white"
+                      ? "bg-brand-leaf text-heading-forest"
                       : "bg-surface-gray-100 text-text-muted-neutral",
                   )}
                 >
@@ -217,7 +217,7 @@ export function TeamList({
         <div
           className={clsx("border-t border-line-gray-100", "px-3 py-2", "flex items-center gap-2")}
         >
-          <Plus size={14} className="text-text-muted-neutral shrink-0" />
+          <Plus size={14} className="text-icon-muted-neutral shrink-0" />
           <input
             type="text"
             value={inviteCode}

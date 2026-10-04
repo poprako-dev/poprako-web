@@ -241,7 +241,7 @@ function UnitListWrapper({
       >
         <div>
           <h1 className="text-lg font-bold text-ink-gray-800">UnitList 交互演示</h1>
-          <p className="text-xs text-text-muted-neutral mt-0.5">
+          <p className="text-xs text-ink-gray-500 mt-0.5">
             {readOnly
               ? "只读模式 · 点击序号仍可聚焦"
               : "拖动序号排序 · 轻触序号切换气泡状态 · " + "支持输入和模式切换"}

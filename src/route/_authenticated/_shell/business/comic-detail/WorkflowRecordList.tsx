@@ -120,7 +120,7 @@ export function WorkflowRecordList({
   if (!chapterId) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2">
-        <History size={26} className="text-text-muted-warm" />
+        <History size={26} className="text-icon-muted-warm" />
         <p className="text-sm text-text-muted-warm">选择章节后查看活动记录</p>
       </div>
     );
@@ -137,7 +137,7 @@ export function WorkflowRecordList({
   if (state.error && state.records.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2">
-        <CircleAlert size={24} className="text-text-muted-warm" />
+        <CircleAlert size={24} className="text-icon-muted-warm" />
         <p className="text-sm text-text-muted-warm">活动记录加载失败</p>
       </div>
     );
@@ -146,7 +146,7 @@ export function WorkflowRecordList({
   if (state.loadedOnce && state.records.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2">
-        <History size={26} className="text-text-muted-warm" />
+        <History size={26} className="text-icon-muted-warm" />
         <p className="text-sm text-text-muted-warm">暂无活动记录</p>
       </div>
     );

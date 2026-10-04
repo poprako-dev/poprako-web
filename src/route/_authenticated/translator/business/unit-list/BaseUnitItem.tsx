@@ -77,7 +77,7 @@ export function BaseUnitItem({
         "relative flex cursor-text items-stretch border-y border-line-stone-200",
         "first:border-t-0 last:border-b-0 transition-all duration-75",
         isFocused ? "z-10 bg-surface-stone-300/50" : "bg-transparent hover:bg-surface-stone-100/70",
-        isDragDimmed && "bg-surface-stone-100/60",
+        isDragDimmed && "bg-surface-stone-100/60 opacity-40 grayscale",
         isDragging && [
           "z-20 bg-surface-stone-50 opacity-100",
           "outline outline-1 outline-[var(--brand-leaf)] shadow-md",

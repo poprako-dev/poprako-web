@@ -16,7 +16,7 @@ export function TitleHeader(): ReactElement {
           "text-navigation-ink",
           "opacity-0 transition-opacity",
           "duration-100 delay-0",
-          "group-hover:opacity-100 group-focus-within:opacity-100",
+          "group-hover:opacity-100",
           "group-hover:duration-300",
           "group-hover:delay-150",
         )}

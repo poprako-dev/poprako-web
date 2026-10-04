@@ -112,7 +112,7 @@ export function Paginator(props: Props): ReactElement {
                 )}
               >
                 <span className="text-xs text-ink-gray-900 font-bold">{displayPage}</span>
-                <span className="text-xs text-text-muted-neutral font-light">/</span>
+                <span className="text-xs text-ink-gray-300 font-light">/</span>
                 <span className="text-xs text-ink-gray-600 font-semibold">{totalPageCount}</span>
               </button>
             ) : props.mode === "input" ? (
@@ -127,7 +127,7 @@ export function Paginator(props: Props): ReactElement {
                 <span className="text-sm text-ink-gray-900 font-bold w-6 text-center">
                   {displayPage}
                 </span>
-                <span className="text-xs text-text-muted-neutral font-light select-none">/</span>
+                <span className="text-xs text-ink-gray-300 font-light select-none">/</span>
                 <span className="text-sm text-ink-gray-600 font-semibold w-6 text-center">
                   {totalPageCount}
                 </span>

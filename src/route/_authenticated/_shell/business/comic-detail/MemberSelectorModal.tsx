@@ -113,7 +113,7 @@ export function MemberSelectorModal({
             "focus-within:border-line-slate-300",
           )}
         >
-          <Search size={14} className="text-text-muted-cool" />
+          <Search size={14} className="text-icon-muted-cool" />
           <input
             value={keyword}
             onChange={(event) => {

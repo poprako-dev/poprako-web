@@ -26,10 +26,6 @@ export function AppSidebarLayout({
     <nav
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      onFocus={onMouseEnter}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) onMouseLeave();
-      }}
       className={clsx(
         "fixed left-0 top-0 z-50",
         "hidden sm:flex h-screen flex-col",

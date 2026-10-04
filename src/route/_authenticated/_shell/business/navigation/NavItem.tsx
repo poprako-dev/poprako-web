@@ -24,6 +24,7 @@ export function NavItem({
       className={clsx(
         "group/item relative flex h-11 w-full",
         "items-center outline-none transition-all",
+        "focus-visible:outline focus-visible:outline-1 focus-visible:-outline-offset-4 focus-visible:outline-navigation-active",
         isActive ? "text-navigation-active" : "text-navigation-ink",
       )}
     >
@@ -57,10 +58,10 @@ export function NavItem({
       <span
         className={clsx(
           "absolute left-14 z-10",
-          "text-sm font-medium tracking-wide",
+          "text-sm font-medium tracking-wide whitespace-nowrap",
           "opacity-0 -translate-x-1",
           "transition-all duration-100 delay-0",
-          "group-hover:opacity-100 group-focus-within:opacity-100",
+          "group-hover:opacity-100",
           "group-hover:translate-x-0",
           "group-hover:duration-300 group-hover:delay-150",
         )}

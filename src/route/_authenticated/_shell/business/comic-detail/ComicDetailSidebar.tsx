@@ -136,10 +136,13 @@ export function ComicDetailSidebar({
         />
 
         {coverUpload.isUploadingCover && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-image-label-overlay">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/25">
             {coverUpload.coverUploadProgress !== null && coverUpload.coverUploadProgress < 100 && (
               <>
-                <svg className="h-10 w-10 -rotate-90" viewBox="0 0 40 40">
+                <svg
+                  className="h-10 w-10 -rotate-90 rounded-full bg-image-label-overlay"
+                  viewBox="0 0 40 40"
+                >
                   <circle
                     cx="20"
                     cy="20"

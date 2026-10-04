@@ -190,7 +190,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
                   "h-12 rounded-lg text-sm transition-all duration-200",
                   "outline-none active:scale-95 overflow-hidden",
                   "cursor-grab active:cursor-grabbing",
-                  draggingId === char.id && "ring-2 ring-focus-indicator",
+                  draggingId === char.id && "opacity-60 ring-2 ring-primary/30",
                   mode === "select"
                     ? char.isFavorite
                       ? [
