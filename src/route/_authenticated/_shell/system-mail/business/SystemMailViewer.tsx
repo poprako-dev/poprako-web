@@ -97,7 +97,7 @@ export function SystemMailViewer(): JSX.Element {
         </div>
       ) : mails.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-2">
-          <Mail size={28} className="text-text-muted-cool" />
+          <Mail size={28} className="text-icon-muted-cool" />
           <p className="text-sm text-text-muted-cool">暂无系统消息</p>
         </div>
       ) : (
@@ -179,7 +179,7 @@ function SectionLabel({ label, hasTopMargin }: SectionLabelProps): JSX.Element {
       />
       {/* line from below-dot to bottom, connecting to next items */}
       <div className="absolute -left-3.5 top-[calc(50%+6px)] bottom-0 w-px bg-surface-stone-200" />
-      <span className="block py-2 text-md font-semibold text-text-muted-warm">{label}</span>
+      <span className="block py-2 text-md font-semibold text-ink-stone-500">{label}</span>
     </div>
   );
 }
@@ -218,7 +218,7 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps): JSX.Element {
               className={clsx(
                 "leading-snug",
                 mail.isRead
-                  ? "text-sm font-medium text-text-muted-warm"
+                  ? "text-sm font-medium text-ink-stone-500"
                   : "text-base font-semibold text-ink-stone-800",
               )}
             >

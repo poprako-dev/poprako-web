@@ -150,7 +150,7 @@ export function TransitionDialog({
               </span>
 
               {index < PHASE_ORDER.length - 1 && (
-                <span className="text-xs text-text-muted-cool">→</span>
+                <span className="text-xs text-ink-slate-200">→</span>
               )}
             </span>
           );

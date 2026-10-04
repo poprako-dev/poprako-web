@@ -138,9 +138,9 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
           className={clsx(
             "flex-1 resize-none rounded-lg px-3 py-1.5",
             "text-sm leading-relaxed bg-surface-white/80 text-foreground",
-            "placeholder:text-text-muted-warm",
-            "border border-control-border",
-            "focus:outline-none focus:border-control-border",
+            "placeholder:text-text-subtle-warm",
+            "border border-control-border-warm",
+            "focus:outline-none focus:border-focus-indicator",
             "transition-colors min-h-8 max-h-24",
           )}
           rows={1}

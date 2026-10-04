@@ -38,10 +38,10 @@ function RoleTag({ label, isActive, isFirst, isLast }: RoleTagProps): JSX.Elemen
     <div
       className={clsx(
         "flex flex-1 items-center justify-center py-0.5",
-        "text-[11px] font-semibold text-text-muted-warm transition-all duration-150",
+        "text-[11px] font-semibold transition-all duration-150",
         isFirst && "rounded-l-[2px]",
         isLast && "rounded-r-[2px]",
-        isActive && "bg-role-active",
+        isActive ? "bg-role-active text-text-muted-warm" : "text-text-subtle-warm",
       )}
     >
       {label}
@@ -132,7 +132,7 @@ export function MemberCard({ member, onClick }: Props): JSX.Element {
             <UserIcon size={12} strokeWidth={3.5} />
             <span className="tracking-tight ">{user?.qq ?? "—"}</span>
           </div>
-          <span className="text-text-muted-warm">|</span>
+          <span className="text-ink-stone-200">|</span>
           <div className="flex items-center gap-1 truncate">
             <Clock size={12} strokeWidth={3.5} />
             <span className="truncate tracking-tighter">{formatDate(user?.lastActiveAt)}</span>

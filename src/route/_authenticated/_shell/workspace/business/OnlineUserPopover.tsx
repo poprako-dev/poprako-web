@@ -62,7 +62,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
         <span>{status === "error" ? "在线人数未知" : <>{onlineCount} 人在线</>}</span>
         <ChevronDown
           size={14}
-          className={clsx("text-text-muted-cool transition-transform", isOpen && "rotate-180")}
+          className={clsx("text-icon-muted-cool transition-transform", isOpen && "rotate-180")}
         />
       </button>
 
@@ -77,7 +77,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
           )}
         >
           <div className="mb-2 flex items-center gap-2 text-left">
-            <UsersRound size={15} className="text-text-muted-cool" />
+            <UsersRound size={15} className="text-icon-muted-cool" />
             <p className="text-sm font-semibold text-ink-slate-600">在线组员</p>
           </div>
 

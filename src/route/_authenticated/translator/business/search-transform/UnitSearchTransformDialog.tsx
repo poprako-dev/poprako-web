@@ -160,7 +160,7 @@ export function UnitSearchTransformDialog({
       }
     >
       <label className="block">
-        <span className="mb-1 block text-xs font-medium text-text-muted-cool">查找短语</span>
+        <span className="mb-1 block text-xs font-medium text-ink-slate-500">查找短语</span>
         <input
           value={searchValue}
           disabled={isTransforming}
@@ -172,12 +172,12 @@ export function UnitSearchTransformDialog({
           className={clsx(
             "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
             "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-            "transition-colors focus:border-control-border",
+            "transition-colors focus:border-focus-indicator",
           )}
         />
       </label>
       <label className="block">
-        <span className="mb-1 block text-xs font-medium text-text-muted-cool">替换短语</span>
+        <span className="mb-1 block text-xs font-medium text-ink-slate-500">替换短语</span>
         <input
           value={targetValue}
           disabled={!isTransformEnabled || isTransforming}
@@ -188,8 +188,8 @@ export function UnitSearchTransformDialog({
           className={clsx(
             "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
             "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-            "transition-colors focus:border-control-border",
-            "disabled:cursor-not-allowed disabled:bg-surface-slate-50 disabled:text-text-muted-cool",
+            "transition-colors focus:border-focus-indicator",
+            "disabled:cursor-not-allowed disabled:bg-surface-slate-50 disabled:text-ink-slate-300",
           )}
         />
       </label>

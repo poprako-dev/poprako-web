@@ -181,7 +181,7 @@ function SectionHeading({ label }: { label: "任务列表" | "留言板" }): JSX
   return (
     <div className={clsx("flex items-center gap-2 px-1 mb-2 shrink-0")}>
       <span className="w-1.5 h-1.5 rounded-full bg-surface-slate-300 shrink-0" />
-      <span className="text-sm font-semibold text-text-muted-cool tracking-tight">{label}</span>
+      <span className="text-sm font-semibold text-ink-slate-500 tracking-tight">{label}</span>
       <div
         className={clsx(
           "flex-1 h-0.5",

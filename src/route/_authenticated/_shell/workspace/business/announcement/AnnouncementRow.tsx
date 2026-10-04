@@ -44,7 +44,7 @@ export function AnnouncementRow({ announcement, hiddenOnMobile, onOpen }: Props)
               "shrink-0 w-6 h-6 rounded",
               "border border-line-slate-200 bg-surface-slate-50",
               "flex items-center justify-center",
-              "text-[10px] font-bold text-text-muted-cool",
+              "text-[10px] font-bold text-ink-slate-500",
             )}
           >
             {announcement.user?.avatarThumbnailUrl ? (

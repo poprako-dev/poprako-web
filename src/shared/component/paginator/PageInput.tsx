@@ -54,7 +54,7 @@ export function PageInput({ displayPage, totalPageCount, onChange }: Props): Rea
         }}
         aria-label="Current page"
       />
-      <span className="text-xs text-text-muted-neutral font-light select-none">/</span>
+      <span className="text-xs text-ink-gray-300 font-light select-none">/</span>
       <span className="text-xs text-ink-gray-600 font-semibold w-6 text-center">
         {totalPageCount}
       </span>

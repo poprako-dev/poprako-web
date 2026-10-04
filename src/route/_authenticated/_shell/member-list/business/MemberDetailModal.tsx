@@ -54,7 +54,7 @@ const ROLE_CONFIG: RoleConfig[] = [
   {
     label: "管",
     value: 128,
-    activeClass: "bg-surface-stone-100 text-text-muted-warm border-line-stone-200",
+    activeClass: "bg-surface-stone-100 text-ink-stone-500 border-line-stone-200",
   },
 ];
 
@@ -147,7 +147,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0 ml-4">
-            <Clock className="h-3 w-3 text-text-muted-cool" />
+            <Clock className="h-3 w-3 text-icon-muted-cool" />
             <span className="text-[11px] text-text-muted-cool font-mono">{lastActive}</span>
           </div>
         </div>
@@ -255,7 +255,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
                     "hover:bg-surface-emerald-50 hover:text-text-emerald",
                     "hover:border-line-emerald-100",
                   ]
-                : "bg-surface-slate-50 text-text-muted-cool cursor-not-allowed border border-line-slate-100",
+                : "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100",
             )}
           >
             {isSubmitting && <Loader2 className="h-3 w-3 animate-spin" />}

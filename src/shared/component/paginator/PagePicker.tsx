@@ -85,9 +85,9 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
           </span>
           <span className="flex items-center font-mono text-[11px]">
             <span className="text-text-muted-warm">{page.totalUnits}</span>
-            <span className="text-text-muted-warm mx-px">/</span>
+            <span className="text-ink-stone-300 mx-px">/</span>
             <span className="text-text-warning">{page.translatedUnits}</span>
-            <span className="text-text-muted-warm mx-px">/</span>
+            <span className="text-ink-stone-300 mx-px">/</span>
             <span className="text-text-pink">{page.proofreadUnits}</span>
           </span>
         </button>

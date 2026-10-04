@@ -161,7 +161,7 @@ export function ChapterOption({
               </span>
             </>
           )}
-          <ChevronDown size={12} className="text-text-muted-cool ml-1" />
+          <ChevronDown size={12} className="text-icon-muted-cool ml-1" />
         </button>
       ) : (
         <button
@@ -295,7 +295,7 @@ export function ChapterOption({
                 ref={observerRef}
                 className="h-8 w-full flex items-center justify-center shrink-0"
               >
-                <Loader2 className="w-3.5 h-3.5 text-text-muted-cool animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 text-icon-muted-cool animate-spin" />
               </div>
             )}
           </div>

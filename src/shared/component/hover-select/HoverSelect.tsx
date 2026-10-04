@@ -164,7 +164,7 @@ export function HoverSelect({
           {selectedOption ? selectedOption.text : hintText}
         </span>
         <ChevronDown
-          className={clsx("h-4 w-4 text-text-muted-cool transition-transform duration-300", {
+          className={clsx("h-4 w-4 text-icon-muted-cool transition-transform duration-300", {
             "rotate-180": isOpen,
           })}
         />

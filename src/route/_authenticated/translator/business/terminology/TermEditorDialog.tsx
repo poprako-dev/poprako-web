@@ -150,7 +150,7 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
     >
       <div className="space-y-3">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-text-muted-cool">原文</span>
+          <span className="mb-1 block text-xs font-medium text-ink-slate-500">原文</span>
           <input
             value={source}
             disabled={isSubmitting}
@@ -160,14 +160,14 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
             className={clsx(
               "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
               "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-              "transition-colors focus:border-control-border",
+              "transition-colors focus:border-focus-indicator",
             )}
           />
         </label>
 
         <fieldset>
           <div className="mb-1 flex items-center justify-between">
-            <legend className="text-xs font-medium text-text-muted-cool">译名</legend>
+            <legend className="text-xs font-medium text-ink-slate-500">译名</legend>
             <button
               type="button"
               disabled={isSubmitting}
@@ -198,8 +198,8 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
                     "h-8 min-w-0 flex-1 rounded-md border bg-surface-white px-2.5",
                     "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
                     visibleTargetError && target.value.trim().length === 0
-                      ? "border-control-border"
-                      : "border-control-border focus:border-control-border",
+                      ? "border-control-error focus:border-control-error"
+                      : "border-control-border focus:border-focus-indicator",
                   )}
                 />
                 <button
@@ -255,7 +255,7 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
         </fieldset>
 
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-text-muted-cool">备注</span>
+          <span className="mb-1 block text-xs font-medium text-ink-slate-500">备注</span>
           <textarea
             rows={2}
             value={comment}
@@ -267,7 +267,7 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
             className={clsx(
               "w-full resize-none rounded-md border border-control-border bg-surface-white px-2.5 py-2",
               "text-sm leading-relaxed text-ink-slate-700 shadow-sm shadow-shadow-slate-100",
-              "outline-none placeholder:text-text-muted-cool focus:border-control-border",
+              "outline-none placeholder:text-text-muted-cool focus:border-focus-indicator",
             )}
           />
         </label>

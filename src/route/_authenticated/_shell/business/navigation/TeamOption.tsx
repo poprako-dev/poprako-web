@@ -61,7 +61,7 @@ function TeamAvatar({
         "transition-all duration-300",
         canUpload && "group/avatar",
         isListOpen ? "shadow-md scale-105" : "",
-        !resolvedAvatarUrl && "bg-action-leaf",
+        !resolvedAvatarUrl && "bg-brand-leaf text-heading-forest",
         canUpload ? "cursor-pointer" : "cursor-default",
       )}
     >
@@ -75,7 +75,7 @@ function TeamAvatar({
         <Globe2
           size={22}
           className={clsx(
-            "text-ink-white transition-transform duration-500",
+            "text-heading-forest transition-transform duration-500",
             isListOpen && "rotate-12",
           )}
         />
@@ -96,23 +96,27 @@ function TeamAvatar({
         <div
           className={clsx(
             "absolute inset-0 z-10 flex items-center justify-center",
-            "bg-image-label-overlay",
             "pointer-events-none opacity-0 group-hover/avatar:opacity-100",
             "transition-opacity duration-200",
           )}
         >
-          <Upload className="w-4 h-4 text-ink-white" strokeWidth={2.5} />
+          <Upload
+            className="w-6 h-6 rounded bg-image-label-overlay p-1 text-ink-white"
+            strokeWidth={2.5}
+          />
         </div>
       )}
 
       {isUploading && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-image-label-overlay">
+        <div className="absolute inset-0 z-20 flex items-center justify-center">
           {uploadProgress !== null && uploadProgress < 100 ? (
-            <span className="text-[10px] font-bold text-image-label-foreground">
+            <span className="text-[10px] font-bold text-image-label-foreground bg-image-label-overlay rounded px-1 py-0.5">
               {uploadProgress}%
             </span>
           ) : (
-            <span className="text-[10px] font-bold text-image-label-foreground">...</span>
+            <span className="text-[10px] font-bold text-image-label-foreground bg-image-label-overlay rounded px-1 py-0.5">
+              ...
+            </span>
           )}
         </div>
       )}
@@ -308,7 +312,7 @@ export function TeamOption({
           className={clsx(
             "absolute left-14 right-2 h-full outline-none",
             "flex flex-col justify-center",
-            "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+            "opacity-0 group-hover:opacity-100",
             "transition-opacity duration-100 delay-0",
             "group-hover:duration-300",
             "group-hover:delay-150",

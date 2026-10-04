@@ -184,8 +184,8 @@ export function PageList({
                 "rounded-sm border-2 border-dashed border-line-slate-400 bg-surface-white/80 backdrop-blur-sm",
               )}
             >
-              <UploadCloud className="w-8 h-8 text-text-muted-cool" />
-              <span className="text-xs font-bold text-text-muted-cool">松开以批量上传</span>
+              <UploadCloud className="w-8 h-8 text-icon-muted-cool" />
+              <span className="text-xs font-bold text-ink-slate-500">松开以批量上传</span>
             </div>
           )}
         </>

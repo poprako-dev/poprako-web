@@ -15,11 +15,13 @@
   --color-text-indigo: var(--text-indigo);
   --color-text-sky: var(--text-sky);
   --color-text-blue: var(--text-blue);
-  --color-action-leaf: var(--action-leaf);
-  --color-action-leaf-hover: var(--action-leaf-hover);
-  --color-action-danger: var(--action-danger);
-  --color-action-danger-hover: var(--action-danger-hover);
   --color-control-border: var(--control-border);
+  --color-control-border-warm: var(--control-border-warm);
+  --color-control-error: var(--control-error);
+  --color-icon-muted-cool: var(--icon-muted-cool);
+  --color-icon-muted-warm: var(--icon-muted-warm);
+  --color-icon-muted-neutral: var(--icon-muted-neutral);
+  --color-text-subtle-warm: var(--text-subtle-warm);
   --color-focus-indicator: var(--focus-indicator);
 }
 
@@ -39,17 +41,12 @@
   --text-indigo: oklch(0.549455583 0.182 276.935);
   --text-sky: oklch(0.532216865 0.115875 237.323);
   --text-blue: oklch(0.545874761 0.214 259.815);
-  --action-leaf: oklch(0.553019077 0.137467636 127.634555797);
-  --action-leaf-hover: oklch(0.51 0.13 127.634555797);
-  --action-danger: oklch(0.576838924 0.117479617 20.986961303);
-  --action-danger-hover: oklch(0.53 0.117479617 20.986961303);
-  --control-border: oklch(0.63257841 0.013 255.508);
-  --focus-indicator: #173c2b;
-}
-
-/* Two visible edges keep keyboard focus identifiable on pale and solid controls. */
-:focus-visible {
-  outline: 2px solid var(--focus-indicator);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px var(--surface-white);
+  --control-border: #8d939a;
+  --control-border-warm: #949291;
+  --control-error: oklch(0.65 0.062 18.334);
+  --icon-muted-cool: oklch(0.63 0.04 256.788);
+  --icon-muted-warm: oklch(0.63 0.01 56.259);
+  --icon-muted-neutral: oklch(0.63 0.022 261.325);
+  --text-subtle-warm: #7a746f;
+  --focus-indicator: #779e38;
 }

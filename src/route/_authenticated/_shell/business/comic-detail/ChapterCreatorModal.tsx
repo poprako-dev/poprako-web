@@ -65,7 +65,7 @@ export function ChapterCreatorModal({
                 "bg-surface-green-50 border border-(--brand-leaf-border)",
               )}
             >
-              <Layers className="w-2.5 h-2.5 text-text-muted-cool" />
+              <Layers className="w-2.5 h-2.5 text-icon-muted-cool" />
               <span className="text-[11px] text-text-muted-cool truncate max-w-24">
                 {comicInfo.title || "未知作品"}
               </span>

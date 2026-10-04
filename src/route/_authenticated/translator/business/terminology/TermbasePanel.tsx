@@ -128,7 +128,7 @@ export function TermbasePanel({
             strokeWidth={1.8}
             className={clsx(
               "pointer-events-none absolute left-2 top-1/2 -translate-y-1/2",
-              "text-text-muted-warm",
+              "text-icon-muted-warm",
             )}
           />
           <span className="sr-only">搜索术语库名称</span>
@@ -142,7 +142,7 @@ export function TermbasePanel({
               "h-7 w-full rounded-md border border-control-border bg-surface-white",
               "pl-7 pr-2.5 text-[11px] text-ink-stone-700 outline-none",
               "shadow-sm shadow-shadow-slate-100 placeholder:text-text-muted-warm",
-              "focus:border-control-border",
+              "focus:border-focus-indicator",
             )}
           />
         </label>
