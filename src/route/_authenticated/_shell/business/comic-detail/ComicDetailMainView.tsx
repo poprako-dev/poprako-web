@@ -89,6 +89,16 @@ export function ComicDetailMainView({
   const canReuploadRawPages = assignments.canUploadRawPages;
   const canClickPage = assignments.canTranslateOrProofread || assignments.canReadOnly;
 
+  async function copyTitle(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(`[${comicInfo.author}]${comicInfo.title}`);
+      showToast("已复制格式化标题", "success");
+    } catch (error: unknown) {
+      console.error("[ComicDetailModal] 复制格式化标题失败:", error);
+      showToast("复制失败，请重试", "error");
+    }
+  }
+
   const header = (
     <ComicDetailHeader
       comicInfo={comicInfo}
@@ -111,6 +121,9 @@ export function ComicDetailMainView({
       onLongPressChapter={
         assignments.canManageChapterAssignments ? onOpenChapterModifier : undefined
       }
+      onCopyTitle={() => {
+        void copyTitle();
+      }}
       onClose={onClose}
     />
   );
