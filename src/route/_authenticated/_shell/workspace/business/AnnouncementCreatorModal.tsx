@@ -129,7 +129,7 @@ export function AnnouncementCreatorModal({ teamName, onSubmit, onClose }: Props)
                 "transition-all duration-200 active:scale-[0.98]",
                 isValid
                   ? [
-                      "bg-surface-green-50 text-text-leaf",
+                      "bg-surface-green-50 text-ink-green-500",
                       "border border-(--brand-leaf-border)",
                       "hover:bg-surface-green-100",
                     ]

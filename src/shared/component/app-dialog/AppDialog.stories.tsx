@@ -18,7 +18,7 @@ const meta: Meta<typeof AppDialog> = {
           placeholder="名称"
           className={[
             "h-8 w-full rounded-md border border-control-border px-3 text-sm",
-            "shadow-sm shadow-shadow-slate-100 outline-none focus:border-focus-indicator",
+            "shadow-sm shadow-shadow-slate-100 outline-none focus:border-line-slate-300",
           ].join(" ")}
         />
         <textarea
@@ -28,7 +28,7 @@ const meta: Meta<typeof AppDialog> = {
           className={[
             "w-full resize-none rounded-md border border-control-border px-3 py-2",
             "text-sm shadow-sm shadow-shadow-slate-100 outline-none",
-            "focus:border-focus-indicator",
+            "focus:border-line-slate-300",
           ].join(" ")}
         />
       </div>

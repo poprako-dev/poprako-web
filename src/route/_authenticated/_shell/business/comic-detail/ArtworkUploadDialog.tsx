@@ -231,7 +231,7 @@ export function ArtworkUploadDialog({
           !canSelect && "cursor-default",
         )}
       >
-        {isBusy && <LoaderCircle size={22} className="animate-spin text-text-leaf" />}
+        {isBusy && <LoaderCircle size={22} className="animate-spin text-ink-green-500" />}
         {!isBusy && isRetrying && <CircleAlert size={22} />}
         {!isBusy && !isRetrying && files.length > 0 && <FileStack size={22} />}
         {!isBusy && !isRetrying && files.length === 0 && <FileUp size={22} />}
@@ -244,7 +244,7 @@ export function ArtworkUploadDialog({
 
       {isBusy && (
         <div className="mt-4 flex items-center gap-3">
-          <CloudUpload size={15} className="shrink-0 text-text-leaf" />
+          <CloudUpload size={15} className="shrink-0 text-ink-green-500" />
           <div
             role="progressbar"
             aria-label="上传进度"

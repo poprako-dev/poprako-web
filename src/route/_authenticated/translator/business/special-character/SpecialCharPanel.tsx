@@ -195,8 +195,8 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
                     ? char.isFavorite
                       ? [
                           "bg-[var(--brand-leaf-faint)]",
-                          "text-text-leaf",
-                          "hover:bg-surface-green-100",
+                          "text-[var(--brand-leaf)]",
+                          "hover:opacity-80",
                         ]
                       : ["bg-muted text-muted-foreground", "hover:bg-accent hover:text-foreground"]
                     : [

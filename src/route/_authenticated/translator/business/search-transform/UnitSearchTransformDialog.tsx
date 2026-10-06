@@ -172,7 +172,7 @@ export function UnitSearchTransformDialog({
           className={clsx(
             "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
             "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-            "transition-colors focus:border-focus-indicator",
+            "transition-colors focus:border-line-slate-300",
           )}
         />
       </label>
@@ -188,7 +188,7 @@ export function UnitSearchTransformDialog({
           className={clsx(
             "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
             "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-            "transition-colors focus:border-focus-indicator",
+            "transition-colors focus:border-line-slate-300",
             "disabled:cursor-not-allowed disabled:bg-surface-slate-50 disabled:text-ink-slate-300",
           )}
         />

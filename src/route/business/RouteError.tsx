@@ -22,7 +22,7 @@ function ErrorView({ code, title, message, onGoHome, retry }: ErrorViewProps): R
       )}
     >
       <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-surface-emerald-50 animate-pulse">
-        <TreePine className="h-10 w-10 text-text-emerald" aria-hidden />
+        <TreePine className="h-10 w-10 text-ink-emerald-500" aria-hidden />
       </div>
       <p className="mb-2 text-sm font-medium tracking-widest uppercase text-text-emerald">{code}</p>
       <h1 className="mb-4 text-3xl font-light tracking-tight text-ink-slate-800 sm:text-4xl">

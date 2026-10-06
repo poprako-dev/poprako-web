@@ -29,7 +29,7 @@ export function UnitFlagButton({ isFlagged, isDisabled, onToggle }: Props): JSX.
         "flex size-7 shrink-0 items-center justify-center rounded cursor-pointer",
         "transition-colors hover:bg-surface-stone-200/70 focus-visible:outline-outline-stone-500",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        isFlagged ? "text-[var(--status-flag)]" : "text-text-muted-warm",
+        isFlagged ? "text-[var(--status-flag)]" : "text-ink-stone-400",
       )}
     >
       <Star size={16} fill={isFlagged ? "currentColor" : "none"} aria-hidden="true" />

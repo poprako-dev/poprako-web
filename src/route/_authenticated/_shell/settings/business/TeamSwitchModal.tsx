@@ -40,7 +40,7 @@ export function TeamSwitchModal({ teams, activeTeamId, onSelect, onClose }: Prop
                   "flex size-9 shrink-0 items-center justify-center rounded-lg",
                   "text-sm font-bold",
                   isSelected
-                    ? "bg-brand-leaf text-heading-forest"
+                    ? "bg-brand-leaf text-ink-white"
                     : "bg-surface-slate-100 text-text-muted-cool",
                 )}
               >
@@ -52,7 +52,7 @@ export function TeamSwitchModal({ teams, activeTeamId, onSelect, onClose }: Prop
                   {team.desc}
                 </span>
               </div>
-              {isSelected && <Check size={16} className="text-text-leaf" />}
+              {isSelected && <Check size={16} className="text-ink-green-500" />}
             </button>
           );
         })}

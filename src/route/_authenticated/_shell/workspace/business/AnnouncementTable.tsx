@@ -137,7 +137,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                   "w-full resize-none rounded-md px-2 py-1.5 mb-3",
                   "text-sm font-bold text-ink-slate-700 leading-relaxed",
                   "border border-control-border bg-surface-white",
-                  "focus:border-focus-indicator focus:outline-none",
+                  "focus:border-line-slate-300 focus:outline-none",
                 )}
                 value={draft.title}
                 onChange={(event) => {
@@ -159,7 +159,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                   "w-full flex-1 min-h-24 resize-none rounded-md px-2 py-1.5",
                   "text-xs text-text-muted-cool leading-relaxed",
                   "border border-control-border bg-surface-white",
-                  "focus:border-focus-indicator focus:outline-none",
+                  "focus:border-line-slate-300 focus:outline-none",
                 )}
                 value={draft.content}
                 onChange={(event) => {
@@ -254,7 +254,7 @@ export function AnnouncementTable({ teamId, teamName, isAdmin }: Props): JSX.Ele
                     isEditing && !canPublish
                       ? "bg-surface-slate-50 text-ink-slate-300 cursor-not-allowed border border-line-slate-100"
                       : [
-                          "bg-surface-green-50 text-text-leaf hover:bg-surface-green-100",
+                          "bg-surface-green-50 text-ink-green-500 hover:bg-surface-green-100",
                           "border border-(--brand-leaf-border)",
                         ],
                   )}

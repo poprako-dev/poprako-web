@@ -191,7 +191,7 @@ export function MemberSelectorModal({
               <div
                 className={clsx(
                   "flex size-7 shrink-0 items-center justify-center rounded-md",
-                  "border border-line-green-100 bg-surface-green-50 text-text-leaf",
+                  "border border-line-green-100 bg-surface-green-50 text-ink-green-500",
                 )}
               >
                 {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}

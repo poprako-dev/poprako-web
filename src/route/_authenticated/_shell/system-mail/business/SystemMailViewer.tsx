@@ -252,7 +252,7 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps): JSX.Element {
               ? "text-text-muted-warm cursor-default"
               : [
                   "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-sm:opacity-100",
-                  "text-text-muted-warm hover:text-text-leaf",
+                  "text-text-muted-warm hover:text-ink-green-500",
                   "hover:bg-surface-green-50",
                 ],
           )}

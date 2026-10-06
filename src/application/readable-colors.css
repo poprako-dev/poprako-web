@@ -48,5 +48,5 @@
   --icon-muted-warm: oklch(0.63 0.01 56.259);
   --icon-muted-neutral: oklch(0.63 0.022 261.325);
   --text-subtle-warm: #7a746f;
-  --focus-indicator: #779e38;
+  --focus-indicator: rgba(16, 185, 129, 0.5);
 }

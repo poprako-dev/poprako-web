@@ -61,7 +61,8 @@ function TeamAvatar({
         "transition-all duration-300",
         canUpload && "group/avatar",
         isListOpen ? "shadow-md scale-105" : "",
-        !resolvedAvatarUrl && "bg-brand-leaf text-heading-forest",
+        !resolvedAvatarUrl && isListOpen && "bg-[var(--brand-leaf)]",
+        !resolvedAvatarUrl && !isListOpen && "bg-[var(--brand-leaf)]/80",
         canUpload ? "cursor-pointer" : "cursor-default",
       )}
     >
@@ -75,7 +76,7 @@ function TeamAvatar({
         <Globe2
           size={22}
           className={clsx(
-            "text-heading-forest transition-transform duration-500",
+            "text-ink-white transition-transform duration-500",
             isListOpen && "rotate-12",
           )}
         />
