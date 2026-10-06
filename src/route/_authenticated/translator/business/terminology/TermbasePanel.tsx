@@ -142,7 +142,7 @@ export function TermbasePanel({
               "h-7 w-full rounded-md border border-control-border bg-surface-white",
               "pl-7 pr-2.5 text-[11px] text-ink-stone-700 outline-none",
               "shadow-sm shadow-shadow-slate-100 placeholder:text-text-muted-warm",
-              "focus:border-focus-indicator",
+              "focus:border-line-slate-300",
             )}
           />
         </label>

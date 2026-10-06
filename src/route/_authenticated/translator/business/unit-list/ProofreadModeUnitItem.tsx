@@ -162,7 +162,7 @@ export function ProofreadModeUnitItem({
               onFocus={() => onSelect?.(unitId(unit))}
               placeholder="无翻译内容"
               className={clsx(
-                "cursor-default text-base font-normal leading-relaxed placeholder:text-text-muted-neutral",
+                "cursor-default text-base font-normal leading-relaxed placeholder:text-text-muted-neutral/20",
                 hasProofreadText
                   ? "text-ink-gray-600"
                   : isFocused
@@ -184,7 +184,9 @@ export function ProofreadModeUnitItem({
               className={clsx(
                 "size-2.5 rounded-full",
                 hasLocalDraft ? "border-[2.5px] border-current" : "bg-current",
-                unitIsProofread(unit) ? "text-text-leaf" : "text-text-muted-neutral",
+                unitIsProofread(unit)
+                  ? "text-[var(--brand-leaf)]"
+                  : "text-[var(--surface-gray-200)]",
               )}
             />
           </div>
@@ -210,7 +212,7 @@ export function ProofreadModeUnitItem({
                   placeholder="输入校对..."
                   readOnly={enableReadOnly}
                   className={clsx(
-                    "text-base font-normal leading-relaxed placeholder:text-text-muted-neutral",
+                    "text-base font-normal leading-relaxed placeholder:text-text-muted-neutral/20",
                     isFocused ? "text-ink-gray-900" : "text-ink-gray-700",
                   )}
                 />

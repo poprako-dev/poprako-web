@@ -197,7 +197,7 @@ export function LoginCard(): ReactElement {
           }}
           className={clsx(
             "mt-4 w-full rounded-lg py-2 text-sm font-semibold",
-            "bg-surface-green-50 text-text-leaf",
+            "bg-surface-green-50 text-ink-green-500",
             "border border-(--brand-leaf-border)",
             "transition-all duration-200 active:scale-[0.98]",
             "hover:bg-surface-green-100",

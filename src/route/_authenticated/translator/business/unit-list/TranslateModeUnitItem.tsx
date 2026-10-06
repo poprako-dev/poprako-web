@@ -150,7 +150,7 @@ export function TranslateModeUnitItem({
             readOnly={enableReadOnly}
             className={`text-base font-normal leading-relaxed ${
               isFocused ? "text-ink-gray-900" : "text-ink-gray-700"
-            } placeholder:text-text-muted-neutral`}
+            } placeholder:text-text-muted-neutral/20`}
           />
         </div>
         <UnitFlagButton
@@ -166,7 +166,9 @@ export function TranslateModeUnitItem({
             className={clsx(
               "size-2.5 rounded-full",
               hasLocalDraft ? "border-[2.5px] border-current" : "bg-current",
-              unitTranslatedText(unit) ? "text-text-leaf" : "text-text-muted-neutral",
+              unitTranslatedText(unit)
+                ? "text-[var(--brand-leaf)]"
+                : "text-[var(--surface-gray-200)]",
             )}
           />
         </div>

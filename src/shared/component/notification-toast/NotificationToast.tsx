@@ -18,7 +18,7 @@ const borderColorMap: Record<ToastType, string> = {
 const iconColorMap: Record<ToastType, string> = {
   info: "text-ink-blue-600",
   error: "text-ink-red-600",
-  success: "text-text-green",
+  success: "text-ink-green-600",
 };
 
 const iconMap: Record<ToastType, ReactElement> = {

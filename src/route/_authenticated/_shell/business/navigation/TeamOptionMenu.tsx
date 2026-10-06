@@ -146,7 +146,7 @@ export function TeamList({
                     "items-center justify-center overflow-hidden",
                     "font-black text-sm relative",
                     isSelected
-                      ? "bg-brand-leaf text-heading-forest"
+                      ? "bg-brand-leaf text-ink-white"
                       : "bg-surface-gray-100 text-text-muted-neutral",
                   )}
                 >
@@ -166,7 +166,9 @@ export function TeamList({
                     {t.desc}
                   </span>
                 </div>
-                {isSelected && <Check size={16} className={clsx("ml-auto", "text-text-leaf")} />}
+                {isSelected && (
+                  <Check size={16} className={clsx("ml-auto", "text-ink-green-500")} />
+                )}
               </>
             );
 

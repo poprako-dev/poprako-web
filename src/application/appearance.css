@@ -334,7 +334,7 @@
   --line-violet-200: var(--color-violet-200);
   --line-white: #ffffff;
   --loading-indicator: #10b981;
-  --marker-selected: oklch(0.538652929 0.188014735 259.814528525);
+  --marker-selected: #3b82f6;
   --navigation-active: #166534;
   --navigation-ink: #3d3028;
   --navigation-muted: oklch(0.491905049 0.022397473 59.87581333);
@@ -356,7 +356,7 @@
   --separator-stone-200: var(--color-stone-200);
   --shadow-slate-100: var(--color-slate-100);
   --shadow-slate-200: var(--color-slate-200);
-  --status-flag: oklch(0.605673821 0.123730247 86.032702113);
+  --status-flag: var(--color-yellow-500);
   --surface-amber-100: var(--color-amber-100);
   --surface-amber-200: var(--color-amber-200);
   --surface-amber-300: var(--color-amber-300);

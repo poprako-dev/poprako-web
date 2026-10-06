@@ -146,7 +146,7 @@ export function ReadOnlyDiffUnitItem({
             className={clsx(
               "size-2.5 rounded-full",
               hasLocalDraft ? "border-[2.5px] border-current" : "bg-current",
-              unitIsProofread(unit) ? "text-text-leaf" : "text-text-muted-neutral",
+              unitIsProofread(unit) ? "text-[var(--brand-leaf)]" : "text-[var(--surface-gray-200)]",
             )}
           />
         </div>

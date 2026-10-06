@@ -99,7 +99,7 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-text-leaf">{avatarChar(c.user?.name)}</span>
+                        <span className="text-[var(--brand-leaf)]">{avatarChar(c.user?.name)}</span>
                       )}
                     </div>
                     <div className="flex flex-col min-w-0">
@@ -140,7 +140,7 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
             "text-sm leading-relaxed bg-surface-white/80 text-foreground",
             "placeholder:text-text-subtle-warm",
             "border border-control-border-warm",
-            "focus:outline-none focus:border-focus-indicator",
+            "focus:outline-none focus:border-[var(--brand-leaf)]/40",
             "transition-colors min-h-8 max-h-24",
           )}
           rows={1}
@@ -162,7 +162,7 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
           className={clsx(
             "shrink-0",
             !sending && input.trim()
-              ? "text-text-leaf hover:bg-[var(--brand-leaf-faint)]/50"
+              ? "text-[var(--brand-leaf)] hover:bg-[var(--brand-leaf-faint)]/50"
               : "text-muted-foreground",
           )}
           aria-label="发送"

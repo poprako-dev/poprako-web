@@ -93,7 +93,7 @@ export function ComicDetailHeader({
       <div className="flex items-center gap-2 min-w-0">
         <div
           className={clsx(
-            "px-2 py-0.5 rounded-xs text-md font-black text-heading-forest bg-brand-leaf",
+            "px-2 py-0.5 rounded-xs text-md font-black text-heading-forest bg-brand-leaf/80",
             "leading-none shrink-0",
           )}
         >

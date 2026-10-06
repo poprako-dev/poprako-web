@@ -99,7 +99,7 @@
   --card-foreground: oklch(0.13 0.028 261.692);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.13 0.028 261.692);
-  --primary: #01875e;
+  --primary: #059669; /* original emerald-600 */
   --primary-foreground: #ffffff; /* on-primary */
   --secondary: oklch(0.967 0 0);
   --secondary-foreground: oklch(0.21 0 0);
@@ -122,10 +122,10 @@
   --status-warning: #8b641b;
   --status-info: #426d62;
   --selection: #dcefe3;
-  --marker-bubble: #fab9dd;
-  --marker-bubble-border: oklch(0.542247361 0.081190227 354.905782803);
-  --marker-note: #fddc6a;
-  --marker-note-border: oklch(0.533910428 0.092440418 82.036333507);
+  --marker-bubble: #e4bdc9;
+  --marker-bubble-border: #a3687f;
+  --marker-note: #ead39b;
+  --marker-note-border: #967534;
   --annotation: #fff0bd;
   --image-label-overlay: rgb(0 0 0 / 54%);
   --image-label-foreground: #ffffff;
@@ -183,12 +183,8 @@
 }
 
 @layer base {
-  :focus-visible {
-    outline: 1px solid var(--ring);
-    outline-offset: 2px;
-  }
   * {
-    @apply border-border outline-ring;
+    @apply border-border outline-ring/50;
   }
   html,
   body {

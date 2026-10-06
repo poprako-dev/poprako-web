@@ -136,7 +136,7 @@ export function ComicDetailSidebar({
         />
 
         {coverUpload.isUploadingCover && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/25">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/40">
             {coverUpload.coverUploadProgress !== null && coverUpload.coverUploadProgress < 100 && (
               <>
                 <svg

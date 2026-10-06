@@ -139,7 +139,7 @@ export function PageUnitStatsChart({
           <span title="编辑（包含在翻译中）" className="text-text-pink">
             <CheckCheck size={12} strokeWidth={1.8} />
           </span>
-          <span title="追加" className="text-text-leaf">
+          <span title="追加" className="text-(--brand-leaf)">
             <Plus size={12} strokeWidth={1.8} />
           </span>
         </div>
