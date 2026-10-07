@@ -1,7 +1,13 @@
 import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
+import {
+  markerSurfaceClass,
+  MARKER_TRANSITION,
+  MARKER_NUMBER_CLASS,
+  MARKER_SIZE,
+} from "./marker-appearance";
 
-export const CIRCLE_SIZE = 32;
+export const CIRCLE_SIZE = MARKER_SIZE;
 export const DOT_SIZE = 8;
 export const PIN_OFFSET = CIRCLE_SIZE + DOT_SIZE - 2;
 
@@ -14,7 +20,7 @@ type Props = {
   dimmed: boolean;
 };
 
-export function Marker({
+export function UnitMarker({
   index,
   isBubble,
   isCompleted,
@@ -36,15 +42,7 @@ export function Marker({
       <div
         className={clsx(
           "relative rounded-full flex items-center justify-center",
-          "border-2 shadow-lg",
-          isBubble
-            ? dimmed
-              ? "bg-surface-pink-300/40 border-line-pink-400/40"
-              : "bg-surface-pink-300/80 border-line-pink-400/70"
-            : dimmed
-              ? "bg-surface-amber-300/40 border-line-amber-400/40"
-              : "bg-surface-amber-300/80 border-line-amber-400/70",
-          isSelected && "ring-4 ring-focus-blue-500/10",
+          markerSurfaceClass(isBubble, dimmed, isSelected),
         )}
         style={{
           width: `${String(CIRCLE_SIZE)}px`,
@@ -54,12 +52,10 @@ export function Marker({
             : isCompleted
               ? "var(--brand-leaf)"
               : undefined,
-          transition: "background-color 0.2s, border-color 0.2s, box-shadow 0.2s",
+          transition: MARKER_TRANSITION,
         }}
       >
-        <span className="text-[13px] font-black text-ink-white tabular-nums leading-none">
-          {index + 1}
-        </span>
+        <span className={MARKER_NUMBER_CLASS}>{index + 1}</span>
       </div>
       <div
         className={clsx(

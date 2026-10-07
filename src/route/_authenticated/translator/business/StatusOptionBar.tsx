@@ -1,4 +1,4 @@
-import type { JSX } from "react/jsx-runtime";
+import type { JSX, ReactNode } from "react";
 import {
   CheckCheck,
   CircleSlash,
@@ -9,12 +9,17 @@ import {
   Lock,
   MapPin,
   Save,
+  MessageSquareText,
 } from "lucide-react";
 import clsx from "clsx";
 import type { TranslatorMode } from "@/route/_authenticated/translator/business/unit/translator-mode";
 import type { ProofreadPreviewVisibility } from "@/route/_authenticated/translator/business/contract/preview";
+import type { ReadOnlyView } from "./revision-note/revision-note";
 
 type Props = {
+  imageControl?: ReactNode;
+  readOnlyView?: ReadOnlyView;
+  onSwitchReadOnlyView?: (() => void) | undefined;
   currMode: TranslatorMode;
   view: TranslatorMode;
   nextView: TranslatorMode;
@@ -47,6 +52,9 @@ const modeLabel: Record<TranslatorMode, string> = {
 };
 
 export function StatusOptionBar({
+  imageControl,
+  readOnlyView = "unit",
+  onSwitchReadOnlyView,
   currMode,
   view,
   nextView,
@@ -83,9 +91,36 @@ export function StatusOptionBar({
           {modeIcon[view]}
         </button>
       )}
+      {currMode === "readOnly" && onSwitchReadOnlyView && (
+        <button
+          type="button"
+          title={
+            readOnlyView === "unit"
+              ? "当前：翻校对照，切换到 revision_note"
+              : "当前：revision_note，切换到翻校对照"
+          }
+          aria-label={readOnlyView === "unit" ? "切换到 revision_note" : "切换到翻校对照"}
+          aria-pressed={readOnlyView === "revision_note"}
+          onClick={onSwitchReadOnlyView}
+          className={clsx(
+            btnBase,
+            readOnlyView === "revision_note"
+              ? "bg-surface-green-50 hover:bg-surface-green-100"
+              : "bg-surface-white hover:bg-surface-stone-100",
+          )}
+        >
+          {readOnlyView === "revision_note" ? (
+            <MessageSquareText size={18} />
+          ) : (
+            <FileType size={18} />
+          )}
+        </button>
+      )}
       <button
         type="button"
         title="切换重定位模式"
+        aria-label="切换重定位模式"
+        aria-pressed={isRelocationEnabled}
         onClick={onRelocationClick}
         className={clsx(
           btnBase,
@@ -128,30 +163,44 @@ export function StatusOptionBar({
           </button>
         </>
       )}
+      {imageControl ?? (
+        <button
+          type="button"
+          title={
+            isHighResolution
+              ? "当前：高清原图，点击切换到优化图片"
+              : "当前：优化图片，点击切换到高清原图"
+          }
+          aria-label={isHighResolution ? "切换到优化图片" : "切换到高清原图"}
+          aria-pressed={isHighResolution}
+          disabled={isLoadingPage}
+          onClick={() => void onToggleImageQualityClick()}
+          className={clsx(
+            btnBase,
+            isLoadingPage && "cursor-not-allowed opacity-40",
+            isHighResolution
+              ? "bg-surface-green-50 hover:bg-surface-green-100"
+              : "bg-surface-white hover:bg-surface-stone-100",
+          )}
+        >
+          <Image size={18} />
+        </button>
+      )}
       <button
         type="button"
         title={
-          isHighResolution
-            ? "当前：高清原图，点击切换到优化图片"
-            : "当前：优化图片，点击切换到高清原图"
+          readOnlyView === "revision_note"
+            ? proofreadPreviewVisibility === "visible"
+              ? "隐藏 revision_note 矩形"
+              : "显示 revision_note 矩形"
+            : proofreadPreviewVisibility === "visible"
+              ? "隐藏预览"
+              : "显示预览"
         }
-        aria-label={isHighResolution ? "切换到优化图片" : "切换到高清原图"}
-        aria-pressed={isHighResolution}
-        disabled={isLoadingPage}
-        onClick={() => void onToggleImageQualityClick()}
-        className={clsx(
-          btnBase,
-          isLoadingPage && "cursor-not-allowed opacity-40",
-          isHighResolution
-            ? "bg-surface-green-50 hover:bg-surface-green-100"
-            : "bg-surface-white hover:bg-surface-stone-100",
-        )}
-      >
-        <Image size={18} />
-      </button>
-      <button
-        type="button"
-        title={proofreadPreviewVisibility === "visible" ? "隐藏预览" : "显示预览"}
+        aria-label={
+          readOnlyView === "revision_note" ? "切换 revision_note 矩形显示" : "切换预览显示"
+        }
+        aria-pressed={proofreadPreviewVisibility === "visible"}
         onClick={onToggleProofreadPreviewClick}
         className={clsx(
           btnBase,

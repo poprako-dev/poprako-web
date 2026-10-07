@@ -17,6 +17,7 @@ type Options = Pick<
   | "setViewState"
   | "setProofreadPreviewVisibility"
   | "isReadOnly"
+  | "isRevisionView"
   | "canSwitchView"
   | "toggleRelocation"
   | "isShortcutPanelOpen"
@@ -42,6 +43,7 @@ export function useEditorKeyboard({
   setViewState,
   setProofreadPreviewVisibility,
   isReadOnly,
+  isRevisionView,
   canSwitchView,
   toggleRelocation,
   isShortcutPanelOpen,
@@ -123,7 +125,8 @@ export function useEditorKeyboard({
       },
     },
     activeShortcuts,
-    isShortcutPanelOpen ||
+    isRevisionView ||
+      isShortcutPanelOpen ||
       isSpecialCharPanelOpen ||
       isUnitSearchTransformOpen ||
       (isReadOnly && isPageStatsOpen),
@@ -131,6 +134,7 @@ export function useEditorKeyboard({
 
   useEffect(() => {
     if (
+      isRevisionView ||
       isShortcutPanelOpen ||
       isSpecialCharPanelOpen ||
       isUnitSearchTransformOpen ||
@@ -149,6 +153,7 @@ export function useEditorKeyboard({
       globalThis.removeEventListener("keydown", handleKeyDown);
     };
   }, [
+    isRevisionView,
     isShortcutPanelOpen,
     isSpecialCharPanelOpen,
     isUnitSearchTransformOpen,

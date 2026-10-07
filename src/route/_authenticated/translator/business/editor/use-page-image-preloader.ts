@@ -24,6 +24,7 @@ type PreloaderDeps = {
 };
 
 type Args = {
+  enabled?: boolean;
   pages: Page[];
   currentPageIndex: number;
   quality: PageImageQuality;
@@ -154,6 +155,7 @@ export class PageImagePreloader {
 }
 
 export function usePageImagePreloader({
+  enabled = true,
   pages,
   currentPageIndex,
   quality,
@@ -167,13 +169,17 @@ export function usePageImagePreloader({
   );
 
   useEffect(() => {
+    if (!enabled) {
+      preloader.stop();
+      return;
+    }
     preloader.setResolver(onLoadPageImage);
     preloader.configure({
       pageIds: pages.map((page) => page.id),
       centerIndex: currentPageIndex,
       quality,
     });
-  }, [currentPageIndex, onLoadPageImage, pages, preloader, quality]);
+  }, [currentPageIndex, enabled, onLoadPageImage, pages, preloader, quality]);
 
   useEffect(
     () => () => {

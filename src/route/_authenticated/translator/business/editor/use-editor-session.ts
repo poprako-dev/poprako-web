@@ -11,86 +11,14 @@ import { useEditorUnitActions } from "./use-editor-unit-actions";
 import { useEditorKeyboard } from "./use-editor-keyboard";
 import { createEditorSearchCoordinator } from "./editor-search-coordinator";
 
-export type EditorSession = Pick<
-  ReturnType<typeof useEditorState>,
-  | "canEditView"
-  | "canSwitchView"
-  | "canvasRef"
-  | "configurableShortcuts"
-  | "deleteConfirmUnitId"
-  | "fixedShortcuts"
-  | "focusedUnitId"
-  | "hasCompletedStage"
-  | "imageUrl"
-  | "isCompleteConfirmOpen"
-  | "isCompletingStage"
-  | "isHighResolution"
-  | "isLoadingPage"
-  | "isPageStatsOpen"
-  | "isReadOnly"
-  | "isRelocationEnabled"
-  | "isShortcutPanelOpen"
-  | "isSpecialCharPanelOpen"
-  | "isUnitCreationEnabled"
-  | "isUnitSearchTransformOpen"
-  | "nextView"
-  | "pageIndex"
-  | "proofreadPreviewVisibility"
-  | "setDeleteConfirmUnitId"
-  | "setIsCompleteConfirmOpen"
-  | "setIsPageStatsOpen"
-  | "setIsShortcutPanelOpen"
-  | "setIsSpecialCharPanelOpen"
-  | "setIsUnitCreationEnabled"
-  | "setIsUnitSearchTransformOpen"
-  | "setProofreadPreviewVisibility"
-  | "specialCharInsertRequest"
-  | "toggleRelocation"
-  | "unitBuf"
-  | "updateConfigurableShortcuts"
-  | "view"
-> &
-  Pick<
-    ReturnType<typeof useEditorUnitActions>,
-    | "doDeleteUnit"
-    | "handleAddUnit"
-    | "handleDeleteUnit"
-    | "handleFocusUnit"
-    | "handleModifyUnit"
-    | "handleMoveUnit"
-    | "handlePageImageLoad"
-    | "handleReorderUnit"
-    | "handleRequestSpecialChar"
-    | "handleSpecialCharInserted"
-    | "handleSpecialCharUse"
-    | "handleToggleBubble"
-  > &
-  Pick<
-    ReturnType<typeof useUnitPersistence>,
-    "handleExit" | "handleNavigate" | "saveState" | "saving" | "retryRecovery"
-  > &
-  Pick<ReturnType<typeof useEditorKeyboard>, "handleSwitchView"> &
-  Pick<
-    EditorProps,
-    | "onListPageUnitDiffStats"
-    | "onListPageUnitFlaggedStats"
-    | "onResolveUser"
-    | "project"
-    | "terminology"
-    | "drafts"
-  > & {
-    completionStage: ReturnType<typeof translatorCompletionStage>;
-    handleCompleteStage: () => Promise<void>;
-    handleToggleImageQuality: () => Promise<void>;
-    isSpecialCharsBarVisible: boolean;
-    searchCoordinator: ReturnType<typeof createEditorSearchCoordinator>;
-    specialCharsBar: ReturnType<typeof useDetachableSpecialCharsBar>;
-    unitSearchPart: UnitTextPart;
-    canInsertSpecialChar: boolean;
-    handleSave: () => Promise<void>;
-  };
+import type { EditorSession } from "./editor-session-type";
+export type { EditorSession } from "./editor-session-type";
+import type { ReadOnlyView } from "../revision-note/revision-note";
 
-export function useEditorSession(props: EditorProps): EditorSession {
+export function useEditorSession(
+  props: EditorProps,
+  readOnlyView: ReadOnlyView = "unit",
+): EditorSession {
   const {
     project,
     onLoadUnits,
@@ -101,7 +29,7 @@ export function useEditorSession(props: EditorProps): EditorSession {
     canTranslate,
     canProofread,
   } = props;
-  const state = useEditorState(props);
+  const state = useEditorState({ ...props, readOnlyView });
   const loadPageRef = useRef<((idx: number, targetUnitId?: string) => Promise<void>) | null>(null);
   const loadPage = useCallback((idx: number, targetUnitId?: string) => {
     const callback = loadPageRef.current;
@@ -117,6 +45,7 @@ export function useEditorSession(props: EditorProps): EditorSession {
     setFocusedUnitId,
     view,
     isReadOnly,
+    isRevisionView,
     canEditView,
     setImageUrl,
     isHighResolution,
@@ -199,6 +128,11 @@ export function useEditorSession(props: EditorProps): EditorSession {
     const generation = ++pageLoadGenerationRef.current;
     setIsLoadingPage(true);
     try {
+      if (isRevisionView) {
+        setPageIndex(idx);
+        if (idx !== pageIndex) setFocusedUnitId(undefined);
+        return;
+      }
       const [units, img] = await Promise.all([
         props.drafts
           ? props.drafts.ready.then(
@@ -231,6 +165,15 @@ export function useEditorSession(props: EditorProps): EditorSession {
       });
     }
   }, [initialPageIndex, loadPage, project.pages.length, showToast]);
+
+  const previousRevisionViewRef = useRef(isRevisionView);
+  useEffect(() => {
+    if (previousRevisionViewRef.current === isRevisionView) return;
+    previousRevisionViewRef.current = isRevisionView;
+    void loadPage(pageIndex, focusedUnitId).catch((error: unknown) => {
+      showLocalCaughtError(error, showToast, "页面加载失败，请重试");
+    });
+  }, [focusedUnitId, isRevisionView, loadPage, pageIndex, showToast]);
 
   async function handleSave(): Promise<void> {
     try {

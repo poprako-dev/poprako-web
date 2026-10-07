@@ -5,7 +5,11 @@ export function shouldIgnoreTranslatorKey(event: KeyboardEvent): boolean {
 
   const target = event.composedPath().find((node) => node instanceof Element) ?? event.target;
   if (!(target instanceof Element)) return false;
-  if (target.closest('[data-app-dialog], [role="dialog"], [role="alertdialog"]')) {
+  if (
+    target.closest(
+      '[data-app-dialog], [role="dialog"], [role="alertdialog"], [data-translator-shortcuts="ignore"]',
+    )
+  ) {
     return true;
   }
 

@@ -232,7 +232,7 @@ export function useCanvasInteraction({
 
   const handleCanvasTouchStart = useCallback(
     (e: TouchEvent) => {
-      if ((e.target as HTMLElement).closest("[data-marker]")) return;
+      if ((e.target as HTMLElement).closest("[data-marker], [data-canvas-annotation]")) return;
       const touch = e.touches[0];
       if (!touch) return;
 
@@ -280,7 +280,7 @@ export function useCanvasInteraction({
 
   const handleCanvasMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      if ((e.target as HTMLElement).closest("[data-marker]")) return;
+      if ((e.target as HTMLElement).closest("[data-marker], [data-canvas-annotation]")) return;
       if (e.button !== 0) return;
 
       const img = imgRef.current;
@@ -335,7 +335,10 @@ export function useCanvasInteraction({
       e.preventDefault();
       if (enableReadOnly) return;
 
-      const markerEl = e.target instanceof HTMLElement ? e.target.closest("[data-marker]") : null;
+      const markerEl =
+        e.target instanceof HTMLElement
+          ? e.target.closest("[data-marker], [data-canvas-annotation]")
+          : null;
       if (markerEl) {
         const markerId = markerEl instanceof HTMLElement ? markerEl.dataset["marker"] : undefined;
         if (markerId) onDeleteUnit(markerId);

@@ -25,6 +25,7 @@ import {
   initialTranslatorMode,
 } from "@/route/_authenticated/translator/business/contract/access";
 import type { EditorProps } from "./editor-props";
+import type { ReadOnlyView } from "../revision-note/revision-note";
 type TranslatorViewState = {
   entryMode: TranslatorMode;
   view: TranslatorMode;
@@ -44,10 +45,11 @@ export function useEditorState({
   canProofread,
   startPageId,
   startMode,
+  readOnlyView,
 }: Pick<
   EditorProps,
   "project" | "onLoadPageImage" | "canTranslate" | "canProofread" | "startPageId" | "startMode"
->): {
+> & { readOnlyView: ReadOnlyView }): {
   initialPageIndex: number;
   pageIndex: number;
   setPageIndex: Dispatch<SetStateAction<number>>;
@@ -64,6 +66,7 @@ export function useEditorState({
   proofreadPreviewVisibility: ProofreadPreviewVisibility;
   setProofreadPreviewVisibility: Dispatch<SetStateAction<ProofreadPreviewVisibility>>;
   isReadOnly: boolean;
+  isRevisionView: boolean;
   canSwitchView: boolean;
   nextView: TranslatorMode | undefined;
   canEditView: boolean;
@@ -133,6 +136,7 @@ export function useEditorState({
     useState<ProofreadPreviewVisibility>("visible");
 
   const isReadOnly = view === "readOnly";
+  const isRevisionView = isReadOnly && readOnlyView === "revision_note";
   const canSwitchView = mode !== "readOnly" && availableModes.length > 1;
   const nextView = availableModes[(availableModes.indexOf(view) + 1) % availableModes.length];
   const canEditView = !isReadOnly && (view === "translate" ? canTranslate : canProofread);
@@ -164,6 +168,7 @@ export function useEditorState({
   const { allChars, favoriteChars } = useSpecialChars();
 
   usePageImagePreloader({
+    enabled: !isRevisionView,
     pages: project.pages,
     currentPageIndex: pageIndex,
     quality: imageQuality,
@@ -207,6 +212,7 @@ export function useEditorState({
     proofreadPreviewVisibility,
     setProofreadPreviewVisibility,
     isReadOnly,
+    isRevisionView,
     canSwitchView,
     nextView,
     canEditView,
