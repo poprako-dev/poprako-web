@@ -36,6 +36,3 @@ storybook-static
 .omx/
 
 /test-resource/
-
-/src/test-resource/generated/
-/docs/route-migration/review/component-inventory.json
