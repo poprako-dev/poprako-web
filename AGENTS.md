@@ -49,7 +49,4 @@ the current architecture source of truth.
 ## Checks
 
 Use the tasks documented in `deno.json`; the `check` aggregate is the required
-local gate. Migration plans and evidence are indexed at
-[docs/route-migration/plan/README.md](docs/route-migration/plan/README.md).
-Status must reflect recorded evidence; source moves or an earlier successful
-snapshot do not prove the current plan complete.
+local gate.
