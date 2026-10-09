@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import type { Psd } from "ag-psd";
 import { indexPsdLayers } from "./psd-layer";
-import { includesRevisionLayer } from "./revision-page";
+import { includesReviewLayer } from "./review-page";
 it("keeps PSD index paths distinct for duplicate names, hidden groups and nested layers", () => {
   const psd: Psd = {
     width: 1000,
@@ -22,8 +22,8 @@ it("keeps PSD index paths distinct for duplicate names, hidden groups and nested
     ["0.1.0", "0.1", "对白", false],
   ]);
   expect(layers[0]?.bounds).toEqual({ xCoord: 0.1, yCoord: 0.1, width: 0.2, height: 0.2 });
-  expect(includesRevisionLayer(layers, "0.1", "0.1.0")).toBe(true);
-  expect(includesRevisionLayer(layers, "0.1", "0.0")).toBe(false);
-  expect(includesRevisionLayer(layers, null, null)).toBe(true);
-  expect(includesRevisionLayer(layers, "0.0", null)).toBe(false);
+  expect(includesReviewLayer(layers, "0.1", "0.1.0")).toBe(true);
+  expect(includesReviewLayer(layers, "0.1", "0.0")).toBe(false);
+  expect(includesReviewLayer(layers, null, null)).toBe(true);
+  expect(includesReviewLayer(layers, "0.0", null)).toBe(false);
 });

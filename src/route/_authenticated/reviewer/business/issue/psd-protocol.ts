@@ -1,4 +1,4 @@
-import type { RevisionLayer } from "./revision-page";
+import type { ReviewLayer } from "./review-page";
 export type PsdRequest = { id: number; type: "open"; file: Blob };
 export type PsdResponse =
   | {
@@ -6,7 +6,7 @@ export type PsdResponse =
       type: "opened";
       width: number;
       height: number;
-      layers: RevisionLayer[];
+      layers: ReviewLayer[];
       image: ImageBitmap;
     }
   | { id: number; type: "error"; message: string };

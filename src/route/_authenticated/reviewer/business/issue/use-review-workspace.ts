@@ -6,17 +6,17 @@ import { useShortcutActions } from "@/shared/hook/use-shortcut-actions";
 import { shouldIgnoreWorkbenchKey } from "@/shared/utility/keyboard-scope";
 import type { ConfigurableShortcut } from "@/shared/utility/shortcut";
 import type { CanvasHandle } from "@/shared/component/PageCanvas";
-import type { LoadRevisionNotes, RevisionNote } from "./revision-note";
-import { includesRevisionLayer } from "./revision-page";
-import type { LoadRevisionPage, RevisionPage } from "./revision-page";
-import { createRevisionPageController } from "./revision-page-controller";
+import type { LoadIssues, IssueInfo } from "@/route/_authenticated/business/issue/issue";
+import { includesReviewLayer } from "./review-page";
+import type { LoadReviewPage, ReviewPage } from "./review-page";
+import { createReviewPageController } from "./review-page-controller";
 type Args = {
   pageId: string;
   pageIndex: number;
   pageCount: number;
   active: boolean;
-  loadRevisionNotes: LoadRevisionNotes;
-  loadRevisionPage: LoadRevisionPage;
+  loadIssues: LoadIssues;
+  loadReviewPage: LoadReviewPage;
   shortcuts: ConfigurableShortcut[];
   relocation: boolean;
   onToggleRelocation: () => void;
@@ -24,38 +24,38 @@ type Args = {
   onNavigate: (index: number) => Promise<void>;
   canvasRef: RefObject<CanvasHandle | null>;
 };
-export type RevisionWorkspace = {
-  page: RevisionPage | null;
-  notes: RevisionNote[];
+export type ReviewWorkspace = {
+  page: ReviewPage | null;
+  issues: IssueInfo[];
   focusedId: string | null;
   layerId: string | null;
   loading: boolean;
   error: string | null;
-  notesError: string | null;
-  notesLoading: boolean;
-  retryNotes: () => void;
+  issuesError: string | null;
+  issuesLoading: boolean;
+  retryIssues: () => void;
   retry: () => void;
   select: (id: string, relocate: boolean) => void;
   selectLayer: (id: string | null) => void;
   onImageError: () => void;
 };
-export function useRevisionWorkspace({
+export function useReviewWorkspace({
   pageId,
   pageIndex,
   pageCount,
   active,
-  loadRevisionNotes,
-  loadRevisionPage,
+  loadIssues,
+  loadReviewPage,
   shortcuts,
   relocation,
   onToggleRelocation,
   onToggleVisible,
   onNavigate,
   canvasRef,
-}: Args): RevisionWorkspace {
+}: Args): ReviewWorkspace {
   const controller = useMemo(
-    () => createRevisionPageController(loadRevisionNotes, loadRevisionPage),
-    [loadRevisionNotes, loadRevisionPage],
+    () => createReviewPageController(loadIssues, loadReviewPage),
+    [loadIssues, loadReviewPage],
   );
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
   const [focus, setFocus] = useState<{ pageId: string; id: string } | null>(null);
@@ -73,10 +73,10 @@ export function useRevisionWorkspace({
 
   const showToast = useToastStore((state) => state.showToast);
   const ready = snapshot.pageId === pageId && snapshot.status === "ready";
-  const notesReady = snapshot.pageId === pageId && snapshot.notesStatus === "ready";
+  const issuesReady = snapshot.pageId === pageId && snapshot.issuesStatus === "ready";
   const page = ready ? snapshot.page : null;
-  const notes = snapshot.notes.filter((note) =>
-    includesRevisionLayer(page?.layers ?? [], layerId, note.layerId),
+  const issues = snapshot.issues.filter((issue) =>
+    includesReviewLayer(page?.layers ?? [], layerId, issue.layerPath),
   );
 
   useEffect(() => {
@@ -99,9 +99,9 @@ export function useRevisionWorkspace({
     void controller.retryPage();
   }
   function select(id: string, relocate: boolean): void {
-    if (!notesReady) return;
+    if (!issuesReady) return;
     setFocus({ pageId, id });
-    const rect = notes.find((note) => note.id === id)?.rect;
+    const rect = issues.find((issue) => issue.id === id)?.rect;
     if (relocate && relocation && rect)
       canvasRef.current?.centerOn(rect.xCoord + rect.width / 2, rect.yCoord + rect.height / 2);
   }
@@ -116,15 +116,15 @@ export function useRevisionWorkspace({
     });
   }
   function moveSelection(direction: number): void {
-    if (!notesReady || notes.length === 0) return;
-    const index = notes.findIndex((note) => note.id === focusedId);
+    if (!issuesReady || issues.length === 0) return;
+    const index = issues.findIndex((issue) => issue.id === focusedId);
     const nextIndex =
       index < 0
         ? direction > 0
           ? 0
-          : notes.length - 1
-        : (index + direction + notes.length) % notes.length;
-    const next = notes[nextIndex];
+          : issues.length - 1
+        : (index + direction + issues.length) % issues.length;
+    const next = issues[nextIndex];
     if (next) select(next.id, true);
   }
   useShortcutActions(
@@ -162,16 +162,16 @@ export function useRevisionWorkspace({
 
   return {
     page,
-    notes: notesReady ? notes : [],
+    issues: issuesReady ? issues : [],
     focusedId,
     layerId,
     loading: !ready && snapshot.status !== "error",
     error: imageFailed ? "图片加载失败" : snapshot.error,
     retry,
-    notesError: snapshot.pageId === pageId ? snapshot.notesError : null,
-    notesLoading: snapshot.pageId !== pageId || snapshot.notesStatus === "loading",
-    retryNotes() {
-      void controller.retryNotes();
+    issuesError: snapshot.pageId === pageId ? snapshot.issuesError : null,
+    issuesLoading: snapshot.pageId !== pageId || snapshot.issuesStatus === "loading",
+    retryIssues() {
+      void controller.retryIssues();
     },
     select,
     selectLayer,

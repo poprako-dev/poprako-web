@@ -1,5 +1,5 @@
 import type { Layer, Psd } from "ag-psd";
-import type { PageRect, RevisionLayer } from "./revision-page";
+import type { PageRect, ReviewLayer } from "./review-page";
 export function layerBounds(layer: Layer, width: number, height: number): PageRect {
   return {
     xCoord: (layer.left ?? 0) / width,
@@ -8,8 +8,8 @@ export function layerBounds(layer: Layer, width: number, height: number): PageRe
     height: ((layer.bottom ?? 0) - (layer.top ?? 0)) / height,
   };
 }
-export function indexPsdLayers(psd: Psd): RevisionLayer[] {
-  const layers: RevisionLayer[] = [];
+export function indexPsdLayers(psd: Psd): ReviewLayer[] {
+  const layers: ReviewLayer[] = [];
   function visit(
     children: Layer[],
     parentId: string | null,

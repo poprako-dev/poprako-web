@@ -2,13 +2,13 @@ import { useEffect, useRef } from "react";
 import type { JSX } from "react";
 import { Layers } from "lucide-react";
 import clsx from "clsx";
-import type { RevisionWorkspace } from "./use-revision-workspace";
-type Props = { revision: RevisionWorkspace };
+import type { ReviewWorkspace } from "./use-review-workspace";
+type Props = { review: ReviewWorkspace };
 const buttonClass =
   "flex-1 flex items-center justify-center py-2 transition-colors text-ink-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]";
-export function RevisionLayerMenu({ revision }: Props): JSX.Element {
-  const layers = revision.page?.layers ?? [];
-  const selectedLayerId = revision.layerId;
+export function ReviewLayerMenu({ review }: Props): JSX.Element {
+  const layers = review.page?.layers ?? [];
+  const selectedLayerId = review.layerId;
   const menuRef = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     function closeOutside(event: PointerEvent): void {
@@ -33,7 +33,7 @@ export function RevisionLayerMenu({ revision }: Props): JSX.Element {
   }, []);
   const layer = layers.find((item) => item.id === selectedLayerId);
   function choose(id: string | null): void {
-    revision.selectLayer(id);
+    review.selectLayer(id);
     if (menuRef.current) menuRef.current.open = false;
   }
   return (

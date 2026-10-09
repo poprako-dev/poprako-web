@@ -1,7 +1,7 @@
-import type { RevisionPage } from "./revision-page";
+import type { ReviewPage } from "./review-page";
 import type { PsdRequest, PsdResponse } from "./psd-protocol";
 import { waitForCanvasRelease } from "./wait-for-canvas-release";
-export async function openPsdPage(file: Blob, signal: AbortSignal): Promise<RevisionPage> {
+export async function openPsdPage(file: Blob, signal: AbortSignal): Promise<ReviewPage> {
   signal.throwIfAborted();
   const worker = new Worker(new URL("./psd-worker.ts", import.meta.url), { type: "module" });
   let stopped = false;

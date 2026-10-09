@@ -5,11 +5,11 @@ import {
   MARKER_NUMBER_CLASS,
   MARKER_SIZE,
 } from "@/shared/utility/marker-appearance";
-import type { revisionNoteAppearance } from "./revision-note-appearance";
+import type { issueAppearance } from "./issue-appearance";
 import { previewPosition } from "@/shared/utility/page-geometry";
 import type { PageRect } from "@/shared/utility/page-geometry";
 type Props = {
-  appearance: ReturnType<typeof revisionNoteAppearance>;
+  appearance: ReturnType<typeof issueAppearance>;
   id: string;
   number: number;
   rect: PageRect;
@@ -17,7 +17,7 @@ type Props = {
   isSelected: boolean;
   onSelect: (id: string) => void;
 };
-export function NoteMarker({
+export function IssueMarker({
   appearance,
   id,
   number,
@@ -36,7 +36,7 @@ export function NoteMarker({
       onTouchStart={(event) => {
         event.stopPropagation();
       }}
-      aria-label={`定位 revision_note ${String(number)}`}
+      aria-label={`定位 issue ${String(number)}`}
       aria-pressed={isSelected}
       onClick={() => {
         onSelect(id);

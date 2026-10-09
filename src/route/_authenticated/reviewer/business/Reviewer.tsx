@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { JSX } from "react";
-import { Eye, MapPin, RotateCcw, SquareArrowRight } from "lucide-react";
+import { Eye, MapPin, RotateCcw, SquareArrowRight, FileUp } from "lucide-react";
 import clsx from "clsx";
 import { WorkbenchLayout } from "@/shared/component/WorkbenchLayout";
 import { PageCanvas } from "@/shared/component/PageCanvas";
@@ -10,11 +10,11 @@ import { usePageInteraction } from "@/shared/hook/use-page-interaction";
 import { useRelocationPreference } from "@/shared/hook/use-relocation-preference";
 import { useShortcuts } from "@/shared/hook/use-shortcuts";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
-import { useRevisionWorkspace } from "./revision-note/use-revision-workspace";
-import { RevisionLayerMenu } from "./revision-note/RevisionLayerMenu";
-import { RevisionNoteList } from "./revision-note/RevisionNoteList";
-import { RevisionNoteOverlay } from "./revision-note/RevisionNoteOverlay";
-import { RevisionPreviewStatus } from "./revision-note/RevisionPreviewStatus";
+import { useReviewWorkspace } from "./issue/use-review-workspace";
+import { ReviewLayerMenu } from "./issue/ReviewLayerMenu";
+import { IssueList } from "./issue/IssueList";
+import { IssueOverlay } from "./issue/IssueOverlay";
+import { ReviewPreviewStatus } from "./issue/ReviewPreviewStatus";
 import type { ReviewerProps } from "./reviewer-props";
 type Props = ReviewerProps;
 const buttonClass =
@@ -22,8 +22,10 @@ const buttonClass =
 export function Reviewer({
   project,
   startPageId,
-  loadRevisionPage,
-  loadRevisionNotes,
+  loadReviewPage,
+  loadIssues,
+  onImport,
+  onPageChange,
   onExit,
 }: Props): JSX.Element {
   const [pageIndex, setPageIndex] = useState(() =>
@@ -34,16 +36,20 @@ export function Reviewer({
   const relocation = useRelocationPreference();
   const { configurableShortcuts } = useShortcuts();
   function navigate(index: number): Promise<void> {
-    if (index >= 0 && index < project.pages.length) setPageIndex(index);
+    const page = project.pages[index];
+    if (page) {
+      setPageIndex(index);
+      onPageChange?.(page.id);
+    }
     return Promise.resolve();
   }
-  const revision = useRevisionWorkspace({
+  const review = useReviewWorkspace({
     pageId: project.pages[pageIndex]?.id ?? "",
     pageIndex,
     pageCount: project.pages.length,
     active: pageIndex >= 0,
-    loadRevisionPage,
-    loadRevisionNotes,
+    loadReviewPage,
+    loadIssues,
     shortcuts: configurableShortcuts.filter((shortcut) =>
       [
         "nextMarker",
@@ -62,7 +68,7 @@ export function Reviewer({
     onNavigate: navigate,
     canvasRef,
   });
-  const imageSrc = revision.page?.composite.source ?? null;
+  const imageSrc = review.page?.composite.source ?? null;
   const interaction = usePageInteraction({ imageSrc });
   if (pageIndex < 0)
     return (
@@ -81,23 +87,23 @@ export function Reviewer({
             ref={canvasRef}
             interaction={interaction}
             imageSrc={imageSrc}
-            isLoading={loadRevisionPage !== null && revision.loading}
+            isLoading={loadReviewPage !== null && review.loading}
             empty={null}
-            onImageError={revision.onImageError}
+            onImageError={review.onImageError}
             overlay={(scale) => (
-              <RevisionNoteOverlay
+              <IssueOverlay
                 scale={scale}
-                notes={revision.notes}
-                focusedId={revision.focusedId}
+                issues={review.issues}
+                focusedId={review.focusedId}
                 visible={visible}
                 onSelect={(id) => {
-                  revision.select(id, false);
+                  review.select(id, false);
                 }}
               />
             )}
           />
-          {loadRevisionPage ? (
-            <RevisionPreviewStatus revision={revision} />
+          {loadReviewPage ? (
+            <ReviewPreviewStatus review={review} />
           ) : (
             <div
               role="status"
@@ -140,6 +146,17 @@ export function Reviewer({
         <>
           <div className="relative z-30 shrink-0 border-b-2 border-line-stone-200 bg-surface-stone-50">
             <div className="flex w-full divide-x divide-separator-stone-200">
+              {onImport && (
+                <button
+                  type="button"
+                  title="导入整章 issue"
+                  aria-label="导入整章 issue"
+                  onClick={onImport}
+                  className={clsx(buttonClass, "bg-surface-white hover:bg-surface-stone-100")}
+                >
+                  <FileUp size={18} />
+                </button>
+              )}
               <button
                 type="button"
                 title="切换重定位模式"
@@ -155,11 +172,11 @@ export function Reviewer({
               >
                 <MapPin size={18} />
               </button>
-              <RevisionLayerMenu revision={revision} />
+              <ReviewLayerMenu review={review} />
               <button
                 type="button"
-                title={visible ? "隐藏 revision_note 矩形" : "显示 revision_note 矩形"}
-                aria-label="切换 revision_note 矩形显示"
+                title={visible ? "隐藏 issue 矩形" : "显示 issue 矩形"}
+                aria-label="切换 issue 矩形显示"
                 aria-pressed={visible}
                 onClick={() => {
                   setVisible((value) => !value);
@@ -176,33 +193,33 @@ export function Reviewer({
             </div>
           </div>
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-stone-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
-            {revision.notesLoading && (
+            {review.issuesLoading && (
               <div role="status" className="flex justify-center p-2">
-                <LoadingCircle size={16} aria-label="正在加载 revision_note" />
+                <LoadingCircle size={16} aria-label="正在加载 issue" />
               </div>
             )}
-            {revision.notesError && (
+            {review.issuesError && (
               <button
                 type="button"
-                title={revision.notesError}
-                aria-label="重试 revision_note"
-                onClick={revision.retryNotes}
+                title={review.issuesError}
+                aria-label="重试 issue"
+                onClick={review.retryIssues}
                 className="self-center p-2 text-ink-stone-600"
               >
-                <span role="alert" className="sr-only">
-                  revision_note 加载失败
-                </span>
+                <span role="alert">issue 加载失败：{review.issuesError}</span>
                 <RotateCcw size={18} />
               </button>
             )}
-            <RevisionNoteList
-              notes={revision.notes}
-              layers={revision.page?.layers ?? []}
-              focusedId={revision.focusedId}
-              onSelect={(id) => {
-                revision.select(id, true);
-              }}
-            />
+            {!review.issuesLoading && !review.issuesError && (
+              <IssueList
+                issues={review.issues}
+                layers={review.page?.layers ?? []}
+                focusedId={review.focusedId}
+                onSelect={(id) => {
+                  review.select(id, true);
+                }}
+              />
+            )}
           </div>
         </>
       }

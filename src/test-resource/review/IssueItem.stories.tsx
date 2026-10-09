@@ -5,7 +5,7 @@ import { expect, userEvent, within } from "storybook/test";
 import { Tooltip } from "radix-ui";
 import { ReadOnlyDiffUnitItem } from "@/route/_authenticated/translator/business/unit-list/ReadOnlyDiffUnitItem";
 import { mockUnits } from "@/route/_authenticated/translator/business/test/base-translator-story-data";
-import { RevisionNoteItem } from "@/route/_authenticated/reviewer/business/revision-note/RevisionNoteItem";
+import { IssueItem } from "@/route/_authenticated/reviewer/business/issue/IssueItem";
 type Props = { selected: boolean; long: boolean };
 function Comparison({ selected, long }: Props): JSX.Element {
   const [focused, setFocused] = useState(selected);
@@ -24,14 +24,15 @@ function Comparison({ selected, long }: Props): JSX.Element {
           />
         </div>
         <div className="border border-line-stone-200">
-          <RevisionNoteItem
+          <IssueItem
             layerName="对白"
-            note={{
-              id: "note",
-              number: 7,
-              type: "断行",
-              content: long ? "保留原句，调整断行。\n".repeat(12) : "保留原句，调整断行。",
-              layerId: "0.1",
+            issue={{
+              id: "issue",
+              pageId: "page",
+              index: 6,
+              variant: "断行",
+              note: long ? "保留原句，调整断行。\n".repeat(12) : "保留原句，调整断行。",
+              layerPath: "0.1",
               rect: null,
             }}
             isFocused={focused}
@@ -45,7 +46,7 @@ function Comparison({ selected, long }: Props): JSX.Element {
   );
 }
 const meta: Meta<typeof Comparison> = {
-  title: "Features/Reviewer/RevisionNoteItem",
+  title: "Features/Reviewer/IssueItem",
   component: Comparison,
   parameters: { layout: "fullscreen" },
   args: { selected: false, long: false },
@@ -58,7 +59,7 @@ export const LongText: Story = { args: { long: true } };
 export const Hover: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const button = canvas.getByRole("button", { name: "revision_note 7：断行" });
+    const button = canvas.getByRole("button", { name: "issue 7：断行" });
     await userEvent.hover(button);
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "true");

@@ -2,7 +2,7 @@ import type { ComicDetailMode } from "@/route/_authenticated/business/navigation
 import { ComicDetailModeSwitch } from "./ComicDetailModeSwitch";
 import { ComicDetailMoreActions } from "./ComicDetailMoreActions";
 import { ArtworkDownloadButton } from "./ArtworkDownloadButton";
-import type { JSX, RefObject } from "react";
+import type { JSX, RefObject, ReactElement } from "react";
 import { useRef } from "react";
 import {
   BookOpen,
@@ -27,6 +27,7 @@ type Props = {
   mode: ComicDetailMode;
   onModeChange: (mode: ComicDetailMode) => void;
   onArtworkExported: () => void;
+  issueImportAction?: ReactElement | undefined;
   comicInfo: ComicInfo;
   selectedChapter?: ChapterInfo | undefined;
   pagesLength: number;
@@ -57,6 +58,7 @@ export function ComicDetailSidebar({
   mode,
   onModeChange,
   onArtworkExported,
+  issueImportAction,
   comicInfo,
   selectedChapter,
   pagesLength: _pagesLength,
@@ -240,6 +242,7 @@ export function ComicDetailSidebar({
               {mode === "reviewer" && canUploadArtwork && (
                 <ActionButton icon={Upload} title="上传嵌稿" onClick={onUploadArtwork} />
               )}
+              {mode === "reviewer" && issueImportAction}
               {mode === "reviewer" && canReadOnly && (
                 <ArtworkDownloadButton
                   chapterId={selectedChapter.id}

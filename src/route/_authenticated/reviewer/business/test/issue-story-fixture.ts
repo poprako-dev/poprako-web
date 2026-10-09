@@ -1,8 +1,8 @@
-import { openPsdPage } from "../revision-note/open-psd-page";
-import { revisionPsdFixture } from "./revision-psd-fixture";
+import { openPsdPage } from "../issue/open-psd-page";
+import { reviewPsdFixture } from "./review-psd-fixture";
 import { fn } from "storybook/test";
 import type { ReviewerProps } from "../reviewer-props";
-import type { RevisionNote } from "../revision-note/revision-note";
+import type { IssueInfo } from "@/route/_authenticated/business/issue/issue";
 
 function pageImage(page: number, typeset: boolean): string {
   const ink = typeset ? "#262626" : "#929292";
@@ -37,71 +37,77 @@ function pageImage(page: number, typeset: boolean): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-function notesForPage(pageId: string): RevisionNote[] {
+function issuesForPage(pageId: string): IssueInfo[] {
   if (pageId.endsWith("2")) return [];
-  const notes: RevisionNote[] = [
+  const issues: IssueInfo[] = [
     {
       id: `${pageId}-1`,
-      number: 1,
-      type: "文字位置",
-      content: "这组文字稍微偏右。请向左移动，保持两侧留白一致。",
+      pageId,
+      index: 0,
+      variant: "文字位置",
+      note: "这组文字稍微偏右。请向左移动，保持两侧留白一致。",
       rect: { xCoord: 0.707, yCoord: 0.087, width: 0.175, height: 0.072 },
-      layerId: "0.1.0",
+      layerPath: "0.1.0",
     },
     {
       id: `${pageId}-2`,
-      number: 2,
-      type: "断行",
-      content: "建议保持两行：\n等一下，\n听我说。\n第二行的逗号不用保留。",
+      pageId,
+      index: 1,
+      variant: "断行",
+      note: "建议保持两行：\n等一下，\n听我说。\n第二行的逗号不用保留。",
       rect: { xCoord: 0.092, yCoord: 0.382, width: 0.151, height: 0.08 },
-      layerId: "0.1.1",
+      layerPath: "0.1.1",
     },
     {
       id: `${pageId}-3`,
-      number: 3,
-      type: "自定义：叠字节奏",
-      content: "这里的字号比上一格略小，连着阅读时节奏会断。请结合上下两格统一检查。",
+      pageId,
+      index: 2,
+      variant: "自定义：叠字节奏",
+      note: "这里的字号比上一格略小，连着阅读时节奏会断。请结合上下两格统一检查。",
       rect: { xCoord: 0.702, yCoord: 0.383, width: 0.2, height: 0.082 },
-      layerId: "0.1.2",
+      layerPath: "0.1.2",
     },
     {
       id: `${pageId}-4`,
-      number: 4,
-      type: "整页说明",
-      content: "本页标点统一采用全角。调整时保留原有文字图层，便于之后核对。",
+      pageId,
+      index: 3,
+      variant: "整页说明",
+      note: "本页标点统一采用全角。调整时保留原有文字图层，便于之后核对。",
       rect: null,
-      layerId: null,
+      layerPath: null,
     },
   ];
   if (pageId.endsWith("3")) {
-    notes.push({
+    issues.push({
       id: `${pageId}-5`,
-      number: 5,
-      type: "区域重叠",
-      content: "同一区域的另一条 revision_note，可分别选中。",
+      pageId,
+      index: 4,
+      variant: "区域重叠",
+      note: "同一区域的另一条 issue，可分别选中。",
       rect: { xCoord: 0.72, yCoord: 0.12, width: 0.18, height: 0.09 },
-      layerId: "0.1.0",
+      layerPath: "0.1.0",
     });
-    notes.push({
+    issues.push({
       id: `${pageId}-6`,
-      number: 6,
-      type: "长文本",
-      content: "这是一条需要完整保留换行与说明的 revision_note。\n".repeat(16),
+      pageId,
+      index: 5,
+      variant: "长文本",
+      note: "这是一条需要完整保留换行与说明的 issue。\n".repeat(16),
       rect: null,
-      layerId: null,
+      layerPath: null,
     });
   }
-  return notes;
+  return issues;
 }
 
-export function createRevisionStoryArgs(
+export function createIssueStoryArgs(
   options: { fail?: boolean; delay?: number; available?: boolean } = {},
 ): ReviewerProps {
-  async function loadNotes(pageId: string, signal: AbortSignal): Promise<RevisionNote[]> {
+  async function loadIssues(pageId: string, signal: AbortSignal): Promise<IssueInfo[]> {
     await new Promise<void>((resolve) => setTimeout(resolve, options.delay ?? 100));
     signal.throwIfAborted();
-    if (options.fail) throw new Error("示例：revision_note 数据读取失败");
-    return notesForPage(pageId);
+    if (options.fail) throw new Error("示例：issue 数据读取失败");
+    return issuesForPage(pageId);
   }
   return {
     project: {
@@ -110,9 +116,9 @@ export function createRevisionStoryArgs(
     },
     startPageId: "page-1",
     onExit: fn(),
-    loadRevisionNotes: options.available === false ? null : fn(loadNotes),
-    loadRevisionPage: fn(async (pageId: string, signal: AbortSignal) => {
-      const file = await revisionPsdFixture(pageImage(Number(pageId.split("-").at(-1)), true));
+    loadIssues: options.available === false ? fn(() => Promise.resolve([])) : fn(loadIssues),
+    loadReviewPage: fn(async (pageId: string, signal: AbortSignal) => {
+      const file = await reviewPsdFixture(pageImage(Number(pageId.split("-").at(-1)), true));
       return openPsdPage(file, signal);
     }),
   };

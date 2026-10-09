@@ -6,7 +6,7 @@ const palette = [
   { color: "var(--surface-slate-300)", border: "var(--line-slate-400)" },
 ] as const;
 /** Stable across pages and filtering, including custom problem types. */
-export function revisionNoteAppearance(type: string): { color: string; border: string } {
+export function issueAppearance(type: string): { color: string; border: string } {
   let hash = 0;
   for (const character of type.normalize("NFC").trim()) {
     hash = (Math.imul(hash, 31) + (character.codePointAt(0) ?? 0)) >>> 0;

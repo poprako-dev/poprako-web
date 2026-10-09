@@ -49,7 +49,7 @@ async function encodeFixture(imageUrl: string): Promise<Blob> {
   canvas.height = 0;
   return new Blob([buffer], { type: "image/vnd.adobe.photoshop" });
 }
-export function revisionPsdFixture(imageUrl: string): Promise<Blob> {
+export function reviewPsdFixture(imageUrl: string): Promise<Blob> {
   const previous = cache.get(imageUrl);
   if (previous) return previous;
   const pending = encodeFixture(imageUrl);

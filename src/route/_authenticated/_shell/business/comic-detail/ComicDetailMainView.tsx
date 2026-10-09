@@ -11,6 +11,8 @@ import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapte
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import { ComicDetailHeader } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailHeader";
 import { ComicDetailSidebar } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailSidebar";
+import { ChapterIssueImportButton } from "./ChapterIssueImportButton";
+import { canImportIssues } from "@/route/_authenticated/business/issue/issue-import";
 import { ComicDetailContent } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailContent";
 import { ComicDetailModalLayout } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailModalLayout";
 import { PageList } from "@/route/_authenticated/_shell/business/comic-detail/page/PageList";
@@ -140,6 +142,15 @@ export function ComicDetailMainView({
       mode={mode}
       onModeChange={onModeChange}
       onArtworkExported={onArtworkExported}
+      issueImportAction={
+        chapters.selectedChapter &&
+        canImportIssues(chapters.selectedChapter, assignments.currentAssignment) ? (
+          <ChapterIssueImportButton
+            key={chapters.selectedChapter.id}
+            chapterId={chapters.selectedChapter.id}
+          />
+        ) : undefined
+      }
       comicInfo={comicInfo}
       selectedChapter={chapters.selectedChapter}
       pagesLength={pages.pages.length}

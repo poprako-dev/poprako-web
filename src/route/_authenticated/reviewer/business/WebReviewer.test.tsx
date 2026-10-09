@@ -22,7 +22,9 @@ vi.mock("./Reviewer", () => ({
 }));
 const client = createApiClient({ baseUrl: "/api/v1", getAccessToken: () => null });
 beforeEach(() => {
-  requests.chapter.mockReset().mockResolvedValue({ success: true, data: {} });
+  requests.chapter
+    .mockReset()
+    .mockResolvedValue({ success: true, data: { id: "chapter", stages: 0 } });
   requests.pages.mockReset();
   requests.reviewer.mockClear();
 });
@@ -54,9 +56,10 @@ test("loads page navigation without constructing a Unit project or preview data"
       ],
     },
     startPageId: "second",
-    loadRevisionPage: null,
-    loadRevisionNotes: null,
   });
+  const props = requests.reviewer.mock.lastCall?.[0] as ReviewerProps;
+  expect(typeof props.loadReviewPage).toBe("function");
+  expect(typeof props.loadIssues).toBe("function");
   expect(requests.chapter).toHaveBeenCalledOnce();
   expect(requests.pages).toHaveBeenCalledOnce();
 });

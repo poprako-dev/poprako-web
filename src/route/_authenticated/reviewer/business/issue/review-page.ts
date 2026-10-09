@@ -1,25 +1,23 @@
 import type { PageRect, PagePreview } from "@/shared/utility/page-geometry";
 export type { PageRect } from "@/shared/utility/page-geometry";
-export type RevisionLayer = {
+export type ReviewLayer = {
   id: string;
   parentId: string | null;
   name: string;
   bounds: PageRect;
   visible: boolean;
 };
-export type RevisionPreview = PagePreview;
-export type RevisionPage = {
+export type ReviewPreview = PagePreview;
+export type ReviewPage = {
   width: number;
   height: number;
-  layers: RevisionLayer[];
-  composite: RevisionPreview;
+  layers: ReviewLayer[];
+  composite: ReviewPreview;
   dispose: () => void | Promise<void>;
 };
-export type LoadRevisionPage =
-  | ((pageId: string, signal: AbortSignal) => Promise<RevisionPage>)
-  | null;
-export function includesRevisionLayer(
-  layers: RevisionLayer[],
+export type LoadReviewPage = ((pageId: string, signal: AbortSignal) => Promise<ReviewPage>) | null;
+export function includesReviewLayer(
+  layers: ReviewLayer[],
   selectedId: string | null,
   layerId: string | null,
 ): boolean {

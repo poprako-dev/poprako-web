@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { createRevisionPageController } from "./revision-page-controller";
-import type { RevisionNote } from "./revision-note";
-import type { RevisionPage } from "./revision-page";
-function note(id: string, number = 1): RevisionNote {
-  return { id, number, type: "断行", content: "说明", rect: null, layerId: null };
+import { createReviewPageController } from "./review-page-controller";
+import type { IssueInfo } from "@/route/_authenticated/business/issue/issue";
+import type { ReviewPage } from "./review-page";
+function issue(id: string, index = 0): IssueInfo {
+  return { id, pageId: "page", index, variant: "断行", note: "说明", rect: null, layerPath: null };
 }
-function page(): RevisionPage {
+function page(): ReviewPage {
   return {
     width: 10,
     height: 20,
@@ -22,99 +22,109 @@ function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
   return { promise, resolve };
 }
 describe("Reviewer resource ownership", () => {
-  it("loads only the current page with cancellation and original note numbering", async () => {
-    const notes = vi.fn(() => Promise.resolve([note("second", 42), note("first", 7)]));
+  it("loads only the current page with cancellation and page issue ordering", async () => {
+    const issues = vi.fn(() => Promise.resolve([issue("second", 42), issue("first", 7)]));
     const loaded = page();
     const pages = vi.fn(() => Promise.resolve(loaded));
-    const controller = createRevisionPageController(notes, pages);
+    const controller = createReviewPageController(issues, pages);
     await controller.load("page-2");
-    expect(notes).toHaveBeenCalledWith("page-2", expect.any(AbortSignal));
+    expect(issues).toHaveBeenCalledWith("page-2", expect.any(AbortSignal));
     expect(pages).toHaveBeenCalledWith("page-2", expect.any(AbortSignal));
     expect(controller.getSnapshot()).toMatchObject({
       status: "ready",
-      notesStatus: "ready",
-      notes: [note("first", 7), note("second", 42)],
+      issuesStatus: "ready",
+      issues: [issue("first", 7), issue("second", 42)],
       page: loaded,
     });
     controller.dispose();
     expect(loaded.dispose).toHaveBeenCalledOnce();
   });
-  it("disposes stale PSDs and ignores late notes after navigation", async () => {
-    const first = deferred<RevisionPage>();
-    const oldNotes = deferred<RevisionNote[]>();
+  it("disposes stale PSDs and ignores late issues after navigation", async () => {
+    const first = deferred<ReviewPage>();
+    const oldIssues = deferred<IssueInfo[]>();
     const old = page();
     const current = page();
-    const controller = createRevisionPageController(
-      (id) => (id === "first" ? oldNotes.promise : Promise.resolve([note("new")])),
+    const controller = createReviewPageController(
+      (id) => (id === "first" ? oldIssues.promise : Promise.resolve([issue("new")])),
       (id) => (id === "first" ? first.promise : Promise.resolve(current)),
     );
     const pending = controller.load("first");
     await controller.load("second");
     first.resolve(old);
-    oldNotes.resolve([note("old")]);
+    oldIssues.resolve([issue("old")]);
     await pending;
     expect(old.dispose).toHaveBeenCalledOnce();
     expect(controller.getSnapshot()).toMatchObject({
       pageId: "second",
       page: current,
-      notes: [note("new")],
+      issues: [issue("new")],
     });
   });
-  it("renders PSD while notes remain pending and retries notes without decoding again", async () => {
-    const pending = deferred<RevisionNote[]>();
+  it("renders PSD while issues remain pending and retries issues without decoding again", async () => {
+    const pending = deferred<IssueInfo[]>();
     const pages = vi.fn(() => Promise.resolve(page()));
-    const notes = vi.fn().mockReturnValueOnce(pending.promise).mockResolvedValue([]);
-    const controller = createRevisionPageController(notes, pages);
+    const issues = vi.fn().mockReturnValueOnce(pending.promise).mockResolvedValue([]);
+    const controller = createReviewPageController(issues, pages);
     const load = controller.load("page");
     await Promise.resolve();
     await Promise.resolve();
-    expect(controller.getSnapshot()).toMatchObject({ status: "ready", notesStatus: "loading" });
-    await controller.retryNotes();
-    pending.resolve([note("stale")]);
+    expect(controller.getSnapshot()).toMatchObject({ status: "ready", issuesStatus: "loading" });
+    await controller.retryIssues();
+    pending.resolve([issue("stale")]);
     await load;
     expect(pages).toHaveBeenCalledOnce();
-    expect(controller.getSnapshot().notes).toEqual([]);
+    expect(controller.getSnapshot().issues).toEqual([]);
   });
   it("keeps PSD on note failure and succeeds after scoped retry", async () => {
     const loaded = page();
-    const notes = vi
+    const issues = vi
       .fn()
       .mockRejectedValueOnce(new Error("offline"))
-      .mockResolvedValue([note("fixed")]);
+      .mockResolvedValue([issue("fixed")]);
     const pages = vi.fn(() => Promise.resolve(loaded));
-    const controller = createRevisionPageController(notes, pages);
+    const controller = createReviewPageController(issues, pages);
     await controller.load("page");
     expect(controller.getSnapshot()).toMatchObject({
       status: "ready",
       page: loaded,
-      notesStatus: "error",
-      notesError: "offline",
+      issuesStatus: "error",
+      issuesError: "offline",
     });
     expect(loaded.dispose).not.toHaveBeenCalled();
-    await controller.retryNotes();
+    await controller.retryIssues();
     expect(pages).toHaveBeenCalledOnce();
-    expect(controller.getSnapshot()).toMatchObject({ notesError: null, notes: [note("fixed")] });
+    expect(controller.getSnapshot()).toMatchObject({ issuesError: null, issues: [issue("fixed")] });
   });
-  it("supports absent notes and preserves notes across a PSD retry", async () => {
+  it("supports absent issues and preserves issues across a PSD retry", async () => {
     const pages = vi.fn().mockRejectedValueOnce(new Error("bad PSD")).mockResolvedValue(page());
-    const notes = vi.fn(() => Promise.resolve([note("keep")]));
-    const controller = createRevisionPageController(notes, pages);
+    const issues = vi.fn(() => Promise.resolve([issue("keep")]));
+    const controller = createReviewPageController(issues, pages);
     await controller.load("page");
     await controller.retryPage();
-    expect(notes).toHaveBeenCalledOnce();
-    expect(controller.getSnapshot()).toMatchObject({ status: "ready", notes: [note("keep")] });
-    const empty = createRevisionPageController(null, () => Promise.resolve(page()));
+    expect(issues).toHaveBeenCalledOnce();
+    expect(controller.getSnapshot()).toMatchObject({ status: "ready", issues: [issue("keep")] });
+    const empty = createReviewPageController(
+      () => Promise.resolve([]),
+      () => Promise.resolve(page()),
+    );
     await empty.load("page");
-    expect(empty.getSnapshot()).toMatchObject({ status: "ready", notesStatus: "ready", notes: [] });
+    expect(empty.getSnapshot()).toMatchObject({
+      status: "ready",
+      issuesStatus: "ready",
+      issues: [],
+    });
   });
   it("aborts requests on exit and never adopts late page resources", async () => {
-    const late = deferred<RevisionPage>();
+    const late = deferred<ReviewPage>();
     const loaded = page();
     let signal: AbortSignal | undefined;
-    const controller = createRevisionPageController(null, (_id, request) => {
-      signal = request;
-      return late.promise;
-    });
+    const controller = createReviewPageController(
+      () => Promise.resolve([]),
+      (_id, request) => {
+        signal = request;
+        return late.promise;
+      },
+    );
     const pending = controller.load("page");
     controller.dispose();
     expect(signal?.aborted).toBe(true);
@@ -130,7 +140,7 @@ it("shows loading before awaiting old-page release and skips superseded navigati
   const first = page();
   first.dispose = vi.fn(() => release.promise);
   const pages = vi.fn().mockResolvedValueOnce(first).mockResolvedValue(page());
-  const controller = createRevisionPageController(null, pages);
+  const controller = createReviewPageController(() => Promise.resolve([]), pages);
   await controller.load("first");
   const second = controller.load("second");
   expect(controller.getSnapshot()).toMatchObject({
@@ -155,7 +165,7 @@ it("does not allocate the queued page when exiting during previous-page release"
   const first = page();
   first.dispose = () => release.promise;
   const pages = vi.fn(() => Promise.resolve(first));
-  const controller = createRevisionPageController(null, pages);
+  const controller = createReviewPageController(() => Promise.resolve([]), pages);
   await controller.load("first");
   const pending = controller.load("second");
   controller.dispose();

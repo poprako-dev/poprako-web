@@ -1,40 +1,40 @@
-import type { LoadRevisionNotes, RevisionNote } from "./revision-note";
-import type { LoadRevisionPage, RevisionPage } from "./revision-page";
+import type { LoadIssues, IssueInfo } from "@/route/_authenticated/business/issue/issue";
+import type { LoadReviewPage, ReviewPage } from "./review-page";
 type Snapshot = {
   pageId: string | null;
   status: "idle" | "loading" | "ready" | "error";
-  notesStatus: "idle" | "loading" | "ready" | "error";
-  notes: RevisionNote[];
-  page: RevisionPage | null;
+  issuesStatus: "idle" | "loading" | "ready" | "error";
+  issues: IssueInfo[];
+  page: ReviewPage | null;
   error: string | null;
-  notesError: string | null;
+  issuesError: string | null;
 };
-export interface RevisionPageController {
+export interface ReviewPageController {
   getSnapshot: () => Snapshot;
   subscribe: (listener: () => void) => () => void;
   load: (pageId: string) => Promise<void>;
   retryPage: () => Promise<void>;
-  retryNotes: () => Promise<void>;
+  retryIssues: () => Promise<void>;
   dispose: () => void;
 }
 function emptySnapshot(): Snapshot {
   return {
     pageId: null,
     status: "idle",
-    notesStatus: "idle",
-    notes: [],
+    issuesStatus: "idle",
+    issues: [],
     page: null,
     error: null,
-    notesError: null,
+    issuesError: null,
   };
 }
-export function createRevisionPageController(
-  loadNotes: LoadRevisionNotes,
-  loadPage: LoadRevisionPage,
-): RevisionPageController {
+export function createReviewPageController(
+  loadIssues: LoadIssues,
+  loadPage: LoadReviewPage,
+): ReviewPageController {
   let generation = 0;
   let pageRequest: AbortController | null = null;
-  let notesRequest: AbortController | null = null;
+  let issuesRequest: AbortController | null = null;
   let snapshot = emptySnapshot();
   let released: Promise<void> | null = null;
   const listeners = new Set<() => void>();
@@ -45,7 +45,7 @@ export function createRevisionPageController(
   function dispose(): void {
     generation++;
     pageRequest?.abort();
-    notesRequest?.abort();
+    issuesRequest?.abort();
     releasePage();
     snapshot = emptySnapshot();
   }
@@ -81,23 +81,23 @@ export function createRevisionPageController(
       publish({ status: "error", error: error instanceof Error ? error.message : String(error) });
     }
   }
-  async function retryNotes(): Promise<void> {
+  async function retryIssues(): Promise<void> {
     const pageId = snapshot.pageId;
     if (!pageId) return;
-    notesRequest?.abort();
+    issuesRequest?.abort();
     const request = new AbortController();
-    notesRequest = request;
+    issuesRequest = request;
     const current = generation;
-    publish({ notesStatus: "loading", notesError: null });
+    publish({ issuesStatus: "loading", issuesError: null });
     try {
-      const notes = loadNotes ? await loadNotes(pageId, request.signal) : [];
+      const issues = await loadIssues(pageId, request.signal);
       if (current !== generation || request.signal.aborted) return;
-      publish({ notesStatus: "ready", notes: [...notes].sort((a, b) => a.number - b.number) });
+      publish({ issuesStatus: "ready", issues: [...issues].sort((a, b) => a.index - b.index) });
     } catch (error) {
       if (current !== generation || request.signal.aborted) return;
       publish({
-        notesStatus: "error",
-        notesError: error instanceof Error ? error.message : String(error),
+        issuesStatus: "error",
+        issuesError: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -112,10 +112,10 @@ export function createRevisionPageController(
     async load(pageId) {
       dispose();
       publish({ pageId });
-      await Promise.all([retryPage(), retryNotes()]);
+      await Promise.all([retryPage(), retryIssues()]);
     },
     retryPage,
-    retryNotes,
+    retryIssues,
     dispose,
   };
 }

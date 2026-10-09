@@ -1,5 +1,5 @@
-import type { LoadRevisionNotes } from "./revision-note/revision-note";
-import type { LoadRevisionPage } from "./revision-note/revision-page";
+import type { LoadIssues } from "@/route/_authenticated/business/issue/issue";
+import type { LoadReviewPage } from "./issue/review-page";
 export type ReviewerProject = {
   chapterId: string;
   pages: readonly { id: string; index: number }[];
@@ -7,7 +7,9 @@ export type ReviewerProject = {
 export type ReviewerProps = {
   project: ReviewerProject;
   startPageId: string;
-  loadRevisionPage: LoadRevisionPage;
-  loadRevisionNotes: LoadRevisionNotes;
+  loadReviewPage: LoadReviewPage;
+  loadIssues: LoadIssues;
+  onImport?: (() => void) | undefined;
+  onPageChange?: ((pageId: string) => void) | undefined;
   onExit: () => void;
 };
