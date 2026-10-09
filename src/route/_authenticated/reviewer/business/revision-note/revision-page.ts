@@ -13,7 +13,7 @@ export type RevisionPage = {
   height: number;
   layers: RevisionLayer[];
   composite: RevisionPreview;
-  dispose: () => void;
+  dispose: () => void | Promise<void>;
 };
 export type LoadRevisionPage =
   | ((pageId: string, signal: AbortSignal) => Promise<RevisionPage>)

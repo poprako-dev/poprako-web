@@ -18,6 +18,18 @@ const meta: Meta<typeof Reviewer> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+function readPixels(image: HTMLCanvasElement | null): Uint8ClampedArray {
+  if (!image) throw new Error("Expected a rendered PSD page");
+  const copy = new OffscreenCanvas(image.width, image.height);
+  const context = copy.getContext("2d", { willReadFrequently: true });
+  if (!context) throw new Error("Expected a pixel readback context");
+  context.drawImage(image, 0, 0);
+  const pixels = context.getImageData(0, 0, copy.width, copy.height).data;
+  copy.width = 0;
+  copy.height = 0;
+  return pixels;
+}
+
 export const Interactive: Story = {
   name: "完整双栏 · 选择与切换",
   args: createRevisionStoryArgs(),
@@ -44,7 +56,7 @@ export const WithoutNotes: Story = {
   name: "PSD 预览 · 无批注数据源",
   args: { ...createRevisionStoryArgs(), loadRevisionNotes: null },
   play: async ({ canvasElement }) => {
-    await waitFor(() => expect(canvasElement.querySelector("img")).not.toBeNull());
+    await waitFor(() => expect(canvasElement.querySelector("canvas")).not.toBeNull());
     await expect(within(canvasElement).getByLabelText("选择 PSD 图层")).toBeVisible();
   },
 };
@@ -141,8 +153,12 @@ export const KeyboardAndNavigation: Story = {
       "aria-pressed",
       "true",
     );
+    const previousImage = canvasElement.querySelector("canvas");
+    await expect(previousImage?.width).toBeGreaterThan(0);
     await userEvent.click(canvas.getByRole("button", { name: "Next page" }));
     await expect(await canvas.findByText("本页没有 revision_note")).toBeVisible();
+    await expect(previousImage?.width).toBe(0);
+    await expect(previousImage?.height).toBe(0);
     await expect(args.loadRevisionNotes).toHaveBeenCalledTimes(2);
     await expect(args.loadRevisionNotes).toHaveBeenLastCalledWith(
       "page-2",
@@ -195,7 +211,7 @@ export const Failed: Story = {
     await waitFor(async () => {
       await expect(args.loadRevisionNotes).toHaveBeenCalledTimes(2);
     });
-    await waitFor(() => expect(canvasElement.querySelector("img")).not.toBeNull());
+    await waitFor(() => expect(canvasElement.querySelector("canvas")).not.toBeNull());
   },
 };
 
@@ -205,14 +221,14 @@ export const LayerFiltering: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await canvas.findByRole("button", { name: "revision_note 1：文字位置" });
+    await waitFor(() => expect(canvasElement.querySelector("canvas")?.width).toBeGreaterThan(0));
     await waitFor(() =>
-      expect(canvasElement.querySelector("img")?.naturalWidth).toBeGreaterThan(0),
+      expect(canvasElement.querySelector("canvas")?.getBoundingClientRect().width).toBeGreaterThan(
+        0,
+      ),
     );
-    await waitFor(() =>
-      expect(canvasElement.querySelector("img")?.getBoundingClientRect().width).toBeGreaterThan(0),
-    );
-    const image = canvasElement.querySelector("img");
-    const imageSrc = image?.getAttribute("src");
+    const image = canvasElement.querySelector("canvas");
+    const pixels = readPixels(image);
     const imagePosition = image?.getBoundingClientRect();
     await userEvent.click(canvas.getByLabelText("选择 PSD 图层"));
     await userEvent.click(await canvas.findByRole("button", { name: "图层 0.1.1：对白" }));
@@ -227,9 +243,9 @@ export const LayerFiltering: Story = {
     await userEvent.click(canvas.getByLabelText("选择 PSD 图层"));
     await userEvent.click(canvas.getByRole("button", { name: "全部" }));
     await expect(canvas.getByRole("button", { name: "revision_note 4：整页说明" })).toBeVisible();
-    await expect(canvasElement.querySelectorAll("img")).toHaveLength(1);
-    await expect(canvasElement.querySelector("img")).toBe(image);
-    await expect(image).toHaveAttribute("src", imageSrc);
+    await expect(canvasElement.querySelectorAll("canvas")).toHaveLength(1);
+    await expect(canvasElement.querySelector("canvas")).toBe(image);
+    await expect(readPixels(image)).toEqual(pixels);
     const currentPosition = image?.getBoundingClientRect();
     await expect([
       currentPosition?.x,

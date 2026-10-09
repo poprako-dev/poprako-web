@@ -10,7 +10,7 @@ function page(): RevisionPage {
     width: 10,
     height: 20,
     layers: [],
-    composite: { url: "image", bounds: { xCoord: 0, yCoord: 0, width: 1, height: 1 } },
+    composite: { source: "image", bounds: { xCoord: 0, yCoord: 0, width: 1, height: 1 } },
     dispose: vi.fn(),
   };
 }
@@ -123,4 +123,44 @@ describe("Reviewer resource ownership", () => {
     expect(loaded.dispose).toHaveBeenCalledOnce();
     expect(controller.getSnapshot().status).toBe("idle");
   });
+});
+
+it("shows loading before awaiting old-page release and skips superseded navigation", async () => {
+  const release = deferred<undefined>();
+  const first = page();
+  first.dispose = vi.fn(() => release.promise);
+  const pages = vi.fn().mockResolvedValueOnce(first).mockResolvedValue(page());
+  const controller = createRevisionPageController(null, pages);
+  await controller.load("first");
+  const second = controller.load("second");
+  expect(controller.getSnapshot()).toMatchObject({
+    page: null,
+    status: "loading",
+    pageId: "second",
+  });
+  expect(first.dispose).toHaveBeenCalledOnce();
+  expect(pages).toHaveBeenCalledTimes(1);
+  const third = controller.load("third");
+  await Promise.resolve();
+  expect(pages).toHaveBeenCalledTimes(1);
+  release.resolve(undefined);
+  await Promise.all([second, third]);
+  expect(pages).toHaveBeenCalledTimes(2);
+  expect(pages).toHaveBeenLastCalledWith("third", expect.any(AbortSignal));
+  expect(controller.getSnapshot()).toMatchObject({ status: "ready", pageId: "third" });
+});
+
+it("does not allocate the queued page when exiting during previous-page release", async () => {
+  const release = deferred<undefined>();
+  const first = page();
+  first.dispose = () => release.promise;
+  const pages = vi.fn(() => Promise.resolve(first));
+  const controller = createRevisionPageController(null, pages);
+  await controller.load("first");
+  const pending = controller.load("second");
+  controller.dispose();
+  release.resolve(undefined);
+  await pending;
+  expect(pages).toHaveBeenCalledTimes(1);
+  expect(controller.getSnapshot().status).toBe("idle");
 });

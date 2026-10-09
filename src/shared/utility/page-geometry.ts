@@ -1,5 +1,6 @@
 export type PageRect = { xCoord: number; yCoord: number; width: number; height: number };
-export type PagePreview = { url: string; bounds: PageRect };
+export type PageImageSource = string | HTMLCanvasElement;
+export type PagePreview = { source: PageImageSource; bounds: PageRect };
 export function previewPosition(rect: PageRect): {
   left: string;
   top: string;

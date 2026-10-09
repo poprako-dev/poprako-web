@@ -1,7 +1,9 @@
+import type { PageImageSource } from "@/shared/utility/page-geometry";
 import { useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, ReactElement, ReactNode, Ref } from "react";
 import clsx from "clsx";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
+import { PageImage } from "./PageImage";
 import type { usePageInteraction } from "@/shared/hook/use-page-interaction";
 
 const RELOCATION_DURATION_MS = 200;
@@ -14,7 +16,7 @@ type Props = {
   empty?: ReactNode;
   overlay?: ReactNode | ((scale: number) => ReactNode);
   onImageError?: (() => void) | undefined;
-  imageSrc: string | null;
+  imageSrc: PageImageSource | null;
   isLoading: boolean;
   interaction: ReturnType<typeof usePageInteraction>;
   onImageLoad?: (() => void) | undefined;
@@ -150,20 +152,13 @@ export function PageCanvas({
               transformOrigin: "center center",
             }}
           >
-            <img
-              ref={imgRef}
-              src={imageSrc}
-              alt=""
-              draggable={false}
+            <PageImage
+              imageRef={imgRef}
+              source={imageSrc}
               onLoad={onImageLoad}
               onError={onImageError}
-              className="select-none shadow-md"
-              style={{
-                maxWidth: containerSize.w * 0.9,
-                maxHeight: containerSize.h * 0.95,
-                width: "auto",
-                height: "auto",
-              }}
+              maxWidth={containerSize.w * 0.9}
+              maxHeight={containerSize.h * 0.95}
             />
 
             {typeof overlay === "function" ? overlay(transform.scale) : overlay}

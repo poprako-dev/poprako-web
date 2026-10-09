@@ -62,7 +62,7 @@ export function Reviewer({
     onNavigate: navigate,
     canvasRef,
   });
-  const imageSrc = revision.page?.composite.url ?? null;
+  const imageSrc = revision.page?.composite.source ?? null;
   const interaction = usePageInteraction({ imageSrc });
   if (pageIndex < 0)
     return (

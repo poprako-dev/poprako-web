@@ -36,6 +36,7 @@ export function createRevisionPageController(
   let pageRequest: AbortController | null = null;
   let notesRequest: AbortController | null = null;
   let snapshot = emptySnapshot();
+  let released: Promise<void> | null = null;
   const listeners = new Set<() => void>();
   function publish(change: Partial<Snapshot>): void {
     snapshot = { ...snapshot, ...change };
@@ -45,23 +46,33 @@ export function createRevisionPageController(
     generation++;
     pageRequest?.abort();
     notesRequest?.abort();
-    snapshot.page?.dispose();
+    releasePage();
     snapshot = emptySnapshot();
+  }
+  function releasePage(): void {
+    const page = snapshot.page;
+    if (!page) return;
+    const previousRelease = released;
+    const currentRelease = page.dispose();
+    released = Promise.all([previousRelease, currentRelease]).then(() => undefined);
   }
   async function retryPage(): Promise<void> {
     const pageId = snapshot.pageId;
     if (!pageId) return;
     pageRequest?.abort();
-    snapshot.page?.dispose();
+    releasePage();
     const request = new AbortController();
     pageRequest = request;
     const current = generation;
     publish({ status: "loading", page: null, error: null });
     try {
+      if (released) await released;
+      if (current !== generation) return;
+      request.signal.throwIfAborted();
       if (!loadPage) throw new Error("预览暂不可用");
       const page = await loadPage(pageId, request.signal);
       if (current !== generation || request.signal.aborted) {
-        page.dispose();
+        await page.dispose();
         return;
       }
       publish({ status: "ready", page });

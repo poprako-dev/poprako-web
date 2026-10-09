@@ -1,3 +1,4 @@
+import type { PageImageSource } from "@/shared/utility/page-geometry";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const MIN_SCALE = 0.5;
@@ -11,19 +12,19 @@ export type Transform = {
 };
 
 type Args = {
-  imageSrc: string | null;
+  imageSrc: PageImageSource | null;
 };
 
 export function useCanvasViewport({ imageSrc }: Args): {
   containerRef: React.RefObject<HTMLDivElement | null>;
-  imgRef: React.RefObject<HTMLImageElement | null>;
+  imgRef: React.RefObject<HTMLImageElement | HTMLCanvasElement | null>;
   transform: Transform;
   setTransform: React.Dispatch<React.SetStateAction<Transform>>;
   containerSize: { w: number; h: number };
   handleWheel: (e: WheelEvent) => void;
 } {
   const containerRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const imgRef = useRef<HTMLImageElement | HTMLCanvasElement>(null);
   const [transform, setTransform] = useState<Transform>({
     scale: 1,
     offsetX: 0,

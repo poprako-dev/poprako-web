@@ -1,3 +1,4 @@
+import type { PageImageSource } from "@/shared/utility/page-geometry";
 import type { RefObject } from "react";
 import type { Dispatch } from "react";
 import type { SetStateAction } from "react";
@@ -31,11 +32,11 @@ function ignore(): void {
   /* No editing actions in the read-only viewport. */
 }
 
-type Args = { imageSrc: string | null; editing?: PageEditing };
+type Args = { imageSrc: PageImageSource | null; editing?: PageEditing };
 
 export function usePageInteraction({ imageSrc, editing }: Args): {
   containerRef: RefObject<HTMLDivElement | null>;
-  imgRef: RefObject<HTMLImageElement | null>;
+  imgRef: RefObject<HTMLImageElement | HTMLCanvasElement | null>;
   transform: Transform;
   setTransform: Dispatch<SetStateAction<Transform>>;
   containerSize: { w: number; h: number };

@@ -1,3 +1,4 @@
+import { releasePsdBuffer } from "./release-psd-buffer";
 import { getCompositeImageData, initializeCanvas, readPsd } from "ag-psd";
 import type { PixelData } from "ag-psd";
 import { indexPsdLayers } from "./psd-layer";
@@ -8,7 +9,7 @@ initializeCanvas(
   },
   (width, height) => new ImageData(width, height),
 );
-async function encode(data: PixelData | undefined): Promise<Blob> {
+function getPixels(data: PixelData | undefined): Uint8ClampedArray<ArrayBuffer> {
   if (!data || data.width === 0 || data.height === 0) throw new Error("PSD 中没有可读取的栅格图像");
   const source = data.data;
   let pixels: Uint8ClampedArray<ArrayBuffer>;
@@ -29,19 +30,13 @@ async function encode(data: PixelData | undefined): Promise<Blob> {
             : value;
     }
   }
-  const canvas = new OffscreenCanvas(data.width, data.height);
-  // PNG encoding reads the canvas back; avoid the default GPU upload/readback path.
-  const context = canvas.getContext("2d", { willReadFrequently: true });
-  if (!context) throw new Error("无法创建 PSD 预览画布");
-  context.putImageData(new ImageData(pixels, data.width, data.height), 0, 0);
-  const image = await canvas.convertToBlob({ type: "image/png" });
-  canvas.width = 0;
-  canvas.height = 0;
-  return image;
+  return pixels;
 }
 async function handle(request: PsdRequest): Promise<void> {
+  let bytes: ArrayBuffer | null = null;
   try {
-    const psd = readPsd(await request.file.arrayBuffer(), {
+    bytes = await request.file.arrayBuffer();
+    const psd = readPsd(bytes, {
       useRawData: true,
       useImageData: true,
       skipLayerImageData: true,
@@ -51,15 +46,34 @@ async function handle(request: PsdRequest): Promise<void> {
     const { width, height } = psd;
     if (width <= 0 || height <= 0) throw new Error("PSD 页面尺寸无效");
     const layers = indexPsdLayers(psd);
-    const image = await encode(getCompositeImageData(psd));
+    // The composite is a view into the entire PSD, including unused layer pixels.
+    // Keep only its compressed bytes before allocating the full RGBA surface.
+    const composite = psd.rawCompositeData?.slice();
+    if (composite) psd.rawCompositeData = composite;
+    releasePsdBuffer(bytes);
+    const pixels = getPixels(getCompositeImageData(psd));
+    if (composite) releasePsdBuffer(composite.buffer);
+    // Upload in the worker and transfer its image, avoiding a CPU-backed bitmap
+    // in the display context and its retained raster/upload caches.
+    const surface = new OffscreenCanvas(width, height);
+    const context = surface.getContext("2d", { willReadFrequently: false });
+    if (!context) throw new Error("无法创建 PSD 预览画布");
+    context.putImageData(new ImageData(pixels, width, height), 0, 0);
+    const image = surface.transferToImageBitmap();
+    surface.width = 0;
+    surface.height = 0;
+    releasePsdBuffer(pixels.buffer);
     const response: PsdResponse = { id: request.id, type: "opened", width, height, layers, image };
-    postMessage(response);
+    // Transfer the final image without encoding or cloning its pixels.
+    postMessage(response, { transfer: [image] });
   } catch (error) {
     postMessage({
       id: request.id,
       type: "error",
       message: error instanceof Error ? error.message : String(error),
     } satisfies PsdResponse);
+  } finally {
+    if (bytes) releasePsdBuffer(bytes);
   }
 }
 globalThis.onmessage = (event: MessageEvent<PsdRequest>): void => {

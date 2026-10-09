@@ -7,6 +7,6 @@ export type PsdResponse =
       width: number;
       height: number;
       layers: RevisionLayer[];
-      image: Blob;
+      image: ImageBitmap;
     }
   | { id: number; type: "error"; message: string };
