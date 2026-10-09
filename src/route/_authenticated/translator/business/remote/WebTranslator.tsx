@@ -260,8 +260,6 @@ export function WebTranslator({ chapterId, startPageId, onExit, startMode }: Pro
 
   return (
     <BaseTranslator
-      loadRevisionNotes={null}
-      loadRevisionPage={null}
       key={`${chapterId}:${currentUserId}`}
       drafts={drafts}
       canWrite={state.canTranslate || state.canProofread}

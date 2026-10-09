@@ -21,7 +21,7 @@ import {
 } from "@/route/_authenticated/_shell/business/test/detail-request-fixture";
 import type {
   ComicDetailSearch,
-  TranslatorDestination,
+  WorkbenchDestination,
 } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
 
 const requests: string[] = [];
@@ -31,14 +31,14 @@ type ProbeProps = {
   returnTo: "/workspace" | "/comic-playground";
   search: ComicDetailSearch;
   onChangeSearch: (comicId: string | null, chapterId: string | null) => void;
-  onNavigateToTranslator: (destination: TranslatorDestination) => void;
+  onNavigateToWorkbench: (destination: WorkbenchDestination) => void;
 };
 
 function Probe({
   returnTo,
   search,
   onChangeSearch,
-  onNavigateToTranslator,
+  onNavigateToWorkbench,
 }: ProbeProps): ReactElement {
   const showToast = useToastStore((s) => s.showToast);
   const host = useComicDetailHost({
@@ -46,7 +46,7 @@ function Probe({
     showToast,
     search,
     onChangeSearch,
-    onNavigateToTranslator,
+    onNavigateToWorkbench,
   });
   const [role, setRole] = useState<Role | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -96,7 +96,7 @@ function Probe({
           <button
             type="button"
             onClick={() => {
-              host.navigateToTranslator("target-chapter", "page-1");
+              host.navigateToWorkbench("target-chapter", "page-1");
             }}
           >
             进入翻译器
@@ -126,7 +126,7 @@ function TranslatorReturn({
   destination,
   onReturn,
 }: {
-  destination: TranslatorDestination;
+  destination: WorkbenchDestination;
   onReturn: () => void;
 }): ReactElement {
   return (
@@ -142,7 +142,7 @@ type Props = { initialEntry: string; delayComic: boolean };
 
 function DetailHostScenario({ initialEntry, delayComic }: Props): ReactElement {
   const [location, setLocation] = useState(() => new URL(initialEntry, "http://storybook.local"));
-  const [translatorDestination, setTranslatorDestination] = useState<TranslatorDestination | null>(
+  const [workbenchDestination, setWorkbenchDestination] = useState<WorkbenchDestination | null>(
     null,
   );
   const returnTo = location.pathname === "/comic-playground" ? "/comic-playground" : "/workspace";
@@ -158,15 +158,15 @@ function DetailHostScenario({ initialEntry, delayComic }: Props): ReactElement {
     else next.searchParams.delete("chapterId");
     setLocation(next);
   };
-  const onNavigateToTranslator = (destination: TranslatorDestination): void => {
-    setTranslatorDestination(destination);
+  const onNavigateToWorkbench = (destination: WorkbenchDestination): void => {
+    setWorkbenchDestination(destination);
   };
-  return translatorDestination ? (
+  return workbenchDestination ? (
     <TranslatorReturn
-      destination={translatorDestination}
+      destination={workbenchDestination}
       onReturn={() => {
-        setTranslatorDestination(null);
-        onChangeSearch(translatorDestination.comicId, translatorDestination.chapterId);
+        setWorkbenchDestination(null);
+        onChangeSearch(workbenchDestination.comicId, workbenchDestination.chapterId);
       }}
     />
   ) : (
@@ -175,7 +175,7 @@ function DetailHostScenario({ initialEntry, delayComic }: Props): ReactElement {
         returnTo={returnTo}
         search={search}
         onChangeSearch={onChangeSearch}
-        onNavigateToTranslator={onNavigateToTranslator}
+        onNavigateToWorkbench={onNavigateToWorkbench}
       />
     </div>
   );

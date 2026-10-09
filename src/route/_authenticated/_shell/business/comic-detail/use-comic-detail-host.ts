@@ -16,22 +16,30 @@ import {
 export type ComicDetailSearch = {
   comicId?: string | undefined;
   chapterId?: string | undefined;
+  detailMode?: string | undefined;
 };
 
-export type TranslatorDestination = {
-  returnTo: "/workspace" | "/comic-playground";
-  comicId: string;
-  chapterId: string;
-  pageId: string;
-  readOnly: boolean;
-};
+export type { WorkbenchDestination } from "@/route/_authenticated/business/navigation/workbench-navigation";
+import {
+  isComicDetailMode,
+  readComicDetailMode,
+  saveComicDetailMode,
+} from "@/route/_authenticated/business/navigation/workbench-navigation";
+import type {
+  ComicDetailMode,
+  WorkbenchDestination,
+} from "@/route/_authenticated/business/navigation/workbench-navigation";
 
 type Args = {
-  returnTo: TranslatorDestination["returnTo"];
+  returnTo: WorkbenchDestination["returnTo"];
   showToast: (message: string, type: ToastType) => void;
   search: ComicDetailSearch;
-  onChangeSearch: (comicId: string | null, chapterId: string | null) => void;
-  onNavigateToTranslator: (destination: TranslatorDestination) => void;
+  onChangeSearch: (
+    comicId: string | null,
+    chapterId: string | null,
+    mode?: ComicDetailMode,
+  ) => void;
+  onNavigateToWorkbench: (destination: WorkbenchDestination) => void;
 };
 
 type LoadedDetail = { comicId: string; result: Result<ComicDetailData> };
@@ -47,10 +55,17 @@ type ComicDetailHostState = {
   isDetailOpen: boolean;
   detailError: string | null;
   urlChapterId: string | null;
-  openComicDetail: (comicId: string, chapterId?: string | null) => void;
+  detailMode: ComicDetailMode;
+  changeDetailMode: (mode: ComicDetailMode, chapterId: string | null) => void;
+  openComicDetail: (comicId: string, chapterId?: string | null, mode?: ComicDetailMode) => void;
   clearComicDetail: () => void;
   retryComicDetail: () => void;
-  navigateToTranslator: (chapterId: string, pageId: string, isReadOnly?: boolean) => void;
+  navigateToWorkbench: (
+    chapterId: string,
+    pageId: string,
+    isReadOnly?: boolean,
+    mode?: ComicDetailMode,
+  ) => void;
 };
 
 export function useComicDetailHost({
@@ -58,12 +73,19 @@ export function useComicDetailHost({
   showToast,
   search,
   onChangeSearch,
-  onNavigateToTranslator,
+  onNavigateToWorkbench,
 }: Args): ComicDetailHostState {
   const client = useApiClient();
   const [loadedDetail, setLoadedDetail] = useState<LoadedDetail | null>(null);
   const [loadRevision, setLoadRevision] = useState(0);
-  const { memberInfos } = useReadySession();
+  const { memberInfos, userInfo } = useReadySession();
+  const detailMode = isComicDetailMode(search.detailMode)
+    ? search.detailMode
+    : readComicDetailMode(userInfo.id);
+  useEffect(() => {
+    if (search.comicId && isComicDetailMode(search.detailMode))
+      saveComicDetailMode(userInfo.id, search.detailMode);
+  }, [search.comicId, search.detailMode, userInfo.id]);
   const urlComicId = search.comicId ?? null;
   const urlChapterId = search.chapterId ?? null;
   const result = loadedDetail?.comicId === urlComicId ? loadedDetail.result : undefined;
@@ -72,17 +94,23 @@ export function useComicDetailHost({
   const detailActiveMember = selectedComic ? findComicMember(selectedComic, memberInfos) : null;
 
   const setComicDetailSearchParams = useCallback(
-    (comicId: string | null, chapterId: string | null) => {
-      onChangeSearch(comicId, comicId ? chapterId : null);
+    (comicId: string | null, chapterId: string | null, mode?: ComicDetailMode) => {
+      onChangeSearch(
+        comicId,
+        comicId ? chapterId : null,
+        comicId ? (mode ?? detailMode) : undefined,
+      );
     },
-    [onChangeSearch],
+    [onChangeSearch, detailMode],
   );
 
   const openComicDetail = useCallback(
-    (comicId: string, chapterId?: string | null) => {
-      setComicDetailSearchParams(comicId, chapterId ?? null);
+    (comicId: string, chapterId?: string | null, mode?: ComicDetailMode) => {
+      const nextMode = mode ?? readComicDetailMode(userInfo.id);
+      saveComicDetailMode(userInfo.id, nextMode);
+      setComicDetailSearchParams(comicId, chapterId ?? null, nextMode);
     },
-    [setComicDetailSearchParams],
+    [setComicDetailSearchParams, userInfo.id],
   );
 
   const clearComicDetail = useCallback(() => {
@@ -139,18 +167,24 @@ export function useComicDetailHost({
     [client, selectedComic],
   );
 
-  const navigateToTranslator = useCallback(
-    (chapterId: string, pageId: string, isReadOnly?: boolean): void => {
+  const navigateToWorkbench = useCallback(
+    (
+      chapterId: string,
+      pageId: string,
+      isReadOnly?: boolean,
+      mode: ComicDetailMode = "translator",
+    ): void => {
       if (!urlComicId) return;
-      onNavigateToTranslator({
+      onNavigateToWorkbench({
         returnTo,
         comicId: urlComicId,
         chapterId,
         pageId,
-        readOnly: isReadOnly ?? false,
+        readOnly: mode === "reviewer" || (isReadOnly ?? false),
+        mode,
       });
     },
-    [onNavigateToTranslator, returnTo, urlComicId],
+    [onNavigateToWorkbench, returnTo, urlComicId],
   );
 
   return {
@@ -161,9 +195,14 @@ export function useComicDetailHost({
     isDetailOpen: Boolean(urlComicId),
     detailError: result && !result.success ? result.error : null,
     urlChapterId,
+    detailMode,
+    changeDetailMode(mode, chapterId) {
+      saveComicDetailMode(userInfo.id, mode);
+      setComicDetailSearchParams(urlComicId, chapterId, mode);
+    },
     openComicDetail,
     clearComicDetail,
     retryComicDetail,
-    navigateToTranslator,
+    navigateToWorkbench,
   };
 }

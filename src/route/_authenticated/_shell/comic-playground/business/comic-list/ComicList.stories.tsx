@@ -1,6 +1,6 @@
-import { type JSX, useState } from "react";
+import { type JSX, type ComponentProps, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, within } from "storybook/test";
+import { expect, fn, userEvent, within } from "storybook/test";
 import { ComicList } from "@/route/_authenticated/_shell/comic-playground/business/comic-list/ComicList";
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
 import type { WorksetInfo } from "@/route/_authenticated/business/workset/workset";
@@ -191,7 +191,8 @@ export const NonAdmin: Story = {
 
 // ── Reviewer Mode ─────────────────────────────────
 
-function ReviewerComicList(): JSX.Element {
+type Props = Pick<ComponentProps<typeof ComicList>, "onComicClick">;
+function ReviewerComicList({ onComicClick }: Props): JSX.Element {
   const [activeWsId, setActiveWsId] = useState("ws-1");
   const [title, setTitle] = useState("");
   const [upload, setUpload] = useState<BinaryFilter>("unset");
@@ -214,9 +215,7 @@ function ReviewerComicList(): JSX.Element {
           return;
         }}
         onLoadComics={makePagedLoader(FULL_COMICS)}
-        onComicClick={() => {
-          return;
-        }}
+        onComicClick={onComicClick}
         onCreateComic={() => {
           return;
         }}
@@ -241,7 +240,12 @@ function ReviewerComicList(): JSX.Element {
 
 export const ReviewerMode: Story = {
   name: "审阅者模式",
-  render: () => <ReviewerComicList />,
+  args: { onComicClick: fn() },
+  render: (args) => <ReviewerComicList onComicClick={args.onComicClick} />,
+  play: async ({ args, canvasElement }) => {
+    await userEvent.click(await within(canvasElement).findByText("测试漫画 1"));
+    await expect(args.onComicClick).toHaveBeenLastCalledWith("comic-0", undefined, "reviewer");
+  },
 };
 
 // ── Empty State ───────────────────────────────────

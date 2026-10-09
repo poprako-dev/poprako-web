@@ -1,7 +1,7 @@
 import type { JSX } from "react/jsx-runtime";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fireEvent, fn, userEvent, within } from "storybook/test";
-import { useShortcutActions } from "@/route/_authenticated/translator/business/editor/use-shortcut-actions";
+import { useShortcutActions } from "@/shared/hook/use-shortcut-actions";
 
 type Props = { onAction: () => void };
 
@@ -16,6 +16,7 @@ function ShortcutScope({ onAction }: Props): JSX.Element {
       },
     ],
     false,
+    "[data-unit-id]",
   );
   return (
     <div>

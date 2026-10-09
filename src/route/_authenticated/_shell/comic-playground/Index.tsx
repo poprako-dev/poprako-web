@@ -1,22 +1,30 @@
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import { ComicPlayground } from "@/route/_authenticated/_shell/comic-playground/business/ComicPlayground";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import type { TranslatorDestination } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
+import type { WorkbenchDestination } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
 import type { ReactElement } from "react";
 
 function ComicPlaygroundPage(): ReactElement {
   const search = Route.useSearch();
   const navigate = useNavigate();
-  const onChangeSearch = (comicId: string | null, chapterId: string | null): void => {
+  const onChangeSearch = (
+    comicId: string | null,
+    chapterId: string | null,
+    mode?: ComicDetailMode,
+  ): void => {
     void navigate({
       to: "/comic-playground",
       replace: true,
       search: (previous) => {
         const next = Object.fromEntries(
-          Object.entries(previous).filter(([key]) => key !== "comicId" && key !== "chapterId"),
+          Object.entries(previous).filter(
+            ([key]) => key !== "comicId" && key !== "chapterId" && key !== "detailMode",
+          ),
         );
         if (comicId) {
           next["comicId"] = comicId;
         }
+        if (comicId && mode) next["detailMode"] = mode;
         if (comicId && chapterId) {
           next["chapterId"] = chapterId;
         }
@@ -24,9 +32,12 @@ function ComicPlaygroundPage(): ReactElement {
       },
     });
   };
-  const onNavigateToTranslator = (destination: TranslatorDestination): void => {
+  const onNavigateToWorkbench = (destination: WorkbenchDestination): void => {
     void navigate({
-      to: "/translator/$chapterId/$pageId",
+      to:
+        destination.mode === "reviewer"
+          ? "/reviewer/$chapterId/$pageId"
+          : "/translator/$chapterId/$pageId",
       params: { chapterId: destination.chapterId, pageId: destination.pageId },
       search: {
         returnTo: destination.returnTo,
@@ -41,7 +52,7 @@ function ComicPlaygroundPage(): ReactElement {
       <ComicPlayground
         search={search}
         onChangeSearch={onChangeSearch}
-        onNavigateToTranslator={onNavigateToTranslator}
+        onNavigateToWorkbench={onNavigateToWorkbench}
       />
     </div>
   );

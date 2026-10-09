@@ -13,7 +13,7 @@ import {
   type UnitInfo,
 } from "@/route/_authenticated/translator/business/unit/unit";
 import { isBeyondDragThreshold } from "@/route/_authenticated/translator/business/unit-list/drag-threshold";
-import { shouldIgnoreTranslatorKey } from "@/route/_authenticated/translator/business/editor/keyboard-scope";
+import { shouldIgnoreWorkbenchKey } from "@/shared/utility/keyboard-scope";
 
 const AUTO_SCROLL_EDGE = 32;
 const MAX_AUTO_SCROLL_SPEED = 12;
@@ -214,7 +214,7 @@ export function useUnitReorder({ units, listRef, enabled, onActivateUnit, onReor
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (shouldIgnoreTranslatorKey(event)) return;
+      if (shouldIgnoreWorkbenchKey(event, "[data-unit-id]")) return;
       if (event.key !== "Escape" || !dragRef.current) return;
       event.preventDefault();
       cancelDrag();

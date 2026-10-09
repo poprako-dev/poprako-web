@@ -155,8 +155,6 @@ export function createStoryArgs({
 
   return {
     project: mockProject,
-    loadRevisionNotes: null,
-    loadRevisionPage: null,
     canTranslate,
     canProofread,
     // eslint-disable-next-line @typescript-eslint/require-await

@@ -1,3 +1,4 @@
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import { useReadySession } from "@/route/business/session/ready-session";
 import { hasRole } from "@/route/business/identity/role";
 import { createComment } from "@/api/comment";
@@ -13,7 +14,7 @@ import { useApiClient } from "@/route/business/api-context";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import {
   type ComicDetailSearch,
-  type TranslatorDestination,
+  type WorkbenchDestination,
   useComicDetailHost,
 } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
 import { listComments } from "@/route/_authenticated/_shell/workspace/business/comment/comment-request";
@@ -25,13 +26,17 @@ import {
 
 type Props = {
   search: ComicDetailSearch;
-  onChangeSearch: (comicId: string | null, chapterId: string | null) => void;
-  onNavigateToTranslator: (destination: TranslatorDestination) => void;
+  onChangeSearch: (
+    comicId: string | null,
+    chapterId: string | null,
+    mode?: ComicDetailMode,
+  ) => void;
+  onNavigateToWorkbench: (destination: WorkbenchDestination) => void;
 };
 
 // 个人工作区组件，会直接放置在 WorkspacePage 中，展示个人工作区的相关内容
 // 所以自身不设定高度，而是适应父组件
-export function Workspace({ search, onChangeSearch, onNavigateToTranslator }: Props): JSX.Element {
+export function Workspace({ search, onChangeSearch, onNavigateToWorkbench }: Props): JSX.Element {
   const client = useApiClient();
   const loginState = useReadySession();
   const currentUserId = loginState.userInfo.id;
@@ -65,15 +70,17 @@ export function Workspace({ search, onChangeSearch, onNavigateToTranslator }: Pr
     detailError,
     retryComicDetail,
     urlChapterId,
+    detailMode,
+    changeDetailMode,
     openComicDetail,
     clearComicDetail,
-    navigateToTranslator,
+    navigateToWorkbench,
   } = useComicDetailHost({
     returnTo: "/workspace",
     showToast,
     search,
     onChangeSearch,
-    onNavigateToTranslator,
+    onNavigateToWorkbench,
   });
 
   const username = loginState.userInfo.name;
@@ -181,8 +188,10 @@ export function Workspace({ search, onChangeSearch, onNavigateToTranslator }: Pr
           key={selectedComic.id}
           comicInfo={selectedComic}
           pinnedChapter={selectedComicPinnedChapter}
+          mode={detailMode}
+          onModeChange={changeDetailMode}
           initialChapterId={urlChapterId}
-          onNavigateToTranslator={navigateToTranslator}
+          onNavigateToWorkbench={navigateToWorkbench}
           onChanged={handleDetailChanged}
           onClose={() => {
             clearComicDetail();

@@ -66,6 +66,7 @@ const OWNED_NAME = new Set([
   "resource",
   "response",
   "review",
+  "reviewer",
   "revision-note",
   "route",
   "route-migration",

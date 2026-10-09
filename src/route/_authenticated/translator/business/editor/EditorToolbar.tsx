@@ -1,15 +1,9 @@
 import type { JSX } from "react";
 import { StatusOptionBar } from "../StatusOptionBar";
-import type { ReadOnlyView } from "../revision-note/revision-note";
 import type { EditorSession } from "./use-editor-session";
 
-import type { RevisionWorkspace } from "../revision-note/use-revision-workspace";
-import { RevisionLayerMenu } from "../revision-note/RevisionLayerMenu";
 type Props = {
-  revision?: RevisionWorkspace | null | undefined;
   session: EditorSession;
-  readOnlyView?: ReadOnlyView | undefined;
-  onSwitchReadOnlyView?: (() => void) | undefined;
 };
 
 function saveStatusLabel(session: EditorSession): string {
@@ -20,22 +14,14 @@ function saveStatusLabel(session: EditorSession): string {
   return saveState.dirty ? "待保存" : "已保存";
 }
 
-export function EditorToolbar({
-  session,
-  revision,
-  readOnlyView = "unit",
-  onSwitchReadOnlyView,
-}: Props): JSX.Element {
+export function EditorToolbar({ session }: Props): JSX.Element {
   return (
     <div className="relative z-30 shrink-0 border-b-2 border-line-stone-200 bg-surface-stone-50">
       <StatusOptionBar
-        imageControl={revision ? <RevisionLayerMenu revision={revision} /> : undefined}
         currMode={session.view}
         view={session.view}
         nextView={session.nextView ?? session.view}
         canSwitchView={session.canSwitchView && session.nextView !== undefined}
-        readOnlyView={readOnlyView}
-        onSwitchReadOnlyView={onSwitchReadOnlyView}
         isRelocationEnabled={session.isRelocationEnabled}
         isUnitCreationEnabled={session.isUnitCreationEnabled}
         proofreadPreviewVisibility={session.proofreadPreviewVisibility}

@@ -1,5 +1,5 @@
-import { useEffect, useImperativeHandle, useRef, useState } from "react";
-import type { KeyboardEvent as ReactKeyboardEvent, ReactElement, ReactNode, Ref } from "react";
+import { useState } from "react";
+import type { ReactElement, Ref } from "react";
 import clsx from "clsx";
 import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
 import type { TranslatorMode } from "@/route/_authenticated/translator/business/unit/translator-mode";
@@ -17,23 +17,12 @@ import {
   UnitMarker,
   PIN_OFFSET,
 } from "@/route/_authenticated/translator/business/canvas/UnitMarker";
-import { LoadingCircle } from "@/shared/component/LoadingCircle";
-import type { ProofreadPreviewVisibility } from "@/route/_authenticated/translator/business/contract/preview";
-import { useCanvasInteraction } from "@/route/_authenticated/translator/business/canvas/use-canvas-interaction";
-
-import type { PagePreview } from "./page-geometry";
-import { previewPosition } from "./page-geometry";
-
-const RELOCATION_DURATION_MS = 200;
-
-export interface CanvasHandle {
-  centerOn: (xCoord: number, yCoord: number) => void;
-}
-
+import { PageCanvas } from "@/shared/component/PageCanvas";
+import type { CanvasHandle } from "@/shared/component/PageCanvas";
+export type { CanvasHandle } from "@/shared/component/PageCanvas";
+import { usePageInteraction } from "@/shared/hook/use-page-interaction";
+import type { ProofreadPreviewVisibility } from "../contract/preview";
 type Props = {
-  overlay?: ReactNode | ((scale: number) => ReactNode);
-  isolated?: PagePreview | null | undefined;
-  onImageError?: (() => void) | undefined;
   imageSrc: string | null;
   units: UnitInfo[];
   mode: TranslatorMode;
@@ -52,9 +41,6 @@ type Props = {
 };
 
 export function Canvas({
-  overlay,
-  isolated,
-  onImageError,
   imageSrc,
   units,
   mode,
@@ -71,286 +57,140 @@ export function Canvas({
   proofreadPreviewVisibility,
   ref,
 }: Props): ReactElement {
-  const {
-    containerRef,
-    imgRef,
-    transform,
-    setTransform,
-    containerSize,
-    dragMarker,
-    isPanning,
-    handleCanvasMouseDown,
-    handleMarkerMouseDown,
-    handleMarkerTouchStart,
-    handleContextMenu,
-    handleWheel,
-  } = useCanvasInteraction({
+  const interaction = usePageInteraction({
     imageSrc,
-    isUnitCreationEnabled,
-    enableReadOnly,
-    onFocusUnit,
-    onMoveUnit,
-    onAddUnit,
-    onDeleteUnit,
+    editing: {
+      isMarkerCreationEnabled: isUnitCreationEnabled,
+      enableReadOnly,
+      onFocusMarker: onFocusUnit,
+      onMoveMarker: onMoveUnit,
+      onAddMarker: onAddUnit,
+      onDeleteMarker: onDeleteUnit,
+    },
   });
-
+  const { dragMarker, handleMarkerMouseDown, handleMarkerTouchStart } = interaction;
   const [hoveredUnitId, setHoveredUnitId] = useState<string | null>(null);
-  const [isRelocating, setIsRelocating] = useState(false);
-  const relocationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Keep a live ref to transform to avoid stale closures in imperative handle
-  const transformRef = useRef(transform);
-  useEffect(() => {
-    transformRef.current = transform;
-  }, [transform]);
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      centerOn(xCoord: number, yCoord: number) {
-        const img = imgRef.current;
-        if (!img) return;
-        const scale = transformRef.current.scale;
-        const offsetX = -(xCoord - 0.5) * img.offsetWidth * scale;
-        const offsetY = -(yCoord - 0.5) * img.offsetHeight * scale;
-
-        if (relocationTimerRef.current) {
-          clearTimeout(relocationTimerRef.current);
-        }
-        setIsRelocating(true);
-        setTransform((prev) => ({ ...prev, offsetX, offsetY }));
-        relocationTimerRef.current = setTimeout(() => {
-          setIsRelocating(false);
-          relocationTimerRef.current = null;
-        }, RELOCATION_DURATION_MS);
-      },
-    }),
-    [imgRef, setTransform],
-  );
-
-  useEffect(() => {
-    return () => {
-      if (relocationTimerRef.current) {
-        clearTimeout(relocationTimerRef.current);
-      }
-    };
-  }, []);
-
-  // 用 ref-based listener 替代 React onWheel，因为需要 { passive: false } 来支持 preventDefault
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    el.addEventListener("wheel", handleWheel, { passive: false });
-    return () => {
-      el.removeEventListener("wheel", handleWheel);
-    };
-  }, [handleWheel, containerRef]);
-
-  function handleCanvasKeyDown(event: ReactKeyboardEvent<HTMLDivElement>): void {
-    const offsets: Partial<Record<string, { x: number; y: number }>> = {
-      ArrowLeft: { x: 24, y: 0 },
-      ArrowRight: { x: -24, y: 0 },
-      ArrowUp: { x: 0, y: 24 },
-      ArrowDown: { x: 0, y: -24 },
-    };
-    const offset = offsets[event.key];
-    if (!offset) return;
-    event.preventDefault();
-    setTransform((previous) => ({
-      ...previous,
-      offsetX: previous.offsetX + offset.x,
-      offsetY: previous.offsetY + offset.y,
-    }));
-  }
-
-  /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- the canvas uses an application role with arrow-key panning for its pointer and touch controls. */
   return (
-    <div
-      ref={containerRef}
-      role="application"
-      tabIndex={0}
-      aria-label="图像标记画布，使用方向键平移"
-      className={clsx(
-        "relative w-full h-full overflow-hidden bg-surface-stone-600 touch-none select-none",
-        isPanning ? "cursor-grabbing" : "cursor-default",
-      )}
-      onMouseDown={handleCanvasMouseDown}
-      onContextMenu={handleContextMenu}
-      onKeyDown={handleCanvasKeyDown}
-    >
-      {isLoading ? (
-        <div className="flex items-center justify-center w-full h-full">
-          <LoadingCircle />
-        </div>
-      ) : imageSrc ? (
-        <div
-          className={clsx(
-            "absolute inset-0 flex items-center justify-center pointer-events-none",
-            isRelocating && [
-              "transition-transform duration-200 ease-out",
-              "motion-reduce:transition-none",
-            ],
-          )}
-          style={{
-            transform: `translate(${String(transform.offsetX)}px, ${String(transform.offsetY)}px)`,
-          }}
-        >
-          <div
-            className="relative inline-block pointer-events-auto"
-            style={{
-              transform: `scale(${String(transform.scale)})`,
-              transformOrigin: "center center",
-            }}
-          >
-            <img
-              ref={imgRef}
-              src={imageSrc}
-              alt=""
-              draggable={false}
-              onLoad={onImageLoad}
-              onError={onImageError}
-              className="select-none shadow-md"
-              style={{
-                visibility: isolated ? "hidden" : "visible",
-                maxWidth: containerSize.w * 0.9,
-                maxHeight: containerSize.h * 0.95,
-                width: "auto",
-                height: "auto",
-              }}
-            />
+    <PageCanvas
+      ref={ref}
+      interaction={interaction}
+      imageSrc={imageSrc}
+      isLoading={isLoading}
+      onImageLoad={onImageLoad}
+      overlay={(scale) => {
+        const transform = { scale };
+        return (
+          <>
+            {units.map((unit) => {
+              const id = unitId(unit);
 
-            {isolated && (
-              <img
-                src={isolated.url}
-                alt=""
-                draggable={false}
-                onError={onImageError}
-                className="absolute select-none"
-                style={previewPosition(isolated.bounds)}
-              />
-            )}
-            {typeof overlay === "function" ? overlay(transform.scale) : overlay}
-            {overlay === undefined &&
-              units.map((unit) => {
-                const id = unitId(unit);
+              if (!id) {
+                return null;
+              }
 
-                if (!id) {
-                  return null;
-                }
+              const isDraggingThis = dragMarker?.id === id;
+              const draggingMarker = isDraggingThis ? dragMarker : null;
+              const position = unitPosition(unit);
+              const x = draggingMarker ? draggingMarker.x : position.xCoord;
+              const y = draggingMarker ? draggingMarker.y : position.yCoord;
 
-                const isDraggingThis = dragMarker?.id === id;
-                const draggingMarker = isDraggingThis ? dragMarker : null;
-                const position = unitPosition(unit);
-                const x = draggingMarker ? draggingMarker.x : position.xCoord;
-                const y = draggingMarker ? draggingMarker.y : position.yCoord;
-
-                return (
-                  <div
-                    key={id}
-                    data-marker={id}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`第 ${String(unitIndex(unit) + 1)} 个 Unit`}
-                    className="absolute pointer-events-auto"
-                    style={{
-                      left: `${String(x * 100)}%`,
-                      top: `${String(y * 100)}%`,
-                      transformOrigin: "0 0",
-                      transform:
-                        `translate(-${String(CIRCLE_SIZE / 2 / transform.scale)}px, ` +
-                        `-${String(PIN_OFFSET / transform.scale)}px) ` +
-                        `scale(${String(1 / transform.scale)})`,
-                    }}
-                    onMouseDown={(e) => {
-                      handleMarkerMouseDown(e, id, position.xCoord, position.yCoord);
-                    }}
-                    onTouchStart={(e) => {
-                      handleMarkerTouchStart(e, id, position.xCoord, position.yCoord);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        onFocusUnit(id);
-                      }
-                    }}
-                    onDoubleClick={(e) => {
-                      e.stopPropagation();
-                      if (!enableReadOnly) onToggleBubble(id);
-                    }}
-                    onMouseEnter={() => {
-                      setHoveredUnitId(id);
-                    }}
-                    onMouseLeave={() => {
-                      setHoveredUnitId((prev) => (prev === id ? null : prev));
-                    }}
-                  >
-                    <UnitMarker
-                      index={unitIndex(unit)}
-                      isBubble={unitIsBubble(unit)}
-                      isCompleted={
-                        mode === "translate" ? unitIsTranslated(unit) : unitIsProofread(unit)
-                      }
-                      isSelected={focusedUnitId === id}
-                      isDragging={isDraggingThis}
-                      dimmed={proofreadPreviewVisibility === "dimmed"}
-                    />
-                  </div>
-                );
-              })}
+              return (
+                <div
+                  key={id}
+                  data-marker={id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`第 ${String(unitIndex(unit) + 1)} 个 Unit`}
+                  className="absolute pointer-events-auto"
+                  style={{
+                    left: `${String(x * 100)}%`,
+                    top: `${String(y * 100)}%`,
+                    transformOrigin: "0 0",
+                    transform:
+                      `translate(-${String(CIRCLE_SIZE / 2 / transform.scale)}px, ` +
+                      `-${String(PIN_OFFSET / transform.scale)}px) ` +
+                      `scale(${String(1 / transform.scale)})`,
+                  }}
+                  onMouseDown={(e) => {
+                    handleMarkerMouseDown(e, id, position.xCoord, position.yCoord);
+                  }}
+                  onTouchStart={(e) => {
+                    handleMarkerTouchStart(e, id, position.xCoord, position.yCoord);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onFocusUnit(id);
+                    }
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    if (!enableReadOnly) onToggleBubble(id);
+                  }}
+                  onMouseEnter={() => {
+                    setHoveredUnitId(id);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredUnitId((prev) => (prev === id ? null : prev));
+                  }}
+                >
+                  <UnitMarker
+                    index={unitIndex(unit)}
+                    isBubble={unitIsBubble(unit)}
+                    isCompleted={
+                      mode === "translate" ? unitIsTranslated(unit) : unitIsProofread(unit)
+                    }
+                    isSelected={focusedUnitId === id}
+                    isDragging={isDraggingThis}
+                    dimmed={proofreadPreviewVisibility === "dimmed"}
+                  />
+                </div>
+              );
+            })}
 
             {/* Preview overlay — rendered outside markers to avoid z-index stacking issues */}
-            {overlay === undefined &&
-              (() => {
-                // hover takes priority over focus; focus only shows in proofread mode
-                const previewUnitId =
-                  hoveredUnitId ??
-                  (mode === "proofread" && proofreadPreviewVisibility === "visible"
-                    ? focusedUnitId
-                    : null);
-                const previewUnit = previewUnitId
-                  ? units.find((u) => unitId(u) === previewUnitId)
-                  : null;
-                if (
-                  !previewUnit ||
-                  !unitFinalText(previewUnit) ||
-                  dragMarker?.id === previewUnitId
-                ) {
-                  return null;
-                }
-                const pos = unitPosition(previewUnit);
-                return (
+            {(() => {
+              // hover takes priority over focus; focus only shows in proofread mode
+              const previewUnitId =
+                hoveredUnitId ??
+                (mode === "proofread" && proofreadPreviewVisibility === "visible"
+                  ? focusedUnitId
+                  : null);
+              const previewUnit = previewUnitId
+                ? units.find((u) => unitId(u) === previewUnitId)
+                : null;
+              if (!previewUnit || !unitFinalText(previewUnit) || dragMarker?.id === previewUnitId) {
+                return null;
+              }
+              const pos = unitPosition(previewUnit);
+              return (
+                <div
+                  className="absolute z-50 pointer-events-none"
+                  style={{
+                    left: `${String(pos.xCoord * 100)}%`,
+                    top: `${String(pos.yCoord * 100)}%`,
+                    transformOrigin: "0 0",
+                    transform:
+                      `translate(${String((CIRCLE_SIZE / 2 + 12) / transform.scale)}px, ` +
+                      `${String((CIRCLE_SIZE - PIN_OFFSET) / transform.scale)}px) ` +
+                      `scale(${String(1 / transform.scale)})`,
+                  }}
+                >
                   <div
-                    className="absolute z-50 pointer-events-none"
-                    style={{
-                      left: `${String(pos.xCoord * 100)}%`,
-                      top: `${String(pos.yCoord * 100)}%`,
-                      transformOrigin: "0 0",
-                      transform:
-                        `translate(${String((CIRCLE_SIZE / 2 + 12) / transform.scale)}px, ` +
-                        `${String((CIRCLE_SIZE - PIN_OFFSET) / transform.scale)}px) ` +
-                        `scale(${String(1 / transform.scale)})`,
-                    }}
+                    className={clsx(
+                      "-translate-y-full",
+                      "px-2 py-1 rounded-sm bg-surface-slate-800/90 text-ink-slate-50 text-xs",
+                      "backdrop-blur-md shadow-xl border border-line-white/10 whitespace-pre",
+                    )}
                   >
-                    <div
-                      className={clsx(
-                        "-translate-y-full",
-                        "px-2 py-1 rounded-sm bg-surface-slate-800/90 text-ink-slate-50 text-xs",
-                        "backdrop-blur-md shadow-xl border border-line-white/10 whitespace-pre",
-                      )}
-                    >
-                      {unitFinalText(previewUnit)}
-                    </div>
+                    {unitFinalText(previewUnit)}
                   </div>
-                );
-              })()}
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-center w-full h-full text-muted-foreground">
-          暂无图片
-        </div>
-      )}
-    </div>
+                </div>
+              );
+            })()}
+          </>
+        );
+      }}
+    />
   );
-  /* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */
 }

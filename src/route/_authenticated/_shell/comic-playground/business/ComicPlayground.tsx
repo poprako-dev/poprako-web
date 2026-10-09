@@ -1,3 +1,4 @@
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import { ComicDetailLoadState } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailLoadState";
 import type { JSX } from "react";
 import { useCallback, useState } from "react";
@@ -17,7 +18,7 @@ import type { CreateComicArgs } from "@/route/_authenticated/business/comic/comi
 import { hasRole } from "@/route/business/identity/role";
 import {
   type ComicDetailSearch,
-  type TranslatorDestination,
+  type WorkbenchDestination,
   useComicDetailHost,
 } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
 import { useComicPlaygroundFilters } from "@/route/_authenticated/_shell/comic-playground/business/use-comic-playground-filters";
@@ -25,14 +26,18 @@ import { useComicPlaygroundWorksets } from "@/route/_authenticated/_shell/comic-
 
 type Props = {
   search: ComicDetailSearch;
-  onChangeSearch: (comicId: string | null, chapterId: string | null) => void;
-  onNavigateToTranslator: (destination: TranslatorDestination) => void;
+  onChangeSearch: (
+    comicId: string | null,
+    chapterId: string | null,
+    mode?: ComicDetailMode,
+  ) => void;
+  onNavigateToWorkbench: (destination: WorkbenchDestination) => void;
 };
 
 export function ComicPlayground({
   search,
   onChangeSearch,
-  onNavigateToTranslator,
+  onNavigateToWorkbench,
 }: Props): JSX.Element {
   const client = useApiClient();
   const teamSelection = useTeamSelection();
@@ -100,15 +105,17 @@ export function ComicPlayground({
     detailError,
     retryComicDetail,
     urlChapterId,
+    detailMode,
+    changeDetailMode,
     openComicDetail,
     clearComicDetail,
-    navigateToTranslator,
+    navigateToWorkbench,
   } = useComicDetailHost({
     returnTo: "/comic-playground",
     showToast,
     search,
     onChangeSearch,
-    onNavigateToTranslator,
+    onNavigateToWorkbench,
   });
 
   const handleUpdateWorkset = useCallback(
@@ -193,8 +200,10 @@ export function ComicPlayground({
           key={selectedComic.id}
           comicInfo={selectedComic}
           pinnedChapter={selectedComicPinnedChapter}
+          mode={detailMode}
+          onModeChange={changeDetailMode}
           initialChapterId={urlChapterId}
-          onNavigateToTranslator={navigateToTranslator}
+          onNavigateToWorkbench={navigateToWorkbench}
           onChanged={handleDetailChanged}
           onClose={() => {
             clearComicDetail();

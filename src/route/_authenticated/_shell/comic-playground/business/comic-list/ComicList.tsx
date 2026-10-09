@@ -1,3 +1,4 @@
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import { type JSX, useCallback, useState } from "react";
 import clsx from "clsx";
 import { Eye, PencilLine } from "lucide-react";
@@ -30,7 +31,7 @@ type Props = {
       ) => Promise<Result<void>>)
     | undefined;
   onLoadComics: (offset: number, limit: number, mode: ViewMode) => Promise<Result<ComicInfo[]>>;
-  onComicClick: (comicId: string, chapterId?: string | null) => void;
+  onComicClick: (comicId: string, chapterId?: string | null, mode?: ComicDetailMode) => void;
   onCreateComic?: (() => void) | undefined;
   onChangeFuzzyTitle: (title: string) => void;
   activeFuzzyTitle?: string | undefined;
@@ -185,7 +186,7 @@ export function ComicList({
               onLoadComics={loadComicCards}
               onComicClick={(comicId, chapterId) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
-                onComicClick(comicId, chapterId);
+                onComicClick(comicId, chapterId, "translator");
               }}
             />
           )}
@@ -195,7 +196,7 @@ export function ComicList({
               onLoadComics={loadComicProgress}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
-                onComicClick(comicInfo.id, comicInfo.pinnedChapter?.id);
+                onComicClick(comicInfo.id, comicInfo.pinnedChapter?.id, "reviewer");
               }}
             />
           )}

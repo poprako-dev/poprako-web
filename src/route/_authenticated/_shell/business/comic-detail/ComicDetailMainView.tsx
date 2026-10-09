@@ -1,3 +1,4 @@
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import type { ReactElement, RefObject } from "react";
 import type { ComicDetailView } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailContent";
 import type { DetailContract } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
@@ -18,6 +19,8 @@ import { LoadingCircle } from "@/shared/component/LoadingCircle";
 import { canUploadArtwork } from "@/route/_authenticated/_shell/business/comic-detail/upload/artwork-upload";
 
 type Args = {
+  mode: ComicDetailMode;
+  onModeChange: (mode: ComicDetailMode) => void;
   comicInfo: DetailContract["comicInfo"];
   activeMember: DetailContract["activeMember"];
   onClose: DetailContract["onClose"];
@@ -40,7 +43,7 @@ type Args = {
     | "onUpdateChapter"
     | "onArchiveComic"
     | "onDeleteComic"
-    | "onNavigateToTranslator"
+    | "onNavigateToWorkbench"
     | "onDeleteChapterPages"
     | "onExportChapter"
   >;
@@ -51,6 +54,7 @@ type Args = {
   isDeletingComic: boolean;
   coverInputRef: RefObject<HTMLInputElement | null>;
   onOpenArtwork: (chapter: ChapterInfo) => void;
+  onArtworkExported: () => void;
   onOpenComicModifier: () => void;
   onOpenChapterModifier: (chapter: ChapterInfo) => void;
   onConfirmAction: (action: PendingConfirmAction) => void;
@@ -58,6 +62,8 @@ type Args = {
 };
 
 export function ComicDetailMainView({
+  mode,
+  onModeChange,
   comicInfo,
   activeMember,
   onClose,
@@ -73,13 +79,14 @@ export function ComicDetailMainView({
   isDeletingComic,
   coverInputRef,
   onOpenArtwork,
+  onArtworkExported,
   onOpenComicModifier,
   onOpenChapterModifier,
   onConfirmAction,
   showToast,
 }: Args): ReactElement {
   const selectedChapterId = chapters.selectedChapterId;
-  const navigateToTranslator = callbacks.onNavigateToTranslator;
+  const navigateToWorkbench = callbacks.onNavigateToWorkbench;
   const canDeleteChapterPages =
     assignments.canUploadRawPages &&
     pages.pages.length > 0 &&
@@ -130,6 +137,9 @@ export function ComicDetailMainView({
 
   const sidebar = (
     <ComicDetailSidebar
+      mode={mode}
+      onModeChange={onModeChange}
+      onArtworkExported={onArtworkExported}
       comicInfo={comicInfo}
       selectedChapter={chapters.selectedChapter}
       pagesLength={pages.pages.length}
@@ -137,7 +147,7 @@ export function ComicDetailMainView({
       onUploadArtwork={() => {
         if (chapters.selectedChapter) onOpenArtwork(chapters.selectedChapter);
       }}
-      canReadOnly={assignments.canReadOnly}
+      canReadOnly={mode === "reviewer" ? canClickPage : assignments.canReadOnly}
       canUploadCover={exportState.canUploadCover}
       canTranslateOrProofread={assignments.canTranslateOrProofread}
       canDeleteChapterPages={canDeleteChapterPages}
@@ -149,14 +159,14 @@ export function ComicDetailMainView({
       isExportingData={exportState.isExportingData}
       isImportingData={exportState.isImportingData}
       onNavigateReadOnly={
-        assignments.canReadOnly && selectedChapterId
+        (mode === "reviewer" ? canClickPage : assignments.canReadOnly) && selectedChapterId
           ? () => {
               const firstPageId = pages.pages[0]?.id;
               if (!firstPageId) {
                 showToast("当前章节暂无页面", "error");
                 return;
               }
-              navigateToTranslator(selectedChapterId, firstPageId, true);
+              navigateToWorkbench(selectedChapterId, firstPageId, true, mode);
             }
           : undefined
       }
@@ -184,25 +194,29 @@ export function ComicDetailMainView({
     </div>
   ) : (
     <PageList
+      mode={mode}
       pages={pages.pages}
       enableClick={canClickPage}
       onClickPage={
         canClickPage
           ? (pageId) => {
               if (!chapters.selectedChapterId) return;
-              callbacks.onNavigateToTranslator(
+              callbacks.onNavigateToWorkbench(
                 chapters.selectedChapterId,
                 pageId,
                 !assignments.canTranslateOrProofread || undefined,
+                mode,
               );
             }
           : undefined
       }
-      onAddPages={canUploadNewRawPages ? pages.handleAddRawPages : undefined}
-      canReuploadPage={canReuploadRawPages ? () => true : undefined}
+      onAddPages={
+        mode === "translator" && canUploadNewRawPages ? pages.handleAddRawPages : undefined
+      }
+      canReuploadPage={mode === "translator" && canReuploadRawPages ? () => true : undefined}
       isPageReuploading={(pageId) => pages.reuploadingPageIds[pageId] === true}
       onReuploadPage={
-        canReuploadRawPages
+        mode === "translator" && canReuploadRawPages
           ? (pageId, file) => {
               void pages.handleReuploadPage(pageId, file);
             }

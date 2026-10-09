@@ -5,7 +5,7 @@ import {
   MARKER_TRANSITION,
   MARKER_NUMBER_CLASS,
   MARKER_SIZE,
-} from "./marker-appearance";
+} from "@/shared/utility/marker-appearance";
 
 export const CIRCLE_SIZE = MARKER_SIZE;
 export const DOT_SIZE = 8;

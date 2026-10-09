@@ -1,3 +1,8 @@
+import {
+  readComicDetailMode,
+  saveComicDetailMode,
+} from "@/route/_authenticated/business/navigation/workbench-navigation";
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import { useCallback, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
@@ -22,7 +27,14 @@ type Props = {
   comicInfo: DetailComicInfo;
   pinnedChapter: ChapterInfo | null;
   initialChapterId: string | null;
-  onNavigateToTranslator: (chapterId: string, pageId: string, isReadOnly?: boolean) => void;
+  onNavigateToWorkbench: (
+    chapterId: string,
+    pageId: string,
+    isReadOnly?: boolean,
+    mode?: ComicDetailMode,
+  ) => void;
+  mode?: ComicDetailMode;
+  onModeChange?: (mode: ComicDetailMode, chapterId: string | null) => void;
   onChanged: () => void;
   onClose: () => void;
 };
@@ -30,7 +42,9 @@ export function ComicDetailModal({
   comicInfo,
   pinnedChapter,
   initialChapterId,
-  onNavigateToTranslator,
+  onNavigateToWorkbench,
+  mode,
+  onModeChange,
   onChanged,
   onClose,
 }: Props): ReactElement {
@@ -61,6 +75,8 @@ export function ComicDetailModal({
   } = resource;
 
   const { showToast } = useToastStore();
+  const [localMode, setLocalMode] = useState(() => readComicDetailMode(currentUserId));
+  const currentMode = mode ?? localMode;
   const [artworkChapter, setArtworkChapter] = useState<ChapterInfo | null>(null);
   const [activeView, setActiveView] = useState<ComicDetailView>("pages");
   const [pendingConfirmAction, setPendingConfirmAction] = useState<PendingConfirmAction>(null);
@@ -235,6 +251,12 @@ export function ComicDetailModal({
   return (
     <>
       <ComicDetailMainView
+        mode={currentMode}
+        onModeChange={(next) => {
+          setLocalMode(next);
+          saveComicDetailMode(currentUserId, next);
+          onModeChange?.(next, selectedChapterId);
+        }}
         comicInfo={comicInfo}
         activeMember={activeMember}
         onClose={onClose}
@@ -249,7 +271,7 @@ export function ComicDetailModal({
           onUpdateChapter,
           onArchiveComic,
           onDeleteComic,
-          onNavigateToTranslator,
+          onNavigateToWorkbench,
           onDeleteChapterPages,
           onExportChapter,
         }}
@@ -260,6 +282,7 @@ export function ComicDetailModal({
         isDeletingComic={isDeletingComic}
         coverInputRef={coverInputRef}
         onOpenArtwork={setArtworkChapter}
+        onArtworkExported={handleWorkflowRecordsChanged}
         onOpenComicModifier={() => {
           setShowComicModifier(true);
         }}

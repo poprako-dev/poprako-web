@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { unitId } from "@/route/_authenticated/translator/business/unit/unit";
-import { useShortcutActions } from "@/route/_authenticated/translator/business/editor/use-shortcut-actions";
-import { shouldIgnoreTranslatorKey } from "@/route/_authenticated/translator/business/editor/keyboard-scope";
+import { useShortcutActions } from "@/shared/hook/use-shortcut-actions";
+import { shouldIgnoreWorkbenchKey } from "@/shared/utility/keyboard-scope";
 import type { EditorState } from "./use-editor-state";
 import type { EditorUnitActions } from "./use-editor-unit-actions";
 import type { EditorProps } from "./editor-props";
@@ -17,7 +17,6 @@ type Options = Pick<
   | "setViewState"
   | "setProofreadPreviewVisibility"
   | "isReadOnly"
-  | "isRevisionView"
   | "canSwitchView"
   | "toggleRelocation"
   | "isShortcutPanelOpen"
@@ -43,7 +42,6 @@ export function useEditorKeyboard({
   setViewState,
   setProofreadPreviewVisibility,
   isReadOnly,
-  isRevisionView,
   canSwitchView,
   toggleRelocation,
   isShortcutPanelOpen,
@@ -125,16 +123,15 @@ export function useEditorKeyboard({
       },
     },
     activeShortcuts,
-    isRevisionView ||
-      isShortcutPanelOpen ||
+    isShortcutPanelOpen ||
       isSpecialCharPanelOpen ||
       isUnitSearchTransformOpen ||
       (isReadOnly && isPageStatsOpen),
+    "[data-unit-id]",
   );
 
   useEffect(() => {
     if (
-      isRevisionView ||
       isShortcutPanelOpen ||
       isSpecialCharPanelOpen ||
       isUnitSearchTransformOpen ||
@@ -143,7 +140,7 @@ export function useEditorKeyboard({
       return;
     }
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if (shouldIgnoreTranslatorKey(e)) return;
+      if (shouldIgnoreWorkbenchKey(e, "[data-unit-id]")) return;
       if (e.key === "Escape") {
         setFocusedUnitId(undefined);
       }
@@ -153,7 +150,6 @@ export function useEditorKeyboard({
       globalThis.removeEventListener("keydown", handleKeyDown);
     };
   }, [
-    isRevisionView,
     isShortcutPanelOpen,
     isSpecialCharPanelOpen,
     isUnitSearchTransformOpen,

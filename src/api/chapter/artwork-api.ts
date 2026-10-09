@@ -44,3 +44,29 @@ export function markArtworkUploaded(
     { decode: decodeVoid },
   );
 }
+
+export type ArtworkExport = {
+  artworkVersion: number;
+  artworkHash: string;
+  ext: string;
+  downloadUrl: string;
+};
+function decodeExport(value: unknown): ArtworkExport {
+  const object = decodeObject(value, "artwork export");
+  return {
+    artworkVersion: decodeNumber(object["artworkVersion"], "artworkVersion"),
+    artworkHash: decodeString(object["artworkHash"], "artworkHash"),
+    ext: decodeString(object["ext"], "ext"),
+    downloadUrl: decodeString(object["downloadUrl"], "downloadUrl"),
+  };
+}
+export function exportArtwork(
+  client: ApiClient,
+  chapterId: string,
+  signal?: AbortSignal,
+): Promise<Result<ArtworkExport>> {
+  return client.get("/chapters/" + chapterId + "/artwork/export", {
+    decode: decodeExport,
+    ...(signal ? { signal } : {}),
+  });
+}

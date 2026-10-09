@@ -8,7 +8,7 @@ import {
   type FixedShortcut,
   formatKeys,
   hasConflict,
-} from "@/route/_authenticated/translator/business/shortcut/base-translator-type";
+} from "@/shared/utility/shortcut";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
 

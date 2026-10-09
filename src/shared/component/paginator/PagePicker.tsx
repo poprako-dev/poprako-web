@@ -52,16 +52,18 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
           )}
         >
           <span className="flex items-center gap-1.5">
-            <span
-              className={clsx(
-                "size-2 shrink-0 rounded-full",
-                page.totalUnits > 0 && page.proofreadUnits >= page.totalUnits
-                  ? "bg-surface-green-500"
-                  : page.totalUnits > 0 && page.translatedUnits >= page.totalUnits
-                    ? "bg-surface-orange-400"
-                    : "bg-surface-gray-400",
-              )}
-            />
+            {page.totalUnits !== undefined && (
+              <span
+                className={clsx(
+                  "size-2 shrink-0 rounded-full",
+                  page.totalUnits > 0 && page.proofreadUnits >= page.totalUnits
+                    ? "bg-surface-green-500"
+                    : page.totalUnits > 0 && page.translatedUnits >= page.totalUnits
+                      ? "bg-surface-orange-400"
+                      : "bg-surface-gray-400",
+                )}
+              />
+            )}
             <span className="text-ink-stone-700 font-medium">P{index + 1}</span>
             {page.flaggedUnits !== undefined && page.flaggedUnits > 0 && (
               <span
@@ -83,13 +85,15 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
               </span>
             )}
           </span>
-          <span className="flex items-center font-mono text-[11px]">
-            <span className="text-text-muted-warm">{page.totalUnits}</span>
-            <span className="text-ink-stone-300 mx-px">/</span>
-            <span className="text-text-warning">{page.translatedUnits}</span>
-            <span className="text-ink-stone-300 mx-px">/</span>
-            <span className="text-text-pink">{page.proofreadUnits}</span>
-          </span>
+          {page.totalUnits !== undefined && (
+            <span className="flex items-center font-mono text-[11px]">
+              <span className="text-text-muted-warm">{page.totalUnits}</span>
+              <span className="text-ink-stone-300 mx-px">/</span>
+              <span className="text-text-warning">{page.translatedUnits}</span>
+              <span className="text-ink-stone-300 mx-px">/</span>
+              <span className="text-text-pink">{page.proofreadUnits}</span>
+            </span>
+          )}
         </button>
       ))}
       {children}

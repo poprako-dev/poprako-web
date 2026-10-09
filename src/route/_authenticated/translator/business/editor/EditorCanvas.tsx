@@ -7,11 +7,7 @@ import { Canvas } from "@/route/_authenticated/translator/business/canvas/Canvas
 import { TerminologyLookupBar } from "@/route/_authenticated/translator/business/terminology/TerminologyLookupBar";
 import { ReadOnlyPageActions } from "@/route/_authenticated/translator/business/page-statistic/ReadOnlyPageActions";
 import type { EditorSession } from "./use-editor-session";
-import type { RevisionWorkspace } from "../revision-note/use-revision-workspace";
-import { RevisionNoteOverlay } from "../revision-note/RevisionNoteOverlay";
-import { RevisionPreviewStatus } from "../revision-note/RevisionPreviewStatus";
 type Props = {
-  revision?: RevisionWorkspace | null;
   session: Pick<
     EditorSession,
     | "project"
@@ -51,7 +47,7 @@ type Props = {
     | "completionStage"
   >;
 };
-export function EditorCanvas({ session, revision }: Props): JSX.Element {
+export function EditorCanvas({ session }: Props): JSX.Element {
   const {
     project,
     onListPageUnitDiffStats,
@@ -114,33 +110,13 @@ export function EditorCanvas({ session, revision }: Props): JSX.Element {
       ];
 
   return (
-    <div
-      className="@container relative w-full h-full bg-surface-stone-700"
-      data-preview-mode={revision?.preview.image ? "layer" : "page"}
-    >
+    <div className="@container relative w-full h-full bg-surface-stone-700">
       <Canvas
         ref={canvasRef}
-        imageSrc={revision ? (revision.page?.composite.url ?? null) : imageUrl}
-        isolated={revision?.preview.image}
-        onImageError={revision?.onImageError}
-        overlay={
-          revision
-            ? (scale) => (
-                <RevisionNoteOverlay
-                  scale={scale}
-                  notes={revision.notes}
-                  focusedId={revision.focusedId}
-                  visible={proofreadPreviewVisibility === "visible"}
-                  onSelect={(id) => {
-                    revision.select(id, false);
-                  }}
-                />
-              )
-            : undefined
-        }
+        imageSrc={imageUrl}
         units={unitBuf}
         mode={view}
-        isLoading={revision ? revision.loading : isLoadingPage}
+        isLoading={isLoadingPage}
         isUnitCreationEnabled={canEditView ? isUnitCreationEnabled : false}
         focusedUnitId={focusedUnitId}
         onFocusUnit={handleFocusUnit}
@@ -152,7 +128,6 @@ export function EditorCanvas({ session, revision }: Props): JSX.Element {
         enableReadOnly={!canEditView || isLoadingPage || isCompletingStage}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
-      {revision && <RevisionPreviewStatus revision={revision} />}
       {!isReadOnly && <TerminologyLookupBar dataSource={terminology} />}
       <div className="absolute top-2 left-2 flex items-center gap-2">
         {!isReadOnly && <ToolboxDropdown options={toolboxOptions} direction="down" />}

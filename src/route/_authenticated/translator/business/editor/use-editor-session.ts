@@ -13,12 +13,8 @@ import { createEditorSearchCoordinator } from "./editor-search-coordinator";
 
 import type { EditorSession } from "./editor-session-type";
 export type { EditorSession } from "./editor-session-type";
-import type { ReadOnlyView } from "../revision-note/revision-note";
 
-export function useEditorSession(
-  props: EditorProps,
-  readOnlyView: ReadOnlyView = "unit",
-): EditorSession {
+export function useEditorSession(props: EditorProps): EditorSession {
   const {
     project,
     onLoadUnits,
@@ -29,7 +25,7 @@ export function useEditorSession(
     canTranslate,
     canProofread,
   } = props;
-  const state = useEditorState({ ...props, readOnlyView });
+  const state = useEditorState(props);
   const loadPageRef = useRef<((idx: number, targetUnitId?: string) => Promise<void>) | null>(null);
   const loadPage = useCallback((idx: number, targetUnitId?: string) => {
     const callback = loadPageRef.current;
@@ -45,7 +41,6 @@ export function useEditorSession(
     setFocusedUnitId,
     view,
     isReadOnly,
-    isRevisionView,
     canEditView,
     setImageUrl,
     isHighResolution,
@@ -128,11 +123,6 @@ export function useEditorSession(
     const generation = ++pageLoadGenerationRef.current;
     setIsLoadingPage(true);
     try {
-      if (isRevisionView) {
-        setPageIndex(idx);
-        if (idx !== pageIndex) setFocusedUnitId(undefined);
-        return;
-      }
       const [units, img] = await Promise.all([
         props.drafts
           ? props.drafts.ready.then(
@@ -165,15 +155,6 @@ export function useEditorSession(
       });
     }
   }, [initialPageIndex, loadPage, project.pages.length, showToast]);
-
-  const previousRevisionViewRef = useRef(isRevisionView);
-  useEffect(() => {
-    if (previousRevisionViewRef.current === isRevisionView) return;
-    previousRevisionViewRef.current = isRevisionView;
-    void loadPage(pageIndex, focusedUnitId).catch((error: unknown) => {
-      showLocalCaughtError(error, showToast, "页面加载失败，请重试");
-    });
-  }, [focusedUnitId, isRevisionView, loadPage, pageIndex, showToast]);
 
   async function handleSave(): Promise<void> {
     try {

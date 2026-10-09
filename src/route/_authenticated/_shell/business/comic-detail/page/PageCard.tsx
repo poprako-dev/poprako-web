@@ -7,6 +7,7 @@ import { MultiProgressBar } from "@/shared/component/MultiProgressBar";
 import { LazyImage } from "@/route/_authenticated/_shell/business/comic-detail/LazyImage";
 
 type Props = {
+  showTranslationProgress?: boolean;
   page: PageInfo;
   onClick?: (() => void) | undefined;
   onDelete?: (() => void) | undefined;
@@ -22,6 +23,7 @@ type Props = {
 };
 
 export function PageCard({
+  showTranslationProgress = true,
   page,
   onClick,
   onDelete,
@@ -111,7 +113,7 @@ export function PageCard({
       </div>
 
       {/* Status indicator — top right */}
-      {!isPending && (
+      {!isPending && showTranslationProgress && (
         <div
           className={clsx(
             "absolute top-2 right-2 z-10",
@@ -202,7 +204,7 @@ export function PageCard({
       )}
 
       {/* Multi progress bar — bottom */}
-      {!isPending && (
+      {!isPending && showTranslationProgress && (
         <div
           className={clsx(
             "absolute bottom-1.5 left-1.5 right-1.5 z-10",

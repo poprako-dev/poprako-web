@@ -1,6 +1,6 @@
 import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
-import { TranslatorItemFrame } from "../editor/TranslatorItemFrame";
+import { WorkbenchItemFrame } from "@/shared/component/WorkbenchItemFrame";
 import { type PointerEvent as ReactPointerEvent, useEffect, useRef } from "react";
 import {
   unitId,
@@ -71,7 +71,7 @@ export function BaseUnitItem({
   };
 
   return (
-    <TranslatorItemFrame
+    <WorkbenchItemFrame
       isFocused={isFocused}
       ref={containerRef}
       data-unit-id={dataUnitId}
@@ -143,6 +143,6 @@ export function BaseUnitItem({
       }
     >
       <UnitContributorTooltip contributors={contributors}>{children}</UnitContributorTooltip>
-    </TranslatorItemFrame>
+    </WorkbenchItemFrame>
   );
 }
