@@ -1,9 +1,11 @@
-import { type JSX, useCallback, useRef, useState } from "react";
+import { type JSX, useState } from "react";
 import clsx from "clsx";
-import { BookText, ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import type { WorksetInfo } from "@/route/_authenticated/business/workset/workset";
 import type { Result } from "@/shared/utility/result";
 import { WorksetModifierModal } from "@/route/_authenticated/_shell/comic-playground/business/WorksetModifierModal";
+import { useWorksetInteractions } from "@/route/_authenticated/_shell/comic-playground/business/comic-list/use-workset-interactions";
+import { WorksetSidebarItem } from "@/route/_authenticated/_shell/comic-playground/business/comic-list/WorksetSidebarItem";
 
 type UpdateWorksetArgs = {
   name: string;
@@ -28,61 +30,12 @@ export function WorksetSidebar({
   onUpdateWorkset,
 }: Props): JSX.Element {
   const [worksetToModify, setWorksetToModify] = useState<WorksetInfo | null>(null);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressWorksetRef = useRef<WorksetInfo | null>(null);
-  const longPressHandledRef = useRef(false);
-
-  const clearLongPress = useCallback(() => {
-    if (!longPressTimerRef.current) {
-      return;
-    }
-
-    clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = null;
-  }, []);
-
-  const handleWorksetPointerDown = useCallback(
-    (ws: WorksetInfo) => (e: React.PointerEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      longPressHandledRef.current = false;
-      longPressWorksetRef.current = ws;
-      longPressTimerRef.current = setTimeout(() => {
-        longPressHandledRef.current = true;
-        setWorksetToModify(ws);
-      }, 500);
-    },
-    [],
-  );
-
-  const handleWorksetPointerUp = useCallback(
-    () => (e: React.PointerEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      clearLongPress();
-      if (!longPressHandledRef.current) {
-        const ws = longPressWorksetRef.current;
-        if (ws) {
-          onChangeWorkset(ws.id);
-        }
-      }
-    },
-    [clearLongPress, onChangeWorkset],
-  );
-
-  const handleWorksetPointerCancel = useCallback(
-    () => () => {
-      clearLongPress();
-    },
-    [clearLongPress],
-  );
-
-  const handleWorksetContextMenu = useCallback(
-    () => (e: React.MouseEvent) => {
-      e.preventDefault();
-    },
-    [],
-  );
+  const {
+    handlePointerDown: handleWorksetPointerDown,
+    handlePointerUp: handleWorksetPointerUp,
+    handlePointerCancel: handleWorksetPointerCancel,
+    handleContextMenu: handleWorksetContextMenu,
+  } = useWorksetInteractions(onChangeWorkset, setWorksetToModify);
 
   return (
     <>
@@ -102,86 +55,18 @@ export function WorksetSidebar({
 
         {/* Workset 列表 */}
         <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5">
-          {worksets.map((ws) => (
-            <div key={ws.id} className="group relative flex items-center">
-              {onUpdateWorkset ? (
-                <div
-                  onPointerDown={handleWorksetPointerDown(ws)}
-                  onPointerUp={handleWorksetPointerUp()}
-                  onPointerCancel={handleWorksetPointerCancel()}
-                  onPointerLeave={handleWorksetPointerCancel()}
-                  onContextMenu={handleWorksetContextMenu()}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key !== "Enter" && e.key !== " ") return;
-                    e.preventDefault();
-                    onChangeWorkset(ws.id);
-                  }}
-                  className={clsx(
-                    "flex-1 flex items-center justify-between",
-                    "px-3 py-2 rounded-md transition-colors text-left",
-                    "pr-7 select-none touch-none cursor-pointer",
-                    activeWorksetId === ws.id
-                      ? "text-navigation-active"
-                      : "text-text-muted-cool hover:bg-surface-slate-50",
-                  )}
-                  title="长按修改作品集信息"
-                >
-                  <span className="text-[12px] font-bold truncate pr-2">
-                    #{ws.index + 1} {ws.name}
-                  </span>
-                  <span
-                    className={clsx(
-                      "text-[11px] font-semibold text-text-muted-cool shrink-0 flex",
-                      "items-center gap-0.5",
-                    )}
-                  >
-                    <BookText className="w-3 h-3" strokeWidth={2.5} />
-                    {ws.comicCount}
-                  </span>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChangeWorkset(ws.id);
-                  }}
-                  className={clsx(
-                    "flex-1 flex items-center justify-between",
-                    "px-3 py-2 rounded-md transition-colors text-left",
-                    "pr-7",
-                    activeWorksetId === ws.id
-                      ? "text-navigation-active"
-                      : "text-text-muted-cool hover:bg-surface-slate-50",
-                  )}
-                >
-                  <span className="text-[12px] font-bold truncate pr-2">
-                    #{ws.index + 1} {ws.name}
-                  </span>
-                  <span
-                    className={clsx(
-                      "text-[11px] font-semibold text-text-muted-cool shrink-0 flex",
-                      "items-center gap-0.5",
-                    )}
-                  >
-                    <BookText className="w-3 h-3" strokeWidth={2.5} />
-                    {ws.comicCount}
-                  </span>
-                </button>
-              )}
-              {/* 右侧 accent bar */}
-              <div
-                className={clsx(
-                  "absolute right-2 top-1/2 -translate-y-1/2",
-                  "w-0.75 h-5 rounded-full",
-                  "transition-all duration-200 ease-out",
-                  activeWorksetId === ws.id
-                    ? "bg-surface-green-500/60 scale-y-100"
-                    : "bg-surface-green-500/35 scale-y-0 group-hover:scale-y-100",
-                )}
-              />
-            </div>
+          {worksets.map((workset) => (
+            <WorksetSidebarItem
+              key={workset.id}
+              workset={workset}
+              activeWorksetId={activeWorksetId}
+              onChangeWorkset={onChangeWorkset}
+              onUpdateWorkset={onUpdateWorkset}
+              onPointerDown={handleWorksetPointerDown}
+              onPointerUp={handleWorksetPointerUp}
+              onPointerCancel={handleWorksetPointerCancel}
+              onContextMenu={handleWorksetContextMenu}
+            />
           ))}
 
           {/* 新建按钮 */}

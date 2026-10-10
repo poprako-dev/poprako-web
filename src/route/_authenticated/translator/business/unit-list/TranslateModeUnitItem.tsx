@@ -1,5 +1,5 @@
 import type { JSX } from "react/jsx-runtime";
-import { type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef } from "react";
+import { type PointerEvent as ReactPointerEvent, useRef } from "react";
 import clsx from "clsx";
 import {
   isUnitFlagged,
@@ -15,6 +15,10 @@ import { AutoResizeTextarea } from "@/route/_authenticated/translator/business/u
 import { SpecialCharsBar } from "@/route/_authenticated/translator/business/unit-list/SpecialCharsBar";
 import type { SpecialCharInsertRequest } from "@/route/_authenticated/translator/business/unit-list/UnitList";
 import type { SpecialCharsBarController } from "@/route/_authenticated/translator/business/preference/use-detachable-special-chars-bar";
+import {
+  useFocusTextArea,
+  useUnitTextInsertion,
+} from "@/route/_authenticated/translator/business/unit-list/use-unit-text-insertion";
 
 type Props = {
   hasLocalDraft?: boolean | undefined;
@@ -62,65 +66,20 @@ export function TranslateModeUnitItem({
   onSpecialCharInserted,
 }: Props): JSX.Element {
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const lastInsertedRequestIdRef = useRef<number | undefined>(undefined);
 
-  useEffect(() => {
-    if (isFocused && inputRef.current) {
-      if (document.activeElement !== inputRef.current) {
-        const len = inputRef.current.value.length;
-        inputRef.current.focus({ preventScroll: true });
-        inputRef.current.setSelectionRange(len, len);
-      }
-    } else if (!isFocused && inputRef.current && document.activeElement === inputRef.current) {
-      inputRef.current.blur();
-    }
-  }, [isFocused]);
+  useFocusTextArea(inputRef, isFocused);
 
-  const insertChar = useCallback(
-    (char: string): void => {
-      const textarea = inputRef.current;
-      if (!textarea || enableReadOnly || !isFocused || !onModifyUnit) return;
-      const previousActiveElement = document.activeElement;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const text = unitTranslatedText(unit) ?? "";
-      const next = text.slice(0, Math.max(0, start)) + char + text.slice(Math.max(0, end));
-      onModifyUnit(unitId(unit), { translatedText: next });
-      setTimeout(() => {
-        if (
-          !textarea.isConnected ||
-          (document.activeElement !== previousActiveElement && document.activeElement !== textarea)
-        ) {
-          return;
-        }
-        textarea.focus({ preventScroll: true });
-        textarea.selectionStart = textarea.selectionEnd = start + char.length;
-      }, 0);
-    },
-    [enableReadOnly, isFocused, onModifyUnit, unit],
-  );
-
-  useEffect(() => {
-    const request = specialCharInsertRequest;
-    if (
-      !isFocused ||
-      enableReadOnly ||
-      request?.targetUnitId !== unitId(unit) ||
-      request.id === lastInsertedRequestIdRef.current
-    ) {
-      return;
-    }
-    lastInsertedRequestIdRef.current = request.id;
-    insertChar(request.char);
-    onSpecialCharInserted?.(request.id, request.char);
-  }, [
-    enableReadOnly,
-    insertChar,
+  const insertChar = useUnitTextInsertion({
+    textareaRef: inputRef,
+    unitId: unitId(unit),
+    text: unitTranslatedText(unit),
+    textField: "translatedText",
     isFocused,
-    onSpecialCharInserted,
+    enableReadOnly,
+    onModifyUnit,
     specialCharInsertRequest,
-    unit,
-  ]);
+    onSpecialCharInserted,
+  });
 
   return (
     <BaseUnitItem

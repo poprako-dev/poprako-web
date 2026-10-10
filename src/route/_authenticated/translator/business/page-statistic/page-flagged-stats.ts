@@ -23,6 +23,22 @@ export function pageFlaggedCount(
   return counts === undefined ? undefined : (counts.get(pageId) ?? 0);
 }
 
+function flaggedCounts(stats: PageUnitFlaggedStats[]): ReadonlyMap<string, number> {
+  return new Map(stats.map((stat) => [stat.pageId, stat.flaggedUnitCount]));
+}
+
+function subscribeToFlaggedStats(
+  listeners: Set<() => void>,
+  cancel: () => void,
+  listener: () => void,
+): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) cancel();
+  };
+}
+
 export function createPageFlaggedStatsController(load: () => Promise<PageUnitFlaggedStats[]>): {
   getSnapshot: () => FlaggedStatsSnapshot;
   subscribe: (listener: () => void) => () => void;
@@ -54,7 +70,7 @@ export function createPageFlaggedStatsController(load: () => Promise<PageUnitFla
       const stats = await load();
       if (request !== generation) return;
       publish({
-        counts: new Map(stats.map((stat) => [stat.pageId, stat.flaggedUnitCount])),
+        counts: flaggedCounts(stats),
         isLoading: false,
       });
     } catch (error) {
@@ -66,13 +82,7 @@ export function createPageFlaggedStatsController(load: () => Promise<PageUnitFla
 
   return {
     getSnapshot: () => snapshot,
-    subscribe: (listener: () => void) => {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-        if (listeners.size === 0) cancel();
-      };
-    },
+    subscribe: (listener: () => void) => subscribeToFlaggedStats(listeners, cancel, listener),
     refresh,
     cancel,
   };

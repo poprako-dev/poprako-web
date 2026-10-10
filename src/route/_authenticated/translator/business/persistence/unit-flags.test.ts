@@ -1,7 +1,6 @@
 import type { SaveUnits } from "../contract/type";
 import type { Mock } from "vitest";
 import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
-import type { SaveSnapshot } from "@/route/_authenticated/translator/business/persistence/unit-save-controller";
 import { describe, expect, test, vi } from "vitest";
 import { createUnit } from "@/route/_authenticated/translator/business/unit/unit";
 import { isUnitSame } from "@/route/_authenticated/translator/business/unit/unit-comparison";
@@ -38,53 +37,15 @@ function fixture(): {
   };
 }
 
-function setup(): {
-  original: {
-    id: string;
-    translatedText: string;
-    proofreadText: string;
-    isProofread: boolean;
-    translatorId: string;
-    proofreaderId: string;
-    xCoord: number;
-    yCoord: number;
-    index: number;
-    isBubble: boolean;
-    isFlagged: boolean;
-    translatorCommnet?: string | undefined;
-    proofreaderComment?: string | undefined;
-  };
-  pages: Map<
-    string,
-    {
-      id: string;
-      translatedText: string;
-      proofreadText: string;
-      isProofread: boolean;
-      translatorId: string;
-      proofreaderId: string;
-      xCoord: number;
-      yCoord: number;
-      index: number;
-      isBubble: boolean;
-      isFlagged: boolean;
-      translatorCommnet?: string | undefined;
-      proofreaderComment?: string | undefined;
-    }[]
-  >;
+type Setup = {
+  original: UnitInfo;
+  pages: Map<string, UnitInfo[]>;
   backend: SaveUnits;
   save: Mock<SaveUnits>;
-  controller: {
-    load: (id: string, units: UnitInfo[]) => void;
-    commit: (units: UnitInfo[]) => void;
-    saveOnce: () => Promise<void>;
-    flush: () => Promise<void>;
-    refresh: () => Promise<void>;
-    getSnapshot: () => SaveSnapshot;
-    setSuspended: (shouldSuspend: boolean) => void;
-    setActive: (shouldActivate: boolean) => void;
-  };
-} {
+  controller: ReturnType<typeof createUnitSaveController>;
+};
+
+function setup(): Setup {
   const original = fixture();
   const pages = new Map([["page", [original]]]);
   const backend = createUnitSaveFixture(pages);
@@ -113,7 +74,9 @@ describe("unit flags", () => {
     expect(applyUnitUpdates(flagged, { translatedText: "changed" }).isFlagged).toBe(true);
     expect(applyUnitUpdates(flagged, { isFlagged: false })).toEqual(original);
   });
+});
 
+describe("unit flags", () => {
   test("serializes flag-only patches and explicit false, with no false dirty state", () => {
     const original = fixture();
     const flagged = { ...original, isFlagged: true };
@@ -134,7 +97,9 @@ describe("unit flags", () => {
       isFlagged: true,
     });
   });
+});
 
+describe("unit flags", () => {
   test("merges draft flags with unrelated remote edits", () => {
     const base = fixture();
     const local = { ...base, isFlagged: true };
@@ -147,7 +112,9 @@ describe("unit flags", () => {
       replayEdits([{ ...remote, isFlagged: true }], buildUnitDiff([base], [base]))[0]?.isFlagged,
     ).toBe(true);
   });
+});
 
+describe("unit flags", () => {
   test("retains edits after failure and retries with the original save identity", async () => {
     const { controller, original, save, pages } = setup();
     save.mockRejectedValueOnce(new Error("offline"));
@@ -160,7 +127,9 @@ describe("unit flags", () => {
     expect(controller.getSnapshot().dirty).toBe(false);
     expect(pages.get("page")?.[0]).toEqual({ ...original, isFlagged: true });
   });
+});
 
+describe("unit flags", () => {
   test("flush drains changes made while a flag save is in flight", async () => {
     const { controller, original, save, backend, pages } = setup();
     save.mockImplementationOnce((...args) => {
@@ -173,7 +142,9 @@ describe("unit flags", () => {
     expect(pages.get("page")?.[0]?.isFlagged).toBe(false);
     expect(controller.getSnapshot().dirty).toBe(false);
   });
+});
 
+describe("unit flags", () => {
   test("new flagged units keep their flag when permanent IDs are acknowledged", async () => {
     const { controller, pages, save } = setup();
     const local = { ...createUnit(0, 0, true), isFlagged: true };

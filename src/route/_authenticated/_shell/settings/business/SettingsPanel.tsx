@@ -15,6 +15,24 @@ import { clearSession, selectTeam } from "@/route/business/session/session";
 
 import { useApiClient } from "@/route/business/api-context";
 import { useReadySession } from "@/route/business/session/ready-session";
+import type { ApiClient } from "@/api/client";
+
+async function handleLogout(
+  client: ApiClient,
+  navigate: ReturnType<typeof useNavigate>,
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"],
+): Promise<void> {
+  try {
+    const result = await logoutUser(client);
+    if (!result.success) throw toApiRequestError(result);
+  } catch (error) {
+    console.error("Logout error", error);
+    showLocalCaughtError(error, showToast, "退出登录失败，已清理本机登录状态", true);
+  } finally {
+    clearSession();
+    void navigate({ to: "/login" });
+  }
+}
 
 export function SettingsPanel(): JSX.Element {
   const client = useApiClient();
@@ -47,19 +65,6 @@ export function SettingsPanel(): JSX.Element {
   const activeTeam = teamConfigs.find((t) => t.id === selectedTeamId) ?? teamConfigs[0];
 
   const currentUser = loginState.userInfo;
-
-  const handleLogout = async (): Promise<void> => {
-    try {
-      const result = await logoutUser(client);
-      if (!result.success) throw toApiRequestError(result);
-    } catch (error) {
-      console.error("Logout error", error);
-      showLocalCaughtError(error, showToast, "退出登录失败，已清理本机登录状态", true);
-    } finally {
-      clearSession();
-      void navigate({ to: "/login" });
-    }
-  };
 
   const handleExportLogs = (): void => {
     const count = downloadConsoleLogs();
@@ -143,7 +148,7 @@ export function SettingsPanel(): JSX.Element {
           "hover:bg-surface-red-50/80 hover:ring-focus-red-200 hover:text-text-danger",
         )}
         onClick={() => {
-          void handleLogout();
+          void handleLogout(client, navigate, showToast);
         }}
       >
         <span className="text-lg font-medium">退出登录</span>

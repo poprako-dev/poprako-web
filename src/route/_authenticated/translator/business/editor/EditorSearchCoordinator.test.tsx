@@ -88,7 +88,9 @@ describe("编辑搜索协调", () => {
     expect(context.search).toHaveBeenCalledWith({ part: "translatedText", phrase: "旧词" });
     expect(context.persistence.result.current.saveState.dirty).toBe(false);
   });
+});
 
+describe("编辑搜索协调", () => {
   it("替换等待期间导航互斥，刷新完成后导航恢复", async () => {
     const context = setup();
     let resolveTransform: (() => void) | undefined;
@@ -116,7 +118,9 @@ describe("编辑搜索协调", () => {
     await act(() => context.coordinator.navigate("page-2", "unit-2"));
     expect(context.loadPage).toHaveBeenCalledWith(1, "unit-2");
   });
+});
 
+describe("编辑搜索协调", () => {
   it("替换成功但当前页刷新失败，明确返回恢复状态并允许重新搜索", async () => {
     const context = setup();
     context.reload.mockRejectedValueOnce(new Error("刷新中断"));
@@ -133,7 +137,9 @@ describe("编辑搜索协调", () => {
     expect(context.transform).toHaveBeenCalledOnce();
     expect(context.persistence.result.current.saveState.refreshError).toBe(false);
   });
+});
 
+describe("编辑搜索协调", () => {
   it("只替换其他页时不刷新当前草稿，搜索刷新失败仍报告替换已完成", async () => {
     const context = setup();
     context.search.mockRejectedValueOnce(new Error("搜索中断"));

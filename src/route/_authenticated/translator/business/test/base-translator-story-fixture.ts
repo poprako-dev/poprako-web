@@ -19,6 +19,29 @@ import {
 
 type BaseTranslatorProps = ComponentProps<typeof BaseTranslator>;
 
+function createPageUnits(units: UnitInfo[]): Map<string, UnitInfo[]> {
+  return new Map(
+    mockProject.pages.map((page) => [
+      page.id,
+      units.map((unit) => ({ ...unit, id: `${page.id}-${unit.id}` })),
+    ]),
+  );
+}
+
+function listStoryFlaggedStats(
+  unitsByPage: Map<string, UnitInfo[]>,
+): Promise<{ pageId: string; index: number; flaggedUnitCount: number }[]> {
+  return Promise.resolve(
+    mockProject.pages
+      .map((page) => ({
+        pageId: page.id,
+        index: page.index,
+        flaggedUnitCount: (unitsByPage.get(page.id) ?? []).filter((unit) => unit.isFlagged).length,
+      }))
+      .filter((stat) => stat.flaggedUnitCount > 0),
+  );
+}
+
 // eslint-disable-next-line @typescript-eslint/require-await
 async function mockCompleteStage(stage: "translate" | "proofread"): Promise<void> {
   console.log("[mock] onCompleteStage", stage); // eslint-disable-line no-console
@@ -143,15 +166,7 @@ export function createStoryArgs({
   canProofread: boolean;
   units?: UnitInfo[] | undefined;
 }): BaseTranslatorProps {
-  const unitsByPage = new Map(
-    mockProject.pages.map((page) => [
-      page.id,
-      units.map((unit) => ({
-        ...unit,
-        id: `${page.id}-${unit.id}`,
-      })),
-    ]),
-  );
+  const unitsByPage = createPageUnits(units);
 
   return {
     project: mockProject,
@@ -166,17 +181,7 @@ export function createStoryArgs({
     onSaveUnits: createUnitSaveFixture(unitsByPage),
     onResolveUser: mockResolveUser,
     onCompleteStage: mockCompleteStage,
-    onListPageUnitFlaggedStats: () =>
-      Promise.resolve(
-        mockProject.pages
-          .map((page) => ({
-            pageId: page.id,
-            index: page.index,
-            flaggedUnitCount: (unitsByPage.get(page.id) ?? []).filter((unit) => unit.isFlagged)
-              .length,
-          }))
-          .filter((stat) => stat.flaggedUnitCount > 0),
-      ),
+    onListPageUnitFlaggedStats: () => listStoryFlaggedStats(unitsByPage),
     // eslint-disable-next-line @typescript-eslint/require-await
     onListPageUnitDiffStats: async () =>
       ["page-2", "page-3"].map((pageId, index) => ({

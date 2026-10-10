@@ -26,21 +26,49 @@ export function allocArtwork(
   chapterId: string,
   artworkHash: string,
   byteLength: number,
+  signal?: AbortSignal,
 ): Promise<Result<ArtworkAllocation>> {
   return client.post(
     `/chapters/${chapterId}/artwork/alloc`,
     { artworkHash, newByteLen: byteLength, ext: "xz" },
-    { decode: decodeAllocation },
+    { decode: decodeAllocation, ...(signal ? { signal } : {}) },
   );
 }
 export function markArtworkUploaded(
   client: ApiClient,
   chapterId: string,
   artworkVersion: number,
+  signal?: AbortSignal,
 ): Promise<Result<undefined>> {
   return client.post(
     `/chapters/${chapterId}/artwork/mark-uploaded`,
     { artworkVersion },
-    { decode: decodeVoid },
+    { decode: decodeVoid, ...(signal ? { signal } : {}) },
   );
+}
+
+export type ArtworkExport = {
+  artworkVersion: number;
+  artworkHash: string;
+  ext: string;
+  downloadUrl: string;
+};
+function decodeExport(value: unknown): ArtworkExport {
+  const object = decodeObject(value, "artwork export");
+  return {
+    artworkVersion: decodeNumber(object["artworkVersion"], "artworkVersion"),
+    artworkHash: decodeString(object["artworkHash"], "artworkHash"),
+    ext: decodeString(object["ext"], "ext"),
+    downloadUrl: decodeString(object["downloadUrl"], "downloadUrl"),
+  };
+}
+export function exportArtwork(
+  client: ApiClient,
+  chapterId: string,
+  signal?: AbortSignal,
+): Promise<Result<ArtworkExport>> {
+  return client.get("/chapters/" + chapterId + "/artwork/export", {
+    decode: decodeExport,
+    ...(signal ? { signal } : {}),
+  });
 }

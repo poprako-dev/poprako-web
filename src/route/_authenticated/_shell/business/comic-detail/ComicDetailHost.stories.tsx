@@ -21,7 +21,7 @@ import {
 } from "@/route/_authenticated/_shell/business/test/detail-request-fixture";
 import type {
   ComicDetailSearch,
-  TranslatorDestination,
+  WorkbenchDestination,
 } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
 
 const requests: string[] = [];
@@ -31,14 +31,14 @@ type ProbeProps = {
   returnTo: "/workspace" | "/comic-playground";
   search: ComicDetailSearch;
   onChangeSearch: (comicId: string | null, chapterId: string | null) => void;
-  onNavigateToTranslator: (destination: TranslatorDestination) => void;
+  onNavigateToWorkbench: (destination: WorkbenchDestination) => void;
 };
 
 function Probe({
   returnTo,
   search,
   onChangeSearch,
-  onNavigateToTranslator,
+  onNavigateToWorkbench,
 }: ProbeProps): ReactElement {
   const showToast = useToastStore((s) => s.showToast);
   const host = useComicDetailHost({
@@ -46,7 +46,7 @@ function Probe({
     showToast,
     search,
     onChangeSearch,
-    onNavigateToTranslator,
+    onNavigateToWorkbench,
   });
   const [role, setRole] = useState<Role | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -96,7 +96,7 @@ function Probe({
           <button
             type="button"
             onClick={() => {
-              host.navigateToTranslator("target-chapter", "page-1");
+              host.navigateToWorkbench("target-chapter", "page-1");
             }}
           >
             进入翻译器
@@ -126,7 +126,7 @@ function TranslatorReturn({
   destination,
   onReturn,
 }: {
-  destination: TranslatorDestination;
+  destination: WorkbenchDestination;
   onReturn: () => void;
 }): ReactElement {
   return (
@@ -142,7 +142,7 @@ type Props = { initialEntry: string; delayComic: boolean };
 
 function DetailHostScenario({ initialEntry, delayComic }: Props): ReactElement {
   const [location, setLocation] = useState(() => new URL(initialEntry, "http://storybook.local"));
-  const [translatorDestination, setTranslatorDestination] = useState<TranslatorDestination | null>(
+  const [workbenchDestination, setWorkbenchDestination] = useState<WorkbenchDestination | null>(
     null,
   );
   const returnTo = location.pathname === "/comic-playground" ? "/comic-playground" : "/workspace";
@@ -158,15 +158,15 @@ function DetailHostScenario({ initialEntry, delayComic }: Props): ReactElement {
     else next.searchParams.delete("chapterId");
     setLocation(next);
   };
-  const onNavigateToTranslator = (destination: TranslatorDestination): void => {
-    setTranslatorDestination(destination);
+  const onNavigateToWorkbench = (destination: WorkbenchDestination): void => {
+    setWorkbenchDestination(destination);
   };
-  return translatorDestination ? (
+  return workbenchDestination ? (
     <TranslatorReturn
-      destination={translatorDestination}
+      destination={workbenchDestination}
       onReturn={() => {
-        setTranslatorDestination(null);
-        onChangeSearch(translatorDestination.comicId, translatorDestination.chapterId);
+        setWorkbenchDestination(null);
+        onChangeSearch(workbenchDestination.comicId, workbenchDestination.chapterId);
       }}
     />
   ) : (
@@ -175,10 +175,46 @@ function DetailHostScenario({ initialEntry, delayComic }: Props): ReactElement {
         returnTo={returnTo}
         search={search}
         onChangeSearch={onChangeSearch}
-        onNavigateToTranslator={onNavigateToTranslator}
+        onNavigateToWorkbench={onNavigateToWorkbench}
       />
     </div>
   );
+}
+
+function createMockedFetch(originalFetch: typeof fetch, delayComic: boolean): typeof fetch {
+  return async (input, init) => {
+    const address =
+      typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    const url = new URL(address, location.origin);
+    if (!url.pathname.startsWith("/api/")) return originalFetch(input, init);
+    requests.push(url.pathname + url.search);
+    const comicId = url.pathname.split("/", 5)[4] ?? "comic-b";
+    if (url.pathname.endsWith("/chapters/pinned")) {
+      return Response.json({ code: 0, data: detailChapter(comicId) });
+    }
+    if (url.pathname.endsWith("/members")) {
+      const keyword = url.searchParams.get("fuzzy_nickname");
+      if (keyword === "fail") {
+        return Response.json({ code: 4, message: "成员查询失败" }, { status: 403 });
+      }
+      const teamId = url.searchParams.get("team_id") ?? "missing";
+      const role = Number(url.searchParams.get("role"));
+      const name = `${teamId}-${role === 2 ? "translator" : "proofreader"}`;
+      return Response.json({
+        code: 0,
+        data: keyword === "empty" ? [] : [detailMember(teamId, name, role)],
+      });
+    }
+    if (comicId === "comic-b" && delayComic) {
+      await new Promise<void>((resolve) => {
+        pending.set(comicId, resolve);
+      });
+    }
+    return Response.json({
+      code: 0,
+      data: detailComic(comicId, comicId.replace("comic", "team")),
+    });
+  };
 }
 
 const meta = {
@@ -221,44 +257,7 @@ const meta = {
         })),
       },
     });
-    const mockedFetch: typeof fetch = async (input, init) => {
-      const address =
-        typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-      const url = new URL(address, location.origin);
-      if (!url.pathname.startsWith("/api/")) return originalFetch(input, init);
-      requests.push(url.pathname + url.search);
-      const comicId = url.pathname.split("/", 5)[4] ?? "comic-b";
-      if (url.pathname.endsWith("/chapters/pinned")) {
-        return Response.json({ code: 0, data: detailChapter(comicId) });
-      }
-      if (url.pathname.endsWith("/members")) {
-        const keyword = url.searchParams.get("fuzzy_nickname");
-        if (keyword === "fail") {
-          return Response.json(
-            { code: 4, message: "成员查询失败" },
-            {
-              status: 403,
-            },
-          );
-        }
-        const teamId = url.searchParams.get("team_id") ?? "missing";
-        const role = Number(url.searchParams.get("role"));
-        const name = `${teamId}-${role === 2 ? "translator" : "proofreader"}`;
-        return Response.json({
-          code: 0,
-          data: keyword === "empty" ? [] : [detailMember(teamId, name, role)],
-        });
-      }
-      if (comicId === "comic-b" && args.delayComic) {
-        await new Promise<void>((resolve) => {
-          pending.set(comicId, resolve);
-        });
-      }
-      return Response.json({
-        code: 0,
-        data: detailComic(comicId, comicId.replace("comic", "team")),
-      });
-    };
+    const mockedFetch = createMockedFetch(originalFetch, args.delayComic);
     Object.defineProperty(globalThis, "fetch", {
       value: mockedFetch,
       configurable: true,

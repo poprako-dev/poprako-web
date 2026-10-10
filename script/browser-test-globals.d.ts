@@ -24,6 +24,7 @@ type BoundedBrowserTools = {
   ZipReader: new (reader: BrowserBlobReader) => BrowserZipReader;
   BlobReader: new (blob: Blob) => BrowserBlobReader;
   BlobWriter: new () => BrowserBlobWriter;
+  run(): Promise<{ sizes: number[]; png: number[] }>;
 };
 
 type CompressBrowserTools = {
@@ -38,6 +39,7 @@ type CompressBrowserTools = {
   ZipReader: new (reader: BrowserBlobReader) => BrowserZipReader;
   BlobReader: new (blob: Blob) => BrowserBlobReader;
   BlobWriter: new () => BrowserBlobWriter;
+  run(large: boolean, preset: number): Promise<Record<string, unknown>>;
 };
 
 declare global {

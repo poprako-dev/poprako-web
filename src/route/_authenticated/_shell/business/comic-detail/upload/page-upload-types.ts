@@ -4,6 +4,15 @@ import type {
 } from "@/route/_authenticated/business/page/page";
 import type { ApiClient } from "@/api/client";
 
+export type PreparedFile = {
+  taskId: string;
+  file: File;
+  imageHash: string;
+  extension: string;
+  fileIndex: number;
+  sessionGeneration: number;
+};
+
 export type RuntimeTask = {
   client: ApiClient;
   taskId: string;

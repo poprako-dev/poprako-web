@@ -20,6 +20,21 @@ function formatMailDate(ts: number): string {
   });
 }
 
+async function markMailRead(
+  mailId: string,
+  client: ReturnType<typeof useApiClient>,
+  markRead: ReturnType<typeof useMailStore.getState>["markRead"],
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"],
+): Promise<void> {
+  const result = await markRead(client, mailId);
+  if (!result.success) {
+    showLocalApiFailure(result, showToast);
+    console.error("[SystemMailViewer] markSysMailRead:", result.error);
+    return;
+  }
+  showToast("已标记为已读", "success");
+}
+
 export function SystemMailViewer(): JSX.Element {
   const client = useApiClient();
   const mails = useMailStore((state) => state.mails);
@@ -61,15 +76,10 @@ export function SystemMailViewer(): JSX.Element {
     };
   }, [hasMore, loadMoreError, fetchMore]);
 
-  const handleMarkRead = async (sysMailId: string): Promise<void> => {
-    const result = await markRead(client, sysMailId);
-    if (!result.success) {
-      showLocalApiFailure(result, showToast);
-      console.error("[SystemMailViewer] markSysMailRead:", result.error);
-      return;
-    }
-    showToast("已标记为已读", "success");
-  };
+  const handleMarkRead = useCallback(
+    (mailId: string) => void markMailRead(mailId, client, markRead, showToast),
+    [client, markRead, showToast],
+  );
 
   const recentItems = mails.filter((m) => m.createdAt >= cutoff);
   const olderItems = mails.filter((m) => m.createdAt < cutoff);
@@ -111,7 +121,7 @@ export function SystemMailViewer(): JSX.Element {
                     key={mail.id}
                     mail={mail}
                     onMarkRead={(id) => {
-                      void handleMarkRead(id);
+                      handleMarkRead(id);
                     }}
                     isLast={i === recentItems.length - 1 && olderItems.length === 0}
                   />
@@ -126,7 +136,7 @@ export function SystemMailViewer(): JSX.Element {
                     key={mail.id}
                     mail={mail}
                     onMarkRead={(id) => {
-                      void handleMarkRead(id);
+                      handleMarkRead(id);
                     }}
                     isLast={i === olderItems.length - 1}
                   />

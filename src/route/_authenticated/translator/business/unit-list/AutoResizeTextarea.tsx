@@ -17,6 +17,16 @@ function resizeTextarea(textarea: HTMLTextAreaElement): void {
   textarea.style.height = `${String(textarea.scrollHeight)}px`;
 }
 
+function assignTextareaRef(
+  localRef: React.RefObject<HTMLTextAreaElement | null>,
+  ref: Props["ref"],
+  node: HTMLTextAreaElement | null,
+): void {
+  localRef.current = node;
+  if (typeof ref === "function") ref(node);
+  else if (ref) ref.current = node;
+}
+
 export function AutoResizeTextarea({
   value,
   onChange,
@@ -31,9 +41,7 @@ export function AutoResizeTextarea({
   const displayText = value.replaceAll(/\r\n?/gu, "\n");
 
   function combinedRef(node: HTMLTextAreaElement | null): void {
-    localRef.current = node;
-    if (typeof ref === "function") ref(node);
-    else if (ref) ref.current = node;
+    assignTextareaRef(localRef, ref, node);
   }
 
   useLayoutEffect(() => {

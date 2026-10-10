@@ -4,9 +4,10 @@ import type { ApiClient } from "@/api/client";
 import { decodeArray, decodeVoid } from "@/api/contract";
 import type { Result } from "@/shared/utility/result";
 
-export type ListAssignmentsQuery = {
-  chapterId?: string | undefined;
-  ownerId?: string | undefined;
+export type ListAssignmentsQuery = (
+  | { chapterId: string; ownerId?: never }
+  | { ownerId: string; chapterId?: never }
+) & {
   includes?: readonly string[] | undefined;
   offset: number;
   limit: number;

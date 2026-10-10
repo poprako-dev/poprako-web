@@ -1,292 +1,129 @@
-import { useCallback, useEffect, useRef } from "react";
-import { showLocalCaughtError } from "@/route/business/request-error";
+import { useCallback, useRef } from "react";
 import { unitId } from "@/route/_authenticated/translator/business/unit/unit";
 import { useDetachableSpecialCharsBar } from "@/route/_authenticated/translator/business/preference/use-detachable-special-chars-bar";
 import type { UnitTextPart } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import { useUnitPersistence } from "@/route/_authenticated/translator/business/persistence/use-unit-persistence";
 import { translatorCompletionStage } from "@/route/_authenticated/translator/business/contract/access";
 import type { EditorProps } from "./editor-props";
-import { useEditorState } from "./use-editor-state";
+import { useEditorState, type EditorState } from "./use-editor-state";
 import { useEditorUnitActions } from "./use-editor-unit-actions";
 import { useEditorKeyboard } from "./use-editor-keyboard";
 import { createEditorSearchCoordinator } from "./editor-search-coordinator";
+import { useEditorPageLoader } from "./use-editor-page-loader";
+import { createEditorSessionActions } from "./use-editor-session-actions";
+import type { EditorSession } from "./editor-session-type";
+import { assembleEditorSession } from "./editor-session-assembler";
+export type { EditorSession } from "./editor-session-type";
 
-export type EditorSession = Pick<
-  ReturnType<typeof useEditorState>,
-  | "canEditView"
-  | "canSwitchView"
-  | "canvasRef"
-  | "configurableShortcuts"
-  | "deleteConfirmUnitId"
-  | "fixedShortcuts"
-  | "focusedUnitId"
-  | "hasCompletedStage"
-  | "imageUrl"
-  | "isCompleteConfirmOpen"
-  | "isCompletingStage"
-  | "isHighResolution"
-  | "isLoadingPage"
-  | "isPageStatsOpen"
-  | "isReadOnly"
-  | "isRelocationEnabled"
-  | "isShortcutPanelOpen"
-  | "isSpecialCharPanelOpen"
-  | "isUnitCreationEnabled"
-  | "isUnitSearchTransformOpen"
-  | "nextView"
-  | "pageIndex"
-  | "proofreadPreviewVisibility"
-  | "setDeleteConfirmUnitId"
-  | "setIsCompleteConfirmOpen"
-  | "setIsPageStatsOpen"
-  | "setIsShortcutPanelOpen"
-  | "setIsSpecialCharPanelOpen"
-  | "setIsUnitCreationEnabled"
-  | "setIsUnitSearchTransformOpen"
-  | "setProofreadPreviewVisibility"
-  | "specialCharInsertRequest"
-  | "toggleRelocation"
-  | "unitBuf"
-  | "updateConfigurableShortcuts"
-  | "view"
-> &
-  Pick<
-    ReturnType<typeof useEditorUnitActions>,
-    | "doDeleteUnit"
-    | "handleAddUnit"
-    | "handleDeleteUnit"
-    | "handleFocusUnit"
-    | "handleModifyUnit"
-    | "handleMoveUnit"
-    | "handlePageImageLoad"
-    | "handleReorderUnit"
-    | "handleRequestSpecialChar"
-    | "handleSpecialCharInserted"
-    | "handleSpecialCharUse"
-    | "handleToggleBubble"
-  > &
-  Pick<
-    ReturnType<typeof useUnitPersistence>,
-    "handleExit" | "handleNavigate" | "saveState" | "saving" | "retryRecovery"
-  > &
-  Pick<ReturnType<typeof useEditorKeyboard>, "handleSwitchView"> &
-  Pick<
-    EditorProps,
-    | "onListPageUnitDiffStats"
-    | "onListPageUnitFlaggedStats"
-    | "onResolveUser"
-    | "project"
-    | "terminology"
-    | "drafts"
-  > & {
-    completionStage: ReturnType<typeof translatorCompletionStage>;
-    handleCompleteStage: () => Promise<void>;
-    handleToggleImageQuality: () => Promise<void>;
-    isSpecialCharsBarVisible: boolean;
-    searchCoordinator: ReturnType<typeof createEditorSearchCoordinator>;
-    specialCharsBar: ReturnType<typeof useDetachableSpecialCharsBar>;
-    unitSearchPart: UnitTextPart;
-    canInsertSpecialChar: boolean;
-    handleSave: () => Promise<void>;
-  };
+type Persistence = ReturnType<typeof useUnitPersistence>;
+type Actions = ReturnType<typeof useEditorUnitActions>;
+type SearchCoordinator = ReturnType<typeof createEditorSearchCoordinator>;
+type SpecialCharsBar = ReturnType<typeof useDetachableSpecialCharsBar>;
+type CompletionStage = ReturnType<typeof translatorCompletionStage>;
+type SessionCollaborators = {
+  persistence: Persistence;
+  actions: Actions;
+  keyboard: ReturnType<typeof useEditorKeyboard>;
+  commands: ReturnType<typeof createEditorSessionActions>;
+  completionStage: CompletionStage;
+  canInsertSpecialChar: boolean;
+  isSpecialCharsBarVisible: boolean;
+  specialCharsBar: SpecialCharsBar;
+  searchCoordinator: SearchCoordinator;
+  unitSearchPart: UnitTextPart;
+};
 
 export function useEditorSession(props: EditorProps): EditorSession {
-  const {
-    project,
-    onLoadUnits,
-    onSaveUnits,
-    onLoadPageImage,
-    onCompleteStage,
-    onExit,
-    canTranslate,
-    canProofread,
-  } = props;
   const state = useEditorState(props);
-  const loadPageRef = useRef<((idx: number, targetUnitId?: string) => Promise<void>) | null>(null);
-  const loadPage = useCallback((idx: number, targetUnitId?: string) => {
-    const callback = loadPageRef.current;
-    return callback ? callback(idx, targetUnitId) : Promise.resolve();
-  }, []);
-  const {
-    initialPageIndex,
-    pageIndex,
-    setPageIndex,
-    unitBuf,
-    setUnitBuf,
-    focusedUnitId,
-    setFocusedUnitId,
-    view,
-    isReadOnly,
-    canEditView,
-    setImageUrl,
-    isHighResolution,
-    setIsHighResolution,
-    isLoadingPage,
-    setIsLoadingPage,
-    imageQuality,
-    isShortcutPanelOpen,
-    isSpecialCharPanelOpen,
-    isUnitSearchTransformOpen,
-    deleteConfirmUnitId,
-    isCompletingStage,
-    setIsCompletingStage,
-    hasCompletedStage,
-    setHasCompletedStage,
-    isCompleteConfirmOpen,
-    setIsCompleteConfirmOpen,
-    relocationSuppressedUnitIdRef,
-    pendingCenteredUnitIdRef,
-    showToast,
-  } = state;
-  const completionStage = translatorCompletionStage({
-    canTranslate,
-    canProofread,
+  const collaborators = useEditorCollaborators(props, state);
+  return assembleEditorSession({
+    props,
+    state,
+    ...collaborators,
   });
+}
 
+function useEditorCollaborators(props: EditorProps, state: EditorState): SessionCollaborators {
+  const completionStage = translatorCompletionStage(props);
+  const { persistence, pageGenerationRef } = useEditorPersistenceSetup(props, state);
+  const specialBar = useEditorSpecialCharsBar(props, state);
+  const canInsertSpecialChar = canInsertSpecialCharacter(state, specialBar.visible);
+  const { commands, actions, keyboard } = useEditorActionCollaborators(
+    props,
+    state,
+    persistence,
+    completionStage,
+    pageGenerationRef,
+    canInsertSpecialChar,
+  );
+  const unitSearchPart = editorSearchPart(state.view);
+  const searchCoordinator = createEditorSearchCoordinatorForSession(
+    props,
+    state,
+    persistence,
+    actions,
+    unitSearchPart,
+  );
+  return {
+    persistence,
+    actions,
+    keyboard,
+    commands,
+    completionStage,
+    canInsertSpecialChar,
+    isSpecialCharsBarVisible: specialBar.visible,
+    specialCharsBar: specialBar.bar,
+    searchCoordinator,
+    unitSearchPart,
+  };
+}
+
+function useEditorPersistenceSetup(
+  props: EditorProps,
+  state: EditorState,
+): { persistence: Persistence; pageGenerationRef: ReturnType<typeof useEditorPageLoader> } {
+  const loadPageRef = useRef<((index: number, targetUnitId?: string) => Promise<void>) | null>(
+    null,
+  );
+  const loadPage = useCallback((index: number, targetUnitId?: string) => {
+    const callback = loadPageRef.current;
+    return callback ? callback(index, targetUnitId) : Promise.resolve();
+  }, []);
   const persistence = useUnitPersistence({
     drafts: props.drafts,
     canWrite: props.canWrite,
     registerLeaveGuard: props.registerLeaveGuard,
-    onSaveUnits,
-    onReloadUnits: onLoadUnits,
-    onExit,
-    showToast,
+    onSaveUnits: props.onSaveUnits,
+    onReloadUnits: props.onLoadUnits,
+    onExit: props.onExit,
+    showToast: state.showToast,
     loadPage,
-    setUnitBuf,
+    setUnitBuf: state.setUnitBuf,
     autoSaveEnabled:
-      !isLoadingPage && !isReadOnly && !isUnitSearchTransformOpen && !isCompletingStage,
+      !state.isLoadingPage &&
+      !state.isReadOnly &&
+      !state.isUnitSearchTransformOpen &&
+      !state.isCompletingStage,
   });
-  const { runExclusive, setLoadedUnits, flushIfDirty } = persistence;
+  const pageGenerationRef = useEditorPageLoader(props, state, persistence, loadPageRef, loadPage);
+  return { persistence, pageGenerationRef };
+}
 
-  const pageLoadGenerationRef = useRef(0);
-
-  const isSpecialCharsBarSuspended =
-    isShortcutPanelOpen ||
-    isSpecialCharPanelOpen ||
-    isUnitSearchTransformOpen ||
-    deleteConfirmUnitId !== undefined ||
-    isCompleteConfirmOpen;
-  const isSpecialCharsBarVisible = !isReadOnly && !isSpecialCharsBarSuspended;
-  const canInsertSpecialChar =
-    canEditView &&
-    !isLoadingPage &&
-    !isCompletingStage &&
-    !isSpecialCharsBarSuspended &&
-    unitBuf.some((unit) => unitId(unit) === focusedUnitId);
-  const specialCharsBar = useDetachableSpecialCharsBar({
-    enabled: isSpecialCharsBarVisible,
-    interactionKey: JSON.stringify([
-      project.id,
-      pageIndex,
-      focusedUnitId,
-      view,
-      isLoadingPage,
-      isCompletingStage,
-      canEditView,
-    ]),
-  });
-
-  useEffect(
-    () => () => {
-      pageLoadGenerationRef.current += 1;
-    },
-    [],
+function useEditorActionCollaborators(
+  props: EditorProps,
+  state: EditorState,
+  persistence: Persistence,
+  completionStage: CompletionStage,
+  pageGenerationRef: ReturnType<typeof useEditorPageLoader>,
+  canInsertSpecialChar: boolean,
+): Pick<SessionCollaborators, "commands" | "actions" | "keyboard"> {
+  const commands = createEditorSessionActions(
+    props,
+    state,
+    persistence,
+    completionStage,
+    pageGenerationRef,
   );
-
-  async function loadPageCurrent(idx: number, targetUnitId?: string): Promise<void> {
-    const page = project.pages[idx];
-    if (!page) return;
-    const generation = ++pageLoadGenerationRef.current;
-    setIsLoadingPage(true);
-    try {
-      const [units, img] = await Promise.all([
-        props.drafts
-          ? props.drafts.ready.then(
-              () => props.drafts?.getState().drafts[page.id]?.units ?? onLoadUnits(page.id),
-            )
-          : onLoadUnits(page.id),
-        onLoadPageImage(page.id, imageQuality),
-      ]);
-      if (generation !== pageLoadGenerationRef.current) return;
-      setPageIndex(idx);
-      setLoadedUnits(page.id, units);
-      setImageUrl(img);
-      relocationSuppressedUnitIdRef.current = null;
-      pendingCenteredUnitIdRef.current = targetUnitId ?? null;
-      setFocusedUnitId(targetUnitId);
-    } finally {
-      if (generation === pageLoadGenerationRef.current) setIsLoadingPage(false);
-    }
-  }
-
-  useEffect(() => {
-    loadPageRef.current = loadPageCurrent;
-  });
-
-  useEffect(() => {
-    if (project.pages.length > 0) {
-      void loadPage(initialPageIndex).catch((error: unknown) => {
-        console.error("[BaseTranslator] 初始页面加载失败", error);
-        showLocalCaughtError(error, showToast, "页面加载失败，请重试");
-      });
-    }
-  }, [initialPageIndex, loadPage, project.pages.length, showToast]);
-
-  async function handleSave(): Promise<void> {
-    try {
-      await flushIfDirty();
-    } catch {
-      // The persistence coordinator already reports and retains failed saves.
-    }
-  }
-
-  async function handleToggleImageQuality(): Promise<void> {
-    const isNextIsHighResolution = !isHighResolution;
-    const page = project.pages[pageIndex];
-    if (!page) return;
-
-    const generation = ++pageLoadGenerationRef.current;
-    setIsHighResolution(isNextIsHighResolution);
-    setIsLoadingPage(true);
-    setImageUrl(null);
-    try {
-      const nextImageUrl = await onLoadPageImage(
-        page.id,
-        isNextIsHighResolution ? "original" : "optimized",
-      );
-      if (generation === pageLoadGenerationRef.current) {
-        setImageUrl(nextImageUrl);
-      }
-    } catch (error) {
-      console.error("[BaseTranslator] 图片加载失败", error);
-      showLocalCaughtError(error, showToast, "图片加载失败，请重试");
-    } finally {
-      if (generation === pageLoadGenerationRef.current) setIsLoadingPage(false);
-    }
-  }
-
-  async function handleCompleteStage(): Promise<void> {
-    if (!completionStage || isCompletingStage || hasCompletedStage) {
-      return;
-    }
-
-    setIsCompletingStage(true);
-    try {
-      await runExclusive(() => onCompleteStage(completionStage));
-      setHasCompletedStage(true);
-      setIsCompleteConfirmOpen(false);
-      showToast(completionStage === "proofread" ? "校对已完成" : "翻译已完成", "success");
-    } catch (error) {
-      console.error("[BaseTranslator] 推进译校阶段失败", {
-        stage: completionStage,
-        error,
-      });
-      showLocalCaughtError(error, showToast, "推进阶段失败，请重试");
-    } finally {
-      setIsCompletingStage(false);
-    }
-  }
-
   const actions = useEditorUnitActions({
     ...props,
     ...state,
@@ -298,88 +135,73 @@ export function useEditorSession(props: EditorProps): EditorSession {
     ...state,
     ...persistence,
     ...actions,
-    handleSave,
+    handleSave: commands.handleSave,
   });
-  const unitSearchPart: UnitTextPart =
-    state.view === "translate" ? "translatedText" : "proofreadText";
-  const searchCoordinator = createEditorSearchCoordinator({
+  return { commands, actions, keyboard };
+}
+
+function useEditorSpecialCharsBar(
+  props: EditorProps,
+  state: EditorState,
+): {
+  visible: boolean;
+  bar: SpecialCharsBar;
+} {
+  const suspended = isSpecialCharsBarSuspended(state);
+  const visible = !state.isReadOnly && !suspended;
+  const bar = useDetachableSpecialCharsBar({
+    enabled: visible,
+    interactionKey: JSON.stringify([
+      props.project.id,
+      state.pageIndex,
+      state.focusedUnitId,
+      state.view,
+      state.isLoadingPage,
+      state.isCompletingStage,
+      state.canEditView,
+    ]),
+  });
+  return { visible, bar };
+}
+
+function isSpecialCharsBarSuspended(state: EditorState): boolean {
+  return (
+    state.isShortcutPanelOpen ||
+    state.isSpecialCharPanelOpen ||
+    state.isUnitSearchTransformOpen ||
+    state.deleteConfirmUnitId !== undefined ||
+    state.isCompleteConfirmOpen
+  );
+}
+
+function canInsertSpecialCharacter(state: EditorState, barVisible: boolean): boolean {
+  return (
+    state.canEditView &&
+    !state.isLoadingPage &&
+    !state.isCompletingStage &&
+    barVisible &&
+    state.unitBuf.some((unit) => unitId(unit) === state.focusedUnitId)
+  );
+}
+
+function editorSearchPart(view: EditorState["view"]): UnitTextPart {
+  return view === "translate" ? "translatedText" : "proofreadText";
+}
+
+function createEditorSearchCoordinatorForSession(
+  props: EditorProps,
+  state: EditorState,
+  persistence: Persistence,
+  actions: Actions,
+  part: UnitTextPart,
+): SearchCoordinator {
+  return createEditorSearchCoordinator({
     dataSource: props.unitSearchTransform,
-    part: unitSearchPart,
-    currentPageId: project.pages[pageIndex]?.id,
-    flush: () => flushIfDirty(false),
-    runExclusive,
+    part,
+    currentPageId: props.project.pages[state.pageIndex]?.id,
+    flush: () => persistence.flushIfDirty(false),
+    runExclusive: persistence.runExclusive,
     refreshCurrentPage: persistence.refreshUnits,
     navigate: actions.handleSearchResultNavigate,
   });
-  return {
-    canEditView: state.canEditView,
-    canInsertSpecialChar,
-    canSwitchView: state.canSwitchView,
-    canvasRef: state.canvasRef,
-    completionStage,
-    configurableShortcuts: state.configurableShortcuts,
-    deleteConfirmUnitId: state.deleteConfirmUnitId,
-    doDeleteUnit: actions.doDeleteUnit,
-    fixedShortcuts: state.fixedShortcuts,
-    focusedUnitId: state.focusedUnitId,
-    handleAddUnit: actions.handleAddUnit,
-    handleCompleteStage,
-    handleDeleteUnit: actions.handleDeleteUnit,
-    drafts: props.drafts,
-    retryRecovery: persistence.retryRecovery,
-    handleExit: persistence.handleExit,
-    handleFocusUnit: actions.handleFocusUnit,
-    handleModifyUnit: actions.handleModifyUnit,
-    handleMoveUnit: actions.handleMoveUnit,
-    handleNavigate: persistence.handleNavigate,
-    handlePageImageLoad: actions.handlePageImageLoad,
-    handleReorderUnit: actions.handleReorderUnit,
-    handleRequestSpecialChar: actions.handleRequestSpecialChar,
-    handleSave,
-    handleSpecialCharInserted: actions.handleSpecialCharInserted,
-    handleSpecialCharUse: actions.handleSpecialCharUse,
-    handleSwitchView: keyboard.handleSwitchView,
-    handleToggleBubble: actions.handleToggleBubble,
-    handleToggleImageQuality,
-    hasCompletedStage: state.hasCompletedStage,
-    imageUrl: state.imageUrl,
-    isCompleteConfirmOpen: state.isCompleteConfirmOpen,
-    isCompletingStage: state.isCompletingStage,
-    isHighResolution: state.isHighResolution,
-    isLoadingPage: state.isLoadingPage,
-    isPageStatsOpen: state.isPageStatsOpen,
-    isReadOnly: state.isReadOnly,
-    isRelocationEnabled: state.isRelocationEnabled,
-    isShortcutPanelOpen: state.isShortcutPanelOpen,
-    isSpecialCharPanelOpen: state.isSpecialCharPanelOpen,
-    isSpecialCharsBarVisible,
-    isUnitCreationEnabled: state.isUnitCreationEnabled,
-    isUnitSearchTransformOpen: state.isUnitSearchTransformOpen,
-    nextView: state.nextView,
-    onListPageUnitDiffStats: props.onListPageUnitDiffStats,
-    onListPageUnitFlaggedStats: props.onListPageUnitFlaggedStats,
-    onResolveUser: props.onResolveUser,
-    pageIndex: state.pageIndex,
-    project: props.project,
-    proofreadPreviewVisibility: state.proofreadPreviewVisibility,
-    saveState: persistence.saveState,
-    saving: persistence.saving,
-    searchCoordinator,
-    setDeleteConfirmUnitId: state.setDeleteConfirmUnitId,
-    setIsCompleteConfirmOpen: state.setIsCompleteConfirmOpen,
-    setIsPageStatsOpen: state.setIsPageStatsOpen,
-    setIsShortcutPanelOpen: state.setIsShortcutPanelOpen,
-    setIsSpecialCharPanelOpen: state.setIsSpecialCharPanelOpen,
-    setIsUnitCreationEnabled: state.setIsUnitCreationEnabled,
-    setIsUnitSearchTransformOpen: state.setIsUnitSearchTransformOpen,
-    setProofreadPreviewVisibility: state.setProofreadPreviewVisibility,
-    specialCharInsertRequest: state.specialCharInsertRequest,
-    specialCharsBar,
-    terminology: props.terminology,
-    toggleRelocation: state.toggleRelocation,
-    unitBuf: state.unitBuf,
-    unitSearchPart,
-    updateConfigurableShortcuts: state.updateConfigurableShortcuts,
-    view: state.view,
-  };
 }

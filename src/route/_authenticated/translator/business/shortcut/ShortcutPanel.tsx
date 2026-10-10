@@ -1,4 +1,4 @@
-import type { ReactPortal } from "react";
+import type { Dispatch, ReactPortal, RefObject, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
@@ -8,7 +8,7 @@ import {
   type FixedShortcut,
   formatKeys,
   hasConflict,
-} from "@/route/_authenticated/translator/business/shortcut/base-translator-type";
+} from "@/shared/utility/shortcut";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
 
@@ -19,51 +19,71 @@ type Props = {
   onClose: () => void;
 };
 
-export function ShortcutPanel({
-  fixedShortcuts,
-  configurableShortcuts,
-  onUpdateConfigurableShortcuts,
-  onClose,
-}: Props): ReactPortal {
-  const [recordingIndex, setRecordingIndex] = useState<number | null>(null);
-  const recordedKeysRef = useRef(new Set<string>());
-  const showToast = useToastStore((s) => s.showToast);
+function handleShortcutKeyDown(
+  event: KeyboardEvent,
+  recordedKeysRef: RefObject<Set<string>>,
+): void {
+  if (isKeyboardComposing(event)) {
+    recordedKeysRef.current.clear();
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  const key = event.code.startsWith("Digit") ? event.code.slice(-1) : event.key;
+  recordedKeysRef.current.add(key);
+}
 
+function handleShortcutKeyUp(
+  event: KeyboardEvent,
+  recordedKeysRef: RefObject<Set<string>>,
+  configurableShortcuts: ConfigurableShortcut[],
+  recordingIndex: number,
+  setRecordingIndex: Dispatch<SetStateAction<number | null>>,
+  onUpdateConfigurableShortcuts: Props["onUpdateConfigurableShortcuts"],
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"],
+): void {
+  if (isKeyboardComposing(event)) {
+    recordedKeysRef.current.clear();
+    return;
+  }
+  const keysArray = [...recordedKeysRef.current];
+  if (keysArray.length === 0) return;
+  const isConflict = hasConflict(configurableShortcuts, recordingIndex, keysArray);
+  if (isConflict) showToast("快捷键冲突，已保留原有设置", "error");
+  else {
+    const updated = configurableShortcuts.map((shortcut, index) =>
+      index === recordingIndex ? { ...shortcut, keys: keysArray } : shortcut,
+    );
+    onUpdateConfigurableShortcuts(updated);
+  }
+  setRecordingIndex(null);
+  recordedKeysRef.current.clear();
+}
+
+function useShortcutRecording(
+  recordingIndex: number | null,
+  recordedKeysRef: RefObject<Set<string>>,
+  configurableShortcuts: ConfigurableShortcut[],
+  setRecordingIndex: Dispatch<SetStateAction<number | null>>,
+  onUpdateConfigurableShortcuts: Props["onUpdateConfigurableShortcuts"],
+): void {
+  const showToast = useToastStore((state) => state.showToast);
   useEffect(() => {
     if (recordingIndex === null) return;
-
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if (isKeyboardComposing(e)) {
-        recordedKeysRef.current.clear();
-        return;
-      }
-      e.preventDefault();
-      e.stopPropagation();
-      const key = e.code.startsWith("Digit") ? e.code.slice(-1) : e.key;
-      recordedKeysRef.current.add(key);
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      handleShortcutKeyDown(event, recordedKeysRef);
     };
-
-    const handleKeyUp = (e: KeyboardEvent): void => {
-      if (isKeyboardComposing(e)) {
-        recordedKeysRef.current.clear();
-        return;
-      }
-      const keysArray = [...recordedKeysRef.current];
-      if (keysArray.length > 0) {
-        const isConflict = hasConflict(configurableShortcuts, recordingIndex, keysArray);
-        if (isConflict) {
-          showToast("快捷键冲突，已保留原有设置", "error");
-        } else {
-          const updated = configurableShortcuts.map((s, i) =>
-            i === recordingIndex ? { ...s, keys: keysArray } : s,
-          );
-          onUpdateConfigurableShortcuts(updated);
-        }
-        setRecordingIndex(null);
-        recordedKeysRef.current.clear();
-      }
+    const handleKeyUp = (event: KeyboardEvent): void => {
+      handleShortcutKeyUp(
+        event,
+        recordedKeysRef,
+        configurableShortcuts,
+        recordingIndex,
+        setRecordingIndex,
+        onUpdateConfigurableShortcuts,
+        showToast,
+      );
     };
-
     // Capture before the panel stops keyboard events from bubbling.
     window.addEventListener("keydown", handleKeyDown, true);
     window.addEventListener("keyup", handleKeyUp, true);
@@ -71,12 +91,25 @@ export function ShortcutPanel({
       window.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener("keyup", handleKeyUp, true);
     };
-  }, [recordingIndex, configurableShortcuts, onUpdateConfigurableShortcuts, showToast]);
+  }, [
+    recordingIndex,
+    configurableShortcuts,
+    onUpdateConfigurableShortcuts,
+    setRecordingIndex,
+    showToast,
+    recordedKeysRef,
+  ]);
+}
 
+function useShortcutEscapeClose(recordingIndex: number | null, onClose: () => void): void {
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.defaultPrevented || isKeyboardComposing(e)) return;
-      if (recordingIndex === null && e.key === "Escape") {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (
+        !event.defaultPrevented &&
+        !isKeyboardComposing(event) &&
+        recordingIndex === null &&
+        event.key === "Escape"
+      ) {
         onClose();
       }
     };
@@ -85,6 +118,24 @@ export function ShortcutPanel({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose, recordingIndex]);
+}
+
+export function ShortcutPanel({
+  fixedShortcuts,
+  configurableShortcuts,
+  onUpdateConfigurableShortcuts,
+  onClose,
+}: Props): ReactPortal {
+  const [recordingIndex, setRecordingIndex] = useState<number | null>(null);
+  const recordedKeysRef = useRef(new Set<string>());
+  useShortcutRecording(
+    recordingIndex,
+    recordedKeysRef,
+    configurableShortcuts,
+    setRecordingIndex,
+    onUpdateConfigurableShortcuts,
+  );
+  useShortcutEscapeClose(recordingIndex, onClose);
 
   return createPortal(
     <div

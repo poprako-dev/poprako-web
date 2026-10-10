@@ -13,6 +13,35 @@ type MarkerPosition = {
   height: number;
 };
 
+function measureLineBreakPositions(
+  target: HTMLDivElement,
+  overlay: HTMLDivElement,
+): MarkerPosition[] {
+  const origin = overlay.getBoundingClientRect();
+  const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  const positions: MarkerPosition[] = [];
+  let offset = 0;
+  let node = walker.nextNode();
+  while (node) {
+    const text = node.textContent ?? "";
+    for (const match of text.matchAll(/\n/gu)) {
+      range.setStart(node, match.index);
+      range.setEnd(node, match.index + 1);
+      const rect = range.getBoundingClientRect();
+      positions.push({
+        offset: offset + match.index,
+        left: rect.left - origin.left,
+        top: rect.top - origin.top,
+        height: rect.height,
+      });
+    }
+    offset += text.length;
+    node = walker.nextNode();
+  }
+  return positions;
+}
+
 export function LineBreakOverlay({ targetRef, layoutKey }: Props): JSX.Element {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [positions, setPositions] = useState<MarkerPosition[]>([]);
@@ -26,30 +55,8 @@ export function LineBreakOverlay({ targetRef, layoutKey }: Props): JSX.Element {
 
     const measureNow = (): void => {
       if (isDisposed) return;
-      const origin = overlay.getBoundingClientRect();
-      const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
-      const range = document.createRange();
-      const next: MarkerPosition[] = [];
-      let offset = 0;
-      let node = walker.nextNode();
-      while (node) {
-        const text = node.textContent ?? "";
-        for (const match of text.matchAll(/\n/gu)) {
-          range.setStart(node, match.index);
-          range.setEnd(node, match.index + 1);
-          const rect = range.getBoundingClientRect();
-          next.push({
-            offset: offset + match.index,
-            left: rect.left - origin.left,
-            top: rect.top - origin.top,
-            height: rect.height,
-          });
-        }
-        offset += text.length;
-        node = walker.nextNode();
-      }
       // eslint-disable-next-line @eslint-react/set-state-in-effect -- Measure DOM before paint.
-      setPositions(next);
+      setPositions(measureLineBreakPositions(target, overlay));
     };
     const scheduleMeasure = (): void => {
       if (isDisposed) return;

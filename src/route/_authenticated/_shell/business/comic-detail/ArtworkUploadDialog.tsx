@@ -1,273 +1,149 @@
-import { type JSX, useEffect, useRef, useState } from "react";
-import {
-  Check,
-  CircleAlert,
-  CloudUpload,
-  FileStack,
-  FileUp,
-  LoaderCircle,
-  RotateCcw,
-  X,
-} from "lucide-react";
-import clsx from "clsx";
+import { useState } from "react";
+import type { JSX } from "react";
+import { FileArchive, FileStack, FileUp, X, Check, RotateCcw, CloudUpload } from "lucide-react";
+import { Switch } from "radix-ui";
+import { FilePicker } from "@/shared/component/FilePicker";
 import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
-import { useToastStore } from "@/shared/component/notification-toast/toast-store";
-import { toApiRequestError } from "@/route/business/request-error";
-import { allocArtwork, markArtworkUploaded } from "@/api/chapter/artwork-api";
 import { useApiClient } from "@/route/business/api-context";
-import {
-  prepareArtwork,
-  validateArtworkFiles,
-  type PreparedArtwork,
-} from "@/route/_authenticated/_shell/business/comic-detail/upload/artwork-upload";
-
+import { compareArtworkNames } from "@/route/_authenticated/business/artwork/artwork";
+import { createArtworkBatch } from "./upload/artwork-batch";
+import { useArtworkBatch } from "./upload/use-artwork-batch";
+import type { ArtworkBatch } from "./upload/artwork-batch-types";
+import { validateArtworkFiles } from "./upload/artwork-upload";
+import { ArtworkTaskList } from "./ArtworkTaskList";
+const EMPTY_FILES: File[] = [];
 type Props = {
   chapterId: string;
   chapterLabel: string;
   onUploaded: () => void;
+  onPagesChanged: () => void;
   onClose: () => void;
+  canArchive?: boolean;
+  initialFiles?: File[];
 };
-
-type Phase = "ready" | "compress" | "upload" | "confirm" | "done" | "error" | "cancelled";
-
-function formatSize(bytes: number): string {
-  return `${(bytes / 1024 ** 2).toFixed(1)} MiB`;
-}
-
 export function ArtworkUploadDialog({
   chapterId,
   chapterLabel,
   onUploaded,
+  onPagesChanged,
   onClose,
+  canArchive = true,
+  initialFiles = EMPTY_FILES,
 }: Props): JSX.Element {
-  const [files, setFiles] = useState<File[]>([]);
   const client = useApiClient();
-  const [phase, setPhase] = useState<Phase>("ready");
-  const [progress, setProgress] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const controllerRef = useRef<AbortController | null>(null);
-  const preparedRef = useRef<PreparedArtwork | null>(null);
-  const uploadedVersionRef = useRef<number | null>(null);
-  const { showToast } = useToastStore();
-  const isBusy = ["compress", "upload", "confirm"].includes(phase);
-  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-
-  useEffect(() => {
-    return () => {
-      controllerRef.current?.abort();
-      void preparedRef.current?.dispose().catch((error: unknown) => {
-        console.error("清理嵌稿临时文件失败", error);
-      });
-    };
-  }, []);
-
-  async function start(): Promise<void> {
-    if (controllerRef.current || files.length === 0) {
-      return;
-    }
-    const abort = new AbortController();
-    controllerRef.current = abort;
+  const [files, setFiles] = useState<File[]>(initialFiles);
+  const [includeArchive, setIncludeArchive] = useState(canArchive);
+  const [batch, setBatch] = useState<ArtworkBatch | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const state = useArtworkBatch(batch);
+  const done = state.tasks.length > 0 && state.tasks.every((task) => task.phase === "done");
+  function choose(selected: File[]): void {
     try {
-      if (!preparedRef.current) {
-        setPhase("compress");
-        setProgress(0);
-        const archive = await prepareArtwork(files, abort.signal, (value) => {
-          const ratio = value.processedBytes / Math.max(totalSize, 1);
-          setProgress(Math.min(45, ratio * 45));
-        });
-        if (abort.signal.aborted) {
-          await archive.dispose();
-          abort.signal.throwIfAborted();
-        }
-        preparedRef.current = archive;
-      }
-      const archive = preparedRef.current;
-      if (uploadedVersionRef.current === null) {
-        setPhase("upload");
-        setProgress(50);
-        const allocation = await allocArtwork(client, chapterId, archive.hash, archive.file.size);
-        abort.signal.throwIfAborted();
-        if (!allocation.success) {
-          throw toApiRequestError(allocation);
-        }
-        if (allocation.data.slot) {
-          const result = await client.putPresigned({
-            url: allocation.data.slot.putUrl,
-            file: archive.file,
-            headers: allocation.data.slot.headers,
-            onProgress: (value) => {
-              setProgress(50 + value * 0.48);
-            },
-            signal: abort.signal,
-          });
-          abort.signal.throwIfAborted();
-          if (!result.success) {
-            throw toApiRequestError(result);
-          }
-        }
-        uploadedVersionRef.current = allocation.data.artworkVersion;
-      }
-      abort.signal.throwIfAborted();
-      setPhase("confirm");
-      setProgress(98);
-      const confirmation = await markArtworkUploaded(client, chapterId, uploadedVersionRef.current);
-      if (!confirmation.success) {
-        throw toApiRequestError(confirmation);
-      }
-      setProgress(100);
-      setPhase("done");
-      showToast("嵌稿上传成功", "success");
-      onUploaded();
+      validateArtworkFiles(selected);
+      if (selected.some((file) => !/\.psd$/iu.test(file.name)))
+        throw new Error("请选择 PSD 文件，系统会自动生成在线预览。");
+      setBatch(null);
+      setFiles([...selected].sort((a, b) => compareArtworkNames(a.name, b.name)));
+      setError(null);
     } catch (error) {
-      if (abort.signal.aborted) {
-        setPhase("cancelled");
-      } else {
-        console.error("嵌稿上传失败", error);
-        setPhase("error");
-        showToast("嵌稿上传失败，请重试", "error");
-      }
-    } finally {
-      controllerRef.current = null;
+      setBatch(null);
+      setFiles([]);
+      setError(error instanceof Error ? error.message : String(error));
     }
   }
-
-  function selectFiles(): void {
-    inputRef.current?.click();
+  function start(): void {
+    try {
+      setError(null);
+      const next =
+        batch ??
+        createArtworkBatch({
+          client,
+          chapterId,
+          files,
+          includeArchive: canArchive && includeArchive,
+          onChanged: onPagesChanged,
+          onCompleted: onUploaded,
+        });
+      setBatch(next);
+      void next.run();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : String(error));
+    }
   }
-
-  function cancel(): void {
-    controllerRef.current?.abort();
-  }
-
-  const canSelect = !isBusy && phase !== "done";
-  const isRetrying = phase === "error" || phase === "cancelled";
-
   return (
     <AppDialog
       title="上传嵌稿"
       description={chapterLabel}
-      size="default"
       onClose={onClose}
-      locked={isBusy}
-      showClose={!isBusy}
+      locked={state.running}
+      showClose={!state.running}
       closeOnBackdrop={false}
+      bodyClassName="flex max-h-[55dvh] flex-col"
       footer={
         <div className="flex gap-2">
-          {isBusy && (
-            <AppDialogAction onClick={cancel} disabled={phase === "confirm"}>
+          {state.running ? (
+            <AppDialogAction
+              onClick={() => {
+                batch?.cancel();
+              }}
+            >
               <X size={14} />
-              取消
+              停止
             </AppDialogAction>
-          )}
-          {!isBusy && phase === "done" && (
+          ) : done ? (
             <AppDialogAction tone="brand" onClick={onClose}>
               <Check size={14} />
               完成
             </AppDialogAction>
-          )}
-          {!isBusy && phase !== "done" && (
+          ) : (
             <>
-              <AppDialogAction onClick={onClose}>
-                <X size={14} />
-                关闭
-              </AppDialogAction>
-              <AppDialogAction
-                tone="brand"
-                disabled={files.length === 0}
-                onClick={() => {
-                  void start();
-                }}
-              >
-                {isRetrying ? <RotateCcw size={14} /> : <CloudUpload size={14} />}
-                {isRetrying ? "重试" : "上传"}
+              <AppDialogAction onClick={onClose}>关闭</AppDialogAction>
+              <AppDialogAction tone="brand" disabled={files.length === 0} onClick={start}>
+                {batch ? <RotateCcw size={14} /> : <CloudUpload size={14} />}
+                {batch ? "重试" : "上传"}
               </AppDialogAction>
             </>
           )}
         </div>
       }
     >
-      <input
-        ref={inputRef}
-        type="file"
+      <FilePicker
+        inputLabel="选择嵌稿文件"
+        buttonLabel={files.length ? "重新选择嵌稿" : "选择嵌稿"}
+        accept=".psd"
         multiple
-        className="hidden"
-        aria-label="选择嵌稿"
-        onChange={(event) => {
-          const selected = [...(event.target.files ?? [])];
-          event.target.value = "";
-          if (selected.length === 0) {
-            return;
-          }
-          try {
-            validateArtworkFiles(selected);
-            const previous = preparedRef.current;
-            preparedRef.current = null;
-            uploadedVersionRef.current = null;
-            void previous?.dispose().catch((error: unknown) => {
-              console.error("清理嵌稿临时文件失败", error);
-            });
-            setFiles(selected);
-            setProgress(0);
-            setPhase("ready");
-          } catch (error) {
-            const message = error instanceof Error ? error.message : "文件选择无效";
-            showToast(message, "error");
-          }
-        }}
-      />
-
-      <button
-        type="button"
-        onClick={selectFiles}
-        disabled={!canSelect}
-        aria-label={files.length > 0 ? "重新选择嵌稿" : "选择嵌稿"}
-        className={clsx(
-          "flex min-h-24 w-full items-center justify-center gap-3 rounded-lg",
-          "border border-dashed transition-colors",
-          isRetrying
-            ? "border-(--danger-border) bg-surface-red-50 text-text-danger"
-            : "border-line-stone-200 bg-surface-stone-50/60 text-text-muted-cool",
-          canSelect && "hover:border-(--brand-leaf-border) hover:bg-surface-green-50",
-          !canSelect && "cursor-default",
-        )}
+        disabled={state.running || done}
+        invalid={error !== null}
+        onSelect={choose}
       >
-        {isBusy && <LoaderCircle size={22} className="animate-spin text-ink-green-500" />}
-        {!isBusy && isRetrying && <CircleAlert size={22} />}
-        {!isBusy && !isRetrying && files.length > 0 && <FileStack size={22} />}
-        {!isBusy && !isRetrying && files.length === 0 && <FileUp size={22} />}
-        {files.length > 0 && !isBusy && (
-          <span className="text-xs font-semibold tabular-nums">
-            {files.length} · {formatSize(totalSize)}
+        {files.length ? <FileStack size={22} /> : <FileUp size={22} />}
+        <span className="text-left text-sm">
+          <span className="block font-semibold">
+            {files.length ? String(files.length) + " 个 PSD" : "选择或拖入 PSD"}
           </span>
-        )}
-      </button>
-
-      {isBusy && (
-        <div className="mt-4 flex items-center gap-3">
-          <CloudUpload size={15} className="shrink-0 text-ink-green-500" />
-          <div
-            role="progressbar"
-            aria-label="上传进度"
-            aria-valuenow={Math.round(progress)}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-green-50"
-          >
-            <div
-              className="h-full rounded-full bg-(--brand-leaf) transition-[width]"
-              style={{ width: `${String(progress)}%` }}
-            />
-          </div>
-          <span className="text-xs font-semibold tabular-nums text-text-muted-cool">
-            {Math.round(progress)}%
-          </span>
-        </div>
-      )}
-
-      {phase === "done" && (
-        <span className="sr-only" role="status">
-          上传完成
         </span>
+      </FilePicker>
+      <div className="mt-3 flex h-8 shrink-0 items-center gap-2 rounded-lg px-2 text-xs font-medium text-text-muted-cool hover:bg-surface-slate-50">
+        <FileArchive size={14} className="text-icon-muted-cool" />
+        <label htmlFor="artwork-package" className="flex-1 cursor-pointer">
+          打包上传
+        </label>
+        <Switch.Root
+          id="artwork-package"
+          checked={includeArchive}
+          disabled={!canArchive || state.running || batch !== null}
+          title={!canArchive ? "需要嵌字、修图或管理员权限" : undefined}
+          onCheckedChange={setIncludeArchive}
+          className="relative h-4.5 w-8 rounded-full bg-surface-slate-200 transition-colors data-[state=checked]:bg-(--primary) disabled:opacity-50"
+        >
+          <Switch.Thumb className="block size-3.5 translate-x-0.5 rounded-full bg-surface-white shadow-sm transition-transform data-[state=checked]:translate-x-4" />
+        </Switch.Root>
+      </div>
+      {batch && <ArtworkTaskList tasks={state.tasks} />}
+      {(error ?? state.error) && (
+        <p role="alert" className="mt-3 whitespace-pre-wrap text-sm text-text-danger">
+          {error ?? state.error}
+        </p>
       )}
     </AppDialog>
   );

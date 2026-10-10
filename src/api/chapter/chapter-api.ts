@@ -37,104 +37,147 @@ function decodeEvent(value: unknown): ChapterWorkflowRecordEvent {
   const kind = decodeString(event["kind"], "workflow event.kind");
   const data =
     event["data"] === undefined ? undefined : decodeObject(event["data"], "workflow event.data");
-  const string = (key: string): string =>
-    decodeString(data?.[key], `workflow event.${kind}.${key}`);
-  const number = (key: string): number =>
-    decodeNumber(data?.[key], `workflow event.${kind}.${key}`);
-  const boolean = (object: Record<string, unknown>, key: string): boolean =>
-    decodeBoolean(object[key], `workflow event.${kind}.${key}`);
+  return decodeEventData(kind, data);
+}
+
+function decodeEventData(
+  kind: string,
+  data: Record<string, unknown> | undefined,
+): ChapterWorkflowRecordEvent {
   switch (kind) {
     case "chapter_created":
     case "chapter_pinned":
     case "chapter_unpinned":
       return { kind };
     case "chapter_subtitle_updated":
-      return {
-        kind,
-        data: {
-          previousSubtitle: string("previousSubtitle"),
-          nextSubtitle: string("nextSubtitle"),
-        },
-      };
+      return decodeSubtitleEvent(kind, data);
     case "assignment_created":
-      return {
-        kind,
-        data: {
-          subjectUserId: string("subjectUserId"),
-          roles: number("roles"),
-        },
-      };
     case "assignment_roles_updated":
-      return {
-        kind,
-        data: {
-          subjectUserId: string("subjectUserId"),
-          previousRoles: number("previousRoles"),
-          nextRoles: number("nextRoles"),
-        },
-      };
     case "assignment_deleted":
-      return {
-        kind,
-        data: {
-          subjectUserId: string("subjectUserId"),
-          previousRoles: number("previousRoles"),
-        },
-      };
+      return decodeAssignmentEvent(kind, data);
     case "translation_imported": {
-      const format = string("format");
-      if (format !== "label_plus" && format !== "poprako") {
-        throw new Error("Invalid workflow format");
-      }
-      return {
-        kind,
-        data: {
-          format,
-          importedPageCount: number("importedPageCount"),
-          importedUnitCount: number("importedUnitCount"),
-        },
-      };
+      return decodeTranslationImport(kind, data);
     }
     case "translation_exported": {
-      const formats = decodeObject(data?.["formats"], "workflow export formats");
-      return {
-        kind,
-        data: {
-          formats: {
-            labelPlus: boolean(formats, "labelPlus"),
-            poprako: boolean(formats, "poprako"),
-          },
-        },
-      };
+      return decodeTranslationExport(kind, data);
     }
     case "artwork_exported":
-      return { kind, data: { artworkVersion: number("artworkVersion") } };
+      return { kind, data: { artworkVersion: eventNumber(data, kind, "artworkVersion") } };
     case "stage_transitioned": {
-      const stage = string("stage");
-      const previousPhase = string("previousPhase");
-      const nextPhase = string("nextPhase");
-      const origin = string("origin");
-      if (
-        !STAGES.includes(stage as UpdateChapterStageRequest["stage"]) ||
-        !PHASES.includes(previousPhase as Phase) ||
-        !PHASES.includes(nextPhase as Phase) ||
-        !ORIGINS.includes(origin as Origin)
-      ) {
-        throw new Error("Invalid workflow stage transition");
-      }
-      return {
-        kind,
-        data: {
-          stage: stage as UpdateChapterStageRequest["stage"],
-          previousPhase: previousPhase as Phase,
-          nextPhase: nextPhase as Phase,
-          origin: origin as Origin,
-        },
-      };
+      return decodeStageTransition(kind, (key) => eventString(data, kind, key));
     }
     default:
       throw new Error(`Unsupported workflow event ${kind}`);
   }
+}
+
+function decodeSubtitleEvent(
+  kind: string,
+  data: Record<string, unknown> | undefined,
+): ChapterWorkflowRecordEvent {
+  return {
+    kind: kind as "chapter_subtitle_updated",
+    data: {
+      previousSubtitle: eventString(data, kind, "previousSubtitle"),
+      nextSubtitle: eventString(data, kind, "nextSubtitle"),
+    },
+  };
+}
+
+function decodeAssignmentEvent(
+  kind: string,
+  data: Record<string, unknown> | undefined,
+): ChapterWorkflowRecordEvent {
+  const subjectUserId = eventString(data, kind, "subjectUserId");
+  if (kind === "assignment_created") {
+    return {
+      kind: "assignment_created" as const,
+      data: { subjectUserId, roles: eventNumber(data, kind, "roles") },
+    };
+  }
+  if (kind === "assignment_roles_updated") {
+    return {
+      kind: "assignment_roles_updated" as const,
+      data: {
+        subjectUserId,
+        previousRoles: eventNumber(data, kind, "previousRoles"),
+        nextRoles: eventNumber(data, kind, "nextRoles"),
+      },
+    };
+  }
+  return {
+    kind: "assignment_deleted" as const,
+    data: { subjectUserId, previousRoles: eventNumber(data, kind, "previousRoles") },
+  };
+}
+
+function decodeTranslationImport(
+  kind: string,
+  data: Record<string, unknown> | undefined,
+): ChapterWorkflowRecordEvent {
+  const format = eventString(data, kind, "format");
+  if (format !== "label_plus" && format !== "poprako") {
+    throw new Error("Invalid workflow format");
+  }
+  return {
+    kind: "translation_imported" as const,
+    data: {
+      format,
+      importedPageCount: eventNumber(data, kind, "importedPageCount"),
+      importedUnitCount: eventNumber(data, kind, "importedUnitCount"),
+    },
+  };
+}
+
+function decodeTranslationExport(
+  kind: string,
+  data: Record<string, unknown> | undefined,
+): ChapterWorkflowRecordEvent {
+  const formats = decodeObject(data?.["formats"], "workflow export formats");
+  return {
+    kind: "translation_exported" as const,
+    data: {
+      formats: {
+        labelPlus: decodeBoolean(formats["labelPlus"], `workflow event.${kind}.labelPlus`),
+        poprako: decodeBoolean(formats["poprako"], `workflow event.${kind}.poprako`),
+      },
+    },
+  };
+}
+
+function eventString(data: Record<string, unknown> | undefined, kind: string, key: string): string {
+  return decodeString(data?.[key], `workflow event.${kind}.${key}`);
+}
+
+function eventNumber(data: Record<string, unknown> | undefined, kind: string, key: string): number {
+  return decodeNumber(data?.[key], `workflow event.${kind}.${key}`);
+}
+
+function decodeStageTransition(
+  kind: string,
+  string: (key: string) => string,
+): ChapterWorkflowRecordEvent {
+  const stage = string("stage");
+  const previousPhase = string("previousPhase");
+  const nextPhase = string("nextPhase");
+  const origin = string("origin");
+  if (
+    !STAGES.includes(stage as UpdateChapterStageRequest["stage"]) ||
+    !PHASES.includes(previousPhase as Phase) ||
+    !PHASES.includes(nextPhase as Phase) ||
+    !ORIGINS.includes(origin as Origin)
+  ) {
+    throw new Error("Invalid workflow stage transition");
+  }
+  return {
+    kind: kind as "stage_transitioned",
+    data: {
+      stage: stage as UpdateChapterStageRequest["stage"],
+      previousPhase: previousPhase as Phase,
+      nextPhase: nextPhase as Phase,
+      origin: origin as Origin,
+    },
+  };
 }
 
 type Phase = "pending" | "active" | "completed";

@@ -1,21 +1,23 @@
-import type { Dispatch } from "react";
-import type { SetStateAction } from "react";
-import type { RefObject } from "react";
-import type { ToastType } from "../../../../../shared/component/notification-toast/notification-toast-type";
-import type { CharItem } from "@/route/_authenticated/translator/business/preference/use-special-chars";
-import type { FixedShortcut } from "../shortcut/base-translator-type";
-import type { ConfigurableShortcut } from "../shortcut/base-translator-type";
-import { useMemo, useRef, useState } from "react";
+import type { ConfigurableShortcut } from "@/shared/utility/shortcut";
+import {
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from "react";
 import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
 import type { TranslatorMode } from "@/route/_authenticated/translator/business/unit/translator-mode";
 import type { PageImageQuality } from "@/route/_authenticated/business/page/page";
 import type { CanvasHandle } from "@/route/_authenticated/translator/business/canvas/Canvas";
-import { useShortcuts } from "@/route/_authenticated/translator/business/preference/use-shortcuts";
-import { useRelocationPreference } from "@/route/_authenticated/translator/business/preference/use-relocation-preference";
+import { useShortcuts } from "@/shared/hook/use-shortcuts";
+import { useRelocationPreference } from "@/shared/hook/use-relocation-preference";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { useSpecialChars } from "@/route/_authenticated/translator/business/preference/use-special-chars";
 import type { ProofreadPreviewVisibility } from "@/route/_authenticated/translator/business/contract/preview";
 import type { SpecialCharInsertRequest } from "@/route/_authenticated/translator/business/unit-list/UnitList";
+import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import {
   resolveInitialPageIndex,
   usePageImagePreloader,
@@ -37,89 +39,140 @@ function initialViewState(entryMode: TranslatorMode): TranslatorViewState {
   };
 }
 
-export function useEditorState({
-  project,
-  onLoadPageImage,
-  canTranslate,
-  canProofread,
-  startPageId,
-  startMode,
-}: Pick<
+type EditorOptions = Pick<
   EditorProps,
   "project" | "onLoadPageImage" | "canTranslate" | "canProofread" | "startPageId" | "startMode"
->): {
+>;
+
+type StateSetter<Value> = Dispatch<SetStateAction<Value>>;
+type EditorPageState = {
   initialPageIndex: number;
   pageIndex: number;
-  setPageIndex: Dispatch<SetStateAction<number>>;
+  setPageIndex: StateSetter<number>;
   unitBuf: UnitInfo[];
-  setUnitBuf: Dispatch<SetStateAction<UnitInfo[]>>;
+  setUnitBuf: StateSetter<UnitInfo[]>;
   focusedUnitId: string | undefined;
-  setFocusedUnitId: Dispatch<SetStateAction<string | undefined>>;
+  setFocusedUnitId: StateSetter<string | undefined>;
+  imageUrl: string | null;
+  setImageUrl: StateSetter<string | null>;
+  isHighResolution: boolean;
+  setIsHighResolution: StateSetter<boolean>;
+  isLoadingPage: boolean;
+  setIsLoadingPage: StateSetter<boolean>;
+  imageQuality: PageImageQuality;
+};
+type EditorModeState = {
   availableModes: TranslatorMode[];
   mode: TranslatorMode;
   storedViewState: TranslatorViewState;
-  setViewState: Dispatch<SetStateAction<TranslatorViewState>>;
+  setViewState: StateSetter<TranslatorViewState>;
   viewState: TranslatorViewState;
   view: TranslatorMode;
   proofreadPreviewVisibility: ProofreadPreviewVisibility;
-  setProofreadPreviewVisibility: Dispatch<SetStateAction<ProofreadPreviewVisibility>>;
+  setProofreadPreviewVisibility: StateSetter<ProofreadPreviewVisibility>;
   isReadOnly: boolean;
   canSwitchView: boolean;
   nextView: TranslatorMode | undefined;
   canEditView: boolean;
-  imageUrl: string | null;
-  setImageUrl: Dispatch<SetStateAction<string | null>>;
-  isHighResolution: boolean;
-  setIsHighResolution: Dispatch<SetStateAction<boolean>>;
-  isLoadingPage: boolean;
-  setIsLoadingPage: Dispatch<SetStateAction<boolean>>;
-  imageQuality: PageImageQuality;
-  isRelocationEnabled: boolean;
-  toggleRelocation: () => void;
+};
+type EditorPanelState = {
   isUnitCreationEnabled: boolean;
-  setIsUnitCreationEnabled: Dispatch<SetStateAction<boolean>>;
+  setIsUnitCreationEnabled: StateSetter<boolean>;
   isShortcutPanelOpen: boolean;
-  setIsShortcutPanelOpen: Dispatch<SetStateAction<boolean>>;
+  setIsShortcutPanelOpen: StateSetter<boolean>;
   isSpecialCharPanelOpen: boolean;
-  setIsSpecialCharPanelOpen: Dispatch<SetStateAction<boolean>>;
+  setIsSpecialCharPanelOpen: StateSetter<boolean>;
   isUnitSearchTransformOpen: boolean;
-  setIsUnitSearchTransformOpen: Dispatch<SetStateAction<boolean>>;
+  setIsUnitSearchTransformOpen: StateSetter<boolean>;
   specialCharInsertRequest: SpecialCharInsertRequest | undefined;
-  setSpecialCharInsertRequest: Dispatch<SetStateAction<SpecialCharInsertRequest | undefined>>;
+  setSpecialCharInsertRequest: StateSetter<SpecialCharInsertRequest | undefined>;
   deleteConfirmUnitId: string | undefined;
-  setDeleteConfirmUnitId: Dispatch<SetStateAction<string | undefined>>;
+  setDeleteConfirmUnitId: StateSetter<string | undefined>;
   isCompletingStage: boolean;
-  setIsCompletingStage: Dispatch<SetStateAction<boolean>>;
+  setIsCompletingStage: StateSetter<boolean>;
   hasCompletedStage: boolean;
-  setHasCompletedStage: Dispatch<SetStateAction<boolean>>;
+  setHasCompletedStage: StateSetter<boolean>;
   isCompleteConfirmOpen: boolean;
-  setIsCompleteConfirmOpen: Dispatch<SetStateAction<boolean>>;
+  setIsCompleteConfirmOpen: StateSetter<boolean>;
   isPageStatsOpen: boolean;
-  setIsPageStatsOpen: Dispatch<SetStateAction<boolean>>;
+  setIsPageStatsOpen: StateSetter<boolean>;
+};
+type EditorReferenceState = {
   canvasRef: RefObject<CanvasHandle | null>;
   lastSpecialCharRef: RefObject<string | null>;
   specialCharRequestIdRef: RefObject<number>;
   relocationSuppressedUnitIdRef: RefObject<string | null>;
   pendingCenteredUnitIdRef: RefObject<string | null>;
+};
+type EditorPreferenceState = {
+  isRelocationEnabled: boolean;
+  toggleRelocation: () => void;
   showToast: (message: string, type: ToastType) => void;
-  allChars: CharItem[];
-  favoriteChars: string[];
-  fixedShortcuts: FixedShortcut[];
+  allChars: ReturnType<typeof useSpecialChars>["allChars"];
+  favoriteChars: ReturnType<typeof useSpecialChars>["favoriteChars"];
+  fixedShortcuts: ReturnType<typeof useShortcuts>["fixedShortcuts"];
   configurableShortcuts: ConfigurableShortcut[];
-  updateConfigurableShortcuts: (next: ConfigurableShortcut[]) => void;
+  updateConfigurableShortcuts: ReturnType<typeof useShortcuts>["updateConfigurableShortcuts"];
   activeShortcuts: ConfigurableShortcut[];
-} {
-  const initialPageIndex = resolveInitialPageIndex(project.pages, startPageId);
+};
+type EditorStateValue = EditorPageState &
+  EditorModeState &
+  EditorPanelState &
+  EditorReferenceState &
+  EditorPreferenceState;
+
+export function useEditorState(options: EditorOptions): EditorStateValue {
+  const modes = useTranslatorModeState(options);
+  const page = useEditorPageState(options);
+  const panels = useEditorPanelState();
+  const references = useEditorReferenceState();
+  const preferences = useEditorPreferenceState(options, modes, page);
+  return { ...modes, ...page, ...panels, ...references, ...preferences };
+}
+
+function useEditorPageState(options: EditorOptions): EditorPageState {
+  const initialPageIndex = resolveInitialPageIndex(options.project.pages, options.startPageId);
   const [pageIndex, setPageIndex] = useState(initialPageIndex);
   const [unitBuf, setUnitBuf] = useState<UnitInfo[]>([]);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>(undefined);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isHighResolution, setIsHighResolution] = useState(false);
+  const [isLoadingPage, setIsLoadingPage] = useState(true);
+  const imageQuality: PageImageQuality = isHighResolution ? "original" : "optimized";
+  return {
+    initialPageIndex,
+    pageIndex,
+    setPageIndex,
+    unitBuf,
+    setUnitBuf,
+    focusedUnitId,
+    setFocusedUnitId,
+    imageUrl,
+    setImageUrl,
+    isHighResolution,
+    setIsHighResolution,
+    isLoadingPage,
+    setIsLoadingPage,
+    imageQuality,
+  };
+}
+
+function useTranslatorModeState(options: EditorOptions): EditorModeState {
   const availableModes = useMemo(
-    () => availableTranslatorModes({ canTranslate, canProofread }),
-    [canProofread, canTranslate],
+    () =>
+      availableTranslatorModes({
+        canTranslate: options.canTranslate,
+        canProofread: options.canProofread,
+      }),
+    [options.canProofread, options.canTranslate],
   );
   const mode = useMemo(
-    () => initialTranslatorMode(availableModes, startMode === "auto" ? undefined : startMode),
-    [availableModes, startMode],
+    () =>
+      initialTranslatorMode(
+        availableModes,
+        options.startMode === "auto" ? undefined : options.startMode,
+      ),
+    [availableModes, options.startMode],
   );
   const [storedViewState, setStoredViewState] = useState<TranslatorViewState>(() =>
     initialViewState(mode),
@@ -131,73 +184,12 @@ export function useEditorState({
   const { view } = viewState;
   const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
     useState<ProofreadPreviewVisibility>("visible");
-
   const isReadOnly = view === "readOnly";
   const canSwitchView = mode !== "readOnly" && availableModes.length > 1;
   const nextView = availableModes[(availableModes.indexOf(view) + 1) % availableModes.length];
-  const canEditView = !isReadOnly && (view === "translate" ? canTranslate : canProofread);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [isHighResolution, setIsHighResolution] = useState(false);
-  const [isLoadingPage, setIsLoadingPage] = useState(true);
-  const imageQuality: PageImageQuality = isHighResolution ? "original" : "optimized";
-  const { isRelocationEnabled, toggleRelocation } = useRelocationPreference();
-  const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
-  const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
-  const [isSpecialCharPanelOpen, setIsSpecialCharPanelOpen] = useState(false);
-  const [isUnitSearchTransformOpen, setIsUnitSearchTransformOpen] = useState(false);
-  const [specialCharInsertRequest, setSpecialCharInsertRequest] = useState<
-    SpecialCharInsertRequest | undefined
-  >(undefined);
-  const [deleteConfirmUnitId, setDeleteConfirmUnitId] = useState<string | undefined>(undefined);
-  const [isCompletingStage, setIsCompletingStage] = useState(false);
-  const [hasCompletedStage, setHasCompletedStage] = useState(false);
-  const [isCompleteConfirmOpen, setIsCompleteConfirmOpen] = useState(false);
-  const [isPageStatsOpen, setIsPageStatsOpen] = useState(false);
-
-  const canvasRef = useRef<CanvasHandle>(null);
-  const lastSpecialCharRef = useRef<string | null>(null);
-  const specialCharRequestIdRef = useRef(0);
-  const relocationSuppressedUnitIdRef = useRef<string | null>(null);
-  const pendingCenteredUnitIdRef = useRef<string | null>(null);
-
-  const showToast = useToastStore((s) => s.showToast);
-  const { allChars, favoriteChars } = useSpecialChars();
-
-  usePageImagePreloader({
-    pages: project.pages,
-    currentPageIndex: pageIndex,
-    quality: imageQuality,
-    onLoadPageImage,
-  });
-
-  const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } = useShortcuts();
-
-  const activeShortcuts = (() => {
-    let shortcuts = configurableShortcuts;
-    if (isReadOnly) {
-      shortcuts = shortcuts.filter((s) =>
-        [
-          "nextMarker",
-          "prevMarker",
-          "pageUp",
-          "pageDown",
-          "toggleMode",
-          "toggleProofreadPreview",
-        ].includes(s.action),
-      );
-    }
-    shortcuts = shortcuts.filter((s) => s.action !== "toggleMode");
-    return shortcuts;
-  })();
-
+  const canEditView =
+    !isReadOnly && (view === "translate" ? options.canTranslate : options.canProofread);
   return {
-    initialPageIndex,
-    pageIndex,
-    setPageIndex,
-    unitBuf,
-    setUnitBuf,
-    focusedUnitId,
-    setFocusedUnitId,
     availableModes,
     mode,
     storedViewState,
@@ -210,15 +202,23 @@ export function useEditorState({
     canSwitchView,
     nextView,
     canEditView,
-    imageUrl,
-    setImageUrl,
-    isHighResolution,
-    setIsHighResolution,
-    isLoadingPage,
-    setIsLoadingPage,
-    imageQuality,
-    isRelocationEnabled,
-    toggleRelocation,
+  };
+}
+
+function useEditorPanelState(): EditorPanelState {
+  const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
+  const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
+  const [isSpecialCharPanelOpen, setIsSpecialCharPanelOpen] = useState(false);
+  const [isUnitSearchTransformOpen, setIsUnitSearchTransformOpen] = useState(false);
+  const [specialCharInsertRequest, setSpecialCharInsertRequest] = useState<
+    SpecialCharInsertRequest | undefined
+  >(undefined);
+  const [deleteConfirmUnitId, setDeleteConfirmUnitId] = useState<string | undefined>(undefined);
+  const [isCompletingStage, setIsCompletingStage] = useState(false);
+  const [hasCompletedStage, setHasCompletedStage] = useState(false);
+  const [isCompleteConfirmOpen, setIsCompleteConfirmOpen] = useState(false);
+  const [isPageStatsOpen, setIsPageStatsOpen] = useState(false);
+  return {
     isUnitCreationEnabled,
     setIsUnitCreationEnabled,
     isShortcutPanelOpen,
@@ -239,11 +239,38 @@ export function useEditorState({
     setIsCompleteConfirmOpen,
     isPageStatsOpen,
     setIsPageStatsOpen,
+  };
+}
+
+function useEditorReferenceState(): EditorReferenceState {
+  const canvasRef = useRef<CanvasHandle>(null);
+  const lastSpecialCharRef = useRef<string | null>(null);
+  const specialCharRequestIdRef = useRef(0);
+  const relocationSuppressedUnitIdRef = useRef<string | null>(null);
+  const pendingCenteredUnitIdRef = useRef<string | null>(null);
+  return {
     canvasRef,
     lastSpecialCharRef,
     specialCharRequestIdRef,
     relocationSuppressedUnitIdRef,
     pendingCenteredUnitIdRef,
+  };
+}
+
+function useEditorPreferenceState(
+  options: EditorOptions,
+  modes: EditorModeState,
+  page: EditorPageState,
+): EditorPreferenceState {
+  const { isRelocationEnabled, toggleRelocation } = useRelocationPreference();
+  const showToast = useToastStore((s) => s.showToast);
+  const { allChars, favoriteChars } = useSpecialChars();
+  useEditorImagePreloader(options, page);
+  const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } = useShortcuts();
+  const activeShortcuts = filterActiveShortcuts(configurableShortcuts, modes.isReadOnly);
+  return {
+    isRelocationEnabled,
+    toggleRelocation,
     showToast,
     allChars,
     favoriteChars,
@@ -253,4 +280,35 @@ export function useEditorState({
     activeShortcuts,
   };
 }
-export type EditorState = ReturnType<typeof useEditorState>;
+
+function useEditorImagePreloader(
+  options: EditorOptions,
+  page: ReturnType<typeof useEditorPageState>,
+): void {
+  usePageImagePreloader({
+    pages: options.project.pages,
+    currentPageIndex: page.pageIndex,
+    quality: page.imageQuality,
+    onLoadPageImage: options.onLoadPageImage,
+  });
+}
+
+function filterActiveShortcuts(
+  shortcuts: ConfigurableShortcut[],
+  isReadOnly: boolean,
+): ConfigurableShortcut[] {
+  const available = isReadOnly
+    ? shortcuts.filter((shortcut) =>
+        [
+          "nextMarker",
+          "prevMarker",
+          "pageUp",
+          "pageDown",
+          "toggleMode",
+          "toggleProofreadPreview",
+        ].includes(shortcut.action),
+      )
+    : shortcuts;
+  return available.filter((shortcut) => shortcut.action !== "toggleMode");
+}
+export type EditorState = EditorStateValue;

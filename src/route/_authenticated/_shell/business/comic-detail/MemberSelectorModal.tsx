@@ -38,6 +38,138 @@ type Props = {
   onClose: () => void;
 };
 
+type MemberOptionProps = {
+  member: MemberInfo;
+  isSubmitting: boolean;
+  onSelectUser: (userId: string) => void;
+};
+
+type MemberSearchProps = {
+  chapterId: string;
+  role: Role;
+  keyword: string;
+  queryKey: string;
+  onLoadMembers: Props["onLoadMembers"];
+  setIsLoading: Props["setIsLoading"];
+  setLoaded: (queryKey: string, result: Result<MemberInfo[]>) => void;
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"];
+};
+
+function useMemberSearch({
+  chapterId,
+  role,
+  keyword,
+  queryKey,
+  onLoadMembers,
+  setIsLoading,
+  setLoaded,
+  showToast,
+}: MemberSearchProps): void {
+  useEffect(() => {
+    let isCancelled = false;
+    setIsLoading(true);
+    const loadMembers = async (): Promise<void> => {
+      try {
+        const nextResult = await onLoadMembers(chapterId, {
+          role,
+          keyword: keyword.trim() || undefined,
+          offset: 0,
+          limit: 20,
+        });
+        if (isCancelled) return;
+        setLoaded(queryKey, nextResult);
+        if (!nextResult.success) {
+          console.error("[MemberSelectorModal] 加载成员失败:", nextResult.error);
+          showLocalApiFailure(nextResult, showToast);
+        }
+      } catch (error) {
+        if (isCancelled) return;
+        console.error("[MemberSelectorModal] 加载成员异常:", error);
+        setLoaded(queryKey, { success: false, error: "加载成员失败，请重试" });
+        showLocalCaughtError(error, showToast, "加载成员失败");
+      } finally {
+        if (!isCancelled) setIsLoading(false);
+      }
+    };
+    const timer = setTimeout(() => {
+      void loadMembers();
+    }, 250);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+      setIsLoading(false);
+    };
+  }, [chapterId, keyword, onLoadMembers, queryKey, role, setIsLoading, setLoaded, showToast]);
+}
+
+function MemberOption({ member, isSubmitting, onSelectUser }: MemberOptionProps): JSX.Element {
+  const visibleRoles = unmaskRoles(member.roles).filter((memberRole) => memberRole !== "admin");
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        onSelectUser(member.userId);
+      }}
+      disabled={isSubmitting}
+      className={clsx(
+        "flex items-center gap-3 rounded-lg border px-3 py-2 text-left",
+        "border-line-slate-200",
+        "transition-all hover:border-line-green-100 hover:bg-surface-green-50/40",
+        isSubmitting && "cursor-wait opacity-60",
+      )}
+    >
+      <div
+        className={clsx(
+          "flex h-9 w-9 shrink-0 items-center justify-center",
+          "overflow-hidden rounded-full bg-surface-slate-100",
+          "text-xs font-bold text-text-muted-cool",
+        )}
+      >
+        {member.user?.avatarThumbnailUrl ? (
+          <img
+            src={member.user.avatarThumbnailUrl}
+            alt={member.user.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          (member.user?.name ?? member.userId).slice(0, 1)
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-semibold text-ink-slate-700">
+          {member.user?.name ?? member.userId}
+        </div>
+        <div className="mt-0.5 flex items-center gap-1.5">
+          {visibleRoles.map((memberRole) => (
+            <span
+              key={memberRole}
+              className={clsx(
+                "inline-block rounded px-1 py-px",
+                "text-[10px] font-bold leading-tight",
+                "bg-surface-slate-100 text-text-muted-cool",
+              )}
+            >
+              {ROLE_LABEL[memberRole] ?? memberRole}
+            </span>
+          ))}
+          {visibleRoles.length === 0 && (
+            <span className="text-xs text-text-muted-cool">{member.user?.qq ?? member.userId}</span>
+          )}
+        </div>
+      </div>
+      <div
+        className={clsx(
+          "flex size-7 shrink-0 items-center justify-center rounded-md",
+          "border border-line-green-100 bg-surface-green-50 text-ink-green-500",
+        )}
+      >
+        {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+      </div>
+    </button>
+  );
+}
+
 export function MemberSelectorModal({
   title,
   chapterId,
@@ -60,48 +192,18 @@ export function MemberSelectorModal({
   const loadError = result && !result.success ? result.error : null;
   const isFetching = !result;
 
-  useEffect(() => {
-    let isCancelled = false;
-    setIsLoading(true);
-    const loadMembers = async (): Promise<void> => {
-      try {
-        const nextResult = await onLoadMembers(chapterId, {
-          role,
-          keyword: keyword.trim() || undefined,
-          offset: 0,
-          limit: 20,
-        });
-        if (isCancelled) {
-          return;
-        }
-        setLoaded({ queryKey, result: nextResult });
-        if (!nextResult.success) {
-          console.error("[MemberSelectorModal] 加载成员失败:", nextResult.error);
-          showLocalApiFailure(nextResult, showToast);
-        }
-      } catch (error) {
-        if (isCancelled) {
-          return;
-        }
-        console.error("[MemberSelectorModal] 加载成员异常:", error);
-        setLoaded({ queryKey, result: { success: false, error: "加载成员失败，请重试" } });
-        showLocalCaughtError(error, showToast, "加载成员失败");
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-    const timer = setTimeout(() => {
-      void loadMembers();
-    }, 250);
-
-    return () => {
-      isCancelled = true;
-      clearTimeout(timer);
-      setIsLoading(false);
-    };
-  }, [chapterId, keyword, onLoadMembers, queryKey, role, setIsLoading, showToast]);
+  useMemberSearch({
+    chapterId,
+    role,
+    keyword,
+    queryKey,
+    onLoadMembers,
+    setIsLoading,
+    setLoaded: (loadedQueryKey, nextResult) => {
+      setLoaded({ queryKey: loadedQueryKey, result: nextResult });
+    },
+    showToast,
+  });
 
   return (
     <AppDialog title={title} size="large" onClose={onClose} bodyClassName="p-0">
@@ -131,72 +233,12 @@ export function MemberSelectorModal({
       <div className="max-h-[55dvh] overflow-y-auto px-3 py-3">
         <div className="flex flex-col gap-2">
           {members.map((member) => (
-            <button
+            <MemberOption
               key={member.id}
-              type="button"
-              onClick={() => {
-                onSelectUser(member.userId);
-              }}
-              disabled={isSubmitting}
-              className={clsx(
-                "flex items-center gap-3 rounded-lg border px-3 py-2 text-left",
-                "border-line-slate-200",
-                "transition-all hover:border-line-green-100 hover:bg-surface-green-50/40",
-                isSubmitting && "cursor-wait opacity-60",
-              )}
-            >
-              <div
-                className={clsx(
-                  "flex h-9 w-9 shrink-0 items-center justify-center",
-                  "overflow-hidden rounded-full bg-surface-slate-100",
-                  "text-xs font-bold text-text-muted-cool",
-                )}
-              >
-                {member.user?.avatarThumbnailUrl ? (
-                  <img
-                    src={member.user.avatarThumbnailUrl}
-                    alt={member.user.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  (member.user?.name ?? member.userId).slice(0, 1)
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold text-ink-slate-700">
-                  {member.user?.name ?? member.userId}
-                </div>
-                <div className="mt-0.5 flex items-center gap-1.5">
-                  {unmaskRoles(member.roles)
-                    .filter((r) => r !== "admin")
-                    .map((r) => (
-                      <span
-                        key={r}
-                        className={clsx(
-                          "inline-block rounded px-1 py-px",
-                          "text-[10px] font-bold leading-tight",
-                          "bg-surface-slate-100 text-text-muted-cool",
-                        )}
-                      >
-                        {ROLE_LABEL[r] ?? r}
-                      </span>
-                    ))}
-                  {unmaskRoles(member.roles).filter((r) => r !== "admin").length === 0 && (
-                    <span className="text-xs text-text-muted-cool">
-                      {member.user?.qq ?? member.userId}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div
-                className={clsx(
-                  "flex size-7 shrink-0 items-center justify-center rounded-md",
-                  "border border-line-green-100 bg-surface-green-50 text-ink-green-500",
-                )}
-              >
-                {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-              </div>
-            </button>
+              member={member}
+              isSubmitting={isSubmitting}
+              onSelectUser={onSelectUser}
+            />
           ))}
 
           {isFetching && (

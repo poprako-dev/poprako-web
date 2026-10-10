@@ -1,4 +1,5 @@
-import { type JSX, useCallback, useState } from "react";
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
+import { type JSX, useState } from "react";
 import clsx from "clsx";
 import { Eye, PencilLine } from "lucide-react";
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
@@ -7,7 +8,6 @@ import type { WorksetInfo } from "@/route/_authenticated/business/workset/workse
 import type { ViewMode } from "@/route/_authenticated/_shell/business/comic-list/comic-card-type";
 import type {
   BinaryFilter,
-  ComicTranslationListItem,
   TripleFilter,
 } from "@/route/_authenticated/_shell/business/comic-list/comic-list";
 import { ComicListLayout } from "@/route/_authenticated/_shell/comic-playground/business/comic-list/ComicListLayout";
@@ -15,6 +15,7 @@ import { FilterHeader } from "@/route/_authenticated/_shell/comic-playground/bus
 import { ComicTranslationList } from "@/route/_authenticated/_shell/business/comic-list/ComicTranslationList";
 import { WorksetSidebar } from "@/route/_authenticated/_shell/comic-playground/business/comic-list/WorksetSidebar";
 import { ComicProgressList } from "@/route/_authenticated/_shell/comic-playground/business/progress/ComicProgressList";
+import { useComicListLoaders } from "@/route/_authenticated/_shell/comic-playground/business/comic-list/use-comic-list-loaders";
 
 type Props = {
   initialMode?: ViewMode | undefined;
@@ -30,7 +31,7 @@ type Props = {
       ) => Promise<Result<void>>)
     | undefined;
   onLoadComics: (offset: number, limit: number, mode: ViewMode) => Promise<Result<ComicInfo[]>>;
-  onComicClick: (comicId: string, chapterId?: string | null) => void;
+  onComicClick: (comicId: string, chapterId?: string | null, mode?: ComicDetailMode) => void;
   onCreateComic?: (() => void) | undefined;
   onChangeFuzzyTitle: (title: string) => void;
   activeFuzzyTitle?: string | undefined;
@@ -81,26 +82,7 @@ export function ComicList({
     setIsSidebarOpen((prev) => !prev);
   };
 
-  const loadComicCards = useCallback(
-    async (offset: number, limit: number): Promise<Result<ComicTranslationListItem[]>> => {
-      const result = await onLoadComics(offset, limit, "translator");
-      if (!result.success) return result;
-
-      return {
-        success: true,
-        data: result.data.map((comicInfo) => ({
-          comicInfo,
-          chapter: comicInfo.pinnedChapter,
-        })),
-      };
-    },
-    [onLoadComics],
-  );
-
-  const loadComicProgress = useCallback(
-    async (offset: number, limit: number) => onLoadComics(offset, limit, "reviewer"),
-    [onLoadComics],
-  );
+  const { loadComicCards, loadComicProgress } = useComicListLoaders(onLoadComics);
 
   return (
     <ComicListLayout
@@ -185,7 +167,7 @@ export function ComicList({
               onLoadComics={loadComicCards}
               onComicClick={(comicId, chapterId) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
-                onComicClick(comicId, chapterId);
+                onComicClick(comicId, chapterId, "translator");
               }}
             />
           )}
@@ -195,7 +177,7 @@ export function ComicList({
               onLoadComics={loadComicProgress}
               onComicClick={(comicInfo) => {
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
-                onComicClick(comicInfo.id, comicInfo.pinnedChapter?.id);
+                onComicClick(comicInfo.id, comicInfo.pinnedChapter?.id, "reviewer");
               }}
             />
           )}

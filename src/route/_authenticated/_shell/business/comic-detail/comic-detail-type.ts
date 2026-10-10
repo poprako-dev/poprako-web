@@ -1,3 +1,4 @@
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import type { ChangeEvent } from "react";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
@@ -70,7 +71,12 @@ export type DetailContract = {
     presetAssignmentRoles?: number | undefined;
   }) => Promise<Result<string>>;
   onDeleteChapter: (chapterId: string) => Promise<Result<void>>;
-  onNavigateToTranslator: (chapterId: string, pageId: string, isReadOnly?: boolean) => void;
+  onNavigateToWorkbench: (
+    chapterId: string,
+    pageId: string,
+    isReadOnly?: boolean,
+    mode?: ComicDetailMode,
+  ) => void;
   currentUserId: string;
   onDeleteChapterPages: (chapterId: string) => Promise<Result<void>>;
   onJoinChapterRole: (chapterId: string, role: Role) => Promise<Result<void>>;

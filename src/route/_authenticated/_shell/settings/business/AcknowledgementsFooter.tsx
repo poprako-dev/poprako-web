@@ -8,6 +8,7 @@ const acknowledgments = {
     { name: "Pkuism", link: "https://github.com/pkuislm" },
     { name: "星辰大海", link: "https://github.com/SeaAndStars" },
     { name: "秋叶声生" },
+    { name: "水月", link: "https://github.com/gunfub" },
   ],
   repositories: [
     { name: "萌翻", link: "https://github.com/moeflow-com/moeflow" },

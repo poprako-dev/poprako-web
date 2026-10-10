@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
@@ -53,32 +53,123 @@ type AssignmentState = {
   handleLeaveRole: (role: Role) => Promise<void>;
 };
 
-export function useComicDetailAssignments({
-  selectedChapterId,
-  isSelectedChapterAvailable,
-  currentUserId,
-  activeMember,
-  pinnedChapterId,
-  pinnedChapterAssignments,
-  onLoadAssignments,
-  onAddAssignment,
-  onRemoveAssignment,
-  onJoinChapterRole,
-  onWorkflowRecordsChanged,
-  showToast,
-}: Args): AssignmentState {
-  const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
-  const [isAssignmentsLoading, setIsAssignmentsLoading] = useState(false);
+type SelectedAssignments = Pick<
+  Args,
+  "selectedChapterId" | "isSelectedChapterAvailable" | "onLoadAssignments" | "showToast"
+>;
+
+type AssignmentPermissions = Pick<
+  AssignmentState,
+  | "currentAssignment"
+  | "canTranslateOrProofread"
+  | "canReadOnly"
+  | "canManageChapterAssignments"
+  | "canUploadRawPages"
+  | "isTeamAdmin"
+  | "canCreateChapter"
+>;
+
+type AssignmentInteractionState = {
+  isMemberSelectorLoading: boolean;
+  setIsMemberSelectorLoading: Dispatch<SetStateAction<boolean>>;
+  memberSelectorRole: Role | null;
+  setMemberSelectorRole: Dispatch<SetStateAction<Role | null>>;
+  isAddingAssignment: boolean;
+  setIsAddingAssignment: Dispatch<SetStateAction<boolean>>;
+  joiningRoles: Partial<Record<Role, boolean>>;
+  setJoiningRoles: Dispatch<SetStateAction<Partial<Record<Role, boolean>>>>;
+  leavingRoles: Partial<Record<Role, boolean>>;
+  setLeavingRoles: Dispatch<SetStateAction<Partial<Record<Role, boolean>>>>;
+};
+
+function useAssignmentInteractionState(): AssignmentInteractionState {
   const [isMemberSelectorLoading, setIsMemberSelectorLoading] = useState(false);
   const [memberSelectorRole, setMemberSelectorRole] = useState<Role | null>(null);
   const [isAddingAssignment, setIsAddingAssignment] = useState(false);
   const [joiningRoles, setJoiningRoles] = useState<Partial<Record<Role, boolean>>>({});
   const [leavingRoles, setLeavingRoles] = useState<Partial<Record<Role, boolean>>>({});
-  const [pinnedAssignments, setPinnedAssignments] = useState<{
-    chapterId: string;
-    assignments: AssignmentInfo[];
-  } | null>(null);
+  return {
+    isMemberSelectorLoading,
+    setIsMemberSelectorLoading,
+    memberSelectorRole,
+    setMemberSelectorRole,
+    isAddingAssignment,
+    setIsAddingAssignment,
+    joiningRoles,
+    setJoiningRoles,
+    leavingRoles,
+    setLeavingRoles,
+  };
+}
 
+function resolveAssignmentPermissions(
+  assignments: AssignmentInfo[],
+  currentUserId: string,
+  activeMember: MemberInfo | null,
+  pinnedAssignments: AssignmentInfo[],
+): AssignmentPermissions {
+  const currentAssignment = assignments.find((item) => item.userId === currentUserId);
+  const canTranslateOrProofread = Boolean(
+    currentAssignment &&
+      (hasRole(currentAssignment, "translator") || hasRole(currentAssignment, "proofreader")),
+  );
+  return {
+    currentAssignment,
+    canTranslateOrProofread,
+    canReadOnly: activeMember !== null && !canTranslateOrProofread,
+    canManageChapterAssignments: Boolean(currentAssignment && hasRole(currentAssignment, "admin")),
+    canUploadRawPages: Boolean(currentAssignment && hasRole(currentAssignment, "rawProvider")),
+    isTeamAdmin: activeMember !== null && hasRole(activeMember, "admin"),
+    canCreateChapter:
+      (activeMember !== null && hasRole(activeMember, "admin")) ||
+      pinnedAssignments.some(
+        (assignment) => assignment.userId === currentUserId && hasRole(assignment, "reviewer"),
+      ),
+  };
+}
+
+async function fetchSelectedAssignments(
+  chapterId: string,
+  onLoadAssignments: Args["onLoadAssignments"],
+  showToast: ShowToast,
+): Promise<AssignmentInfo[] | null> {
+  try {
+    const result = await onLoadAssignments(chapterId);
+    if (!result.success) {
+      console.error("[ComicDetailModal] 刷新分工失败:", result);
+      showLocalApiFailure(result, showToast);
+      return null;
+    }
+    return result.data;
+  } catch (error) {
+    console.error("[ComicDetailModal] 刷新分工异常:", error);
+    showLocalCaughtError(error, showToast, "刷新分工失败");
+    return null;
+  }
+}
+
+function useSelectedAssignments({
+  selectedChapterId,
+  isSelectedChapterAvailable,
+  onLoadAssignments,
+  showToast,
+}: SelectedAssignments): Pick<
+  AssignmentState,
+  "assignments" | "setAssignments" | "isAssignmentsLoading" | "reloadAssignments"
+> {
+  const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
+  const [isAssignmentsLoading, setIsAssignmentsLoading] = useState(false);
+  const reloadAssignments = useCallback(
+    () =>
+      reloadSelectedAssignments(
+        selectedChapterId,
+        onLoadAssignments,
+        showToast,
+        setAssignments,
+        setIsAssignmentsLoading,
+      ),
+    [onLoadAssignments, selectedChapterId, showToast],
+  );
   useEffect(() => {
     if (!selectedChapterId || !isSelectedChapterAvailable) {
       // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
@@ -90,140 +181,214 @@ export function useComicDetailAssignments({
     let isCancelled = false;
     setAssignments([]); // eslint-disable-line @eslint-react/set-state-in-effect
     setIsAssignmentsLoading(true); // eslint-disable-line @eslint-react/set-state-in-effect
-    const loadAssignments = async (): Promise<void> => {
-      try {
-        const res = await onLoadAssignments(selectedChapterId);
-        if (isCancelled) return;
-        if (!res.success) {
-          console.error("[ComicDetailModal] 加载分工失败:", res);
-          showLocalApiFailure(res, showToast, "加载分工失败");
-          return;
-        }
-        setAssignments(res.data);
-      } catch (error) {
-        if (isCancelled) return;
-        console.error("[ComicDetailModal] 加载分工异常:", error);
-        showLocalCaughtError(error, showToast, "加载分工失败");
-      } finally {
-        if (!isCancelled) setIsAssignmentsLoading(false);
-      }
-    };
-    void loadAssignments();
-
+    void loadInitialAssignments(
+      selectedChapterId,
+      onLoadAssignments,
+      showToast,
+      setAssignments,
+      setIsAssignmentsLoading,
+      () => isCancelled,
+    );
     return () => {
       isCancelled = true;
     };
   }, [isSelectedChapterAvailable, onLoadAssignments, selectedChapterId, showToast]);
+  return { assignments, setAssignments, isAssignmentsLoading, reloadAssignments };
+}
 
-  const reloadAssignments = useCallback(async () => {
-    if (!selectedChapterId) return null;
-    setIsAssignmentsLoading(true);
-    try {
-      const refreshed = await onLoadAssignments(selectedChapterId);
-      if (!refreshed.success) {
-        console.error("[ComicDetailModal] 刷新分工失败:", refreshed);
-        showLocalApiFailure(refreshed, showToast);
-        return null;
-      }
-      setAssignments(refreshed.data);
-      return refreshed.data;
-    } catch (error) {
-      console.error("[ComicDetailModal] 刷新分工异常:", error);
-      showLocalCaughtError(error, showToast, "刷新分工失败");
-      return null;
-    } finally {
-      setIsAssignmentsLoading(false);
+async function reloadSelectedAssignments(
+  chapterId: string | null,
+  onLoadAssignments: Args["onLoadAssignments"],
+  showToast: ShowToast,
+  setAssignments: Dispatch<SetStateAction<AssignmentInfo[]>>,
+  setLoading: Dispatch<SetStateAction<boolean>>,
+): Promise<AssignmentInfo[] | null> {
+  if (!chapterId) return null;
+  setLoading(true);
+  try {
+    const refreshed = await fetchSelectedAssignments(chapterId, onLoadAssignments, showToast);
+    if (refreshed) setAssignments(refreshed);
+    return refreshed;
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function loadInitialAssignments(
+  chapterId: string,
+  onLoadAssignments: Args["onLoadAssignments"],
+  showToast: ShowToast,
+  setAssignments: Dispatch<SetStateAction<AssignmentInfo[]>>,
+  setLoading: Dispatch<SetStateAction<boolean>>,
+  isCancelled: () => boolean,
+): Promise<void> {
+  try {
+    const result = await onLoadAssignments(chapterId);
+    if (isCancelled()) return;
+    if (!result.success) {
+      console.error("[ComicDetailModal] 加载分工失败:", result);
+      showLocalApiFailure(result, showToast, "加载分工失败");
+      return;
     }
-  }, [onLoadAssignments, selectedChapterId, showToast]);
+    setAssignments(result.data);
+  } catch (error) {
+    if (isCancelled()) return;
+    console.error("[ComicDetailModal] 加载分工异常:", error);
+    showLocalCaughtError(error, showToast, "加载分工失败");
+  } finally {
+    if (!isCancelled()) setLoading(false);
+  }
+}
 
-  useEffect(() => {
-    if (!pinnedChapterId || pinnedChapterAssignments !== undefined) return;
-    let current = true;
-    void onLoadAssignments(pinnedChapterId)
-      .then((result) => {
-        if (!current) return;
-        if (!result.success) {
-          console.error("[ComicDetail] 加载置顶章节分工失败", result);
-          showLocalApiFailure(result, showToast);
-          return;
-        }
-        setPinnedAssignments({ chapterId: pinnedChapterId, assignments: result.data });
-      })
-      .catch((error: unknown) => {
-        if (!current) return;
-        console.error("[ComicDetail] 加载置顶章节分工异常", error);
-        showLocalCaughtError(error, showToast, "加载置顶章节分工失败");
-      });
-    return () => {
-      current = false;
-    };
-  }, [pinnedChapterId, pinnedChapterAssignments, onLoadAssignments, showToast]);
-  const pinned =
-    pinnedChapterAssignments ??
-    (pinnedAssignments !== null && pinnedAssignments.chapterId === pinnedChapterId
-      ? pinnedAssignments.assignments
-      : []);
-  const canCreateChapter =
-    (activeMember !== null && hasRole(activeMember, "admin")) ||
-    pinned.some(
-      (assignment) => assignment.userId === currentUserId && hasRole(assignment, "reviewer"),
-    );
-
-  const currentAssignment = useMemo(
-    () => assignments.find((item) => item.userId === currentUserId),
-    [assignments, currentUserId],
+function usePinnedAssignments(
+  chapterId: string | null | undefined,
+  provided: AssignmentInfo[] | undefined,
+  onLoadAssignments: Args["onLoadAssignments"],
+  showToast: ShowToast,
+): AssignmentInfo[] | null {
+  const [pinned, setPinned] = useState<{ chapterId: string; assignments: AssignmentInfo[] } | null>(
+    null,
   );
+  useEffect(() => {
+    if (!chapterId || provided !== undefined) return;
+    let isCurrent = true;
+    void loadPinnedAssignments(
+      chapterId,
+      onLoadAssignments,
+      showToast,
+      (assignments) => {
+        if (isCurrent) setPinned({ chapterId, assignments });
+      },
+      () => isCurrent,
+    );
+    return () => {
+      isCurrent = false;
+    };
+  }, [chapterId, provided, onLoadAssignments, showToast]);
+  if (provided !== undefined) return provided;
+  if (!pinned || pinned.chapterId !== chapterId) return null;
+  return pinned.assignments;
+}
 
-  const canTranslateOrProofread =
-    currentAssignment !== undefined &&
-    (hasRole(currentAssignment, "translator") || hasRole(currentAssignment, "proofreader"));
-  const canReadOnly = activeMember !== null && !canTranslateOrProofread;
-  const canManageChapterAssignments =
-    currentAssignment !== undefined && hasRole(currentAssignment, "admin");
-  const canUploadRawPages =
-    currentAssignment !== undefined && hasRole(currentAssignment, "rawProvider");
-  const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
+async function loadPinnedAssignments(
+  chapterId: string,
+  onLoadAssignments: Args["onLoadAssignments"],
+  showToast: ShowToast,
+  setAssignments: (assignments: AssignmentInfo[]) => void,
+  isCurrent: () => boolean,
+): Promise<void> {
+  try {
+    const result = await onLoadAssignments(chapterId);
+    if (!isCurrent()) return;
+    if (!result.success) {
+      console.error("[ComicDetail] 加载置顶章节分工失败", result);
+      showLocalApiFailure(result, showToast);
+      return;
+    }
+    setAssignments(result.data);
+  } catch (error) {
+    if (!isCurrent()) return;
+    console.error("[ComicDetail] 加载置顶章节分工异常", error);
+    showLocalCaughtError(error, showToast, "加载置顶章节分工失败");
+  }
+}
 
-  const assignmentActions = useComicDetailAssignmentActions({
+function useAssignmentActions(
+  args: Args,
+  assignments: AssignmentInfo[],
+  currentAssignment: AssignmentInfo | undefined,
+  interaction: AssignmentInteractionState,
+  reloadAssignments: () => Promise<AssignmentInfo[] | null>,
+): ReturnType<typeof useComicDetailAssignmentActions> {
+  return useComicDetailAssignmentActions({
+    selectedChapterId: args.selectedChapterId,
+    currentUserId: args.currentUserId,
+    activeMember: args.activeMember,
+    assignments,
+    currentAssignment,
+    memberSelectorRole: interaction.memberSelectorRole,
+    setMemberSelectorRole: interaction.setMemberSelectorRole,
+    setIsAddingAssignment: interaction.setIsAddingAssignment,
+    joiningRoles: interaction.joiningRoles,
+    setJoiningRoles: interaction.setJoiningRoles,
+    leavingRoles: interaction.leavingRoles,
+    setLeavingRoles: interaction.setLeavingRoles,
+    onAddAssignment: args.onAddAssignment,
+    onRemoveAssignment: args.onRemoveAssignment,
+    onJoinChapterRole: args.onJoinChapterRole,
+    onWorkflowRecordsChanged: args.onWorkflowRecordsChanged,
+    reloadAssignments,
+    showToast: args.showToast,
+  });
+}
+
+function buildAssignmentState(
+  page: Pick<AssignmentState, "assignments" | "setAssignments" | "isAssignmentsLoading">,
+  interaction: AssignmentInteractionState,
+  permissions: AssignmentPermissions,
+  reloadAssignments: AssignmentState["reloadAssignments"],
+  actions: ReturnType<typeof useComicDetailAssignmentActions>,
+): AssignmentState {
+  return {
+    ...page,
+    memberSelectorRole: interaction.memberSelectorRole,
+    setMemberSelectorRole: interaction.setMemberSelectorRole,
+    isMemberSelectorLoading: interaction.isMemberSelectorLoading,
+    setIsMemberSelectorLoading: interaction.setIsMemberSelectorLoading,
+    isAddingAssignment: interaction.isAddingAssignment,
+    joiningRoles: interaction.joiningRoles,
+    leavingRoles: interaction.leavingRoles,
+    ...permissions,
+    reloadAssignments,
+    ...actions,
+  };
+}
+
+export function useComicDetailAssignments(args: Args): AssignmentState {
+  const {
     selectedChapterId,
+    isSelectedChapterAvailable,
     currentUserId,
     activeMember,
-    assignments,
-    currentAssignment,
-    memberSelectorRole,
-    setMemberSelectorRole,
-    setIsAddingAssignment,
-    joiningRoles,
-    setJoiningRoles,
-    leavingRoles,
-    setLeavingRoles,
-    onAddAssignment,
-    onRemoveAssignment,
-    onJoinChapterRole,
-    onWorkflowRecordsChanged,
-    reloadAssignments,
+    pinnedChapterId,
+    pinnedChapterAssignments,
+    onLoadAssignments,
     showToast,
-  });
-
-  return {
+  } = args;
+  const { assignments, setAssignments, isAssignmentsLoading, reloadAssignments } =
+    useSelectedAssignments({
+      selectedChapterId,
+      isSelectedChapterAvailable,
+      onLoadAssignments,
+      showToast,
+    });
+  const interaction = useAssignmentInteractionState();
+  const pinnedAssignments = usePinnedAssignments(
+    pinnedChapterId,
+    pinnedChapterAssignments,
+    onLoadAssignments,
+    showToast,
+  );
+  const permissions = resolveAssignmentPermissions(
     assignments,
-    setAssignments,
-    isAssignmentsLoading,
-    memberSelectorRole,
-    setMemberSelectorRole,
-    isMemberSelectorLoading,
-    setIsMemberSelectorLoading,
-    isAddingAssignment,
-    joiningRoles,
-    leavingRoles,
-    currentAssignment,
-    canTranslateOrProofread,
-    canReadOnly,
-    canManageChapterAssignments,
-    canUploadRawPages,
-    isTeamAdmin,
-    canCreateChapter,
+    currentUserId,
+    activeMember,
+    pinnedAssignments ?? [],
+  );
+
+  const assignmentActions = useAssignmentActions(
+    args,
+    assignments,
+    permissions.currentAssignment,
+    interaction,
     reloadAssignments,
-    ...assignmentActions,
-  };
+  );
+
+  return buildAssignmentState(
+    { assignments, setAssignments, isAssignmentsLoading },
+    interaction,
+    permissions,
+    reloadAssignments,
+    assignmentActions,
+  );
 }

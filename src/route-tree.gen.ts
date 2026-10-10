@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './route/__root'
 import { Route as AuthenticatedRouteRouteImport } from './route/_authenticated/Route'
 import { Route as AuthenticatedShellRouteRouteImport } from './route/_authenticated/_shell/Route'
+import { Route as AuthenticatedReviewerRouteRouteImport } from './route/_authenticated/reviewer/Route'
 import { Route as AuthenticatedTranslatorRouteRouteImport } from './route/_authenticated/translator/Route'
 import { Route as LoginIndexRouteImport } from './route/login/Index'
 import { Route as AuthenticatedShellIndexRouteImport } from './route/_authenticated/_shell/Index'
@@ -20,6 +21,7 @@ import { Route as AuthenticatedShellSettingsIndexRouteImport } from './route/_au
 import { Route as AuthenticatedShellSystemMailIndexRouteImport } from './route/_authenticated/_shell/system-mail/Index'
 import { Route as AuthenticatedShellUtilitiesIndexRouteImport } from './route/_authenticated/_shell/utilities/Index'
 import { Route as AuthenticatedShellWorkspaceIndexRouteImport } from './route/_authenticated/_shell/workspace/Index'
+import { Route as AuthenticatedReviewerChapterIdPageIdIndexRouteImport } from './route/_authenticated/reviewer/$chapterId/$pageId/Index'
 import { Route as AuthenticatedTranslatorChapterIdPageIdIndexRouteImport } from './route/_authenticated/translator/$chapterId/$pageId/Index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -30,6 +32,12 @@ const AuthenticatedShellRouteRoute = AuthenticatedShellRouteRouteImport.update({
   id: '/_shell',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReviewerRouteRoute =
+  AuthenticatedReviewerRouteRouteImport.update({
+    id: '/reviewer',
+    path: '/reviewer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTranslatorRouteRoute =
   AuthenticatedTranslatorRouteRouteImport.update({
     id: '/translator',
@@ -82,6 +90,12 @@ const AuthenticatedShellWorkspaceIndexRoute =
     path: '/workspace/',
     getParentRoute: () => AuthenticatedShellRouteRoute,
   } as any)
+const AuthenticatedReviewerChapterIdPageIdIndexRoute =
+  AuthenticatedReviewerChapterIdPageIdIndexRouteImport.update({
+    id: '/$chapterId/$pageId/',
+    path: '/$chapterId/$pageId/',
+    getParentRoute: () => AuthenticatedReviewerRouteRoute,
+  } as any)
 const AuthenticatedTranslatorChapterIdPageIdIndexRoute =
   AuthenticatedTranslatorChapterIdPageIdIndexRouteImport.update({
     id: '/$chapterId/$pageId/',
@@ -91,6 +105,7 @@ const AuthenticatedTranslatorChapterIdPageIdIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedShellIndexRoute
+  '/reviewer': typeof AuthenticatedReviewerRouteRouteWithChildren
   '/translator': typeof AuthenticatedTranslatorRouteRouteWithChildren
   '/login/': typeof LoginIndexRoute
   '/comic-playground/': typeof AuthenticatedShellComicPlaygroundIndexRoute
@@ -99,10 +114,12 @@ export interface FileRoutesByFullPath {
   '/system-mail/': typeof AuthenticatedShellSystemMailIndexRoute
   '/utilities/': typeof AuthenticatedShellUtilitiesIndexRoute
   '/workspace/': typeof AuthenticatedShellWorkspaceIndexRoute
+  '/reviewer/$chapterId/$pageId/': typeof AuthenticatedReviewerChapterIdPageIdIndexRoute
   '/translator/$chapterId/$pageId/': typeof AuthenticatedTranslatorChapterIdPageIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedShellIndexRoute
+  '/reviewer': typeof AuthenticatedReviewerRouteRouteWithChildren
   '/translator': typeof AuthenticatedTranslatorRouteRouteWithChildren
   '/login': typeof LoginIndexRoute
   '/comic-playground': typeof AuthenticatedShellComicPlaygroundIndexRoute
@@ -111,12 +128,14 @@ export interface FileRoutesByTo {
   '/system-mail': typeof AuthenticatedShellSystemMailIndexRoute
   '/utilities': typeof AuthenticatedShellUtilitiesIndexRoute
   '/workspace': typeof AuthenticatedShellWorkspaceIndexRoute
+  '/reviewer/$chapterId/$pageId': typeof AuthenticatedReviewerChapterIdPageIdIndexRoute
   '/translator/$chapterId/$pageId': typeof AuthenticatedTranslatorChapterIdPageIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/_shell': typeof AuthenticatedShellRouteRouteWithChildren
+  '/_authenticated/reviewer': typeof AuthenticatedReviewerRouteRouteWithChildren
   '/_authenticated/translator': typeof AuthenticatedTranslatorRouteRouteWithChildren
   '/login/': typeof LoginIndexRoute
   '/_authenticated/_shell/': typeof AuthenticatedShellIndexRoute
@@ -126,12 +145,14 @@ export interface FileRoutesById {
   '/_authenticated/_shell/system-mail/': typeof AuthenticatedShellSystemMailIndexRoute
   '/_authenticated/_shell/utilities/': typeof AuthenticatedShellUtilitiesIndexRoute
   '/_authenticated/_shell/workspace/': typeof AuthenticatedShellWorkspaceIndexRoute
+  '/_authenticated/reviewer/$chapterId/$pageId/': typeof AuthenticatedReviewerChapterIdPageIdIndexRoute
   '/_authenticated/translator/$chapterId/$pageId/': typeof AuthenticatedTranslatorChapterIdPageIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/reviewer'
     | '/translator'
     | '/login/'
     | '/comic-playground/'
@@ -140,10 +161,12 @@ export interface FileRouteTypes {
     | '/system-mail/'
     | '/utilities/'
     | '/workspace/'
+    | '/reviewer/$chapterId/$pageId/'
     | '/translator/$chapterId/$pageId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/reviewer'
     | '/translator'
     | '/login'
     | '/comic-playground'
@@ -152,11 +175,13 @@ export interface FileRouteTypes {
     | '/system-mail'
     | '/utilities'
     | '/workspace'
+    | '/reviewer/$chapterId/$pageId'
     | '/translator/$chapterId/$pageId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/_authenticated/_shell'
+    | '/_authenticated/reviewer'
     | '/_authenticated/translator'
     | '/login/'
     | '/_authenticated/_shell/'
@@ -166,6 +191,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/system-mail/'
     | '/_authenticated/_shell/utilities/'
     | '/_authenticated/_shell/workspace/'
+    | '/_authenticated/reviewer/$chapterId/$pageId/'
     | '/_authenticated/translator/$chapterId/$pageId/'
   fileRoutesById: FileRoutesById
 }
@@ -188,6 +214,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedShellRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reviewer': {
+      id: '/_authenticated/reviewer'
+      path: '/reviewer'
+      fullPath: '/reviewer'
+      preLoaderRoute: typeof AuthenticatedReviewerRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/translator': {
@@ -253,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellWorkspaceIndexRouteImport
       parentRoute: typeof AuthenticatedShellRouteRoute
     }
+    '/_authenticated/reviewer/$chapterId/$pageId/': {
+      id: '/_authenticated/reviewer/$chapterId/$pageId/'
+      path: '/$chapterId/$pageId'
+      fullPath: '/reviewer/$chapterId/$pageId/'
+      preLoaderRoute: typeof AuthenticatedReviewerChapterIdPageIdIndexRouteImport
+      parentRoute: typeof AuthenticatedReviewerRouteRoute
+    }
     '/_authenticated/translator/$chapterId/$pageId/': {
       id: '/_authenticated/translator/$chapterId/$pageId/'
       path: '/$chapterId/$pageId'
@@ -294,6 +334,21 @@ const AuthenticatedShellRouteRouteWithChildren =
     AuthenticatedShellRouteRouteChildren,
   )
 
+interface AuthenticatedReviewerRouteRouteChildren {
+  AuthenticatedReviewerChapterIdPageIdIndexRoute: typeof AuthenticatedReviewerChapterIdPageIdIndexRoute
+}
+
+const AuthenticatedReviewerRouteRouteChildren: AuthenticatedReviewerRouteRouteChildren =
+  {
+    AuthenticatedReviewerChapterIdPageIdIndexRoute:
+      AuthenticatedReviewerChapterIdPageIdIndexRoute,
+  }
+
+const AuthenticatedReviewerRouteRouteWithChildren =
+  AuthenticatedReviewerRouteRoute._addFileChildren(
+    AuthenticatedReviewerRouteRouteChildren,
+  )
+
 interface AuthenticatedTranslatorRouteRouteChildren {
   AuthenticatedTranslatorChapterIdPageIdIndexRoute: typeof AuthenticatedTranslatorChapterIdPageIdIndexRoute
 }
@@ -311,11 +366,13 @@ const AuthenticatedTranslatorRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedShellRouteRoute: typeof AuthenticatedShellRouteRouteWithChildren
+  AuthenticatedReviewerRouteRoute: typeof AuthenticatedReviewerRouteRouteWithChildren
   AuthenticatedTranslatorRouteRoute: typeof AuthenticatedTranslatorRouteRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedShellRouteRoute: AuthenticatedShellRouteRouteWithChildren,
+  AuthenticatedReviewerRouteRoute: AuthenticatedReviewerRouteRouteWithChildren,
   AuthenticatedTranslatorRouteRoute:
     AuthenticatedTranslatorRouteRouteWithChildren,
 }

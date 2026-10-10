@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
-import type { Result } from "@/shared/utility/result";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import type { DetailContract } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
-import { pickFallbackChapterId } from "@/route/_authenticated/_shell/business/comic-detail/utils";
+import type { Result } from "@/shared/utility/result";
+import { useComicDetailChapterActions } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-chapter-actions";
+import {
+  useComicDetailChapterLoading,
+  useInitialComicDetailChapters,
+} from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-chapter-loading";
 
 type ShowToast = (message: string, type: ToastType) => void;
-
 type Args = {
   comicId: string;
   pinnedChapter: ChapterInfo | null;
@@ -42,216 +44,68 @@ type ChapterState = {
 
 const CHAPTERS_LIMIT = 20;
 
-export function useComicDetailChapters({
-  comicId,
-  pinnedChapter,
-  initialChapterId,
-  onLoadChapters,
-  showToast,
-}: Args): ChapterState {
+export function useComicDetailChapters(args: Args): ChapterState {
   const [chapters, setChapters] = useState<ChapterInfo[]>([]);
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
-    initialChapterId ?? pinnedChapter?.id ?? null,
+    args.initialChapterId ?? args.pinnedChapter?.id ?? null,
   );
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
-
-  const selectedChapter = useMemo(
-    () =>
-      chapters.find((chapter) => chapter.id === selectedChapterId) ??
-      (pinnedChapter?.id === selectedChapterId ? pinnedChapter : undefined),
-    [chapters, pinnedChapter, selectedChapterId],
+  const chapterLoadingArgs = {
+    comicId: args.comicId,
+    initialChapterId: args.initialChapterId,
+    pinnedChapterId: args.pinnedChapter?.id,
+    chapters,
+    hasMore: chaptersHasMore,
+    isLoading: isChaptersLoading,
+    setChapters,
+    setSelectedChapterId,
+    setChaptersHasMore,
+    setIsChaptersLoading,
+    onLoadChapters: args.onLoadChapters,
+    showToast: args.showToast,
+  };
+  useInitialComicDetailChapters(chapterLoadingArgs);
+  const loading = useComicDetailChapterLoading(chapterLoadingArgs);
+  const actions = useComicDetailChapterActions({
+    comicId: args.comicId,
+    selectedChapterId,
+    setChapters,
+    setSelectedChapterId,
+    onLoadChapters: args.onLoadChapters,
+    showToast: args.showToast,
+  });
+  return buildChapterState(
+    chapters,
+    setChapters,
+    selectedChapterId,
+    setSelectedChapterId,
+    chaptersHasMore,
+    isChaptersLoading,
+    args.pinnedChapter,
+    loading,
+    actions,
   );
+}
 
+function buildChapterState(
+  chapters: ChapterInfo[],
+  setChapters: Dispatch<SetStateAction<ChapterInfo[]>>,
+  selectedChapterId: string | null,
+  setSelectedChapterId: Dispatch<SetStateAction<string | null>>,
+  chaptersHasMore: boolean,
+  isChaptersLoading: boolean,
+  pinnedChapter: ChapterInfo | null,
+  loading: ReturnType<typeof useComicDetailChapterLoading>,
+  actions: ReturnType<typeof useComicDetailChapterActions>,
+): ChapterState {
+  const selectedChapter =
+    chapters.find((chapter) => chapter.id === selectedChapterId) ??
+    (pinnedChapter?.id === selectedChapterId ? pinnedChapter : undefined);
   const isSelectedChapterAvailable =
     selectedChapterId !== null &&
     (chapters.some((chapter) => chapter.id === selectedChapterId) ||
       pinnedChapter?.id === selectedChapterId);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    const loadInitialChapters = async (): Promise<void> => {
-      setIsChaptersLoading(true);
-
-      try {
-        let offset = 0;
-        let hasMore = true;
-        const loadedChapters: ChapterInfo[] = [];
-
-        for (;;) {
-          const res = await onLoadChapters({
-            comicId,
-            offset,
-            limit: CHAPTERS_LIMIT,
-          });
-
-          if (!res.success) {
-            console.error("[ComicDetailModal] 加载章节失败:", res);
-            showLocalApiFailure(res, showToast, "加载章节失败");
-            return;
-          }
-
-          loadedChapters.push(...res.data);
-          hasMore = res.data.length === CHAPTERS_LIMIT;
-
-          if (
-            !hasMore ||
-            !initialChapterId ||
-            loadedChapters.some((chapter) => chapter.id === initialChapterId)
-          ) {
-            if (!isCancelled) {
-              setChapters(loadedChapters);
-              setChaptersHasMore(hasMore);
-              setSelectedChapterId(() => {
-                if (
-                  initialChapterId &&
-                  loadedChapters.some((chapter) => chapter.id === initialChapterId)
-                ) {
-                  return initialChapterId;
-                }
-                if (
-                  pinnedChapter?.id &&
-                  loadedChapters.some((chapter) => chapter.id === pinnedChapter.id)
-                ) {
-                  return pinnedChapter.id;
-                }
-                return loadedChapters[0]?.id ?? null;
-              });
-            }
-            return;
-          }
-
-          offset += res.data.length;
-        }
-      } catch (error) {
-        console.error("[ComicDetailModal] 加载章节异常:", error);
-        showLocalCaughtError(error, showToast, "加载章节失败");
-      } finally {
-        if (!isCancelled) {
-          setIsChaptersLoading(false);
-        }
-      }
-    };
-
-    void loadInitialChapters();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [comicId, initialChapterId, onLoadChapters, pinnedChapter?.id, showToast]);
-
-  const handleLoadMoreChapters = useCallback((): void => {
-    if (isChaptersLoading || !chaptersHasMore) return;
-    setIsChaptersLoading(true);
-    const loadMoreChapters = async (): Promise<void> => {
-      try {
-        const res = await onLoadChapters({
-          comicId,
-          offset: chapters.length,
-          limit: CHAPTERS_LIMIT,
-        });
-        if (!res.success) {
-          showLocalApiFailure(res, showToast, "加载更多章节失败");
-          return;
-        }
-        setChapters((prev) => [...prev, ...res.data]);
-        setChaptersHasMore(res.data.length === CHAPTERS_LIMIT);
-      } catch (error) {
-        showLocalCaughtError(error, showToast, "加载更多章节失败");
-      } finally {
-        setIsChaptersLoading(false);
-      }
-    };
-    void loadMoreChapters();
-  }, [chapters.length, chaptersHasMore, comicId, isChaptersLoading, onLoadChapters, showToast]);
-
-  const reloadLoadedChapters = useCallback(async () => {
-    const res = await onLoadChapters({
-      comicId,
-      offset: 0,
-      limit: Math.max(chapters.length, CHAPTERS_LIMIT),
-    });
-
-    if (!res.success) {
-      console.error("[ComicDetailModal] 刷新章节失败:", res);
-      showLocalApiFailure(res, showToast, "刷新章节失败");
-      return null;
-    }
-
-    setChapters(res.data);
-    setChaptersHasMore(res.data.length >= Math.max(chapters.length, CHAPTERS_LIMIT));
-    return res.data;
-  }, [chapters.length, comicId, onLoadChapters, showToast]);
-
-  const handleCreateChapter = useCallback(
-    async (
-      subtitle: string | undefined,
-      presetAssignmentRoles: number | undefined,
-      onCreateChapter?: DetailContract["onCreateChapter"],
-    ): Promise<Result<string>> => {
-      if (!onCreateChapter) {
-        return { success: false, error: "未提供创建章节能力" };
-      }
-
-      const res = await onCreateChapter({
-        comicId,
-        subtitle,
-        presetAssignmentRoles,
-      });
-      if (!res.success) {
-        return res;
-      }
-
-      const reloaded = await onLoadChapters({
-        comicId,
-        offset: 0,
-        limit: CHAPTERS_LIMIT,
-      });
-      if (reloaded.success) {
-        setChapters(reloaded.data);
-        setSelectedChapterId(reloaded.data[0]?.id ?? null);
-      }
-
-      return res;
-    },
-    [comicId, onLoadChapters],
-  );
-
-  const handleDeleteChapter = useCallback(
-    async (chapterId: string, onDeleteChapter?: DetailContract["onDeleteChapter"]) => {
-      if (!onDeleteChapter) {
-        return;
-      }
-
-      const res = await onDeleteChapter(chapterId);
-      if (!res.success) {
-        showLocalApiFailure(res, showToast, "删除失败");
-        return;
-      }
-
-      if (selectedChapterId === chapterId) {
-        const reloaded = await onLoadChapters({
-          comicId,
-          offset: 0,
-          limit: CHAPTERS_LIMIT,
-        });
-        if (reloaded.success) {
-          setChapters(reloaded.data);
-          setSelectedChapterId(pickFallbackChapterId(reloaded.data));
-          return;
-        }
-        showLocalApiFailure(reloaded, showToast, "刷新章节失败");
-      }
-
-      setChapters((prev) => prev.filter((chapter) => chapter.id !== chapterId));
-      if (selectedChapterId === chapterId) {
-        setSelectedChapterId(null);
-      }
-    },
-    [comicId, onLoadChapters, selectedChapterId, showToast],
-  );
-
   return {
     chapters,
     setChapters,
@@ -261,10 +115,10 @@ export function useComicDetailChapters({
     chaptersHasMore,
     isChaptersLoading,
     isSelectedChapterAvailable,
-    handleLoadMoreChapters,
-    reloadLoadedChapters,
-    handleCreateChapter,
-    handleDeleteChapter,
+    handleLoadMoreChapters: loading.handleLoadMoreChapters,
+    reloadLoadedChapters: loading.reloadLoadedChapters,
+    handleCreateChapter: actions.handleCreateChapter,
+    handleDeleteChapter: actions.handleDeleteChapter,
     chaptersLimit: CHAPTERS_LIMIT,
   };
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MemberInvitorModal } from "@/route/_authenticated/_shell/member-list/business/MemberInvitorModal";
 import type {
@@ -6,6 +7,42 @@ import type {
   InvitationInfo,
 } from "@/route/_authenticated/_shell/member-list/business/invitation/invitation";
 import type { Result } from "@/shared/utility/result";
+
+async function loadInvitations(
+  invitations: InvitationInfo[],
+  offset: number,
+  limit: number,
+): Promise<Result<InvitationInfo[]>> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return { success: true, data: invitations.slice(offset, offset + limit) };
+}
+
+async function createInvitation(
+  args: CreateInvitationArgs,
+  setInvitations: Dispatch<SetStateAction<InvitationInfo[]>>,
+): Promise<Result<string>> {
+  await new Promise((resolve) => setTimeout(resolve, 700));
+  const code = fakeCode();
+  const invitation: InvitationInfo = {
+    id: `inv-${String(Date.now())}`,
+    inviteeQq: args.inviteeQq,
+    invitorId: "user-me",
+    invitationCode: code,
+    roles: args.roles,
+    isPending: true,
+  };
+  setInvitations((previous) => [invitation, ...previous]);
+  return { success: true, data: code };
+}
+
+async function deleteInvitation(
+  invitationId: string,
+  setInvitations: Dispatch<SetStateAction<InvitationInfo[]>>,
+): Promise<Result<void>> {
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  setInvitations((previous) => previous.filter((invitation) => invitation.id !== invitationId));
+  return { success: true, data: undefined };
+}
 
 // ── Shared mock data ──────────────────────────────────────────────────────────
 
@@ -67,31 +104,12 @@ export const Default: Story = {
       // eslint-disable-next-line @eslint-react/rules-of-hooks
       useState<InvitationInfo[]>(MOCK_INVITATIONS);
 
-    const handleLoad = async (offset: number, limit: number): Promise<Result<InvitationInfo[]>> => {
-      await new Promise((r) => setTimeout(r, 300));
-      return { success: true, data: invitations.slice(offset, offset + limit) };
-    };
-
-    const handleCreate = async (args: CreateInvitationArgs): Promise<Result<string>> => {
-      await new Promise((r) => setTimeout(r, 700));
-      const code = fakeCode();
-      const newInv: InvitationInfo = {
-        id: `inv-${String(Date.now())}`,
-        inviteeQq: args.inviteeQq,
-        invitorId: "user-me",
-        invitationCode: code,
-        roles: args.roles,
-        isPending: true,
-      };
-      setInvitations((prev) => [newInv, ...prev]);
-      return { success: true, data: code };
-    };
-
-    const handleDelete = async (invitationId: string): Promise<Result<void>> => {
-      await new Promise((r) => setTimeout(r, 400));
-      setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
-      return { success: true, data: undefined };
-    };
+    const handleLoad = (offset: number, limit: number): Promise<Result<InvitationInfo[]>> =>
+      loadInvitations(invitations, offset, limit);
+    const handleCreate = (args: CreateInvitationArgs): Promise<Result<string>> =>
+      createInvitation(args, setInvitations);
+    const handleDelete = (id: string): Promise<Result<void>> =>
+      deleteInvitation(id, setInvitations);
 
     return (
       <div className="min-h-screen bg-surface-slate-100">

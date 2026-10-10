@@ -133,10 +133,38 @@ export function presentWorkflowRecordEvent(
   userLabel: UserLabel = shortWorkflowRecordUserId,
 ): WorkflowRecordEventPresentation {
   switch (event.kind) {
-    case "chapter_created": {
-      return { title: [fixed("章节创建")], detail: [fixed("创建了章节")] };
+    case "chapter_created":
+    case "chapter_subtitle_updated":
+    case "chapter_pinned":
+    case "chapter_unpinned":
+      return presentChapterEvent(event);
+    case "assignment_created":
+    case "assignment_roles_updated":
+    case "assignment_deleted":
+      return presentAssignmentEvent(event, userLabel);
+    case "translation_imported":
+    case "translation_exported":
+    case "artwork_exported":
+      return presentExportEvent(event);
+    case "stage_transitioned": {
+      return stageTransitionPresentation(event);
     }
-    case "chapter_subtitle_updated": {
+    default: {
+      return assertNever(event);
+    }
+  }
+}
+
+type ChapterEvent = Extract<
+  ChapterWorkflowRecordEvent,
+  { kind: "chapter_created" | "chapter_subtitle_updated" | "chapter_pinned" | "chapter_unpinned" }
+>;
+
+function presentChapterEvent(event: ChapterEvent): WorkflowRecordEventPresentation {
+  switch (event.kind) {
+    case "chapter_created":
+      return { title: [fixed("章节创建")], detail: [fixed("创建了章节")] };
+    case "chapter_subtitle_updated":
       return {
         title: [fixed("章节副标题修改")],
         detail: [
@@ -147,14 +175,24 @@ export function presentWorkflowRecordEvent(
           fixed("”"),
         ],
       };
-    }
-    case "chapter_pinned": {
+    case "chapter_pinned":
       return { title: [fixed("章节置顶")], detail: [fixed("设为置顶章节")] };
-    }
-    case "chapter_unpinned": {
+    case "chapter_unpinned":
       return { title: [fixed("取消章节置顶")], detail: [fixed("取消置顶")] };
-    }
-    case "assignment_created": {
+  }
+}
+
+type AssignmentEvent = Extract<
+  ChapterWorkflowRecordEvent,
+  { kind: "assignment_created" | "assignment_roles_updated" | "assignment_deleted" }
+>;
+
+function presentAssignmentEvent(
+  event: AssignmentEvent,
+  userLabel: UserLabel,
+): WorkflowRecordEventPresentation {
+  switch (event.kind) {
+    case "assignment_created":
       return {
         title: [fixed("章节分工添加")],
         detail: [
@@ -165,8 +203,7 @@ export function presentWorkflowRecordEvent(
           fixed("分工"),
         ],
       };
-    }
-    case "assignment_roles_updated": {
+    case "assignment_roles_updated":
       return {
         title: [fixed("章节分工调整")],
         detail: [
@@ -179,8 +216,7 @@ export function presentWorkflowRecordEvent(
           fixed("”"),
         ],
       };
-    }
-    case "assignment_deleted": {
+    case "assignment_deleted":
       return {
         title: [fixed("章节分工移除")],
         detail: [
@@ -191,8 +227,17 @@ export function presentWorkflowRecordEvent(
           fixed("分工"),
         ],
       };
-    }
-    case "translation_imported": {
+  }
+}
+
+type ExportEvent = Extract<
+  ChapterWorkflowRecordEvent,
+  { kind: "translation_imported" | "translation_exported" | "artwork_exported" }
+>;
+
+function presentExportEvent(event: ExportEvent): WorkflowRecordEventPresentation {
+  switch (event.kind) {
+    case "translation_imported":
       return {
         title: [fixed("翻校数据导入")],
         detail: [
@@ -205,25 +250,16 @@ export function presentWorkflowRecordEvent(
           fixed(" 个翻校单元"),
         ],
       };
-    }
-    case "translation_exported": {
+    case "translation_exported":
       return {
         title: [fixed("翻校数据导出")],
         detail: [fixed("以 "), variable(exportFormatLabel(event.data.formats)), fixed(" 格式导出")],
       };
-    }
-    case "artwork_exported": {
+    case "artwork_exported":
       return {
         title: [fixed("嵌稿导出")],
         detail: [fixed("导出了第 "), variable(String(event.data.artworkVersion)), fixed(" 版嵌稿")],
       };
-    }
-    case "stage_transitioned": {
-      return stageTransitionPresentation(event);
-    }
-    default: {
-      return assertNever(event);
-    }
   }
 }
 

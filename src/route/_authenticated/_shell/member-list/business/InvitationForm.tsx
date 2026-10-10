@@ -6,6 +6,7 @@ import { showLocalApiFailure } from "@/route/business/request-error";
 import { ROLE_CONFIG } from "@/route/_authenticated/_shell/member-list/business/invitation/role-option";
 import type { CreateInvitationArgs } from "@/route/_authenticated/_shell/member-list/business/invitation/invitation";
 import type { Result } from "@/shared/utility/result";
+import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 
 type Props = {
   teamId: string;
@@ -16,6 +17,20 @@ type Props = {
 
 async function copyToClipboard(text: string): Promise<void> {
   await navigator.clipboard.writeText(text);
+}
+
+function copyInvitationCode(
+  code: string,
+  showToast: (message: string, type: ToastType) => void,
+): void {
+  void copyToClipboard(code)
+    .then(() => {
+      showToast("已复制邀请码", "success");
+    })
+    .catch((error: unknown) => {
+      console.error("复制邀请码失败", error);
+      showToast("复制失败，请手动选择邀请码复制", "error");
+    });
 }
 
 export function InvitationForm({
@@ -31,17 +46,6 @@ export function InvitationForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const roleMask = selectedBits.reduce((mask, bit) => mask | bit, 0);
   const isFormValid = qq.trim().length > 4 && selectedBits.length > 0;
-
-  function copyCode(code: string): void {
-    void copyToClipboard(code)
-      .then(() => {
-        showToast("已复制邀请码", "success");
-      })
-      .catch((error: unknown) => {
-        console.error("复制邀请码失败", error);
-        showToast("复制失败，请手动选择邀请码复制", "error");
-      });
-  }
 
   function toggleRole(value: number): void {
     setSelectedBits((previous) =>
@@ -146,7 +150,7 @@ export function InvitationForm({
               <button
                 type="button"
                 onClick={() => {
-                  copyCode(generatedCode);
+                  copyInvitationCode(generatedCode, showToast);
                 }}
                 className="text-text-muted-cool transition-colors hover:text-ink-slate-600"
                 title="复制"

@@ -53,6 +53,6 @@ export const Default: Story = {
   args: {
     search: {},
     onChangeSearch: fn(),
-    onNavigateToTranslator: fn(),
+    onNavigateToWorkbench: fn(),
   },
 };

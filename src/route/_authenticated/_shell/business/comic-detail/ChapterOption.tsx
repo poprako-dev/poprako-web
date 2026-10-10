@@ -1,4 +1,4 @@
-import { type JSX, useCallback, useEffect, useRef, useState } from "react";
+import { type JSX, useRef, useState } from "react";
 import clsx from "clsx";
 import { ChevronDown, Loader2, Plus, Trash2 } from "lucide-react";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
@@ -7,6 +7,10 @@ import type { MemberInfo } from "@/route/business/identity/member";
 import type { Result } from "@/shared/utility/result";
 import { ChapterCreatorModal } from "@/route/_authenticated/_shell/business/comic-detail/ChapterCreatorModal";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
+import {
+  useChapterDropdownEffects,
+  useChapterPointerHandlers,
+} from "@/route/_authenticated/_shell/business/comic-detail/use-chapter-option-interactions";
 
 type Props = {
   comicInfo: ComicInfo;
@@ -23,6 +27,97 @@ type Props = {
   onDelete?: ((id: string) => void) | undefined;
   onLongPress?: ((chapter: ChapterInfo) => void) | undefined;
 };
+
+type ChapterOptionEntryProps = {
+  chapter: ChapterInfo;
+  isSelected: boolean;
+  onLongPress?: Props["onLongPress"];
+  onDelete?: Props["onDelete"];
+  onSelect: Props["onSelect"];
+  closeDropdown: () => void;
+  setPendingDeleteId: (chapterId: string) => void;
+  pointerHandlers: ReturnType<typeof useChapterPointerHandlers>;
+};
+
+function ChapterOptionEntry({
+  chapter,
+  isSelected,
+  onLongPress,
+  onDelete,
+  onSelect,
+  closeDropdown,
+  setPendingDeleteId,
+  pointerHandlers,
+}: ChapterOptionEntryProps): JSX.Element {
+  const itemClassName = clsx(
+    "flex-1 flex items-center gap-2 text-left",
+    "px-2 py-1.5 rounded-sm transition-colors pr-6",
+    isSelected
+      ? "bg-surface-slate-100 text-ink-slate-700"
+      : "text-text-muted-cool hover:bg-surface-slate-50",
+  );
+  const chapterLabel = (
+    <>
+      <span className="text-[10px] font-black italic text-text-muted-cool w-4 shrink-0">
+        #{chapter.index + 1}
+      </span>
+      <span className="text-[11px] font-bold truncate">{chapter.subtitle || "无标题"}</span>
+    </>
+  );
+
+  return (
+    <div className="group relative flex items-center shrink-0">
+      {onLongPress ? (
+        <div
+          role="button"
+          tabIndex={0}
+          onPointerDown={pointerHandlers.handleChapterPointerDown(chapter)}
+          onPointerUp={pointerHandlers.handleChapterPointerUp()}
+          onPointerCancel={pointerHandlers.handleChapterPointerCancel()}
+          onPointerLeave={pointerHandlers.handleChapterPointerCancel()}
+          onContextMenu={pointerHandlers.handleChapterContextMenu()}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            onSelect(chapter.id);
+            closeDropdown();
+          }}
+          className={clsx(itemClassName, "select-none touch-none cursor-pointer")}
+          title="长按修改章节信息"
+        >
+          {chapterLabel}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            onSelect(chapter.id);
+            closeDropdown();
+          }}
+          className={itemClassName}
+        >
+          {chapterLabel}
+        </button>
+      )}
+      {onDelete && (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            setPendingDeleteId(chapter.id);
+          }}
+          className={clsx(
+            "absolute right-1 p-1 rounded",
+            "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity",
+            "text-text-muted-cool hover:text-text-rose",
+          )}
+        >
+          <Trash2 className="w-3 h-3" strokeWidth={1.5} />
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function ChapterOption({
   comicInfo,
@@ -42,94 +137,16 @@ export function ChapterOption({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<HTMLDivElement>(null);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressChapterRef = useRef<ChapterInfo | null>(null);
-  const longPressHandledRef = useRef(false);
-
-  const clearLongPress = useCallback(() => {
-    if (!longPressTimerRef.current) {
-      return;
-    }
-
-    clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = null;
-  }, []);
-
-  const handleChapterPointerDown = useCallback(
-    (ch: ChapterInfo) => (e: React.PointerEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      longPressHandledRef.current = false;
-      longPressChapterRef.current = ch;
-      longPressTimerRef.current = setTimeout(() => {
-        longPressHandledRef.current = true;
-        onLongPress?.(ch);
-      }, 500);
-    },
-    [onLongPress],
-  );
-
-  const handleChapterPointerUp = useCallback(
-    () => (e: React.PointerEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      clearLongPress();
-      if (!longPressHandledRef.current) {
-        const ch = longPressChapterRef.current;
-        if (ch) {
-          onSelect(ch.id);
-          setIsOpen(false);
-        }
-      }
-    },
-    [clearLongPress, onSelect],
-  );
-
-  const handleChapterPointerCancel = useCallback(
-    () => () => {
-      clearLongPress();
-    },
-    [clearLongPress],
-  );
-
-  const handleChapterContextMenu = useCallback(
-    () => (e: React.MouseEvent) => {
-      e.preventDefault();
-    },
-    [],
-  );
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent): void => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen || !hasMore || isLoading || !observerRef.current) return;
-    const ob = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting) {
-        onLoadMore();
-      }
-    });
-    ob.observe(observerRef.current);
-    return () => {
-      ob.disconnect();
-    };
-  }, [isOpen, hasMore, isLoading, onLoadMore]);
-
-  // Clean up long press timer on unmount
-  useEffect(() => {
-    return () => {
-      clearLongPress();
-    };
-  }, [clearLongPress]);
+  const pointerHandlers = useChapterPointerHandlers({ onLongPress, onSelect, setIsOpen });
+  useChapterDropdownEffects({
+    isOpen,
+    hasMore,
+    isLoading,
+    setIsOpen,
+    dropdownRef,
+    observerRef,
+    onLoadMore,
+  });
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -214,80 +231,20 @@ export function ChapterOption({
               )}
             </div>
 
-            {chapters.map((ch) => (
-              <div key={ch.id} className="group relative flex items-center shrink-0">
-                {onLongPress ? (
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onPointerDown={handleChapterPointerDown(ch)}
-                    onPointerUp={handleChapterPointerUp()}
-                    onPointerCancel={handleChapterPointerCancel()}
-                    onPointerLeave={handleChapterPointerCancel()}
-                    onContextMenu={handleChapterContextMenu()}
-                    onKeyDown={(event) => {
-                      if (event.key !== "Enter" && event.key !== " ") return;
-                      event.preventDefault();
-                      onSelect(ch.id);
-                      setIsOpen(false);
-                    }}
-                    className={clsx(
-                      "flex-1 flex items-center gap-2 text-left",
-                      "px-2 py-1.5 rounded-sm transition-colors pr-6",
-                      "select-none touch-none cursor-pointer",
-                      selectedChapter?.id === ch.id
-                        ? "bg-surface-slate-100 text-ink-slate-700"
-                        : "text-text-muted-cool hover:bg-surface-slate-50",
-                    )}
-                    title="长按修改章节信息"
-                  >
-                    <span className="text-[10px] font-black italic text-text-muted-cool w-4 shrink-0">
-                      #{ch.index + 1}
-                    </span>
-                    <span className="text-[11px] font-bold truncate">
-                      {ch.subtitle || "无标题"}
-                    </span>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelect(ch.id);
-                      setIsOpen(false);
-                    }}
-                    className={clsx(
-                      "flex-1 flex items-center gap-2 text-left",
-                      "px-2 py-1.5 rounded-sm transition-colors pr-6",
-                      selectedChapter?.id === ch.id
-                        ? "bg-surface-slate-100 text-ink-slate-700"
-                        : "text-text-muted-cool hover:bg-surface-slate-50",
-                    )}
-                  >
-                    <span className="text-[10px] font-black italic text-text-muted-cool w-4 shrink-0">
-                      #{ch.index + 1}
-                    </span>
-                    <span className="text-[11px] font-bold truncate">
-                      {ch.subtitle || "无标题"}
-                    </span>
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPendingDeleteId(ch.id);
-                    }}
-                    className={clsx(
-                      "absolute right-1 p-1 rounded",
-                      "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity",
-                      "text-text-muted-cool hover:text-text-rose",
-                    )}
-                  >
-                    <Trash2 className="w-3 h-3" strokeWidth={1.5} />
-                  </button>
-                )}
-              </div>
+            {chapters.map((chapter) => (
+              <ChapterOptionEntry
+                key={chapter.id}
+                chapter={chapter}
+                isSelected={selectedChapter?.id === chapter.id}
+                onLongPress={onLongPress}
+                onDelete={onDelete}
+                onSelect={onSelect}
+                closeDropdown={() => {
+                  setIsOpen(false);
+                }}
+                setPendingDeleteId={setPendingDeleteId}
+                pointerHandlers={pointerHandlers}
+              />
             ))}
 
             {hasMore && (

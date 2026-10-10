@@ -124,19 +124,10 @@ export function decodeComicResponse(value: unknown): ComicResponse {
   return {
     id: decodeString(id, "comic.id"),
     worksetId: decodeString(worksetId, "comic.worksetId"),
-    ...(workset === undefined
-      ? {}
-      : { workset: workset === null ? null : decodeComicWorkset(workset) }),
-    ...(team === undefined ? {} : { team: team === null ? null : decodeApiTeam(team) }),
+    ...decodeComicRelationships(workset, team),
     title: decodeString(title, "comic.title"),
     author: decodeString(author, "comic.author"),
-    ...(description === undefined
-      ? {}
-      : {
-          description: decodeNullable(description, (item) =>
-            decodeString(item, "comic.description"),
-          ),
-        }),
+    ...decodeComicDescription(description),
     index: decodeNumber(index, "comic.index"),
     chapterCount: decodeNumber(chapterCount, "comic.chapterCount"),
     ...(coverUrl === undefined
@@ -152,17 +143,50 @@ export function decodeComicResponse(value: unknown): ComicResponse {
           ),
         }),
     creatorId: decodeString(creatorId, "comic.creatorId"),
-    ...(creator === undefined ? {} : { creator: creator === null ? null : decodeApiUser(creator) }),
+    ...decodeComicCreator(creator),
+    ...decodeComicArchive(isArchived, archivedAt),
+    lastActiveAt: decodeNumber(lastActiveAt, "comic.lastActiveAt"),
+    createdAt: decodeNumber(createdAt, "comic.createdAt"),
+    updatedAt: decodeNumber(updatedAt, "comic.updatedAt"),
+  };
+}
+
+function decodeComicDescription(description: unknown): Pick<ComicResponse, "description"> {
+  return description === undefined
+    ? {}
+    : {
+        description: decodeNullable(description, (item) => decodeString(item, "comic.description")),
+      };
+}
+
+function decodeComicArchive(
+  isArchived: unknown,
+  archivedAt: unknown,
+): Pick<ComicResponse, "isArchived" | "archivedAt"> {
+  return {
     isArchived: decodeBoolean(isArchived, "comic.isArchived"),
     ...(archivedAt === undefined
       ? {}
       : {
           archivedAt: decodeNullable(archivedAt, (item) => decodeNumber(item, "comic.archivedAt")),
         }),
-    lastActiveAt: decodeNumber(lastActiveAt, "comic.lastActiveAt"),
-    createdAt: decodeNumber(createdAt, "comic.createdAt"),
-    updatedAt: decodeNumber(updatedAt, "comic.updatedAt"),
   };
+}
+
+function decodeComicRelationships(
+  workset: unknown,
+  team: unknown,
+): Pick<ComicResponse, "workset" | "team"> {
+  return {
+    ...(workset === undefined
+      ? {}
+      : { workset: workset === null ? null : decodeComicWorkset(workset) }),
+    ...(team === undefined ? {} : { team: team === null ? null : decodeApiTeam(team) }),
+  };
+}
+
+function decodeComicCreator(creator: unknown): Pick<ComicResponse, "creator"> {
+  return creator === undefined ? {} : { creator: creator === null ? null : decodeApiUser(creator) };
 }
 
 export function decodeChapterResponse(value: unknown): ChapterResponse {

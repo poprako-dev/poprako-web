@@ -35,6 +35,49 @@ const pathNavMap: Record<string, NavId> = Object.fromEntries(
   Object.entries(navPathMap).map(([id, path]) => [path, id as NavId]),
 );
 
+function navigateToSidebarNav(id: NavId, navigate: ReturnType<typeof useNavigate>): void {
+  void navigate({
+    to: navPathMap[id] as
+      | "/workspace"
+      | "/comic-playground"
+      | "/member-list"
+      | "/system-mail"
+      | "/settings"
+      | "/utilities",
+  });
+}
+
+async function updateSidebarTeam(
+  client: ReturnType<typeof useApiClient>,
+  refreshTeams: () => Promise<void>,
+  id: string,
+  args: { name: string; description?: string | undefined },
+): Promise<Result<void>> {
+  const result = await updateTeam(client, id, args);
+  if (!result.success) {
+    console.error("[AppSidebar] 更新汉化组信息失败:", result.error);
+    return result;
+  }
+  await refreshTeams();
+  return result;
+}
+
+function selectSidebarTeam(team: TeamConfig, setSelectingTeam: (selected: boolean) => void): void {
+  useAppStore.getState().setSelectedTeamId(team.id);
+  setSelectingTeam(false);
+}
+
+function leaveSidebar(
+  isAvatarUploading: boolean,
+  setHovered: (hovered: boolean) => void,
+  setSelectingTeam: (selecting: boolean) => void,
+): void {
+  setHovered(false);
+  if (!isAvatarUploading) {
+    setSelectingTeam(false);
+  }
+}
+
 export function AppSidebar(): ReactElement {
   const client = useApiClient();
   const navigate = useNavigate();
@@ -63,20 +106,7 @@ export function AppSidebar(): ReactElement {
   const activeNavId = pathNavMap[location.pathname] ?? "workspace";
 
   const handleNavSelect = (id: NavId): void => {
-    void navigate({
-      to: navPathMap[id] as
-        | "/workspace"
-        | "/comic-playground"
-        | "/member-list"
-        | "/system-mail"
-        | "/settings"
-        | "/utilities",
-    });
-  };
-
-  const handleTeamSelect = (team: TeamConfig): void => {
-    useAppStore.getState().setSelectedTeamId(team.id);
-    setIsSelectingTeam(false);
+    navigateToSidebarNav(id, navigate);
   };
 
   const handleUpdateTeam = useCallback(
@@ -84,24 +114,10 @@ export function AppSidebar(): ReactElement {
       id: string,
       args: { name: string; description?: string | undefined },
     ): Promise<Result<void>> => {
-      const result2 = await updateTeam(client, id, args);
-      if (!result2.success) {
-        console.error("[AppSidebar] 更新汉化组信息失败:", result2.error);
-        return result2;
-      }
-      await refreshTeams();
-      return result2;
+      return updateSidebarTeam(client, refreshTeams, id, args);
     },
     [client, refreshTeams],
   );
-  const handleMouseLeave = (): void => {
-    setIsHovered(false);
-    if (isAvatarUploading) {
-      return;
-    }
-    setIsSelectingTeam(false);
-  };
-
   useEffect(() => {
     if (!isAvatarUploading && !isHovered && isSelectingTeam) {
       // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
@@ -115,7 +131,9 @@ export function AppSidebar(): ReactElement {
       onMouseEnter={() => {
         setIsHovered(true);
       }}
-      onMouseLeave={handleMouseLeave}
+      onMouseLeave={() => {
+        leaveSidebar(isAvatarUploading, setIsHovered, setIsSelectingTeam);
+      }}
       header={<TitleHeader />}
       teamOption={
         resolvedActiveTeam ? (
@@ -125,7 +143,9 @@ export function AppSidebar(): ReactElement {
             activeTeam={resolvedActiveTeam}
             isListOpen={isSelectingTeam}
             onToggleList={setIsSelectingTeam}
-            onSelectTeam={handleTeamSelect}
+            onSelectTeam={(team) => {
+              selectSidebarTeam(team, setIsSelectingTeam);
+            }}
             onJoinTeam={refreshTeams}
             onUpdateTeam={isTeamAdmin ? handleUpdateTeam : undefined}
             onAvatarUploadingChange={setIsAvatarUploading}

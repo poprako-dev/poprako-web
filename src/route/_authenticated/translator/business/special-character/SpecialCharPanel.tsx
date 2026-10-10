@@ -4,6 +4,7 @@ import { Plus, X } from "lucide-react";
 import clsx from "clsx";
 import { useSpecialChars } from "@/route/_authenticated/translator/business/preference/use-special-chars";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
+import type { CharItem } from "@/route/_authenticated/translator/business/preference/use-special-chars";
 
 type Mode = "select" | "delete";
 
@@ -11,27 +12,149 @@ type Props = {
   onClose: () => void;
 };
 
-export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
-  const { allChars, addChar, deleteChar, toggleFavorite, reorderChars } = useSpecialChars();
+type SpecialCharGridProps = {
+  allChars: CharItem[];
+  mode: Mode;
+  isAdding: boolean;
+  newCharText: string;
+  draggingId: string | null;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  setNewCharText: (value: string) => void;
+  setIsAdding: (value: boolean) => void;
+  submitNewChar: () => void;
+  handleTextareaKeyDown: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  handleCharClick: (id: string) => void;
+  handleDragStart: (event: React.DragEvent<HTMLButtonElement>, id: string) => void;
+  handleDragEnter: (id: string) => void;
+  handleDragEnd: () => void;
+};
 
-  const [mode, setMode] = useState<Mode>("select");
-  const [isAdding, setIsAdding] = useState(false);
-  const [newCharText, setNewCharText] = useState("");
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const didDragRef = useRef(false);
-  const lastDragOverIdRef = useRef<string | null>(null);
+function SpecialCharGrid(props: SpecialCharGridProps): React.ReactElement {
+  const {
+    allChars,
+    mode,
+    isAdding,
+    newCharText,
+    draggingId,
+    textareaRef,
+    setNewCharText,
+    setIsAdding,
+    submitNewChar,
+    handleTextareaKeyDown,
+    handleCharClick,
+    handleDragStart,
+    handleDragEnter,
+    handleDragEnd,
+  } = props;
 
-  useEffect((): void => {
-    if (isAdding && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [isAdding]);
+  return (
+    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+      {allChars.map((char) => (
+        <button
+          type="button"
+          key={char.id}
+          draggable
+          onClick={() => {
+            handleCharClick(char.id);
+          }}
+          onDragStart={(event) => {
+            handleDragStart(event, char.id);
+          }}
+          onDragEnter={() => {
+            handleDragEnter(char.id);
+          }}
+          onDragEnd={handleDragEnd}
+          onDragOver={(event) => {
+            event.preventDefault();
+          }}
+          className={clsx(
+            "group relative flex items-center justify-center",
+            "h-12 rounded-lg text-sm transition-all duration-200",
+            "outline-none active:scale-95 overflow-hidden",
+            "cursor-grab active:cursor-grabbing",
+            draggingId === char.id && "opacity-60 ring-2 ring-primary/30",
+            mode === "select"
+              ? char.isFavorite
+                ? ["bg-[var(--brand-leaf-faint)]", "text-[var(--brand-leaf)]", "hover:opacity-80"]
+                : ["bg-muted text-muted-foreground", "hover:bg-accent hover:text-foreground"]
+              : [
+                  "bg-muted text-muted-foreground",
+                  "hover:bg-destructive/10 hover:text-destructive",
+                ],
+          )}
+        >
+          <span className="transition-transform duration-200 group-hover:scale-110 font-mono">
+            {char.text}
+          </span>
+        </button>
+      ))}
+      {mode === "select" && (
+        <div className="relative h-12">
+          {isAdding ? (
+            <textarea
+              ref={textareaRef}
+              value={newCharText}
+              onChange={(event) => {
+                setNewCharText(event.target.value);
+              }}
+              onKeyDown={handleTextareaKeyDown}
+              onBlur={submitNewChar}
+              placeholder="…"
+              className={clsx(
+                "absolute inset-0 w-full h-full",
+                "text-center text-sm font-mono",
+                "bg-background text-foreground",
+                "rounded-lg border border-border outline-none resize-none",
+                "pt-3 placeholder:text-muted-foreground",
+              )}
+            />
+          ) : (
+            <button
+              type="button"
+              aria-label="添加特殊符号"
+              onClick={() => {
+                setIsAdding(true);
+              }}
+              className={clsx(
+                "w-full h-full flex items-center justify-center",
+                "rounded-lg bg-muted/60 text-muted-foreground",
+                "transition-all duration-200 outline-none",
+                "hover:bg-accent hover:text-muted-foreground",
+                "active:scale-95",
+              )}
+            >
+              <Plus size={18} strokeWidth={2} />
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
-  useEffect((): (() => void) => {
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.defaultPrevented || isKeyboardComposing(e)) return;
-      if (!isAdding && e.key === "Escape") onClose();
+function useSpecialCharInput(options: {
+  onClose: () => void;
+  isAdding: boolean;
+  newCharText: string;
+  setIsAdding: (value: boolean) => void;
+  setNewCharText: (value: string) => void;
+  addChar: (text: string) => void;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+}): {
+  submitNewChar: () => void;
+  handleTextareaKeyDown: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+} {
+  const { onClose, isAdding, newCharText, setIsAdding, setNewCharText, addChar, textareaRef } =
+    options;
+
+  useEffect(() => {
+    if (isAdding && textareaRef.current) textareaRef.current.focus();
+  }, [isAdding, textareaRef]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.defaultPrevented || isKeyboardComposing(event)) return;
+      if (!isAdding && event.key === "Escape") onClose();
     };
     globalThis.addEventListener("keydown", handleKeyDown);
     return () => {
@@ -45,46 +168,45 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
     setNewCharText("");
   };
 
-  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-    if (isKeyboardComposing(e.nativeEvent)) return;
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
+  const handleTextareaKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
+    if (isKeyboardComposing(event.nativeEvent)) return;
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
       submitNewChar();
     }
-    if (e.key === "Escape") {
+    if (event.key === "Escape") {
       setIsAdding(false);
       setNewCharText("");
     }
   };
 
-  const handleCharClick = (id: string): void => {
-    if (didDragRef.current) return;
+  return { submitNewChar, handleTextareaKeyDown };
+}
 
-    if (mode === "select") {
-      toggleFavorite(id);
-    } else {
-      deleteChar(id);
-    }
-  };
+function useSpecialCharDrag(options: {
+  draggingId: string | null;
+  setDraggingId: (id: string | null) => void;
+  reorderChars: (activeId: string, overId: string) => void;
+}): {
+  didDragRef: React.RefObject<boolean>;
+  handleDragStart: (event: React.DragEvent<HTMLButtonElement>, id: string) => void;
+  handleDragEnter: (id: string) => void;
+  handleDragEnd: () => void;
+} {
+  const { draggingId, setDraggingId, reorderChars } = options;
+  const didDragRef = useRef(false);
+  const lastDragOverIdRef = useRef<string | null>(null);
 
-  const handleModeChange = (next: Mode): void => {
-    setMode(next);
-    setIsAdding(false);
-  };
-
-  const handleDragStart = (e: React.DragEvent<HTMLButtonElement>, id: string): void => {
+  const handleDragStart = (event: React.DragEvent<HTMLButtonElement>, id: string): void => {
     didDragRef.current = false;
     lastDragOverIdRef.current = null;
     setDraggingId(id);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", id);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", id);
   };
 
   const handleDragEnter = (id: string): void => {
-    if (!draggingId || draggingId === id || lastDragOverIdRef.current === id) {
-      return;
-    }
-
+    if (!draggingId || draggingId === id || lastDragOverIdRef.current === id) return;
     didDragRef.current = true;
     reorderChars(draggingId, id);
     lastDragOverIdRef.current = id;
@@ -96,6 +218,53 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
     globalThis.setTimeout(() => {
       didDragRef.current = false;
     }, 0);
+  };
+
+  return { didDragRef, handleDragStart, handleDragEnter, handleDragEnd };
+}
+
+function handleSpecialCharClick(
+  id: string,
+  didDrag: boolean,
+  mode: Mode,
+  toggleFavorite: (id: string) => void,
+  deleteChar: (id: string) => void,
+): void {
+  if (didDrag) return;
+  if (mode === "select") toggleFavorite(id);
+  else deleteChar(id);
+}
+
+export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
+  const { allChars, addChar, deleteChar, toggleFavorite, reorderChars } = useSpecialChars();
+
+  const [mode, setMode] = useState<Mode>("select");
+  const [isAdding, setIsAdding] = useState(false);
+  const [newCharText, setNewCharText] = useState("");
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { submitNewChar, handleTextareaKeyDown } = useSpecialCharInput({
+    onClose,
+    isAdding,
+    newCharText,
+    setIsAdding,
+    setNewCharText,
+    addChar,
+    textareaRef,
+  });
+  const { didDragRef, handleDragStart, handleDragEnter, handleDragEnd } = useSpecialCharDrag({
+    draggingId,
+    setDraggingId,
+    reorderChars,
+  });
+
+  const handleCharClick = (id: string): void => {
+    handleSpecialCharClick(id, didDragRef.current, mode, toggleFavorite, deleteChar);
+  };
+
+  const handleModeChange = (next: Mode): void => {
+    setMode(next);
+    setIsAdding(false);
   };
 
   return createPortal(
@@ -166,93 +335,22 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
           </div>
 
           {/* Char Grid */}
-          <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-            {allChars.map((char) => (
-              <button
-                type="button"
-                key={char.id}
-                draggable
-                onClick={() => {
-                  handleCharClick(char.id);
-                }}
-                onDragStart={(e) => {
-                  handleDragStart(e, char.id);
-                }}
-                onDragEnter={() => {
-                  handleDragEnter(char.id);
-                }}
-                onDragEnd={handleDragEnd}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                }}
-                className={clsx(
-                  "group relative flex items-center justify-center",
-                  "h-12 rounded-lg text-sm transition-all duration-200",
-                  "outline-none active:scale-95 overflow-hidden",
-                  "cursor-grab active:cursor-grabbing",
-                  draggingId === char.id && "opacity-60 ring-2 ring-primary/30",
-                  mode === "select"
-                    ? char.isFavorite
-                      ? [
-                          "bg-[var(--brand-leaf-faint)]",
-                          "text-[var(--brand-leaf)]",
-                          "hover:opacity-80",
-                        ]
-                      : ["bg-muted text-muted-foreground", "hover:bg-accent hover:text-foreground"]
-                    : [
-                        "bg-muted text-muted-foreground",
-                        "hover:bg-destructive/10 hover:text-destructive",
-                      ],
-                )}
-              >
-                <span className="transition-transform duration-200 group-hover:scale-110 font-mono">
-                  {char.text}
-                </span>
-              </button>
-            ))}
-
-            {/* Add Button — only in select mode */}
-            {mode === "select" && (
-              <div className="relative h-12">
-                {isAdding ? (
-                  <textarea
-                    ref={textareaRef}
-                    value={newCharText}
-                    onChange={(e) => {
-                      setNewCharText(e.target.value);
-                    }}
-                    onKeyDown={handleTextareaKeyDown}
-                    onBlur={submitNewChar}
-                    placeholder="…"
-                    className={clsx(
-                      "absolute inset-0 w-full h-full",
-                      "text-center text-sm font-mono",
-                      "bg-background text-foreground",
-                      "rounded-lg border border-border outline-none resize-none",
-                      "pt-3 placeholder:text-muted-foreground",
-                    )}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    aria-label="添加特殊符号"
-                    onClick={() => {
-                      setIsAdding(true);
-                    }}
-                    className={clsx(
-                      "w-full h-full flex items-center justify-center",
-                      "rounded-lg bg-muted/60 text-muted-foreground",
-                      "transition-all duration-200 outline-none",
-                      "hover:bg-accent hover:text-muted-foreground",
-                      "active:scale-95",
-                    )}
-                  >
-                    <Plus size={18} strokeWidth={2} />
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+          <SpecialCharGrid
+            allChars={allChars}
+            mode={mode}
+            isAdding={isAdding}
+            newCharText={newCharText}
+            draggingId={draggingId}
+            textareaRef={textareaRef}
+            setNewCharText={setNewCharText}
+            setIsAdding={setIsAdding}
+            submitNewChar={submitNewChar}
+            handleTextareaKeyDown={handleTextareaKeyDown}
+            handleCharClick={handleCharClick}
+            handleDragStart={handleDragStart}
+            handleDragEnter={handleDragEnter}
+            handleDragEnd={handleDragEnd}
+          />
 
           {/* Hint */}
           <p className="mt-4 text-xs text-muted-foreground text-center">

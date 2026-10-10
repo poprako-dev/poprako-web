@@ -70,18 +70,45 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 export function createApiClient(options: ApiClientOptions): ApiClient {
   const fetchImpl = options.fetchImpl ?? fetch;
   const defaultTimeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const sendJson = createJsonSender(options, fetchImpl, defaultTimeoutMs);
 
-  function notifyUnauthorized<Value>(
-    result: Result<Value>,
-    headers: Headers,
-    revision: number,
-  ): Result<Value> {
-    const credential = headers.get("Authorization");
-    if (!result.success && result.httpStatus === 401 && credential?.startsWith("Bearer "))
-      options.onUnauthorized?.(credential.slice(7), revision);
-    return result;
-  }
-  function sendJson<Value>(
+  return {
+    get: <Value>(path: string, requestOptions: ApiRequestOptions<Value>) =>
+      sendJson("GET", path, undefined, requestOptions),
+    post: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions<Value>) =>
+      sendJson("POST", path, body, requestOptions),
+    put: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions<Value>) =>
+      sendJson("PUT", path, body, requestOptions),
+    patch: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions<Value>) =>
+      sendJson("PATCH", path, body, requestOptions),
+    delete: <Value>(path: string, requestOptions: ApiRequestOptions<Value> & { body?: unknown }) =>
+      sendJson("DELETE", path, requestOptions.body, requestOptions),
+    getText: (path, requestOptions = {}) =>
+      sendText(options, fetchImpl, defaultTimeoutMs, path, requestOptions),
+    download: (url, requestOptions = {}) =>
+      downloadBlob(fetchImpl, defaultTimeoutMs, url, requestOptions),
+    putPresigned: (requestOptions) => uploadPresigned(requestOptions),
+  };
+}
+
+function notifyUnauthorized<Value>(
+  result: Result<Value>,
+  headers: Headers,
+  revision: number,
+  options: ApiClientOptions,
+): Result<Value> {
+  const credential = headers.get("Authorization");
+  if (!result.success && result.httpStatus === 401 && credential?.startsWith("Bearer "))
+    options.onUnauthorized?.(credential.slice(7), revision);
+  return result;
+}
+
+function createJsonSender(
+  options: ApiClientOptions,
+  fetchImpl: typeof fetch,
+  defaultTimeoutMs: number,
+) {
+  return function sendJson<Value>(
     method: string,
     path: string,
     body: unknown,
@@ -112,51 +139,50 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
         ...(requestOptions.signal ? { signal: requestOptions.signal } : {}),
       },
       requestOptions.decode,
-    ).then((result) => notifyUnauthorized(result, headers, revision));
-  }
-
-  return {
-    get: <Value>(path: string, requestOptions: ApiRequestOptions<Value>) =>
-      sendJson("GET", path, undefined, requestOptions),
-    post: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions<Value>) =>
-      sendJson("POST", path, body, requestOptions),
-    put: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions<Value>) =>
-      sendJson("PUT", path, body, requestOptions),
-    patch: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions<Value>) =>
-      sendJson("PATCH", path, body, requestOptions),
-    delete: <Value>(path: string, requestOptions: ApiRequestOptions<Value> & { body?: unknown }) =>
-      sendJson("DELETE", path, requestOptions.body, requestOptions),
-    getText: (path, requestOptions = {}) => {
-      const revision = options.getAuthRevision?.() ?? 0;
-      const url = buildUrl(options.baseUrl, path, requestOptions.query);
-      const headers = createHeaders(
-        requestOptions.headers,
-        requestOptions.auth ?? "required",
-        options.getAccessToken,
-        false,
-      );
-      return requestText({
-        fetchImpl,
-        url,
-        init: { method: "GET", headers, credentials: "omit" },
-        timeoutMs: requestOptions.timeoutMs ?? defaultTimeoutMs,
-        ...(requestOptions.signal ? { signal: requestOptions.signal } : {}),
-      }).then((result) => notifyUnauthorized(result, headers, revision));
-    },
-    download: (url, requestOptions = {}) =>
-      requestBlob({
-        fetchImpl,
-        url,
-        init: { method: "GET", headers: new Headers(requestOptions.headers), credentials: "omit" },
-        timeoutMs: requestOptions.timeoutMs ?? defaultTimeoutMs,
-        ...(requestOptions.signal ? { signal: requestOptions.signal } : {}),
-      }),
-    putPresigned: (requestOptions) =>
-      putPresigned({
-        ...requestOptions,
-        timeoutMs: requestOptions.timeoutMs ?? 8 * 60_000,
-      }),
+    ).then((result) => notifyUnauthorized(result, headers, revision, options));
   };
+}
+
+function sendText(
+  options: ApiClientOptions,
+  fetchImpl: typeof fetch,
+  defaultTimeoutMs: number,
+  path: string,
+  requestOptions: ApiTextOptions,
+): Promise<Result<string>> {
+  const revision = options.getAuthRevision?.() ?? 0;
+  const headers = createHeaders(
+    requestOptions.headers,
+    requestOptions.auth ?? "required",
+    options.getAccessToken,
+    false,
+  );
+  return requestText({
+    fetchImpl,
+    url: buildUrl(options.baseUrl, path, requestOptions.query),
+    init: { method: "GET", headers, credentials: "omit" },
+    timeoutMs: requestOptions.timeoutMs ?? defaultTimeoutMs,
+    ...(requestOptions.signal ? { signal: requestOptions.signal } : {}),
+  }).then((result) => notifyUnauthorized(result, headers, revision, options));
+}
+
+function downloadBlob(
+  fetchImpl: typeof fetch,
+  defaultTimeoutMs: number,
+  url: string,
+  requestOptions: ExternalRequestOptions,
+): Promise<Result<Blob>> {
+  return requestBlob({
+    fetchImpl,
+    url,
+    init: { method: "GET", headers: new Headers(requestOptions.headers), credentials: "omit" },
+    timeoutMs: requestOptions.timeoutMs ?? defaultTimeoutMs,
+    ...(requestOptions.signal ? { signal: requestOptions.signal } : {}),
+  });
+}
+
+function uploadPresigned(requestOptions: PresignedUploadOptions): Promise<Result<undefined>> {
+  return putPresigned({ ...requestOptions, timeoutMs: requestOptions.timeoutMs ?? 8 * 60_000 });
 }
 
 function createHeaders(

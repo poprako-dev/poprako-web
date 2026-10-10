@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { showLocalApiFailure } from "@/route/business/request-error";
+import type { ApiClient } from "@/api/client";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import type { Result } from "@/shared/utility/result";
 import type { WorksetInfo } from "@/route/_authenticated/business/workset/workset";
@@ -25,7 +26,7 @@ type Args = {
   showToast: ShowToast;
 };
 
-export function useComicPlaygroundWorksets({ teamId, showToast }: Args): {
+type WorksetState = {
   worksets: WorksetInfo[];
   activeWorksetId: string;
   setActiveWorksetId: Dispatch<SetStateAction<string>>;
@@ -33,62 +34,83 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args): {
   loadWorksets: () => Promise<void>;
   handleDeleteWorkset: (worksetId: string) => Promise<void>;
   handleCreateWorkset: (args: CreateWorksetArgs) => Promise<Result<string>>;
-} {
+};
+
+async function loadTeamWorksets(
+  client: ApiClient,
+  teamId: string | null,
+  showToast: ShowToast,
+  setWorksets: Dispatch<SetStateAction<WorksetInfo[]>>,
+  setActiveWorksetId: Dispatch<SetStateAction<string>>,
+): Promise<void> {
+  if (!teamId) {
+    setWorksets([]);
+    setActiveWorksetId("");
+    return;
+  }
+  const result = await listWorksets(client, { teamId, offset: 0, limit: 20 });
+  if (!result.success) {
+    console.error("[ComicPlayground] 加载作品集失败:", result.error);
+    showLocalApiFailure(result, showToast);
+    return;
+  }
+  setWorksets(result.data);
+  setActiveWorksetId((previous) =>
+    result.data.some((workset) => workset.id === previous) ? previous : (result.data[0]?.id ?? ""),
+  );
+}
+
+async function removeTeamWorkset(
+  client: ApiClient,
+  worksetId: string,
+  reload: () => Promise<void>,
+  showToast: ShowToast,
+): Promise<void> {
+  const result = await deleteWorkset(client, worksetId);
+  if (!result.success) {
+    console.error("[ComicPlayground] 删除作品集失败:", result.error);
+    showLocalApiFailure(result, showToast);
+    return;
+  }
+  await reload();
+}
+
+async function createTeamWorkset(
+  client: ApiClient,
+  args: CreateWorksetArgs,
+  reload: () => Promise<void>,
+  showToast: ShowToast,
+): Promise<Result<string>> {
+  const result = await createWorkset(client, args);
+  if (result.success) await reload();
+  else {
+    console.error("[ComicPlayground] 创建作品集失败:", result.error);
+    showLocalApiFailure(result, showToast);
+  }
+  return result;
+}
+
+export function useComicPlaygroundWorksets({ teamId, showToast }: Args): WorksetState {
   const client = useApiClient();
   const [worksets, setWorksets] = useState<WorksetInfo[]>([]);
   const [activeWorksetId, setActiveWorksetId] = useState<string>("");
 
-  const loadWorksets = useCallback(async () => {
-    if (!teamId) {
-      setWorksets([]);
-      setActiveWorksetId("");
-      return;
-    }
-
-    const result = await listWorksets(client, { teamId, offset: 0, limit: 20 });
-    if (!result.success) {
-      console.error("[ComicPlayground] 加载作品集失败:", result.error);
-      showLocalApiFailure(result, showToast);
-      return;
-    }
-
-    setWorksets(result.data);
-    setActiveWorksetId((prev) =>
-      result.data.some((workset) => workset.id === prev) ? prev : (result.data[0]?.id ?? ""),
-    );
-  }, [client, showToast, teamId]);
+  const loadWorksets = useCallback(
+    () => loadTeamWorksets(client, teamId, showToast, setWorksets, setActiveWorksetId),
+    [client, showToast, teamId],
+  );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadWorksets();
   }, [loadWorksets]);
 
   const handleDeleteWorkset = useCallback(
-    async (worksetId: string) => {
-      const result = await deleteWorkset(client, worksetId);
-      if (!result.success) {
-        console.error("[ComicPlayground] 删除作品集失败:", result.error);
-        showLocalApiFailure(result, showToast);
-        return;
-      }
-
-      await loadWorksets();
-    },
+    (worksetId: string) => removeTeamWorkset(client, worksetId, loadWorksets, showToast),
     [client, loadWorksets, showToast],
   );
 
   const handleCreateWorkset = useCallback(
-    async (args: CreateWorksetArgs): Promise<Result<string>> => {
-      const result = await createWorkset(client, args);
-      if (result.success) {
-        await loadWorksets();
-      } else {
-        console.error("[ComicPlayground] 创建作品集失败:", result.error);
-        showLocalApiFailure(result, showToast);
-      }
-
-      return result;
-    },
+    (args: CreateWorksetArgs) => createTeamWorkset(client, args, loadWorksets, showToast),
     [client, loadWorksets, showToast],
   );
 

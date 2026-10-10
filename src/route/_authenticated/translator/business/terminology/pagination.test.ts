@@ -9,7 +9,7 @@ type Item = {
   label: string;
 };
 
-describe("terminology pagination reducer", () => {
+function registerAppendCase(): void {
   test("loads the first page and appends unique items", () => {
     let state = paginationReducer<Item>(initialPaginationState(), {
       type: "reset",
@@ -45,7 +45,9 @@ describe("terminology pagination reducer", () => {
     expect(state.hasMore).toBe(true);
     expect(state.phase).toBe("ready");
   });
+}
 
+function registerResetCase(): void {
   test("resets results when the query or termbase changes", () => {
     const loaded = paginationReducer<Item>(
       paginationReducer(initialPaginationState(), {
@@ -71,7 +73,9 @@ describe("terminology pagination reducer", () => {
     expect(reset.phase).toBe("initial-loading");
     expect(reset.requestVersion).toBe(2);
   });
+}
 
+function registerRequestLifecycleCases(): void {
   test("ignores a late response from an older request version", () => {
     const reset = paginationReducer<Item>(initialPaginationState(), {
       type: "reset",
@@ -112,4 +116,10 @@ describe("terminology pagination reducer", () => {
     expect(failed.error).toBe("timeout");
     expect(failed.phase).toBe("error");
   });
+}
+
+describe("terminology pagination reducer", () => {
+  registerAppendCase();
+  registerResetCase();
+  registerRequestLifecycleCases();
 });

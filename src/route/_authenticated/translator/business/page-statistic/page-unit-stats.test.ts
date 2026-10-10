@@ -47,7 +47,9 @@ describe("page unit statistics", () => {
       proofreaderAppendUnitCount: 0,
     });
   });
+});
 
+describe("page unit statistics", () => {
   test("keeps append-only pages separate from initial translations", () => {
     const merged = mergePageUnitStats(pages, [
       {
@@ -70,7 +72,9 @@ describe("page unit statistics", () => {
     expect(merged).toHaveLength(3);
     expect(merged[1]?.index).toBe(1);
   });
+});
 
+describe("page unit statistics", () => {
   test("scales translation plus append without adding edits twice", () => {
     expect(
       pageUnitStatsLimit([
