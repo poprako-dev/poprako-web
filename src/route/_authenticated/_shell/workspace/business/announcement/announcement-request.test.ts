@@ -53,7 +53,9 @@ describe("workspace announcement API", () => {
       "/api/v1/teams/team-1/announcements?offset=0&limit=3&incl=user",
     );
   });
+});
 
+describe("workspace announcement API", () => {
   test("creates, updates, and deletes using camel-case endpoint inputs", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()

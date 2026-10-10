@@ -9,7 +9,10 @@ import {
   unitTranslatedText,
 } from "@/route/_authenticated/translator/business/unit/unit";
 import type { UserInfo } from "@/route/business/identity/user";
-import { buildUnitTextDiff } from "@/route/_authenticated/translator/business/unit-list/text-diff";
+import {
+  buildUnitTextDiff,
+  type UnitTextDiffPart,
+} from "@/route/_authenticated/translator/business/unit-list/text-diff";
 import { BaseUnitItem } from "@/route/_authenticated/translator/business/unit-list/BaseUnitItem";
 import { LineBreakOverlay } from "@/route/_authenticated/translator/business/unit-list/LineBreakOverlay";
 
@@ -23,6 +26,52 @@ type Props = {
   translator?: UserInfo | undefined;
   proofreader?: UserInfo | undefined;
 };
+
+function DiffSegment({ part }: { part: UnitTextDiffPart }): JSX.Element {
+  if (part.kind === "deleted" || part.kind === "replacement-removed") {
+    const isReplacement = part.kind === "replacement-removed";
+    return (
+      <del
+        title={isReplacement ? "初翻被替换" : "初翻删除"}
+        className={clsx(
+          "rounded-[2px] line-through decoration-1",
+          isReplacement
+            ? [
+                "bg-[var(--color-diff-replaced-bg)]",
+                "font-normal",
+                "text-[var(--color-diff-replaced-text)]",
+                "decoration-[var(--color-diff-replaced-text)]",
+              ]
+            : [
+                "bg-[var(--color-diff-delete-bg)]",
+                "font-light",
+                "text-[var(--color-diff-delete-text)]",
+                "decoration-[var(--color-diff-delete-text)]",
+              ],
+        )}
+      >
+        {part.text}
+      </del>
+    );
+  }
+  if (part.kind === "inserted" || part.kind === "replacement-added") {
+    const isReplacement = part.kind === "replacement-added";
+    return (
+      <ins
+        title={isReplacement ? "校对替换" : "校对新增"}
+        className={clsx(
+          "rounded-[2px] font-medium no-underline",
+          isReplacement
+            ? ["bg-[var(--color-diff-replacement-bg)]", "text-[var(--color-diff-replacement-text)]"]
+            : ["bg-[var(--color-diff-insert-bg)]", "text-[var(--color-diff-insert-text)]"],
+        )}
+      >
+        {part.text}
+      </ins>
+    );
+  }
+  return <span>{part.text}</span>;
+}
 
 export function ReadOnlyDiffUnitItem({
   unit,
@@ -79,60 +128,9 @@ export function ReadOnlyDiffUnitItem({
             )}
           >
             {parts.length === 0 && <span className="text-ink-gray-600">无翻译内容</span>}
-            {parts.map((part, index) => {
-              const key = `${String(index)}-${part.kind}-${part.text}`;
-              if (part.kind === "deleted" || part.kind === "replacement-removed") {
-                const isReplacement = part.kind === "replacement-removed";
-                return (
-                  <del
-                    key={key}
-                    title={isReplacement ? "初翻被替换" : "初翻删除"}
-                    className={clsx(
-                      "rounded-[2px] line-through decoration-1",
-                      isReplacement
-                        ? [
-                            "bg-[var(--color-diff-replaced-bg)]",
-                            "font-normal",
-                            "text-[var(--color-diff-replaced-text)]",
-                            "decoration-[var(--color-diff-replaced-text)]",
-                          ]
-                        : [
-                            "bg-[var(--color-diff-delete-bg)]",
-                            "font-light",
-                            "text-[var(--color-diff-delete-text)]",
-                            "decoration-[var(--color-diff-delete-text)]",
-                          ],
-                    )}
-                  >
-                    {part.text}
-                  </del>
-                );
-              }
-              if (part.kind === "inserted" || part.kind === "replacement-added") {
-                const isReplacement = part.kind === "replacement-added";
-                return (
-                  <ins
-                    key={key}
-                    title={isReplacement ? "校对替换" : "校对新增"}
-                    className={clsx(
-                      "rounded-[2px] font-medium no-underline",
-                      isReplacement
-                        ? [
-                            "bg-[var(--color-diff-replacement-bg)]",
-                            "text-[var(--color-diff-replacement-text)]",
-                          ]
-                        : [
-                            "bg-[var(--color-diff-insert-bg)]",
-                            "text-[var(--color-diff-insert-text)]",
-                          ],
-                    )}
-                  >
-                    {part.text}
-                  </ins>
-                );
-              }
-              return <span key={key}>{part.text}</span>;
-            })}
+            {parts.map((part, index) => (
+              <DiffSegment key={`${String(index)}-${part.kind}-${part.text}`} part={part} />
+            ))}
           </div>
           {parts.some((part) => part.text.includes("\n")) && (
             <LineBreakOverlay targetRef={contentRef} layoutKey={[parts, isFocused]} />

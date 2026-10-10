@@ -9,8 +9,23 @@ import { useApiClient } from "@/route/business/api-context";
 import { loginApi, registerApi } from "@/api/identity/identity-api";
 import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import { writeFirstRegistrationFlag } from "@/route/business/onboarding/storage";
+import type { ApiClient } from "@/api/client";
+import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 
 type Mode = "login" | "register";
+
+type SubmitOptions = {
+  mode: Mode;
+  qq: string;
+  password: string;
+  name: string;
+  invitationCode: string;
+  setIsLoading: (loading: boolean) => void;
+  showToast: (message: string, type: ToastType) => void;
+  client: ApiClient;
+  router: ReturnType<typeof useRouter>;
+  navigate: ReturnType<typeof useNavigate>;
+};
 
 export function LoginCard(): ReactElement {
   const [mode, setMode] = useState<Mode>("login");
@@ -33,58 +48,19 @@ export function LoginCard(): ReactElement {
     }
   };
 
-  const handleSubmit = async (): Promise<void> => {
-    if (!qq) {
-      showToast("QQ 号不能为空", "error");
-      return;
-    }
-    if (!password) {
-      showToast("密码不能为空", "error");
-      return;
-    }
-    if (mode === "register") {
-      if (!name) {
-        showToast("昵称不能为空", "error");
-        return;
-      }
-      if (!invitationCode) {
-        showToast("邀请码不能为空", "error");
-        return;
-      }
-    }
-
-    setIsLoading(true);
-    try {
-      const result =
-        mode === "login"
-          ? await loginApi(client, { qid: qq, password })
-          : await registerApi(client, {
-              qid: qq,
-              password,
-              nickname: name,
-              code: invitationCode,
-            });
-
-      if (!result.success) {
-        showLocalApiFailure(result, showToast);
-        console.error("[LoginCard] 操作失败：", result.error);
-        return;
-      }
-
-      beginSession(result.data.token);
-      await router.invalidate();
-      if (mode === "register") {
-        writeFirstRegistrationFlag(false);
-      }
-      showToast(mode === "login" ? "登录成功！" : "注册成功！", "success");
-      await navigate({ to: "/comic-playground", search: {}, replace: true });
-    } catch (error) {
-      showLocalCaughtError(error, showToast, "操作失败，请稍后重试");
-      console.error("[LoginCard] 操作异常：", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleSubmit = (): Promise<void> =>
+    submitLogin({
+      mode,
+      qq,
+      password,
+      name,
+      invitationCode,
+      setIsLoading,
+      showToast,
+      client,
+      router,
+      navigate,
+    });
 
   return (
     <div
@@ -210,4 +186,63 @@ export function LoginCard(): ReactElement {
       </div>
     </div>
   );
+}
+
+async function submitLogin(options: SubmitOptions): Promise<void> {
+  if (!validateLogin(options)) return;
+  options.setIsLoading(true);
+  try {
+    await performLogin(options);
+  } catch (error) {
+    showLocalCaughtError(error, options.showToast, "操作失败，请稍后重试");
+    console.error("[LoginCard] 操作异常：", error);
+  } finally {
+    options.setIsLoading(false);
+  }
+}
+
+function validateLogin(options: SubmitOptions): boolean {
+  const required = [
+    [options.qq, "QQ 号不能为空"],
+    [options.password, "密码不能为空"],
+    ...(options.mode === "register"
+      ? [
+          [options.name, "昵称不能为空"],
+          [options.invitationCode, "邀请码不能为空"],
+        ]
+      : []),
+  ];
+  const missing = required.find(([value]) => !value);
+  if (!missing) return true;
+  options.showToast(missing[1] ?? "", "error");
+  return false;
+}
+
+async function performLogin(options: SubmitOptions): Promise<void> {
+  const result = await requestLogin(options);
+  if (!result.success) {
+    showLocalApiFailure(result, options.showToast);
+    console.error("[LoginCard] 操作失败：", result.error);
+    return;
+  }
+  beginSession(result.data.token);
+  await options.router.invalidate();
+  finishLogin(options);
+  await options.navigate({ to: "/comic-playground", search: {}, replace: true });
+}
+
+function requestLogin(options: SubmitOptions): ReturnType<typeof loginApi> {
+  return options.mode === "login"
+    ? loginApi(options.client, { qid: options.qq, password: options.password })
+    : registerApi(options.client, {
+        qid: options.qq,
+        password: options.password,
+        nickname: options.name,
+        code: options.invitationCode,
+      });
+}
+
+function finishLogin(options: SubmitOptions): void {
+  if (options.mode === "register") writeFirstRegistrationFlag(false);
+  options.showToast(options.mode === "login" ? "登录成功！" : "注册成功！", "success");
 }

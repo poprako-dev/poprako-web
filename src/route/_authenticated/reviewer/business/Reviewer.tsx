@@ -18,6 +18,33 @@ import type { ReviewerProps } from "./reviewer-props";
 type Props = ReviewerProps;
 const buttonClass =
   "flex-1 flex items-center justify-center py-2 transition-colors text-ink-stone-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]";
+
+function InvalidReviewPage({ onExit }: { onExit: () => void }): JSX.Element {
+  return (
+    <div role="alert" className="flex h-full items-center justify-center">
+      页面不属于当前章节
+      <button type="button" onClick={onExit} className="ml-2 underline">
+        返回
+      </button>
+    </div>
+  );
+}
+
+function reviewerShortcuts(
+  shortcuts: ReturnType<typeof useShortcuts>["configurableShortcuts"],
+): ReturnType<typeof useShortcuts>["configurableShortcuts"] {
+  return shortcuts.filter((shortcut) =>
+    [
+      "nextMarker",
+      "prevMarker",
+      "pageUp",
+      "pageDown",
+      "toggleRelocation",
+      "toggleProofreadPreview",
+    ].includes(shortcut.action),
+  );
+}
+
 export function Reviewer({
   project,
   startPageId,
@@ -51,16 +78,7 @@ export function Reviewer({
     active: pageIndex >= 0,
     loadReviewPage,
     loadIssues,
-    shortcuts: configurableShortcuts.filter((shortcut) =>
-      [
-        "nextMarker",
-        "prevMarker",
-        "pageUp",
-        "pageDown",
-        "toggleRelocation",
-        "toggleProofreadPreview",
-      ].includes(shortcut.action),
-    ),
+    shortcuts: reviewerShortcuts(configurableShortcuts),
     relocation: relocation.isRelocationEnabled,
     onToggleRelocation: relocation.toggleRelocation,
     onToggleVisible: () => {
@@ -71,15 +89,7 @@ export function Reviewer({
   });
   const imageSrc = review.page?.composite.source ?? null;
   const interaction = usePageInteraction({ imageSrc });
-  if (pageIndex < 0)
-    return (
-      <div role="alert" className="flex h-full items-center justify-center">
-        页面不属于当前章节
-        <button type="button" onClick={onExit} className="ml-2 underline">
-          返回
-        </button>
-      </div>
-    );
+  if (pageIndex < 0) return <InvalidReviewPage onExit={onExit} />;
   return (
     <WorkbenchLayout
       canvas={

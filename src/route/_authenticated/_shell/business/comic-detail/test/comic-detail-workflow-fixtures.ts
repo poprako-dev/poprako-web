@@ -20,73 +20,68 @@ const LONG_NAMES = [
 ];
 
 export function makeManyAssignments(chapterId: string): AssignmentInfo[] {
-  const assignments: AssignmentInfo[] = [];
-  let idCounter = 1;
-
-  const push = (name: string, role: Role): void => {
-    const uid = `u-many-${String(idCounter)}`;
-    assignments.push({
-      id: `am-${String(idCounter)}`,
+  const groups: [Role, string[]][] = [
+    [
+      "rawProvider",
+      ["佐仓绫音大粉丝", "RawHunterZero", "Nakamura Yū Fan", required(LONG_NAMES[0])],
+    ],
+    [
+      "translator",
+      [
+        "Aki Translator",
+        required(LONG_NAMES[2]),
+        required(LONG_NAMES[6]),
+        "Mitsuki",
+        required(LONG_NAMES[9]),
+        "神崎蘭子之友",
+      ],
+    ],
+    [
+      "proofreader",
+      [required(LONG_NAMES[1]), required(LONG_NAMES[7]), "校对博士学位", "Proofreader_X", "星野"],
+    ],
+    [
+      "typesetter",
+      [
+        required(LONG_NAMES[3]),
+        required(LONG_NAMES[4]),
+        "LayoutMaster2077",
+        "排版狂魔不知疲倦的人",
+        required(LONG_NAMES[8]),
+      ],
+    ],
+    ["reviewer", [required(LONG_NAMES[5]), "ReviewerElite", "最终boss级监修官"]],
+    ["publisher", ["Publisher_A", required(LONG_NAMES[9]), "全能发布王者"]],
+  ];
+  return groups.flatMap(([role, names], index) =>
+    makeAssignmentGroup(
       chapterId,
-      userId: uid,
-      user: makeUser(uid, name),
+      role,
+      names,
+      groups.slice(0, index).reduce((sum, group) => sum + group[1].length, 0),
+    ),
+  );
+}
+
+function makeAssignmentGroup(
+  chapterId: string,
+  role: Role,
+  names: string[],
+  previousCount: number,
+): AssignmentInfo[] {
+  return names.map((name, index) => {
+    const id = previousCount + index + 1;
+    const userId = `u-many-${String(id)}`;
+    return {
+      id: `am-${String(id)}`,
+      chapterId,
+      userId,
+      user: makeUser(userId, name),
       roles: roleMask([role]),
       createdAt: now,
       updatedAt: now,
-    });
-    idCounter++;
-  };
-
-  // 4x 原始提供者
-  for (const n of ["佐仓绫音大粉丝", "RawHunterZero", "Nakamura Yū Fan", required(LONG_NAMES[0])]) {
-    push(n, "rawProvider");
-  }
-
-  // 6x 翻译
-  for (const n of [
-    "Aki Translator",
-    required(LONG_NAMES[2]),
-    required(LONG_NAMES[6]),
-    "Mitsuki",
-    required(LONG_NAMES[9]),
-    "神崎蘭子之友",
-  ]) {
-    push(n, "translator");
-  }
-
-  // 5x 校对
-  for (const n of [
-    required(LONG_NAMES[1]),
-    required(LONG_NAMES[7]),
-    "校对博士学位",
-    "Proofreader_X",
-    "星野",
-  ]) {
-    push(n, "proofreader");
-  }
-
-  // 5x 排版
-  for (const n of [
-    required(LONG_NAMES[3]),
-    required(LONG_NAMES[4]),
-    "LayoutMaster2077",
-    "排版狂魔不知疲倦的人",
-    required(LONG_NAMES[8]),
-  ]) {
-    push(n, "typesetter");
-  }
-
-  // 3x 监修
-  for (const n of [required(LONG_NAMES[5]), "ReviewerElite", "最终boss级监修官"]) {
-    push(n, "reviewer");
-  }
-
-  // 3x 发布
-  for (const n of ["Publisher_A", required(LONG_NAMES[9]), "全能发布王者"]) {
-    push(n, "publisher");
-  }
-
-  return assignments;
+    };
+  });
 }
 
 // Simulate async page delay
@@ -96,11 +91,19 @@ export function delay(ms: number): Promise<void> {
 
 export function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
   return [
-    {
-      id: `${chapterId}-record-12`,
+    ...latestWorkflowRecords(chapterId),
+    ...importWorkflowRecords(chapterId),
+    ...chapterWorkflowRecords(chapterId),
+  ];
+}
+
+function latestWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
+  return [
+    workflowRecord(
       chapterId,
-      actorUserId: "u-aki",
-      event: {
+      "12",
+      "u-aki",
+      {
         kind: "stage_transitioned",
         data: {
           stage: "typeset_redraw",
@@ -109,23 +112,20 @@ export function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] 
           origin: "artwork_upload",
         },
       },
-      createdAt: now - 1000 * 60,
-    },
-    {
-      id: `${chapterId}-record-11`,
+      1,
+    ),
+    workflowRecord(
       chapterId,
-      actorUserId: "u-aki",
-      event: {
-        kind: "artwork_exported",
-        data: { artworkVersion: 7 },
-      },
-      createdAt: now - 1000 * 60 * 2,
-    },
-    {
-      id: `${chapterId}-record-10`,
+      "11",
+      "u-aki",
+      { kind: "artwork_exported", data: { artworkVersion: 7 } },
+      2,
+    ),
+    workflowRecord(
       chapterId,
-      actorUserId: "u-aki",
-      event: {
+      "10",
+      "u-aki",
+      {
         kind: "stage_transitioned",
         data: {
           stage: "translate",
@@ -134,23 +134,25 @@ export function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] 
           origin: "translation_import",
         },
       },
-      createdAt: now - 1000 * 60 * 4,
-    },
-    {
-      id: `${chapterId}-record-9`,
+      4,
+    ),
+    workflowRecord(
       chapterId,
-      actorUserId: "u-aki",
-      event: {
-        kind: "translation_exported",
-        data: { formats: { labelPlus: true, poprako: true } },
-      },
-      createdAt: now - 1000 * 60 * 18,
-    },
-    {
-      id: `${chapterId}-record-8`,
+      "9",
+      "u-aki",
+      { kind: "translation_exported", data: { formats: { labelPlus: true, poprako: true } } },
+      18,
+    ),
+  ];
+}
+
+function importWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
+  return [
+    workflowRecord(
       chapterId,
-      actorUserId: "u-aki",
-      event: {
+      "8",
+      "u-aki",
+      {
         kind: "translation_imported",
         data: {
           format: "poprako",
@@ -158,23 +160,20 @@ export function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] 
           importedUnitCount: 186,
         },
       },
-      createdAt: now - 1000 * 60 * 32,
-    },
-    {
-      id: `${chapterId}-record-7`,
+      32,
+    ),
+    workflowRecord(
       chapterId,
-      actorUserId: "u-admin",
-      event: {
-        kind: "assignment_deleted",
-        data: { subjectUserId: "u-former", previousRoles: 4 },
-      },
-      createdAt: now - 1000 * 60 * 51,
-    },
-    {
-      id: `${chapterId}-record-6`,
+      "7",
+      "u-admin",
+      { kind: "assignment_deleted", data: { subjectUserId: "u-former", previousRoles: 4 } },
+      51,
+    ),
+    workflowRecord(
       chapterId,
-      actorUserId: "u-admin",
-      event: {
+      "6",
+      "u-admin",
+      {
         kind: "assignment_roles_updated",
         data: {
           subjectUserId: "u-aki",
@@ -182,48 +181,48 @@ export function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] 
           nextRoles: 6,
         },
       },
-      createdAt: now - 1000 * 60 * 76,
-    },
-    {
-      id: `${chapterId}-record-5`,
+      76,
+    ),
+    workflowRecord(
       chapterId,
-      actorUserId: "u-admin",
-      event: {
-        kind: "assignment_created",
-        data: { subjectUserId: "u-aki", roles: 2 },
-      },
-      createdAt: now - 1000 * 60 * 105,
-    },
-    {
-      id: `${chapterId}-record-4`,
+      "5",
+      "u-admin",
+      { kind: "assignment_created", data: { subjectUserId: "u-aki", roles: 2 } },
+      105,
+    ),
+  ];
+}
+
+function chapterWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
+  return [
+    workflowRecord(chapterId, "4", "u-admin", { kind: "chapter_unpinned" }, 144),
+    workflowRecord(chapterId, "3", "u-admin", { kind: "chapter_pinned" }, 175),
+    workflowRecord(
       chapterId,
-      actorUserId: "u-admin",
-      event: { kind: "chapter_unpinned" },
-      createdAt: now - 1000 * 60 * 144,
-    },
-    {
-      id: `${chapterId}-record-3`,
-      chapterId,
-      actorUserId: "u-admin",
-      event: { kind: "chapter_pinned" },
-      createdAt: now - 1000 * 60 * 175,
-    },
-    {
-      id: `${chapterId}-record-2`,
-      chapterId,
-      actorUserId: "u-admin",
-      event: {
+      "2",
+      "u-admin",
+      {
         kind: "chapter_subtitle_updated",
         data: { previousSubtitle: "", nextSubtitle: "深渊回响" },
       },
-      createdAt: now - 1000 * 60 * 220,
-    },
-    {
-      id: `${chapterId}-record-${String(1)}`,
-      chapterId,
-      actorUserId: null,
-      event: { kind: "chapter_created" },
-      createdAt: now - 1000 * 60 * 260,
-    },
+      220,
+    ),
+    workflowRecord(chapterId, "1", null, { kind: "chapter_created" }, 260),
   ];
+}
+
+function workflowRecord(
+  chapterId: string,
+  recordId: string,
+  actorUserId: string | null,
+  event: ChapterWorkflowRecord["event"],
+  ageMinutes: number,
+): ChapterWorkflowRecord {
+  return {
+    id: `${chapterId}-record-${recordId}`,
+    chapterId,
+    actorUserId,
+    event,
+    createdAt: now - 1000 * 60 * ageMinutes,
+  };
 }

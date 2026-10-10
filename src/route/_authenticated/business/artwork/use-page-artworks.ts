@@ -11,6 +11,65 @@ type Loaded = {
   issueCounts: Record<string, number> | null;
   error: string | null;
 };
+
+type LoadArgs = {
+  client: ReturnType<typeof useApiClient>;
+  chapterId: string;
+  request: AbortController;
+  scope: string;
+  key: string;
+  setLoaded: React.Dispatch<React.SetStateAction<Loaded | null>>;
+};
+
+async function loadPageArtworks({
+  client,
+  chapterId,
+  request,
+  scope,
+  key,
+  setLoaded,
+}: LoadArgs): Promise<void> {
+  try {
+    const [result, issues] = await Promise.allSettled([
+      listPageArtworks(client, chapterId, request.signal),
+      loadChapterIssues(client, chapterId, request.signal),
+    ]);
+    if (request.signal.aborted) return;
+    const issueCounts: Record<string, number> | null = issues.status === "fulfilled" ? {} : null;
+    if (issues.status === "fulfilled" && issueCounts) {
+      for (const issue of issues.value) {
+        issueCounts[issue.pageArtworkId] = (issueCounts[issue.pageArtworkId] ?? 0) + 1;
+      }
+    }
+    const errors: string[] = [];
+    if (result.status === "rejected") errors.push(String(result.reason));
+    else if (!result.value.success) errors.push(result.value.error);
+    if (issues.status === "rejected") errors.push(`issue 数量加载失败：${String(issues.reason)}`);
+    setLoaded((old) => ({
+      scope,
+      key,
+      pages:
+        result.status === "fulfilled" && result.value.success
+          ? [...result.value.data].sort((a, b) => a.index - b.index)
+          : old?.scope === scope
+            ? old.pages
+            : [],
+      issueCounts,
+      error: errors.length > 0 ? errors.join("；") : null,
+    }));
+  } catch (error) {
+    if (!request.signal.aborted) {
+      setLoaded((old) => ({
+        scope,
+        key,
+        pages: old?.scope === scope ? old.pages : [],
+        issueCounts: null,
+        error: error instanceof Error ? error.message : String(error),
+      }));
+    }
+  }
+}
+
 export function usePageArtworks(
   chapterId: string | null,
   enabled: boolean,
@@ -33,48 +92,7 @@ export function usePageArtworks(
   useEffect(() => {
     if (!enabled || !chapterId) return;
     const request = new AbortController();
-    async function load(): Promise<void> {
-      try {
-        const [result, issues] = await Promise.allSettled([
-          listPageArtworks(client, chapterId ?? "", request.signal),
-          loadChapterIssues(client, chapterId ?? "", request.signal),
-        ]);
-        if (request.signal.aborted) return;
-        const issueCounts: Record<string, number> | null =
-          issues.status === "fulfilled" ? {} : null;
-        if (issues.status === "fulfilled" && issueCounts) {
-          for (const issue of issues.value)
-            issueCounts[issue.pageArtworkId] = (issueCounts[issue.pageArtworkId] ?? 0) + 1;
-        }
-        const errors: string[] = [];
-        if (result.status === "rejected") errors.push(String(result.reason));
-        else if (!result.value.success) errors.push(result.value.error);
-        if (issues.status === "rejected")
-          errors.push(`issue 数量加载失败：${String(issues.reason)}`);
-        setLoaded((old) => ({
-          scope,
-          key,
-          pages:
-            result.status === "fulfilled" && result.value.success
-              ? [...result.value.data].sort((a, b) => a.index - b.index)
-              : old?.scope === scope
-                ? old.pages
-                : [],
-          issueCounts,
-          error: errors.length > 0 ? errors.join("；") : null,
-        }));
-      } catch (error) {
-        if (!request.signal.aborted)
-          setLoaded((old) => ({
-            scope,
-            key,
-            pages: old?.scope === scope ? old.pages : [],
-            issueCounts: null,
-            error: error instanceof Error ? error.message : String(error),
-          }));
-      }
-    }
-    void load();
+    void loadPageArtworks({ client, chapterId, request, scope, key, setLoaded });
     return () => {
       request.abort();
     };

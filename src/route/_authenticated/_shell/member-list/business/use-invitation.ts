@@ -9,6 +9,36 @@ type Args = {
   onDeleteInvitation: ((invitationId: string) => Promise<Result<void>>) | undefined;
 };
 
+async function loadPendingInvitations(
+  onLoadInvitations: Args["onLoadInvitations"],
+  isCurrent: () => boolean,
+  setPendingInvitations: Dispatch<SetStateAction<InvitationInfo[]>>,
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"],
+): Promise<void> {
+  const result = await onLoadInvitations(0, 100);
+  if (!isCurrent()) {
+    return;
+  }
+  if (!result.success) {
+    showLocalApiFailure(result, showToast);
+    return;
+  }
+  setPendingInvitations(result.data);
+}
+
+async function refreshPendingInvitations(
+  onLoadInvitations: Args["onLoadInvitations"],
+  setPendingInvitations: Dispatch<SetStateAction<InvitationInfo[]>>,
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"],
+): Promise<void> {
+  const result = await onLoadInvitations(0, 100);
+  if (!result.success) {
+    showLocalApiFailure(result, showToast);
+    return;
+  }
+  setPendingInvitations(result.data);
+}
+
 export function useInvitation({ onLoadInvitations, onDeleteInvitation }: Args): {
   pendingInvitations: InvitationInfo[];
   pendingDeleteId: string | null;
@@ -20,27 +50,19 @@ export function useInvitation({ onLoadInvitations, onDeleteInvitation }: Args): 
   const [pendingInvitations, setPendingInvitations] = useState<InvitationInfo[]>([]);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-  const refreshInvitations = useCallback(async (): Promise<void> => {
-    const result = await onLoadInvitations(0, 100);
-    if (!result.success) {
-      showLocalApiFailure(result, showToast);
-      return;
-    }
-    setPendingInvitations(result.data);
-  }, [onLoadInvitations, showToast]);
+  const refreshInvitations = useCallback(
+    () => refreshPendingInvitations(onLoadInvitations, setPendingInvitations, showToast),
+    [onLoadInvitations, showToast],
+  );
 
   useEffect(() => {
     let isCurrent = true;
-    async function loadInvitations(): Promise<void> {
-      const result = await onLoadInvitations(0, 100);
-      if (!isCurrent) return;
-      if (!result.success) {
-        showLocalApiFailure(result, showToast);
-        return;
-      }
-      setPendingInvitations(result.data);
-    }
-    void loadInvitations();
+    void loadPendingInvitations(
+      onLoadInvitations,
+      () => isCurrent,
+      setPendingInvitations,
+      showToast,
+    );
     return () => {
       isCurrent = false;
     };

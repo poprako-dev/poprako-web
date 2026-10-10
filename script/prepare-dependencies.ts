@@ -47,6 +47,12 @@ const LIBLZMA_PREPARED = 'from "../../lib/wasm/types.js"';
 
 type PreparationMode = "apply" | "check";
 type PreparationResult = { path: string; changed: boolean; hash: string };
+type DependencyTarget = {
+  path: string;
+  label: string;
+  prepare: (content: string) => string;
+  expectedHash: string;
+};
 
 export function declarationHash(content: string): string {
   return createHash("sha256").update(content).digest("hex");
@@ -166,7 +172,17 @@ export async function prepareDependencies(
   root: string,
   mode: PreparationMode,
 ): Promise<PreparationResult> {
-  const targets = [
+  const results: PreparationResult[] = [];
+  for (const target of await dependencyTargets(root)) {
+    results.push(await prepareTarget(target, mode));
+  }
+  const [storybook] = results;
+  if (!storybook) throw new Error("No dependency declarations were prepared.");
+  return storybook;
+}
+
+async function dependencyTargets(root: string): Promise<DependencyTarget[]> {
+  return [
     {
       path: await findDeclaration(root),
       label: "Storybook",
@@ -214,36 +230,38 @@ export async function prepareDependencies(
       expectedHash: LIBLZMA_PREPARED_HASH,
     },
   ];
-  const results: PreparationResult[] = [];
-  for (const target of targets) {
-    const content = await readFile(target.path, "utf8");
-    if (mode === "check") {
-      const hash = declarationHash(content);
-      if (hash !== target.expectedHash) {
-        throw new Error(
-          `${target.label} declarations are not prepared; run deno task prepare:dependencies.`,
-        );
-      }
-      results.push({ path: target.path, changed: false, hash });
-      continue;
-    }
-    const prepared = target.prepare(content);
-    if (prepared === content) {
-      results.push({ path: target.path, changed: false, hash: target.expectedHash });
-      continue;
-    }
-    const temporary = `${target.path}.poprako-${randomUUID()}.tmp`;
-    try {
-      await writeFile(temporary, prepared, { encoding: "utf8", flag: "wx" });
-      await rename(temporary, target.path);
-    } finally {
-      await rm(temporary, { force: true });
-    }
-    results.push({ path: target.path, changed: true, hash: target.expectedHash });
+}
+
+async function prepareTarget(
+  target: DependencyTarget,
+  mode: PreparationMode,
+): Promise<PreparationResult> {
+  const content = await readFile(target.path, "utf8");
+  if (mode === "check") return verifyPreparedTarget(target, content);
+  const prepared = target.prepare(content);
+  if (prepared === content) return { path: target.path, changed: false, hash: target.expectedHash };
+  await writePreparedTarget(target.path, prepared);
+  return { path: target.path, changed: true, hash: target.expectedHash };
+}
+
+function verifyPreparedTarget(target: DependencyTarget, content: string): PreparationResult {
+  const hash = declarationHash(content);
+  if (hash !== target.expectedHash) {
+    throw new Error(
+      `${target.label} declarations are not prepared; run deno task prepare:dependencies.`,
+    );
   }
-  const [storybook] = results;
-  if (!storybook) throw new Error("No dependency declarations were prepared.");
-  return storybook;
+  return { path: target.path, changed: false, hash };
+}
+
+async function writePreparedTarget(path: string, content: string): Promise<void> {
+  const temporary = `${path}.poprako-${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporary, content, { encoding: "utf8", flag: "wx" });
+    await rename(temporary, path);
+  } finally {
+    await rm(temporary, { force: true });
+  }
 }
 
 if (

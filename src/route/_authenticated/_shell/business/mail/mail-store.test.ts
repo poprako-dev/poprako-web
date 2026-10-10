@@ -1,5 +1,5 @@
 import { requestAddress } from "@/test-resource/api-client";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { describe, afterEach, expect, test, vi } from "vitest";
 import { createApiClient } from "@/api/client";
 import { useAppStore } from "@/route/business/session/session-store";
 import { useMailStore } from "@/route/_authenticated/_shell/business/mail/mail-store";
@@ -28,7 +28,6 @@ describe("system mail state and session boundary", () => {
   afterEach(() => {
     useAppStore.getState().setAccessToken(null);
   });
-
   test("loads pages and read state through one store controller", async () => {
     useAppStore.getState().setAccessToken("token-a");
     const fetchImpl = vi
@@ -57,7 +56,12 @@ describe("system mail state and session boundary", () => {
     expect(markReadResult.success).toBe(true);
     expect(useMailStore.getState().mails[0]?.isRead).toBe(true);
   });
+});
 
+describe("system mail state and session boundary", () => {
+  afterEach(() => {
+    useAppStore.getState().setAccessToken(null);
+  });
   test("keeps failed loading distinct from an empty mailbox and supports retry", async () => {
     useAppStore.getState().setAccessToken("token-a");
     const client = makeClient(
@@ -84,7 +88,12 @@ describe("system mail state and session boundary", () => {
       hasMore: false,
     });
   });
+});
 
+describe("system mail state and session boundary", () => {
+  afterEach(() => {
+    useAppStore.getState().setAccessToken(null);
+  });
   test("rejects late API completion from the previous login generation", async () => {
     useAppStore.getState().setAccessToken("token-a");
     let resolveResponse: ((response: Response) => void) | undefined;
@@ -107,7 +116,6 @@ describe("system mail state and session boundary", () => {
     });
   });
 });
-
 test("pagination preserves a read mutation completed while the next page was pending", async () => {
   useAppStore.getState().setAccessToken("pagination-read-race");
   let finishPage: (response: Response) => void = () => {

@@ -22,6 +22,104 @@ type Props = {
   uploadError?: string | undefined;
 };
 
+type PageThumbnailProps = Pick<Props, "page"> & { isPending: boolean };
+
+function PageThumbnail({ page, isPending }: PageThumbnailProps): JSX.Element {
+  return page.imageThumbnailUrl ? (
+    <LazyImage
+      src={page.imageThumbnailUrl}
+      alt={`Page ${String(page.index)}`}
+      className={clsx("absolute inset-0 w-full h-full object-cover", isPending && "opacity-60")}
+    />
+  ) : (
+    <div
+      className={clsx(
+        "absolute inset-0 flex flex-col items-center justify-center gap-1.5",
+        "bg-surface-white",
+      )}
+    >
+      <div aria-hidden className="absolute inset-0 bg-surface-slate-100 animate-pulse" />
+      <Upload className="relative w-4 h-4 text-icon-muted-cool" />
+      <span className="relative text-[10px] font-bold text-text-muted-cool tracking-tighter">
+        P{page.index + 1}
+      </span>
+    </div>
+  );
+}
+
+function PageUploadProgress({
+  progress,
+  status,
+}: {
+  progress: number;
+  status: PageUploadTaskStatus | undefined;
+}): JSX.Element {
+  return (
+    <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/25">
+      <svg className="h-10 w-10 -rotate-90 rounded-full bg-image-label-overlay" viewBox="0 0 40 40">
+        <circle
+          cx="20"
+          cy="20"
+          r="16"
+          fill="none"
+          stroke="var(--image-label-foreground)"
+          strokeWidth="3"
+          opacity="0.3"
+        />
+        <circle
+          cx="20"
+          cy="20"
+          r="16"
+          fill="none"
+          stroke="var(--image-label-foreground)"
+          strokeWidth="3"
+          opacity="0.9"
+          strokeDasharray={100.531}
+          strokeDashoffset={100.531 * (1 - progress / 100)}
+          strokeLinecap="round"
+          className="transition-all duration-300 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[11px] font-bold text-image-label-foreground">
+        {status === "confirming" ? "确认中" : `${String(progress)}%`}
+      </span>
+    </div>
+  );
+}
+
+function PageIndexBadge({ index }: { index: number }): JSX.Element {
+  return (
+    <div
+      className={clsx(
+        "absolute top-2 left-2 z-10",
+        "bg-image-label-overlay px-1.5 py-1 rounded",
+        "flex items-center justify-center",
+      )}
+    >
+      <span
+        data-page-index={index}
+        className="text-[10px] font-bold text-image-label-foreground leading-none"
+      >
+        P{index + 1}
+      </span>
+    </div>
+  );
+}
+
+function PageStatusBadge({ statusClass }: { statusClass: string }): JSX.Element {
+  return (
+    <div
+      className={clsx(
+        "absolute top-2 right-2 z-10",
+        "bg-image-label-overlay px-1.5 py-1 rounded",
+        "flex items-center justify-center",
+      )}
+    >
+      <div className={clsx("w-2.5 h-2.5 rounded-full shadow-sm", statusClass)} />
+    </div>
+  );
+}
+
 export function PageCard({
   showTranslationProgress = true,
   page,
@@ -97,55 +195,13 @@ export function PageCard({
       )}
     >
       {/* Index badge — top left */}
-      <div
-        className={clsx(
-          "absolute top-2 left-2 z-10",
-          "bg-image-label-overlay px-1.5 py-1 rounded",
-          "flex items-center justify-center",
-        )}
-      >
-        <span
-          data-page-index={page.index}
-          className="text-[10px] font-bold text-image-label-foreground leading-none"
-        >
-          P{page.index + 1}
-        </span>
-      </div>
+      <PageIndexBadge index={page.index} />
 
       {/* Status indicator — top right */}
-      {!isPending && showTranslationProgress && (
-        <div
-          className={clsx(
-            "absolute top-2 right-2 z-10",
-            "bg-image-label-overlay px-1.5 py-1 rounded",
-            "flex items-center justify-center",
-          )}
-        >
-          <div className={clsx("w-2.5 h-2.5 rounded-full shadow-sm", statusClass)} />
-        </div>
-      )}
+      {!isPending && showTranslationProgress && <PageStatusBadge statusClass={statusClass} />}
 
       {/* Image */}
-      {page.imageThumbnailUrl ? (
-        <LazyImage
-          src={page.imageThumbnailUrl}
-          alt={`Page ${String(page.index)}`}
-          className={clsx("absolute inset-0 w-full h-full object-cover", isPending && "opacity-60")}
-        />
-      ) : (
-        <div
-          className={clsx(
-            "absolute inset-0 flex flex-col items-center justify-center gap-1.5",
-            "bg-surface-white",
-          )}
-        >
-          <div aria-hidden className="absolute inset-0 bg-surface-slate-100 animate-pulse" />
-          <Upload className="relative w-4 h-4 text-icon-muted-cool" />
-          <span className="relative text-[10px] font-bold text-text-muted-cool tracking-tighter">
-            P{page.index + 1}
-          </span>
-        </div>
-      )}
+      <PageThumbnail page={page} isPending={isPending} />
 
       {/* Hover dim overlay */}
       <div
@@ -157,38 +213,7 @@ export function PageCard({
 
       {clampedUploadProgress !== null &&
         (clampedUploadProgress < 100 || uploadStatus === "confirming") && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/25">
-            <svg
-              className="h-10 w-10 -rotate-90 rounded-full bg-image-label-overlay"
-              viewBox="0 0 40 40"
-            >
-              <circle
-                cx="20"
-                cy="20"
-                r="16"
-                fill="none"
-                stroke="var(--image-label-foreground)"
-                strokeWidth="3"
-                opacity="0.3"
-              />
-              <circle
-                cx="20"
-                cy="20"
-                r="16"
-                fill="none"
-                stroke="var(--image-label-foreground)"
-                strokeWidth="3"
-                opacity="0.9"
-                strokeDasharray={100.531}
-                strokeDashoffset={100.531 * (1 - clampedUploadProgress / 100)}
-                strokeLinecap="round"
-                className="transition-all duration-300 ease-out"
-              />
-            </svg>
-            <span className="absolute text-[11px] font-bold text-image-label-foreground">
-              {uploadStatus === "confirming" ? "确认中" : `${String(clampedUploadProgress)}%`}
-            </span>
-          </div>
+          <PageUploadProgress progress={clampedUploadProgress} status={uploadStatus} />
         )}
 
       {uploadStatus === "failed" && uploadError && (

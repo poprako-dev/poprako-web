@@ -121,17 +121,22 @@ void test("checker rejects common business to route imports and dynamic generate
       ],
       root,
     );
-    assert.equal(findings.length, 5, JSON.stringify(findings));
-    assert.match(findings.map((finding) => finding.rule).join(" "), /dependency\.dynamic/u);
-    assert.match(findings.map((finding) => finding.rule).join(" "), /dependency\.default-import/u);
-    assert.match(
-      findings[0]?.message ?? "",
-      /src\/route\/business\/request\.ts → src\/route\/alpha\/Index\.tsx/u,
-    );
+    assertCommonBusinessFindings(findings);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+function assertCommonBusinessFindings(findings: ReturnType<typeof inspectDependencyEntries>): void {
+  assert.equal(findings.length, 5, JSON.stringify(findings));
+  const rules = findings.map((finding) => finding.rule).join(" ");
+  assert.match(rules, /dependency\.dynamic/u);
+  assert.match(rules, /dependency\.default-import/u);
+  assert.match(
+    findings[0]?.message ?? "",
+    /src\/route\/business\/request\.ts → src\/route\/alpha\/Index\.tsx/u,
+  );
+}
 
 void test("page routes retain ownership and API type imports cannot depend on routes", async () => {
   const root = await mkdtemp(join(tmpdir(), "poprako-api-direction-"));

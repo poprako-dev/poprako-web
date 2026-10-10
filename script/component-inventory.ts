@@ -234,8 +234,19 @@ export function buildComponentInventory(): {
   const rootNames = [...new Set([...parsed.fileNames, ...sourceFiles])];
   const program = ts.createProgram({ rootNames, options: parsed.options });
   const checker = program.getTypeChecker();
-  const components: ComponentEntry[] = [];
+  const components = collectComponentEntries(program, checker);
+  components.sort(
+    (left, right) => compareText(left.file, right.file) || compareText(left.name, right.name),
+  );
+  return {
+    generatedFrom: "tsconfig.storybook.json and all src TypeScript files",
+    manualReviewComplete: false,
+    components,
+  };
+}
 
+function collectComponentEntries(program: ts.Program, checker: ts.TypeChecker): ComponentEntry[] {
+  const components: ComponentEntry[] = [];
   for (const source of program.getSourceFiles()) {
     if (!source.fileName.includes(`${sep}src${sep}`)) continue;
     if (
@@ -263,15 +274,7 @@ export function buildComponentInventory(): {
       });
     }
   }
-
-  components.sort(
-    (left, right) => compareText(left.file, right.file) || compareText(left.name, right.name),
-  );
-  return {
-    generatedFrom: "tsconfig.storybook.json and all src TypeScript files",
-    manualReviewComplete: false,
-    components,
-  };
+  return components;
 }
 
 async function main(): Promise<void> {

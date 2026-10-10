@@ -28,6 +28,40 @@ function Fixture(): React.ReactElement {
   );
 }
 
+function artworkIssueData(issuePage: string): unknown {
+  return toSnakeCase(
+    [0, 1].map((index) => ({
+      id: String(index),
+      pageArtworkId: issuePage,
+      index,
+      variant: "文字",
+      layerName: null,
+      rect: null,
+      note: "修正",
+    })),
+  );
+}
+
+function artworkPageData(): unknown {
+  return toSnakeCase(
+    ["first", "second"].map((id, index) => ({
+      id,
+      chapterId: "chapter",
+      index,
+      rawIdent: `${id}.psd`,
+      imageUrl: "/preview.webp",
+      imageOptimizedUrl: null,
+      imageThumbnailUrl: null,
+      imageHash: "hash",
+      ext: "webp",
+      imageVersion: 1,
+      imageUploaded: true,
+      createdAt: 0,
+      updatedAt: 0,
+    })),
+  );
+}
+
 function setup(failIssues = false): { setIssuePage: (id: string) => void } {
   let issuePage = "second";
   const client = createApiClient({
@@ -44,45 +78,9 @@ function setup(failIssues = false): { setIssuePage: (id: string) => void } {
       if (url.endsWith("/issues")) {
         if (failIssues)
           return Promise.resolve(Response.json({ code: 1, message: "统计失败" }, { status: 503 }));
-        return Promise.resolve(
-          Response.json({
-            code: 0,
-            data: toSnakeCase(
-              [0, 1].map((index) => ({
-                id: String(index),
-                pageArtworkId: issuePage,
-                index,
-                variant: "文字",
-                layerName: null,
-                rect: null,
-                note: "修正",
-              })),
-            ),
-          }),
-        );
+        return Promise.resolve(Response.json({ code: 0, data: artworkIssueData(issuePage) }));
       }
-      return Promise.resolve(
-        Response.json({
-          code: 0,
-          data: toSnakeCase(
-            ["first", "second"].map((id, index) => ({
-              id,
-              chapterId: "chapter",
-              index,
-              rawIdent: `${id}.psd`,
-              imageUrl: "/preview.webp",
-              imageOptimizedUrl: null,
-              imageThumbnailUrl: null,
-              imageHash: "hash",
-              ext: "webp",
-              imageVersion: 1,
-              imageUploaded: true,
-              createdAt: 0,
-              updatedAt: 0,
-            })),
-          ),
-        }),
-      );
+      return Promise.resolve(Response.json({ code: 0, data: artworkPageData() }));
     },
   });
   render(

@@ -53,106 +53,144 @@ function jobOptions(options: ArchiveOptions): Pick<WorkerJob, "preset" | "maxByt
   };
 }
 
+class ArchiveSession {
+  private worker: Worker | undefined;
+  private isFinished = false;
+  private pendingPull: (() => void) | undefined;
+  private readonly inputAbort = new AbortController();
+  private readonly job: WorkerJob;
+  private readonly options: ArchiveOptions;
+  private readonly controller: ReadableStreamDefaultController<Uint8Array>;
+
+  constructor(
+    job: WorkerJob,
+    options: ArchiveOptions,
+    controller: ReadableStreamDefaultController<Uint8Array>,
+  ) {
+    this.job = job;
+    this.options = options;
+    this.controller = controller;
+  }
+
+  cleanup(): void {
+    this.isFinished = true;
+    this.worker?.terminate();
+    this.options.signal?.removeEventListener("abort", this.abort);
+    this.inputAbort.abort();
+    this.pendingPull?.();
+  }
+
+  private fail(reason: unknown): void {
+    if (this.isFinished) {
+      return;
+    }
+    this.controller.error(reason);
+    this.cleanup();
+  }
+
+  private readonly abort = (): void => {
+    this.fail(this.options.signal?.reason ?? new DOMException("Archive cancelled", "AbortError"));
+  };
+
+  start(): void {
+    if (this.options.signal?.aborted) {
+      void this.job.source?.cancel(this.options.signal.reason).catch(() => {
+        /* Already errored. */
+      });
+      this.abort();
+      return;
+    }
+    this.options.signal?.addEventListener("abort", this.abort, { once: true });
+    try {
+      this.worker = new Worker(new URL("./compress/archive-worker.ts", import.meta.url), {
+        type: "module",
+      });
+      this.listen(this.worker);
+      // Keep an abortable bridge on the caller's side: Worker termination alone
+      // does not reliably cancel a transferred fetch stream.
+      if (this.job.source) {
+        this.job.source = this.job.source.pipeThrough(
+          new TransformStream<Uint8Array, Uint8Array>(),
+          {
+            signal: this.inputAbort.signal,
+          },
+        );
+      }
+      this.worker.postMessage(this.job, this.job.source ? [this.job.source] : []);
+    } catch (error) {
+      void this.job.source?.cancel(error).catch(() => {
+        /* Bridge may already own the source. */
+      });
+      this.fail(error);
+    }
+  }
+
+  private listen(worker: Worker): void {
+    worker.addEventListener("error", (event) => {
+      this.fail(new Error(event.message));
+    });
+    worker.addEventListener("messageerror", () => {
+      this.fail(new Error("Archive worker IPC error"));
+    });
+    worker.addEventListener("message", (event: MessageEvent<WorkerReply>) => {
+      this.receive(event.data);
+    });
+  }
+
+  private receive(message: WorkerReply): void {
+    if (this.isFinished) {
+      return;
+    }
+    switch (message.type) {
+      case "chunk": {
+        this.controller.enqueue(message.chunk);
+        this.pendingPull?.();
+        this.pendingPull = undefined;
+        break;
+      }
+      case "progress": {
+        try {
+          this.options.onProgress?.(message.progress);
+        } catch (error) {
+          this.fail(error);
+        }
+        break;
+      }
+      case "error": {
+        this.fail(new Error(message.message));
+        break;
+      }
+      case "done": {
+        this.controller.close();
+        this.cleanup();
+      }
+    }
+  }
+
+  pull(): Promise<void> | undefined {
+    if (this.isFinished) {
+      return;
+    }
+    return new Promise<void>((resolve) => {
+      this.pendingPull = resolve;
+      this.worker?.postMessage("pull");
+    });
+  }
+}
+
 function startArchive(job: WorkerJob, options: ArchiveOptions): ReadableStream<Uint8Array> {
-  let worker: Worker | undefined;
-  let isFinished = false;
-  let pendingPull: (() => void) | undefined;
-  const inputAbort = new AbortController();
-  function cleanup(): void {
-    isFinished = true;
-    worker?.terminate();
-    options.signal?.removeEventListener("abort", abort);
-    inputAbort.abort();
-    pendingPull?.();
-  }
-  let fail: (reason: unknown) => void;
-  function abort(): void {
-    fail(options.signal?.reason ?? new DOMException("Archive cancelled", "AbortError"));
-  }
+  let session: ArchiveSession;
   return new ReadableStream<Uint8Array>(
     {
       start(controller) {
-        fail = (reason) => {
-          if (isFinished) {
-            return;
-          }
-          controller.error(reason);
-          cleanup();
-        };
-        if (options.signal?.aborted) {
-          void job.source?.cancel(options.signal.reason).catch(() => {
-            /* Already errored. */
-          });
-          abort();
-          return;
-        }
-        options.signal?.addEventListener("abort", abort, { once: true });
-        try {
-          worker = new Worker(new URL("./compress/archive-worker.ts", import.meta.url), {
-            type: "module",
-          });
-          worker.addEventListener("error", (event) => {
-            fail(new Error(event.message));
-          });
-          worker.addEventListener("messageerror", () => {
-            fail(new Error("Archive worker IPC error"));
-          });
-          worker.addEventListener("message", (event: MessageEvent<WorkerReply>) => {
-            if (isFinished) {
-              return;
-            }
-            const message = event.data;
-            switch (message.type) {
-              case "chunk": {
-                controller.enqueue(message.chunk);
-                pendingPull?.();
-                pendingPull = undefined;
-                break;
-              }
-              case "progress": {
-                try {
-                  options.onProgress?.(message.progress);
-                } catch (error) {
-                  fail(error);
-                }
-                break;
-              }
-              case "error": {
-                fail(new Error(message.message));
-                break;
-              }
-              case "done": {
-                controller.close();
-                cleanup();
-              }
-            }
-          });
-          // Keep an abortable bridge on the caller's side: Worker termination alone
-          // does not reliably cancel a transferred fetch stream.
-          if (job.source) {
-            job.source = job.source.pipeThrough(new TransformStream<Uint8Array, Uint8Array>(), {
-              signal: inputAbort.signal,
-            });
-          }
-          worker.postMessage(job, job.source ? [job.source] : []);
-        } catch (error) {
-          void job.source?.cancel(error).catch(() => {
-            /* Bridge may already own the source. */
-          });
-          fail(error);
-        }
+        session = new ArchiveSession(job, options, controller);
+        session.start();
       },
       pull() {
-        if (isFinished) {
-          return;
-        }
-        return new Promise<void>((resolve) => {
-          pendingPull = resolve;
-          worker?.postMessage("pull");
-        });
+        return session.pull();
       },
       cancel() {
-        cleanup();
+        session.cleanup();
       },
     },
     { highWaterMark: 0 },

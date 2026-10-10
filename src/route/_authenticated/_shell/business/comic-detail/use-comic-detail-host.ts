@@ -5,6 +5,7 @@ import { useReadySession } from "@/route/business/session/ready-session";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import type { MemberInfo } from "@/route/business/identity/member";
 import type { Result } from "@/shared/utility/result";
+import type { DetailContract } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
 import {
   type AssignableMemberArgs,
   type ComicDetailData,
@@ -79,13 +80,7 @@ export function useComicDetailHost({
   const [loadedDetail, setLoadedDetail] = useState<LoadedDetail | null>(null);
   const [loadRevision, setLoadRevision] = useState(0);
   const { memberInfos, userInfo } = useReadySession();
-  const detailMode = isComicDetailMode(search.detailMode)
-    ? search.detailMode
-    : readComicDetailMode(userInfo.id);
-  useEffect(() => {
-    if (search.comicId && isComicDetailMode(search.detailMode))
-      saveComicDetailMode(userInfo.id, search.detailMode);
-  }, [search.comicId, search.detailMode, userInfo.id]);
+  const detailMode = usePreferredDetailMode(search, userInfo.id);
   const urlComicId = search.comicId ?? null;
   const urlChapterId = search.chapterId ?? null;
   const result = loadedDetail?.comicId === urlComicId ? loadedDetail.result : undefined;
@@ -93,99 +88,16 @@ export function useComicDetailHost({
   const selectedComic = detail?.comicInfo ?? null;
   const detailActiveMember = selectedComic ? findComicMember(selectedComic, memberInfos) : null;
 
-  const setComicDetailSearchParams = useCallback(
-    (comicId: string | null, chapterId: string | null, mode?: ComicDetailMode) => {
-      onChangeSearch(
-        comicId,
-        comicId ? chapterId : null,
-        comicId ? (mode ?? detailMode) : undefined,
-      );
-    },
-    [onChangeSearch, detailMode],
+  const setComicDetailSearchParams = useComicDetailSearchParams(onChangeSearch, detailMode);
+  const { openComicDetail, clearComicDetail, retryComicDetail } = useComicDetailSearchActions(
+    setComicDetailSearchParams,
+    setLoadedDetail,
+    setLoadRevision,
+    userInfo.id,
   );
-
-  const openComicDetail = useCallback(
-    (comicId: string, chapterId?: string | null, mode?: ComicDetailMode) => {
-      const nextMode = mode ?? readComicDetailMode(userInfo.id);
-      saveComicDetailMode(userInfo.id, nextMode);
-      setComicDetailSearchParams(comicId, chapterId ?? null, nextMode);
-    },
-    [setComicDetailSearchParams, userInfo.id],
-  );
-
-  const clearComicDetail = useCallback(() => {
-    setLoadedDetail(null);
-    setComicDetailSearchParams(null, null);
-  }, [setComicDetailSearchParams]);
-
-  const retryComicDetail = useCallback(() => {
-    setLoadedDetail(null);
-    setLoadRevision((revision) => revision + 1);
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
-    setLoadedDetail(null);
-    if (!urlComicId) return;
-    let isCancelled = false;
-
-    const loadDetail = async (): Promise<void> => {
-      try {
-        const nextResult = await loadComicDetail(client, urlComicId);
-        if (isCancelled) return;
-        setLoadedDetail({ comicId: urlComicId, result: nextResult });
-        if (!nextResult.success) {
-          console.error("[ComicDetail] 加载详情失败:", nextResult.error);
-          showLocalApiFailure(nextResult, showToast);
-        }
-      } catch (error) {
-        if (isCancelled) return;
-        console.error("[ComicDetail] 加载详情异常:", error);
-        setLoadedDetail({
-          comicId: urlComicId,
-          result: { success: false, error: "加载漫画详情失败，请重试" },
-        });
-        showLocalCaughtError(error, showToast, "加载漫画详情失败");
-      }
-    };
-    void loadDetail();
-    return () => {
-      isCancelled = true;
-    };
-  }, [client, loadRevision, showToast, urlComicId]);
-
-  const loadAssignableMembers = useCallback(
-    (_chapterId: string, args: AssignableMemberArgs): Promise<Result<MemberInfo[]>> => {
-      if (!selectedComic) {
-        return Promise.resolve({
-          success: false,
-          error: "漫画详情尚未加载完成",
-        });
-      }
-      return listComicMembers(client, selectedComic, args);
-    },
-    [client, selectedComic],
-  );
-
-  const navigateToWorkbench = useCallback(
-    (
-      chapterId: string,
-      pageId: string,
-      isReadOnly?: boolean,
-      mode: ComicDetailMode = "translator",
-    ): void => {
-      if (!urlComicId) return;
-      onNavigateToWorkbench({
-        returnTo,
-        comicId: urlComicId,
-        chapterId,
-        pageId,
-        readOnly: mode === "reviewer" || (isReadOnly ?? false),
-        mode,
-      });
-    },
-    [onNavigateToWorkbench, returnTo, urlComicId],
-  );
+  useComicDetailLoader(client, urlComicId, loadRevision, setLoadedDetail, showToast);
+  const loadAssignableMembers = useAssignableMemberLoader(client, selectedComic);
+  const navigateToWorkbench = useWorkbenchNavigator(onNavigateToWorkbench, returnTo, urlComicId);
 
   return {
     selectedComic,
@@ -205,4 +117,129 @@ export function useComicDetailHost({
     retryComicDetail,
     navigateToWorkbench,
   };
+}
+
+function usePreferredDetailMode(search: ComicDetailSearch, userId: string): ComicDetailMode {
+  const detailMode = isComicDetailMode(search.detailMode)
+    ? search.detailMode
+    : readComicDetailMode(userId);
+  useEffect(() => {
+    if (search.comicId && isComicDetailMode(search.detailMode))
+      saveComicDetailMode(userId, search.detailMode);
+  }, [search.comicId, search.detailMode, userId]);
+  return detailMode;
+}
+
+function useComicDetailSearchParams(
+  onChangeSearch: Args["onChangeSearch"],
+  detailMode: ComicDetailMode,
+): Args["onChangeSearch"] {
+  return useCallback(
+    (comicId: string | null, chapterId: string | null, mode?: ComicDetailMode) => {
+      onChangeSearch(
+        comicId,
+        comicId ? chapterId : null,
+        comicId ? (mode ?? detailMode) : undefined,
+      );
+    },
+    [onChangeSearch, detailMode],
+  );
+}
+
+function useComicDetailSearchActions(
+  setSearchParams: ReturnType<typeof useComicDetailSearchParams>,
+  setLoadedDetail: (value: LoadedDetail | null) => void,
+  setLoadRevision: (updater: (revision: number) => number) => void,
+  userId: string,
+): Pick<ComicDetailHostState, "openComicDetail" | "clearComicDetail" | "retryComicDetail"> {
+  const openComicDetail = useCallback(
+    (comicId: string, chapterId?: string | null, mode?: ComicDetailMode) => {
+      const nextMode = mode ?? readComicDetailMode(userId);
+      saveComicDetailMode(userId, nextMode);
+      setSearchParams(comicId, chapterId ?? null, nextMode);
+    },
+    [setSearchParams, userId],
+  );
+  const clearComicDetail = useCallback(() => {
+    setLoadedDetail(null);
+    setSearchParams(null, null);
+  }, [setLoadedDetail, setSearchParams]);
+  const retryComicDetail = useCallback(() => {
+    setLoadedDetail(null);
+    setLoadRevision((revision) => revision + 1);
+  }, [setLoadedDetail, setLoadRevision]);
+  return { openComicDetail, clearComicDetail, retryComicDetail };
+}
+
+function useComicDetailLoader(
+  client: ReturnType<typeof useApiClient>,
+  comicId: string | null,
+  revision: number,
+  setLoadedDetail: (detail: LoadedDetail | null) => void,
+  showToast: Args["showToast"],
+): void {
+  useEffect(() => {
+    setLoadedDetail(null);
+    if (!comicId) return;
+    let isCancelled = false;
+    const loadDetail = async (): Promise<void> => {
+      try {
+        const result = await loadComicDetail(client, comicId);
+        if (isCancelled) return;
+        setLoadedDetail({ comicId, result });
+        if (!result.success) {
+          console.error("[ComicDetail] 加载详情失败:", result.error);
+          showLocalApiFailure(result, showToast);
+        }
+      } catch (error) {
+        if (isCancelled) return;
+        console.error("[ComicDetail] 加载详情异常:", error);
+        setLoadedDetail({ comicId, result: { success: false, error: "加载漫画详情失败，请重试" } });
+        showLocalCaughtError(error, showToast, "加载漫画详情失败");
+      }
+    };
+    void loadDetail();
+    return () => {
+      isCancelled = true;
+    };
+  }, [client, revision, showToast, comicId, setLoadedDetail]);
+}
+
+function useAssignableMemberLoader(
+  client: ReturnType<typeof useApiClient>,
+  comic: ComicDetailData["comicInfo"] | null,
+): NonNullable<DetailContract["onLoadAssignableMembers"]> {
+  return useCallback(
+    (_chapterId: string, args: AssignableMemberArgs): Promise<Result<MemberInfo[]>> => {
+      if (!comic) return Promise.resolve({ success: false, error: "漫画详情尚未加载完成" });
+      return listComicMembers(client, comic, args);
+    },
+    [client, comic],
+  );
+}
+
+function useWorkbenchNavigator(
+  navigate: Args["onNavigateToWorkbench"],
+  returnTo: Args["returnTo"],
+  comicId: string | null,
+): ComicDetailHostState["navigateToWorkbench"] {
+  return useCallback(
+    (
+      chapterId: string,
+      pageId: string,
+      isReadOnly?: boolean,
+      mode: ComicDetailMode = "translator",
+    ): void => {
+      if (!comicId) return;
+      navigate({
+        returnTo,
+        comicId,
+        chapterId,
+        pageId,
+        readOnly: mode === "reviewer" || (isReadOnly ?? false),
+        mode,
+      });
+    },
+    [navigate, returnTo, comicId],
+  );
 }

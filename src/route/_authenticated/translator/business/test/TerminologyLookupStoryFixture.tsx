@@ -74,16 +74,9 @@ function filterPage<T>(items: T[], offset: number, limit: number): T[] {
   return items.slice(offset, offset + limit);
 }
 
-export function createDataSource({
-  termbaseItems = termbases,
-  termItems = terms,
-}: {
-  termbaseItems?: TermbaseInfo[] | undefined;
-  termItems?: TermInfo[] | undefined;
-} = {}): TerminologyDataSource {
-  const currentTermbases = [...termbaseItems];
-  const currentTerms = [...termItems];
-
+function createTermbaseReaders(
+  currentTermbases: TermbaseInfo[],
+): Pick<TerminologyDataSource, "listTermbases"> {
   return {
     // eslint-disable-next-line @typescript-eslint/require-await
     listTermbases: async ({ fuzzyName, offset, limit }) => {
@@ -93,6 +86,11 @@ export function createDataSource({
         : currentTermbases;
       return { success: true, data: filterPage(filtered, offset, limit) };
     },
+  };
+}
+
+function createTermReaders(currentTerms: TermInfo[]): Pick<TerminologyDataSource, "listTerms"> {
+  return {
     // eslint-disable-next-line @typescript-eslint/require-await
     listTerms: async ({ fuzzySource, offset, limit }) => {
       const query = fuzzySource?.toLocaleLowerCase();
@@ -101,6 +99,13 @@ export function createDataSource({
         : currentTerms;
       return { success: true, data: filterPage(filtered, offset, limit) };
     },
+  };
+}
+
+function createTermbaseWriters(
+  currentTermbases: TermbaseInfo[],
+): Pick<TerminologyDataSource, "createTermbase" | "updateTermbase" | "deleteTermbase"> {
+  return {
     // eslint-disable-next-line @typescript-eslint/require-await
     createTermbase: async (args) => {
       const id = `termbase-created-${String(currentTermbases.length + 1)}`;
@@ -119,9 +124,7 @@ export function createDataSource({
     // eslint-disable-next-line @typescript-eslint/require-await
     updateTermbase: async (id, args) => {
       const item = currentTermbases.find((termbase) => termbase.id === id);
-      if (item) {
-        Object.assign(item, args, { description: args.description ?? "" });
-      }
+      if (item) Object.assign(item, args, { description: args.description ?? "" });
       return { success: true, data: undefined };
     },
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -130,6 +133,13 @@ export function createDataSource({
       if (index !== -1) currentTermbases.splice(index, 1);
       return { success: true, data: undefined };
     },
+  };
+}
+
+function createTermWriters(
+  currentTerms: TermInfo[],
+): Pick<TerminologyDataSource, "createTerm" | "updateTerm" | "deleteTerm"> {
+  return {
     // eslint-disable-next-line @typescript-eslint/require-await
     createTerm: async (args) => {
       const id = `term-created-${String(currentTerms.length + 1)}`;
@@ -157,6 +167,24 @@ export function createDataSource({
       if (index !== -1) currentTerms.splice(index, 1);
       return { success: true, data: undefined };
     },
+  };
+}
+
+export function createDataSource({
+  termbaseItems = termbases,
+  termItems = terms,
+}: {
+  termbaseItems?: TermbaseInfo[] | undefined;
+  termItems?: TermInfo[] | undefined;
+} = {}): TerminologyDataSource {
+  const currentTermbases = [...termbaseItems];
+  const currentTerms = [...termItems];
+
+  return {
+    ...createTermbaseReaders(currentTermbases),
+    ...createTermReaders(currentTerms),
+    ...createTermbaseWriters(currentTermbases),
+    ...createTermWriters(currentTerms),
   };
 }
 

@@ -16,7 +16,9 @@ describe("translator assignment access", () => {
     expect(modes).toEqual(["readOnly"]);
     expect(initialTranslatorMode(modes)).toBe("readOnly");
   });
+});
 
+describe("translator assignment access", () => {
   test("limits users to the modes granted by their assignment", () => {
     expect(
       availableTranslatorModes({
@@ -37,7 +39,9 @@ describe("translator assignment access", () => {
       }),
     ).toEqual(["proofread", "translate", "readOnly"]);
   });
+});
 
+describe("translator assignment access", () => {
   test("defaults to the highest-priority mode granted by assignments", () => {
     const proofreaderModes = availableTranslatorModes({
       canTranslate: false,
@@ -56,7 +60,9 @@ describe("translator assignment access", () => {
     expect(initialTranslatorMode(translatorModes)).toBe("translate");
     expect(initialTranslatorMode(dualRoleModes)).toBe("proofread");
   });
+});
 
+describe("translator assignment access", () => {
   test("preserves an explicit read-only entry", () => {
     const modes = availableTranslatorModes({
       canTranslate: true,
@@ -65,7 +71,9 @@ describe("translator assignment access", () => {
 
     expect(initialTranslatorMode(modes, "readOnly")).toBe("readOnly");
   });
+});
 
+describe("translator assignment access", () => {
   test("completes proofreading before translation when both roles are assigned", () => {
     expect(
       translatorCompletionStage({

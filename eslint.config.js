@@ -110,7 +110,12 @@ const configuration = tseslint.config(
     },
   },
   {
-    files: ["*.config.{js,mjs,cjs,ts}", ".storybook/**/*.ts", "script/**/*.{ts,mjs}"],
+    files: [
+      "*.config.{js,mjs,cjs,ts}",
+      ".storybook/**/*.ts",
+      "script/**/*.{ts,mjs}",
+      "linters/**/*.ts",
+    ],
     languageOptions: { globals: globals.node },
   },
   {
@@ -136,7 +141,7 @@ const configuration = tseslint.config(
     },
   },
   {
-    files: ["script/**/*.ts"],
+    files: ["script/**/*.ts", "linters/**/*.ts"],
     languageOptions: {
       parserOptions: {
         project: "./tsconfig.eslint.json",

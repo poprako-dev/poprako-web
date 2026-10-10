@@ -99,64 +99,71 @@ export function useTranslatorProject(chapterId: string): UseTranslatorProjectRes
 
   useEffect(() => {
     let isCancelled = false;
-
-    async function load(): Promise<void> {
-      setState({ status: "loading" });
-      const [chapterResult, pagesResult] = await Promise.all([
-        getChapter(client, chapterId),
-        listPages(client, { chapterId }),
-      ]);
-      if (!chapterResult.success) {
-        if (!isCancelled) {
-          setState({ status: "error", message: chapterResult.error });
-        }
-        return;
-      }
-      if (!pagesResult.success) {
-        if (!isCancelled) {
-          setState({ status: "error", message: pagesResult.error });
-        }
-        return;
-      }
-
-      const pages = pagesResult.data.sort((left, right) => left.index - right.index);
-      if (pages.length === 0) {
-        if (!isCancelled) {
-          setState({ status: "error", message: "当前章节暂无页面" });
-        }
-        return;
-      }
-
-      const accessResult = await loadTranslatorAccess(client, chapterId, userId);
-      if (isCancelled) return;
-      if (!accessResult.success) {
-        setState({ status: "error", message: accessResult.error });
-        return;
-      }
-
-      const counters = aggregateProjectCounters(pages);
-      const project: Project = {
-        id: chapterId,
-        title: `Chapter ${chapterId}`,
-        author: "Unknown",
-        pageCount: pages.length,
-        ...counters,
-        pages: pages.map((page) => ({ ...page })),
-      };
-
-      setState({
-        status: "ready",
-        project,
-        comicId: chapterResult.data.comicId,
-        ...accessResult.data,
-      });
-    }
-
-    void load();
+    void loadTranslatorProject(client, chapterId, userId, setState, () => !isCancelled);
     return () => {
       isCancelled = true;
     };
   }, [chapterId, client, userId]);
 
   return { state, setState };
+}
+
+async function loadTranslatorProject(
+  client: ApiClient,
+  chapterId: string,
+  userId: string,
+  setState: ProjectStateSetter,
+  isCurrent: () => boolean,
+): Promise<void> {
+  setState({ status: "loading" });
+  const [chapterResult, pagesResult] = await Promise.all([
+    getChapter(client, chapterId),
+    listPages(client, { chapterId }),
+  ]);
+  if (!chapterResult.success) {
+    setProjectError(setState, isCurrent, chapterResult.error);
+    return;
+  }
+  if (!pagesResult.success) {
+    setProjectError(setState, isCurrent, pagesResult.error);
+    return;
+  }
+  const pages = pagesResult.data.sort((left, right) => left.index - right.index);
+  if (pages.length === 0) {
+    setProjectError(setState, isCurrent, "当前章节暂无页面");
+    return;
+  }
+  const accessResult = await loadTranslatorAccess(client, chapterId, userId);
+  if (!isCurrent()) return;
+  if (!accessResult.success) {
+    setState({ status: "error", message: accessResult.error });
+    return;
+  }
+  setReadyProject(setState, chapterId, chapterResult.data.comicId, pages, accessResult.data);
+}
+
+function setProjectError(
+  setState: ProjectStateSetter,
+  isCurrent: () => boolean,
+  message: string,
+): void {
+  if (isCurrent()) setState({ status: "error", message });
+}
+
+function setReadyProject(
+  setState: ProjectStateSetter,
+  chapterId: string,
+  comicId: string,
+  pages: Page[],
+  access: TranslatorAccess,
+): void {
+  const project: Project = {
+    id: chapterId,
+    title: `Chapter ${chapterId}`,
+    author: "Unknown",
+    pageCount: pages.length,
+    ...aggregateProjectCounters(pages),
+    pages: pages.map((page) => ({ ...page })),
+  };
+  setState({ status: "ready", project, comicId, ...access });
 }

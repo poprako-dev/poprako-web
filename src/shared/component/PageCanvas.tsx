@@ -23,28 +23,8 @@ type Props = {
   ref: Ref<CanvasHandle>;
 };
 
-export function PageCanvas({
-  overlay,
-  empty = "暂无图片",
-  onImageError,
-  imageSrc,
-  isLoading,
-  interaction,
-  onImageLoad,
-  ref,
-}: Props): ReactElement {
-  const {
-    containerRef,
-    imgRef,
-    transform,
-    setTransform,
-    containerSize,
-    isPanning,
-    handleCanvasMouseDown,
-    handleContextMenu,
-    handleWheel,
-  } = interaction;
-
+function useCanvasRelocation(ref: Props["ref"], interaction: Props["interaction"]): boolean {
+  const { imgRef, transform, setTransform } = interaction;
   const [isRelocating, setIsRelocating] = useState(false);
   const relocationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -86,6 +66,11 @@ export function PageCanvas({
     };
   }, []);
 
+  return isRelocating;
+}
+
+function useCanvasWheel(interaction: Props["interaction"]): void {
+  const { containerRef, handleWheel } = interaction;
   // 用 ref-based listener 替代 React onWheel，因为需要 { passive: false } 来支持 preventDefault
   useEffect(() => {
     const el = containerRef.current;
@@ -95,22 +80,54 @@ export function PageCanvas({
       el.removeEventListener("wheel", handleWheel);
     };
   }, [handleWheel, containerRef]);
+}
+
+function panWithKeyboard(
+  event: ReactKeyboardEvent<HTMLDivElement>,
+  setTransform: Props["interaction"]["setTransform"],
+): void {
+  const offsets: Partial<Record<string, { x: number; y: number }>> = {
+    ArrowLeft: { x: 24, y: 0 },
+    ArrowRight: { x: -24, y: 0 },
+    ArrowUp: { x: 0, y: 24 },
+    ArrowDown: { x: 0, y: -24 },
+  };
+  const offset = offsets[event.key];
+  if (!offset) return;
+  event.preventDefault();
+  setTransform((previous) => ({
+    ...previous,
+    offsetX: previous.offsetX + offset.x,
+    offsetY: previous.offsetY + offset.y,
+  }));
+}
+
+export function PageCanvas({
+  overlay,
+  empty = "暂无图片",
+  onImageError,
+  imageSrc,
+  isLoading,
+  interaction,
+  onImageLoad,
+  ref,
+}: Props): ReactElement {
+  const {
+    containerRef,
+    imgRef,
+    transform,
+    setTransform,
+    containerSize,
+    isPanning,
+    handleCanvasMouseDown,
+    handleContextMenu,
+  } = interaction;
+
+  const isRelocating = useCanvasRelocation(ref, interaction);
+  useCanvasWheel(interaction);
 
   function handleCanvasKeyDown(event: ReactKeyboardEvent<HTMLDivElement>): void {
-    const offsets: Partial<Record<string, { x: number; y: number }>> = {
-      ArrowLeft: { x: 24, y: 0 },
-      ArrowRight: { x: -24, y: 0 },
-      ArrowUp: { x: 0, y: 24 },
-      ArrowDown: { x: 0, y: -24 },
-    };
-    const offset = offsets[event.key];
-    if (!offset) return;
-    event.preventDefault();
-    setTransform((previous) => ({
-      ...previous,
-      offsetX: previous.offsetX + offset.x,
-      offsetY: previous.offsetY + offset.y,
-    }));
+    panWithKeyboard(event, setTransform);
   }
 
   /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- the canvas uses an application role with arrow-key panning for its pointer and touch controls. */

@@ -89,47 +89,68 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
   },
 ];
 
+type StoredShortcut =
+  | { kind: "invalid" }
+  | { kind: "stale" }
+  | { kind: "valid"; shortcut: ConfigurableShortcut };
+
+function parseStoredShortcut(item: unknown): StoredShortcut {
+  const byAction = new Map<string, ConfigurableShortcut>(
+    defaultConfigurableShortcuts.map((shortcut) => [shortcut.action, shortcut]),
+  );
+  const byLabel = new Map(
+    defaultConfigurableShortcuts.map((shortcut) => [shortcut.label, shortcut]),
+  );
+  if (!item || typeof item !== "object" || !("keys" in item)) {
+    return { kind: "invalid" };
+  }
+
+  const record = item as Record<string, unknown>;
+  const rawKeys = record["keys"];
+  if (!Array.isArray(rawKeys) || rawKeys.some((key) => typeof key !== "string")) {
+    return { kind: "invalid" };
+  }
+  const keys: string[] = rawKeys.filter((key): key is string => typeof key === "string");
+
+  const action = typeof record["action"] === "string" ? record["action"] : undefined;
+  const fallbackByAction = action ? byAction.get(action) : undefined;
+  const fallbackByLabel =
+    typeof record["label"] === "string" ? byLabel.get(record["label"]) : undefined;
+
+  const fallback = fallbackByAction ?? fallbackByLabel;
+  if (!fallback) {
+    return { kind: "stale" };
+  }
+
+  return {
+    kind: "valid",
+    shortcut: { action: fallback.action, label: fallback.label, keys },
+  };
+}
+
 function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
   if (!Array.isArray(raw)) return null;
-
-  const byAction = new Map(defaultConfigurableShortcuts.map((s) => [s.action, s]));
-
-  const byLabel = new Map(defaultConfigurableShortcuts.map((s) => [s.label, s]));
 
   const migrated: ConfigurableShortcut[] = [];
   const migratedActions = new Set<ConfigurableShortcut["action"]>();
   let isHadStale = false;
 
   for (const item of raw) {
-    if (!item || typeof item !== "object" || !("keys" in item)) {
+    const parsed = parseStoredShortcut(item);
+    if (parsed.kind === "invalid") {
       return null;
     }
-
-    const record = item as Record<string, unknown>;
-    const rawKeys = record["keys"];
-    if (!Array.isArray(rawKeys) || rawKeys.some((key) => typeof key !== "string")) {
-      return null;
-    }
-    const keys: string[] = rawKeys.filter((key): key is string => typeof key === "string");
-
-    const action = typeof record["action"] === "string" ? record["action"] : undefined;
-    const fallbackByAction = action
-      ? byAction.get(action as ConfigurableShortcut["action"])
-      : undefined;
-    const fallbackByLabel =
-      typeof record["label"] === "string" ? byLabel.get(record["label"]) : undefined;
-
-    const fallback = fallbackByAction ?? fallbackByLabel;
-    if (!fallback) {
+    if (parsed.kind === "stale") {
       isHadStale = true;
       continue;
     }
+    const { shortcut: fallback } = parsed;
     if (migratedActions.has(fallback.action)) continue;
 
     migrated.push({
       action: fallback.action,
       label: fallback.label,
-      keys,
+      keys: fallback.keys,
     });
 
     migratedActions.add(fallback.action);

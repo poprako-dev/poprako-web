@@ -1,7 +1,64 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Reviewer } from "../Reviewer";
-import { createIssueStoryArgs } from "../test/issue-story-fixture";
+import { createIssueStoryArgs, loadOcclusionIssues } from "../test/issue-story-fixture";
+
+type MarkerRegion = { x: number; y: number; width: number; height: number };
+
+function currentScale(surface: HTMLElement): number {
+  return new DOMMatrixReadOnly(getComputedStyle(surface).transform).a;
+}
+
+async function expectFixedBorders(
+  image: HTMLImageElement,
+  markers: HTMLElement[],
+  regions: MarkerRegion[],
+): Promise<void> {
+  const imageBounds = image.getBoundingClientRect();
+  await Promise.all(
+    markers.map(async (marker, index) => {
+      const style = getComputedStyle(marker);
+      const bounds = marker.getBoundingClientRect();
+      const screenScale = bounds.width / Number.parseFloat(style.width);
+      const badgeBounds = marker.querySelector("span")?.getBoundingClientRect();
+      for (const border of [
+        style.borderTopWidth,
+        style.borderRightWidth,
+        style.borderBottomWidth,
+        style.borderLeftWidth,
+      ]) {
+        await expect(Number.parseFloat(border) * screenScale).toBeCloseTo(2, 1);
+      }
+      await expect(badgeBounds?.width).toBeCloseTo(32, 1);
+      await expect(badgeBounds?.height).toBeCloseTo(32, 1);
+      await expect((bounds.left - imageBounds.left) / imageBounds.width).toBeCloseTo(
+        regions[index]?.x ?? -1,
+        3,
+      );
+      await expect((bounds.top - imageBounds.top) / imageBounds.height).toBeCloseTo(
+        regions[index]?.y ?? -1,
+        3,
+      );
+      await expect(bounds.width / imageBounds.width).toBeCloseTo(regions[index]?.width ?? -1, 3);
+      await expect(bounds.height / imageBounds.height).toBeCloseTo(regions[index]?.height ?? -1, 3);
+    }),
+  );
+}
+
+function zoomImage(image: HTMLImageElement, deltaY: number): void {
+  const bounds = image.getBoundingClientRect();
+  for (let step = 0; step < 40; step += 1) {
+    image.dispatchEvent(
+      new WheelEvent("wheel", {
+        bubbles: true,
+        cancelable: true,
+        deltaY,
+        clientX: bounds.left + bounds.width / 2,
+        clientY: bounds.top + bounds.height / 2,
+      }),
+    );
+  }
+}
 
 const meta: Meta<typeof Reviewer> = {
   title: "Features/Reviewer/issue",
@@ -78,73 +135,16 @@ export const ZoomInvariantBorders: Story = {
       };
     });
 
-    function currentScale(): number {
-      return new DOMMatrixReadOnly(getComputedStyle(loadedSurface).transform).a;
-    }
-
-    async function expectFixedBorders(): Promise<void> {
-      const imageBounds = loadedImage.getBoundingClientRect();
-      await Promise.all(
-        markers.map(async (marker, index) => {
-          const style = getComputedStyle(marker);
-          const bounds = marker.getBoundingClientRect();
-          const screenScale = bounds.width / Number.parseFloat(style.width);
-          const badgeBounds = marker.querySelector("span")?.getBoundingClientRect();
-          for (const border of [
-            style.borderTopWidth,
-            style.borderRightWidth,
-            style.borderBottomWidth,
-            style.borderLeftWidth,
-          ]) {
-            await expect(Number.parseFloat(border) * screenScale).toBeCloseTo(2, 1);
-          }
-          await expect(badgeBounds?.width).toBeCloseTo(32, 1);
-          await expect(badgeBounds?.height).toBeCloseTo(32, 1);
-          await expect((bounds.left - imageBounds.left) / imageBounds.width).toBeCloseTo(
-            regions[index]?.x ?? -1,
-            3,
-          );
-          await expect((bounds.top - imageBounds.top) / imageBounds.height).toBeCloseTo(
-            regions[index]?.y ?? -1,
-            3,
-          );
-          await expect(bounds.width / imageBounds.width).toBeCloseTo(
-            regions[index]?.width ?? -1,
-            3,
-          );
-          await expect(bounds.height / imageBounds.height).toBeCloseTo(
-            regions[index]?.height ?? -1,
-            3,
-          );
-        }),
-      );
-    }
-
-    function zoom(deltaY: number): void {
-      const bounds = loadedImage.getBoundingClientRect();
-      for (let step = 0; step < 40; step += 1) {
-        loadedImage.dispatchEvent(
-          new WheelEvent("wheel", {
-            bubbles: true,
-            cancelable: true,
-            deltaY,
-            clientX: bounds.left + bounds.width / 2,
-            clientY: bounds.top + bounds.height / 2,
-          }),
-        );
-      }
-    }
-
-    await expectFixedBorders();
-    zoom(-100);
-    await waitFor(() => expect(currentScale()).toBe(5));
-    await expectFixedBorders();
+    await expectFixedBorders(loadedImage, markers, regions);
+    zoomImage(loadedImage, -100);
+    await waitFor(() => expect(currentScale(loadedSurface)).toBe(5));
+    await expectFixedBorders(loadedImage, markers, regions);
     await userEvent.click(canvas.getByRole("button", { name: "issue 1：文字位置" }));
     await expect(region).toHaveAttribute("aria-pressed", "true");
-    await expectFixedBorders();
-    zoom(100);
-    await waitFor(() => expect(currentScale()).toBe(0.5));
-    await expectFixedBorders();
+    await expectFixedBorders(loadedImage, markers, regions);
+    zoomImage(loadedImage, 100);
+    await waitFor(() => expect(currentScale(loadedSurface)).toBe(0.5));
+    await expectFixedBorders(loadedImage, markers, regions);
   },
 };
 export const Unavailable: Story = {
@@ -171,65 +171,7 @@ export const MarkerOcclusion: Story = {
   name: "Marker 遮挡 · 标号与框",
   args: {
     ...createIssueStoryArgs(),
-    loadIssues: (pageId, signal) => {
-      signal.throwIfAborted();
-      return Promise.resolve([
-        {
-          id: `${pageId}-1`,
-          pageArtworkId: pageId,
-          index: 0,
-          variant: "文字位置",
-          note: "与 2 的左上角接近，两个标号互相遮叠。",
-          rect: { xCoord: 0.66, yCoord: 0.12, width: 0.18, height: 0.09 },
-          layerName: "对白",
-        },
-        {
-          id: `${pageId}-2`,
-          pageArtworkId: pageId,
-          index: 1,
-          variant: "断行",
-          note: "与 1 的标号重叠；从列表选择可观察选中后的遮挡。",
-          rect: { xCoord: 0.67, yCoord: 0.125, width: 0.18, height: 0.09 },
-          layerName: "对白",
-        },
-        {
-          id: `${pageId}-3`,
-          pageArtworkId: pageId,
-          index: 2,
-          variant: "文字位置",
-          note: "上边框被 4 的标号压住。",
-          rect: { xCoord: 0.09, yCoord: 0.42, width: 0.2, height: 0.12 },
-          layerName: "对白",
-        },
-        {
-          id: `${pageId}-4`,
-          pageArtworkId: pageId,
-          index: 3,
-          variant: "断行",
-          note: "标号跨过 3 的上边框，两个矩形也有重叠。",
-          rect: { xCoord: 0.18, yCoord: 0.442, width: 0.2, height: 0.12 },
-          layerName: "对白",
-        },
-        {
-          id: `${pageId}-5`,
-          pageArtworkId: pageId,
-          index: 4,
-          variant: "文字位置",
-          note: "与 6 的矩形相交，框线互相遮叠。",
-          rect: { xCoord: 0.1, yCoord: 0.73, width: 0.5, height: 0.13 },
-          layerName: null,
-        },
-        {
-          id: `${pageId}-6`,
-          pageArtworkId: pageId,
-          index: 5,
-          variant: "断行",
-          note: "与 5 的区域重叠；切换选中项可对比框线的层级。",
-          rect: { xCoord: 0.43, yCoord: 0.77, width: 0.3, height: 0.12 },
-          layerName: null,
-        },
-      ]);
-    },
+    loadIssues: loadOcclusionIssues,
   },
 };
 

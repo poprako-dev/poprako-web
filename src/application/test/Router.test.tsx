@@ -75,6 +75,13 @@ describe("file route direct entry", () => {
     const expectedPath = url === "/" ? "/workspace" : url.split("?")[0];
     expect(router.state.location.pathname).toBe(expectedPath);
   });
+});
+
+describe("file route direct entry", () => {
+  afterEach(() => {
+    sessionStoreMock.setAccessToken(null);
+    vi.clearAllMocks();
+  });
 
   test("redirects a failed identity guard to login and replaces the protected entry", async () => {
     sessionStoreMock.setAccessToken("active-token");
@@ -92,6 +99,13 @@ describe("file route direct entry", () => {
     expect(router.state.location.pathname).toBe("/login");
     expect(mocks.ensureSession).toHaveBeenCalledTimes(1);
   });
+});
+
+describe("file route direct entry", () => {
+  afterEach(() => {
+    sessionStoreMock.setAccessToken(null);
+    vi.clearAllMocks();
+  });
 
   test("keeps an anonymous auth redirect quiet", async () => {
     sessionStoreMock.setAccessToken(null);
@@ -105,6 +119,13 @@ describe("file route direct entry", () => {
     expect(router.state.location.pathname).toBe("/login");
     expect(toast).not.toHaveBeenCalled();
     expect(log).not.toHaveBeenCalled();
+  });
+});
+
+describe("file route direct entry", () => {
+  afterEach(() => {
+    sessionStoreMock.setAccessToken(null);
+    vi.clearAllMocks();
   });
 
   test("translator navigation pushes a typed URL and browser back returns to workspace", async () => {

@@ -181,6 +181,42 @@ function DetailHostScenario({ initialEntry, delayComic }: Props): ReactElement {
   );
 }
 
+function createMockedFetch(originalFetch: typeof fetch, delayComic: boolean): typeof fetch {
+  return async (input, init) => {
+    const address =
+      typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    const url = new URL(address, location.origin);
+    if (!url.pathname.startsWith("/api/")) return originalFetch(input, init);
+    requests.push(url.pathname + url.search);
+    const comicId = url.pathname.split("/", 5)[4] ?? "comic-b";
+    if (url.pathname.endsWith("/chapters/pinned")) {
+      return Response.json({ code: 0, data: detailChapter(comicId) });
+    }
+    if (url.pathname.endsWith("/members")) {
+      const keyword = url.searchParams.get("fuzzy_nickname");
+      if (keyword === "fail") {
+        return Response.json({ code: 4, message: "成员查询失败" }, { status: 403 });
+      }
+      const teamId = url.searchParams.get("team_id") ?? "missing";
+      const role = Number(url.searchParams.get("role"));
+      const name = `${teamId}-${role === 2 ? "translator" : "proofreader"}`;
+      return Response.json({
+        code: 0,
+        data: keyword === "empty" ? [] : [detailMember(teamId, name, role)],
+      });
+    }
+    if (comicId === "comic-b" && delayComic) {
+      await new Promise<void>((resolve) => {
+        pending.set(comicId, resolve);
+      });
+    }
+    return Response.json({
+      code: 0,
+      data: detailComic(comicId, comicId.replace("comic", "team")),
+    });
+  };
+}
+
 const meta = {
   title: "Features/ComicDetailHost",
   component: DetailHostScenario,
@@ -221,44 +257,7 @@ const meta = {
         })),
       },
     });
-    const mockedFetch: typeof fetch = async (input, init) => {
-      const address =
-        typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-      const url = new URL(address, location.origin);
-      if (!url.pathname.startsWith("/api/")) return originalFetch(input, init);
-      requests.push(url.pathname + url.search);
-      const comicId = url.pathname.split("/", 5)[4] ?? "comic-b";
-      if (url.pathname.endsWith("/chapters/pinned")) {
-        return Response.json({ code: 0, data: detailChapter(comicId) });
-      }
-      if (url.pathname.endsWith("/members")) {
-        const keyword = url.searchParams.get("fuzzy_nickname");
-        if (keyword === "fail") {
-          return Response.json(
-            { code: 4, message: "成员查询失败" },
-            {
-              status: 403,
-            },
-          );
-        }
-        const teamId = url.searchParams.get("team_id") ?? "missing";
-        const role = Number(url.searchParams.get("role"));
-        const name = `${teamId}-${role === 2 ? "translator" : "proofreader"}`;
-        return Response.json({
-          code: 0,
-          data: keyword === "empty" ? [] : [detailMember(teamId, name, role)],
-        });
-      }
-      if (comicId === "comic-b" && args.delayComic) {
-        await new Promise<void>((resolve) => {
-          pending.set(comicId, resolve);
-        });
-      }
-      return Response.json({
-        code: 0,
-        data: detailComic(comicId, comicId.replace("comic", "team")),
-      });
-    };
+    const mockedFetch = createMockedFetch(originalFetch, args.delayComic);
     Object.defineProperty(globalThis, "fetch", {
       value: mockedFetch,
       configurable: true,

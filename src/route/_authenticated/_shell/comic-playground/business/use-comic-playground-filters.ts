@@ -4,14 +4,7 @@ import type {
   TripleFilter,
 } from "@/route/_authenticated/_shell/business/comic-list/comic-list";
 
-function phaseBits(status: BinaryFilter | TripleFilter): 3 | 0 | 1 | 2 {
-  if (status === "unset") return 0b11;
-  if (status === "pending") return 0b00;
-  if (status === "ongoing") return 0b01;
-  return 0b10;
-}
-
-export function useComicPlaygroundFilters(): {
+type ComicPlaygroundFilters = {
   activeStages: number | undefined;
   activeFuzzyTitle: string;
   setActiveFuzzyTitle: Dispatch<SetStateAction<string>>;
@@ -27,7 +20,35 @@ export function useComicPlaygroundFilters(): {
   setActiveReviewStatus: Dispatch<SetStateAction<BinaryFilter>>;
   activePublishStatus: BinaryFilter;
   setActivePublishStatus: Dispatch<SetStateAction<BinaryFilter>>;
-} {
+};
+
+function phaseBits(status: BinaryFilter | TripleFilter): 3 | 0 | 1 | 2 {
+  if (status === "unset") return 0b11;
+  if (status === "pending") return 0b00;
+  if (status === "ongoing") return 0b01;
+  return 0b10;
+}
+
+function stageBits(
+  upload: BinaryFilter,
+  translate: TripleFilter,
+  proofread: TripleFilter,
+  typeset: TripleFilter,
+  review: BinaryFilter,
+  publish: BinaryFilter,
+): number | undefined {
+  const stages =
+    phaseBits(upload) |
+    (phaseBits(translate) << 2) |
+    (phaseBits(proofread) << 4) |
+    (phaseBits(typeset) << 6) |
+    (phaseBits(review) << 8) |
+    (phaseBits(publish) << 10);
+
+  return stages === 0b1111_1111_1111 ? undefined : stages;
+}
+
+export function useComicPlaygroundFilters(): ComicPlaygroundFilters {
   const [activeFuzzyTitle, setActiveFuzzyTitle] = useState<string>("");
   const [activeUploadStatus, setActiveUploadStatus] = useState<BinaryFilter>("unset");
   const [activeTranslateStatus, setActiveTranslateStatus] = useState<TripleFilter>("unset");
@@ -37,15 +58,14 @@ export function useComicPlaygroundFilters(): {
   const [activePublishStatus, setActivePublishStatus] = useState<BinaryFilter>("unset");
 
   const activeStages = useMemo(() => {
-    const stages =
-      phaseBits(activeUploadStatus) |
-      (phaseBits(activeTranslateStatus) << 2) |
-      (phaseBits(activeProofreadStatus) << 4) |
-      (phaseBits(activeTypesetStatus) << 6) |
-      (phaseBits(activeReviewStatus) << 8) |
-      (phaseBits(activePublishStatus) << 10);
-
-    return stages === 0b1111_1111_1111 ? undefined : stages;
+    return stageBits(
+      activeUploadStatus,
+      activeTranslateStatus,
+      activeProofreadStatus,
+      activeTypesetStatus,
+      activeReviewStatus,
+      activePublishStatus,
+    );
   }, [
     activeUploadStatus,
     activeTranslateStatus,

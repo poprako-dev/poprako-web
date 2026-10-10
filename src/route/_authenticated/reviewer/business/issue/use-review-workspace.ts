@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { RefObject } from "react";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { showLocalCaughtError } from "@/route/business/request-error";
@@ -40,6 +40,10 @@ export type ReviewWorkspace = {
   select: (id: string, relocate: boolean) => void;
   onImageError: () => void;
 };
+type ReviewSnapshot = ReturnType<ReturnType<typeof createReviewPageController>["getSnapshot"]>;
+type ReviewController = ReturnType<typeof createReviewPageController>;
+type ReviewFocus = ReturnType<typeof useReviewFocus>;
+type ReviewImageFailure = ReturnType<typeof useReviewImageFailure>;
 export function useReviewWorkspace({
   pageId,
   pageIndex,
@@ -54,27 +58,224 @@ export function useReviewWorkspace({
   onNavigate,
   canvasRef,
 }: Args): ReviewWorkspace {
+  const { controller, snapshot } = useReviewPageState(loadIssues, loadReviewPage);
+  const { focus, imageFailure } = useReviewLocalState(pageId);
+  const { issuesReady, page } = getReviewPageDisplay(snapshot, pageId);
+  const issues = snapshot.issues;
+  useReviewControllerLifecycle(active, controller, pageId);
+  const select = useReviewInteractions({
+    pageId,
+    pageIndex,
+    pageCount,
+    issues,
+    issuesReady,
+    relocation,
+    canvasRef,
+    focus: focus.set,
+    focusedId: focus.focusedId,
+    shortcuts,
+    active,
+    onNavigate,
+    onToggleRelocation,
+    onToggleVisible,
+    clearFocus: focus.clear,
+  });
+
+  return buildReviewWorkspace({
+    pageId,
+    snapshot,
+    page,
+    issues,
+    issuesReady,
+    focus,
+    imageFailure,
+    controller,
+    select,
+  });
+}
+
+function useReviewLocalState(pageId: string): {
+  focus: ReviewFocus;
+  imageFailure: ReviewImageFailure;
+} {
+  return {
+    focus: useReviewFocus(pageId),
+    imageFailure: useReviewImageFailure(pageId),
+  };
+}
+
+function getReviewPageDisplay(
+  snapshot: ReviewSnapshot,
+  pageId: string,
+): { page: ReviewPage | null; issuesReady: boolean } {
+  const ready = snapshot.pageId === pageId && snapshot.status === "ready";
+  return {
+    page: ready ? snapshot.page : null,
+    issuesReady: snapshot.pageId === pageId && snapshot.issuesStatus === "ready",
+  };
+}
+
+function useReviewPageState(
+  loadIssues: LoadIssues,
+  loadReviewPage: LoadReviewPage,
+): { controller: ReviewController; snapshot: ReviewSnapshot } {
   const controller = useMemo(
     () => createReviewPageController(loadIssues, loadReviewPage),
     [loadIssues, loadReviewPage],
   );
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
+  return { controller, snapshot };
+}
+
+function useReviewInteractions(input: {
+  pageId: string;
+  pageIndex: number;
+  pageCount: number;
+  issues: IssueInfo[];
+  issuesReady: boolean;
+  relocation: boolean;
+  canvasRef: RefObject<CanvasHandle | null>;
+  focus: (focus: { pageId: string; id: string } | null) => void;
+  focusedId: string | null;
+  shortcuts: ConfigurableShortcut[];
+  active: boolean;
+  onNavigate: (index: number) => Promise<void>;
+  onToggleRelocation: () => void;
+  onToggleVisible: () => void;
+  clearFocus: () => void;
+}): (id: string, relocate: boolean) => void {
+  const showToast = useToastStore((state) => state.showToast);
+  const select = createReviewIssueSelection(input);
+  const navigate = createReviewNavigation(
+    input.pageIndex,
+    input.pageCount,
+    input.onNavigate,
+    showToast,
+  );
+  useReviewShortcuts({
+    active: input.active,
+    pageIndex: input.pageIndex,
+    shortcuts: input.shortcuts,
+    navigate,
+    onToggleRelocation: input.onToggleRelocation,
+    onToggleVisible: input.onToggleVisible,
+    moveSelection: (direction) => {
+      moveReviewSelection(input.issues, input.issuesReady, input.focusedId, select, direction);
+    },
+  });
+  useReviewEscapeKey(input.active, input.clearFocus);
+  return select;
+}
+
+function moveReviewSelection(
+  issues: IssueInfo[],
+  ready: boolean,
+  focusedId: string | null,
+  select: (id: string, relocate: boolean) => void,
+  direction: number,
+): void {
+  if (!ready || issues.length === 0) return;
+  const index = issues.findIndex((issue) => issue.id === focusedId);
+  const nextIndex =
+    index < 0
+      ? direction > 0
+        ? 0
+        : issues.length - 1
+      : (index + direction + issues.length) % issues.length;
+  const next = issues[nextIndex];
+  if (next) select(next.id, true);
+}
+
+function buildReviewWorkspace(input: {
+  pageId: string;
+  snapshot: ReviewSnapshot;
+  page: ReviewPage | null;
+  issues: IssueInfo[];
+  issuesReady: boolean;
+  focus: ReturnType<typeof useReviewFocus>;
+  imageFailure: ReturnType<typeof useReviewImageFailure>;
+  controller: ReviewController;
+  select: (id: string, relocate: boolean) => void;
+}): ReviewWorkspace {
+  const { pageId, snapshot, page, issues, issuesReady, focus, imageFailure, controller, select } =
+    input;
+  return {
+    page,
+    issues: issuesReady ? issues : [],
+    focusedId: focus.focusedId,
+    loading: isReviewPageLoading(snapshot, pageId),
+    error: imageFailure.failed ? "图片加载失败" : snapshot.error,
+    progress: snapshot.pageId === pageId ? snapshot.progress : null,
+    cancelled: snapshot.pageId === pageId && snapshot.status === "cancelled",
+    cancel: controller.cancelPage,
+    retry: () => {
+      retryReviewPage(controller, imageFailure);
+    },
+    issuesError: snapshot.pageId === pageId ? snapshot.issuesError : null,
+    issuesLoading: snapshot.pageId !== pageId || snapshot.issuesStatus === "loading",
+    retryIssues: () => {
+      void controller.retryIssues();
+    },
+    select,
+    onImageError: imageFailure.fail,
+  };
+}
+
+function isReviewPageLoading(snapshot: ReviewSnapshot, pageId: string): boolean {
+  return snapshot.pageId !== pageId || snapshot.status === "loading" || snapshot.status === "idle";
+}
+
+function retryReviewPage(controller: ReviewController, imageFailure: ReviewImageFailure): void {
+  imageFailure.reset();
+  void controller.retryPage();
+}
+
+function useReviewFocus(pageId: string): {
+  focusedId: string | null;
+  set: (focus: { pageId: string; id: string } | null) => void;
+  clear: () => void;
+} {
   const [focus, setFocus] = useState<{ pageId: string; id: string } | null>(null);
-  const focusedId = focus?.pageId === pageId ? focus.id : null;
-  const [imageFailed, setImageFailed] = useState(false);
   const [statePageId, setStatePageId] = useState(pageId);
   if (statePageId !== pageId) {
     setStatePageId(pageId);
     setFocus(null);
-    setImageFailed(false);
   }
+  const clear = useCallback(() => {
+    setFocus(null);
+  }, []);
+  return {
+    focusedId: focus?.pageId === pageId ? focus.id : null,
+    set: setFocus,
+    clear,
+  };
+}
 
-  const showToast = useToastStore((state) => state.showToast);
-  const ready = snapshot.pageId === pageId && snapshot.status === "ready";
-  const issuesReady = snapshot.pageId === pageId && snapshot.issuesStatus === "ready";
-  const page = ready ? snapshot.page : null;
-  const issues = snapshot.issues;
+function useReviewImageFailure(pageId: string): {
+  failed: boolean;
+  fail: () => void;
+  reset: () => void;
+} {
+  const [failed, setFailed] = useState(false);
+  const [statePageId, setStatePageId] = useState(pageId);
+  if (statePageId !== pageId) {
+    setStatePageId(pageId);
+    setFailed(false);
+  }
+  const fail = (): void => {
+    setFailed(true);
+  };
+  const reset = (): void => {
+    setFailed(false);
+  };
+  return { failed, fail, reset };
+}
 
+function useReviewControllerLifecycle(
+  active: boolean,
+  controller: ReturnType<typeof createReviewPageController>,
+  pageId: string,
+): void {
   useEffect(() => {
     if (!active) return;
     const current = controller.getSnapshot();
@@ -83,94 +284,88 @@ export function useReviewWorkspace({
       controller.dispose();
     };
   }, [active, controller, pageId]);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    return () => {
       controller.dispose();
-    },
-    [controller],
-  );
+    };
+  }, [controller]);
+}
 
-  function retry(): void {
-    setImageFailed(false);
-    void controller.retryPage();
-  }
-  function select(id: string, relocate: boolean): void {
-    if (!issuesReady) return;
-    setFocus({ pageId, id });
-    const rect = issues.find((issue) => issue.id === id)?.rect;
-    if (relocate && relocation && rect)
-      canvasRef.current?.centerOn(rect.xCoord + rect.width / 2, rect.yCoord + rect.height / 2);
-  }
-  function navigate(index: number): void {
+function createReviewIssueSelection(input: {
+  pageId: string;
+  issues: IssueInfo[];
+  issuesReady: boolean;
+  relocation: boolean;
+  canvasRef: RefObject<CanvasHandle | null>;
+  focus: (focus: { pageId: string; id: string } | null) => void;
+}): (id: string, relocate: boolean) => void {
+  return (id: string, relocate: boolean): void => {
+    if (!input.issuesReady) return;
+    input.focus({ pageId: input.pageId, id });
+    const rect = input.issues.find((issue) => issue.id === id)?.rect;
+    if (relocate && input.relocation && rect) {
+      input.canvasRef.current?.centerOn(
+        rect.xCoord + rect.width / 2,
+        rect.yCoord + rect.height / 2,
+      );
+    }
+  };
+}
+
+function createReviewNavigation(
+  pageIndex: number,
+  pageCount: number,
+  onNavigate: (index: number) => Promise<void>,
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"],
+): (index: number) => void {
+  return (index: number): void => {
     if (index < 0 || index >= pageCount || index === pageIndex) return;
     void onNavigate(index).catch((error: unknown) => {
       showLocalCaughtError(error, showToast, "翻页失败，请重试");
     });
-  }
-  function moveSelection(direction: number): void {
-    if (!issuesReady || issues.length === 0) return;
-    const index = issues.findIndex((issue) => issue.id === focusedId);
-    const nextIndex =
-      index < 0
-        ? direction > 0
-          ? 0
-          : issues.length - 1
-        : (index + direction + issues.length) % issues.length;
-    const next = issues[nextIndex];
-    if (next) select(next.id, true);
-  }
+  };
+}
+
+function useReviewShortcuts(input: {
+  active: boolean;
+  pageIndex: number;
+  shortcuts: ConfigurableShortcut[];
+  navigate: (index: number) => void;
+  onToggleRelocation: () => void;
+  onToggleVisible: () => void;
+  moveSelection: (direction: number) => void;
+}): void {
   useShortcutActions(
     {
       nextMarker: () => {
-        moveSelection(1);
+        input.moveSelection(1);
       },
       prevMarker: () => {
-        moveSelection(-1);
+        input.moveSelection(-1);
       },
       pageUp: () => {
-        navigate(pageIndex - 1);
+        input.navigate(input.pageIndex - 1);
       },
       pageDown: () => {
-        navigate(pageIndex + 1);
+        input.navigate(input.pageIndex + 1);
       },
-      toggleRelocation: onToggleRelocation,
-      toggleProofreadPreview: () => {
-        onToggleVisible();
-      },
+      toggleRelocation: input.onToggleRelocation,
+      toggleProofreadPreview: input.onToggleVisible,
     },
-    shortcuts,
-    !active,
+    input.shortcuts,
+    !input.active,
   );
+}
+
+function useReviewEscapeKey(active: boolean, clearFocus: () => void): void {
   useEffect(() => {
     if (!active) return;
     function clear(event: KeyboardEvent): void {
-      if (event.key === "Escape" && !shouldIgnoreWorkbenchKey(event)) setFocus(null);
+      if (event.key === "Escape" && !shouldIgnoreWorkbenchKey(event)) clearFocus();
     }
     globalThis.addEventListener("keydown", clear);
     return () => {
       globalThis.removeEventListener("keydown", clear);
     };
-  }, [active]);
-
-  return {
-    page,
-    issues: issuesReady ? issues : [],
-    focusedId,
-    loading:
-      snapshot.pageId !== pageId || snapshot.status === "loading" || snapshot.status === "idle",
-    error: imageFailed ? "图片加载失败" : snapshot.error,
-    progress: snapshot.pageId === pageId ? snapshot.progress : null,
-    cancelled: snapshot.pageId === pageId && snapshot.status === "cancelled",
-    cancel: controller.cancelPage,
-    retry,
-    issuesError: snapshot.pageId === pageId ? snapshot.issuesError : null,
-    issuesLoading: snapshot.pageId !== pageId || snapshot.issuesStatus === "loading",
-    retryIssues() {
-      void controller.retryIssues();
-    },
-    select,
-    onImageError() {
-      setImageFailed(true);
-    },
-  };
+  }, [active, clearFocus]);
 }

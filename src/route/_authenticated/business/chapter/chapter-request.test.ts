@@ -1,5 +1,5 @@
 import { createTestApi } from "@/test-resource/api-client";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { describe, beforeEach, expect, test, vi } from "vitest";
 
 import {
   exportChapter,
@@ -18,13 +18,103 @@ import {
   okJson,
 } from "./test/chapter-request-test-helpers";
 
-describe("chapter API", () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-    useAppStore.getState().setAccessToken(null);
-    useToastStore.getState().hideToast();
+beforeEach(() => {
+  vi.restoreAllMocks();
+  useAppStore.getState().setAccessToken(null);
+  useToastStore.getState().hideToast();
+});
+
+async function expectStageRequestEnums(): Promise<string> {
+  const fetchMock = installFetch(noContent());
+  await updateChapter(createTestApi("chapter-token"), "chapter_1", {
+    workflowTransition: "upload_complete",
+  });
+  await updateChapter(createTestApi("chapter-token"), "chapter_1", {
+    workflowTransition: "typeset_start",
   });
 
+  expect(bodyOf(fetchCallAt(fetchMock, 0))).toEqual({
+    id: "chapter_1",
+    stage: "raw_provide",
+    oper: "advance",
+  });
+  expect(bodyOf(fetchCallAt(fetchMock, 1))).toEqual({
+    id: "chapter_1",
+    stage: "typeset_redraw",
+    oper: "advance",
+  });
+  return JSON.stringify(fetchMock.mock.calls);
+}
+
+async function expectImportRequestEnums(): Promise<string> {
+  const fetchMock = installFetch(okJson({ imported_page_count: 1, imported_unit_count: 2 }));
+  await importChapter(createTestApi("chapter-token"), {
+    chapterId: "chapter_1",
+    content: "{}",
+    format: "json",
+    mode: "keep",
+  });
+  await importChapter(createTestApi("chapter-token"), {
+    chapterId: "chapter_1",
+    content: "text",
+    format: "lp",
+    mode: "overwrite",
+  });
+
+  expect(bodyOf(fetchCallAt(fetchMock, 0))).toEqual({
+    content: "{}",
+    format: "poprako",
+    mode: "keep",
+  });
+  expect(bodyOf(fetchCallAt(fetchMock, 1))).toEqual({
+    content: "text",
+    format: "label_plus",
+    mode: "overwrite",
+  });
+  return JSON.stringify(fetchMock.mock.calls);
+}
+
+async function expectExportRequestEnums(): Promise<string> {
+  const fetchMock = installFetch(
+    Promise.resolve(
+      Response.json({
+        label_plus: "text",
+        raw_idents: null,
+        poprako: {
+          comic_id: "comic_1",
+          comic_title: "Comic",
+          chapter_id: "chapter_1",
+          chapter_index: 0,
+          chapter_subtitle: "Chapter",
+          pages: [],
+        },
+      }),
+    ),
+  );
+  const result = await exportChapter(createTestApi("chapter-token"), "chapter_1");
+  expect(lastFetchCall(fetchMock).url).toBe(
+    "/api/v1/chapters/chapter_1/translations/export?format=poprako%2Clabel_plus",
+  );
+  expect(result).toEqual({
+    success: true,
+    data: {
+      labelPlus: "text",
+      rawIdents: [],
+      poprako: {
+        comicId: "comic_1",
+        comicTitle: "Comic",
+        chapterId: "chapter_1",
+        chapterIndex: 0,
+        chapterSubtitle: "Chapter",
+        pages: [],
+      },
+    },
+  });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  return JSON.stringify(fetchMock.mock.calls);
+}
+
+describe("chapter API", () => {
   test("gets a chapter with auth and unwraps its comic context", async () => {
     useAppStore.getState().setAccessToken("chapter-token");
     const fetchMock = installFetch(
@@ -71,109 +161,22 @@ describe("chapter API", () => {
       },
     });
   });
+});
 
+describe("chapter API", () => {
   test("uses only snake_case enum values in chapter requests", async () => {
-    const stageFetch = installFetch(noContent());
-
-    await updateChapter(createTestApi("chapter-token"), "chapter_1", {
-      workflowTransition: "upload_complete",
-    });
-    await updateChapter(createTestApi("chapter-token"), "chapter_1", {
-      workflowTransition: "typeset_start",
-    });
-
-    expect(bodyOf(fetchCallAt(stageFetch, 0))).toEqual({
-      id: "chapter_1",
-      stage: "raw_provide",
-      oper: "advance",
-    });
-    expect(bodyOf(fetchCallAt(stageFetch, 1))).toEqual({
-      id: "chapter_1",
-      stage: "typeset_redraw",
-      oper: "advance",
-    });
-
-    const importFetch = installFetch(
-      okJson({
-        imported_page_count: 1,
-        imported_unit_count: 2,
-      }),
-    );
-
-    await importChapter(createTestApi("chapter-token"), {
-      chapterId: "chapter_1",
-      content: "{}",
-      format: "json",
-      mode: "keep",
-    });
-    await importChapter(createTestApi("chapter-token"), {
-      chapterId: "chapter_1",
-      content: "text",
-      format: "lp",
-      mode: "overwrite",
-    });
-
-    expect(bodyOf(fetchCallAt(importFetch, 0))).toEqual({
-      content: "{}",
-      format: "poprako",
-      mode: "keep",
-    });
-    expect(bodyOf(fetchCallAt(importFetch, 1))).toEqual({
-      content: "text",
-      format: "label_plus",
-      mode: "overwrite",
-    });
-
-    const exportFetch = installFetch(
-      Promise.resolve(
-        Response.json(
-          {
-            label_plus: "text",
-            raw_idents: null,
-            poprako: {
-              comic_id: "comic_1",
-              comic_title: "Comic",
-              chapter_id: "chapter_1",
-              chapter_index: 0,
-              chapter_subtitle: "Chapter",
-              pages: [],
-            },
-          },
-          { status: 200 },
-        ),
-      ),
-    );
-    const exportResult = await exportChapter(createTestApi("chapter-token"), "chapter_1");
-    expect(lastFetchCall(exportFetch).url).toBe(
-      "/api/v1/chapters/chapter_1/translations/export?format=poprako%2Clabel_plus",
-    );
-    expect(exportResult).toEqual({
-      success: true,
-      data: {
-        labelPlus: "text",
-        rawIdents: [],
-        poprako: {
-          comicId: "comic_1",
-          comicTitle: "Comic",
-          chapterId: "chapter_1",
-          chapterIndex: 0,
-          chapterSubtitle: "Chapter",
-          pages: [],
-        },
-      },
-    });
-    expect(exportFetch).toHaveBeenCalledTimes(1);
-
-    const serializedCalls = JSON.stringify([
-      ...stageFetch.mock.calls,
-      ...importFetch.mock.calls,
-      ...exportFetch.mock.calls,
-    ]);
+    const serializedCalls = [
+      await expectStageRequestEnums(),
+      await expectImportRequestEnums(),
+      await expectExportRequestEnums(),
+    ].join();
     expect(serializedCalls).not.toContain("raw-provide");
     expect(serializedCalls).not.toContain("typeset-redraw");
     expect(serializedCalls).not.toContain("label-plus");
   });
+});
 
+describe("chapter API", () => {
   test("reports export 422 messages through the shared HTTP failure path", async () => {
     const showToast = vi.spyOn(useToastStore.getState(), "showToast");
     installFetch(
@@ -196,7 +199,9 @@ describe("chapter API", () => {
     });
     expect(showToast).not.toHaveBeenCalled();
   });
+});
 
+describe("chapter API", () => {
   test("requests original image names when exporting", async () => {
     const fetchMock = installFetch(
       Promise.resolve(

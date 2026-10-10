@@ -1,12 +1,12 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef } from "react";
 import type { ReactElement } from "react";
 import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
 import { ComicTranslationCard } from "@/route/_authenticated/_shell/business/comic-list/ComicTranslationCard";
-import { useToastStore } from "@/shared/component/notification-toast/toast-store";
-import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { Result } from "@/shared/utility/result";
 import type { ComicTranslationListItem } from "@/route/_authenticated/_shell/business/comic-list/comic-list";
+import { useComicTranslationList } from "@/route/_authenticated/_shell/business/comic-list/use-comic-translation-list";
+import { useComicTranslationPagination } from "@/route/_authenticated/_shell/business/comic-list/use-comic-translation-pagination";
 
 type Props = {
   onLoadComics: (offset: number, limit: number) => Promise<Result<ComicTranslationListItem[]>>;
@@ -14,126 +14,19 @@ type Props = {
 };
 
 export function ComicTranslationList({ onLoadComics, onComicClick }: Props): ReactElement {
-  const pageSize = 12;
-  const [comics, setComics] = useState<ComicTranslationListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const isLoadingRef = useRef(false);
-  const hasMoreRef = useRef(true);
-  const offsetRef = useRef(0);
-  const { showToast } = useToastStore();
-
-  const loadComics = useCallback(
-    async (shouldReset = false) => {
-      if (isLoadingRef.current) {
-        return;
-      }
-      if (!shouldReset && !hasMoreRef.current) {
-        return;
-      }
-
-      if (shouldReset) {
-        hasMoreRef.current = true;
-        offsetRef.current = 0;
-        setComics([]);
-        setHasMore(true);
-      }
-
-      const requestOffset = shouldReset ? 0 : offsetRef.current;
-
-      isLoadingRef.current = true;
-      setIsLoading(true);
-
-      try {
-        const result = await onLoadComics(requestOffset, pageSize);
-        if (!result.success) {
-          console.error("[ComicTranslationList] 加载漫画列表失败:", result.error);
-          showLocalApiFailure(result, showToast);
-          hasMoreRef.current = false;
-          setHasMore(false);
-          return;
-        }
-
-        const items = result.data;
-
-        const nextOffset = requestOffset + items.length;
-        const isNextHasMore = items.length === pageSize;
-
-        offsetRef.current = nextOffset;
-        hasMoreRef.current = isNextHasMore;
-        setHasMore(isNextHasMore);
-        setComics((prev) => (shouldReset ? items : [...prev, ...items]));
-      } catch (error) {
-        console.error("[ComicTranslationList] 加载漫画列表异常:", error);
-        showLocalCaughtError(error, showToast, "发生未知错误");
-      } finally {
-        isLoadingRef.current = false;
-        setIsLoading(false);
-      }
-    },
-    [onLoadComics, pageSize, showToast],
-  );
-
-  // 保持最新的 loadComics 引用，供 post-load check 使用
-  const loadComicsRef = useRef(loadComics);
-  useEffect(() => {
-    loadComicsRef.current = loadComics;
+  const { comics, isLoading, hasMore, loadComics, loadComicsRef, prevIsLoadingRef, hasMoreRef } =
+    useComicTranslationList(onLoadComics);
+  useComicTranslationPagination({
+    loadComics,
+    loadComicsRef,
+    loadMoreRef,
+    scrollContainerRef,
+    isLoading,
+    prevIsLoadingRef,
+    hasMoreRef,
   });
-
-  useEffect(() => {
-    isLoadingRef.current = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void loadComics(true);
-  }, [loadComics]);
-
-  // 每次加载完成后，检查 loadMoreRef 是否仍在可视区。
-  // 如果仍在可视区（列表没撑满视口）且 hasMore 为 true，则继续加载。
-  // 这解决了 observer 在 isLoading=true 时触发被忽略、之后不再触发的竞态问题。
-  const prevIsLoadingRef = useRef(isLoading);
-  useEffect(() => {
-    const wasLoading = prevIsLoadingRef.current;
-    prevIsLoadingRef.current = isLoading;
-
-    if (!wasLoading || isLoading) {
-      return;
-    }
-    if (!hasMoreRef.current) {
-      return;
-    }
-    if (!loadMoreRef.current || !scrollContainerRef.current) {
-      return;
-    }
-
-    const containerRect = scrollContainerRef.current.getBoundingClientRect();
-    const targetRect = loadMoreRef.current.getBoundingClientRect();
-
-    if (targetRect.top < containerRect.bottom) {
-      void loadComicsRef.current();
-    }
-  }, [isLoading]);
-
-  useEffect(() => {
-    if (!loadMoreRef.current) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const firstEntry = entries[0];
-        if (firstEntry?.isIntersecting) {
-          void loadComics();
-        }
-      },
-      { root: scrollContainerRef.current },
-    );
-    observer.observe(loadMoreRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [loadComics]);
 
   return (
     <div className={clsx("w-full h-full min-h-0 flex flex-col overflow-hidden")}>

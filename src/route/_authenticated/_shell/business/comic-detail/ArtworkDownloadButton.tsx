@@ -1,5 +1,5 @@
 import type { ApiClient } from "@/api/client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { JSX } from "react";
 import { FileDown } from "lucide-react";
 import { useApiClient } from "@/route/business/api-context";
@@ -10,24 +10,17 @@ import { exportArtwork } from "@/api/chapter/artwork-api";
 import { ActionButton } from "./ActionButton";
 import { sanitizeExportFileName } from "./export-download-utils";
 type Props = { chapterId: string; onExported: () => void };
-export function ArtworkDownloadButton({ chapterId, onExported }: Props): JSX.Element {
-  const client = useApiClient();
-  const showToast = useToastStore((state) => state.showToast);
-  const generation = useAppStore((state) => state.generation);
-  const requestRef = useRef<AbortController | null>(null);
-  const [busy, setBusy] = useState<{
-    chapterId: string;
-    client: ApiClient;
-    generation: number;
-  } | null>(null);
-  useEffect(
-    () => () => {
-      requestRef.current?.abort();
-      requestRef.current = null;
-    },
-    [chapterId, client, generation],
-  );
-  async function download(): Promise<void> {
+
+function useArtworkDownload(
+  chapterId: string,
+  client: ApiClient,
+  generation: number,
+  showToast: (message: string, type: "success" | "error") => void,
+  requestRef: { current: AbortController | null },
+  setBusy: (value: { chapterId: string; client: ApiClient; generation: number } | null) => void,
+  onExported: () => void,
+): () => Promise<void> {
+  return useCallback(async (): Promise<void> => {
     if (requestRef.current && !requestRef.current.signal.aborted) return;
     const request = new AbortController();
     requestRef.current = request;
@@ -61,7 +54,35 @@ export function ArtworkDownloadButton({ chapterId, onExported }: Props): JSX.Ele
         setBusy(null);
       }
     }
-  }
+  }, [chapterId, client, generation, onExported, requestRef, setBusy, showToast]);
+}
+
+export function ArtworkDownloadButton({ chapterId, onExported }: Props): JSX.Element {
+  const client = useApiClient();
+  const showToast = useToastStore((state) => state.showToast);
+  const generation = useAppStore((state) => state.generation);
+  const requestRef = useRef<AbortController | null>(null);
+  const [busy, setBusy] = useState<{
+    chapterId: string;
+    client: ApiClient;
+    generation: number;
+  } | null>(null);
+  useEffect(
+    () => () => {
+      requestRef.current?.abort();
+      requestRef.current = null;
+    },
+    [chapterId, client, generation],
+  );
+  const download = useArtworkDownload(
+    chapterId,
+    client,
+    generation,
+    showToast,
+    requestRef,
+    setBusy,
+    onExported,
+  );
   return (
     <ActionButton
       icon={FileDown}

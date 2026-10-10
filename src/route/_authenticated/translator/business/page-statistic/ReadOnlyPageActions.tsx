@@ -1,5 +1,6 @@
 import type { JSX } from "react/jsx-runtime";
 import { useEffect, useRef, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { Popover } from "radix-ui";
 import { ChartNoAxesGantt, CircleArrowRight, Loader2 } from "lucide-react";
 import clsx from "clsx";
@@ -20,15 +21,63 @@ type Props = {
   onNavigate: (index: number) => Promise<void>;
 };
 
-export function ReadOnlyPageActions({
+type NextPageNavigation = {
+  isDisabled: boolean;
+  isLoadingNext: boolean;
+  requestRef: { current: number };
+  setIsLoadingNext: Dispatch<SetStateAction<boolean>>;
+  onListPageUnitDiffStats: Props["onListPageUnitDiffStats"];
+  pages: Props["pages"];
+  currentPageId: string;
+  handleNavigate: (index: number) => Promise<void>;
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"];
+};
+
+async function navigateToNextEditedPage(options: NextPageNavigation): Promise<void> {
+  const { isDisabled, isLoadingNext } = options;
+  if (isDisabled || isLoadingNext) return;
+  const request = ++options.requestRef.current;
+  options.setIsLoadingNext(true);
+  try {
+    const stats = await options.onListPageUnitDiffStats();
+    if (request !== options.requestRef.current) return;
+    const editedIds = stats
+      .filter((stat) => stat.editedUnitCount > 0 || stat.proofreaderAppendUnitCount > 0)
+      .map((stat) => stat.pageId);
+    const nextIndex = findNextEditedPageIndex(
+      options.pages,
+      options.pages.findIndex((page) => page.id === options.currentPageId),
+      editedIds,
+    );
+    if (nextIndex < 0) {
+      options.showToast(
+        editedIds.length === 0 ? "当前章节没有修改页面" : "后面没有修改页面了",
+        "info",
+      );
+      return;
+    }
+    await options.handleNavigate(nextIndex);
+  } catch (error) {
+    if (request !== options.requestRef.current) return;
+    console.error("[PageUnitStats] 加载修改页面失败", error);
+    showLocalCaughtError(error, options.showToast, "获取修改页面失败，请重试");
+  } finally {
+    if (request === options.requestRef.current) options.setIsLoadingNext(false);
+  }
+}
+
+function useReadOnlyPageNavigation({
   pages,
   currentPageId,
   isDisabled,
-  isOpen,
   onOpenChange,
   onListPageUnitDiffStats,
   onNavigate,
-}: Props): JSX.Element {
+}: Props): {
+  isLoadingNext: boolean;
+  handleNavigate: (index: number) => Promise<void>;
+  handleNextEditedPage: () => Promise<void>;
+} {
   const [isLoadingNext, setIsLoadingNext] = useState(false);
   const requestRef = useRef(0);
   const showToast = useToastStore((state) => state.showToast);
@@ -51,34 +100,40 @@ export function ReadOnlyPageActions({
   }
 
   async function handleNextEditedPage(): Promise<void> {
-    if (isDisabled || isLoadingNext) return;
-    const request = ++requestRef.current;
-    setIsLoadingNext(true);
-    try {
-      const stats = await onListPageUnitDiffStats();
-      if (request !== requestRef.current) return;
-      const editedIds = stats
-        .filter((stat) => stat.editedUnitCount > 0 || stat.proofreaderAppendUnitCount > 0)
-        .map((stat) => stat.pageId);
-      const nextIndex = findNextEditedPageIndex(
-        pages,
-        pages.findIndex((page) => page.id === currentPageId),
-        editedIds,
-      );
-      if (nextIndex < 0) {
-        showToast(editedIds.length === 0 ? "当前章节没有修改页面" : "后面没有修改页面了", "info");
-        return;
-      }
-      await handleNavigate(nextIndex);
-    } catch (error) {
-      if (request !== requestRef.current) return;
-
-      console.error("[PageUnitStats] 加载修改页面失败", error);
-      showLocalCaughtError(error, showToast, "获取修改页面失败，请重试");
-    } finally {
-      if (request === requestRef.current) setIsLoadingNext(false);
-    }
+    await navigateToNextEditedPage({
+      isDisabled,
+      isLoadingNext,
+      requestRef,
+      setIsLoadingNext,
+      onListPageUnitDiffStats,
+      pages,
+      currentPageId,
+      handleNavigate,
+      showToast,
+    });
   }
+
+  return { isLoadingNext, handleNavigate, handleNextEditedPage };
+}
+
+export function ReadOnlyPageActions({
+  pages,
+  currentPageId,
+  isDisabled,
+  isOpen,
+  onOpenChange,
+  onListPageUnitDiffStats,
+  onNavigate,
+}: Props): JSX.Element {
+  const { isLoadingNext, handleNavigate, handleNextEditedPage } = useReadOnlyPageNavigation({
+    pages,
+    currentPageId,
+    isDisabled,
+    isOpen,
+    onOpenChange,
+    onListPageUnitDiffStats,
+    onNavigate,
+  });
 
   return (
     <div className="flex items-center gap-2">

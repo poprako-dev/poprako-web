@@ -37,66 +37,79 @@ export function PagePicker({ currentPageIndex, pages, onSelect, children }: Prop
       )}
     >
       {pages.map((page, index) => (
-        <button
-          type="button"
+        <PagePickerItem
           key={page.pageId}
-          onClick={() => {
-            onSelect(index);
-          }}
-          aria-current={index === currentPageIndex ? "page" : undefined}
-          className={clsx(
-            "w-full flex items-center justify-between px-3 py-1.5",
-            "text-xs hover:bg-surface-stone-100 transition-colors active:bg-surface-stone-200",
-            "border-none outline-none",
-            index === currentPageIndex && "bg-surface-stone-100",
-          )}
-        >
-          <span className="flex items-center gap-1.5">
-            {page.totalUnits !== undefined && (
-              <span
-                className={clsx(
-                  "size-2 shrink-0 rounded-full",
-                  page.totalUnits > 0 && page.proofreadUnits >= page.totalUnits
-                    ? "bg-surface-green-500"
-                    : page.totalUnits > 0 && page.translatedUnits >= page.totalUnits
-                      ? "bg-surface-orange-400"
-                      : "bg-surface-gray-400",
-                )}
-              />
-            )}
-            <span className="text-ink-stone-700 font-medium">P{index + 1}</span>
-            {page.flaggedUnits !== undefined && page.flaggedUnits > 0 && (
-              <span
-                title={`${String(page.flaggedUnits)} 个待回看的标记`}
-                aria-label={`${String(page.flaggedUnits)} 个待回看的标记`}
-                className="flex shrink-0 items-center text-[var(--status-flag)]"
-              >
-                <Star size={12} fill="currentColor" aria-hidden />
-              </span>
-            )}
-            {page.hasLocalDraft && (
-              <span
-                role="img"
-                aria-label="有未保存草稿"
-                title="有未保存草稿"
-                className="flex shrink-0 items-center text-text-muted-warm"
-              >
-                <PencilLine size={12} aria-hidden />
-              </span>
-            )}
-          </span>
-          {page.totalUnits !== undefined && (
-            <span className="flex items-center font-mono text-[11px]">
-              <span className="text-text-muted-warm">{page.totalUnits}</span>
-              <span className="text-ink-stone-300 mx-px">/</span>
-              <span className="text-text-warning">{page.translatedUnits}</span>
-              <span className="text-ink-stone-300 mx-px">/</span>
-              <span className="text-text-pink">{page.proofreadUnits}</span>
-            </span>
-          )}
-        </button>
+          page={page}
+          index={index}
+          currentPageIndex={currentPageIndex}
+          onSelect={onSelect}
+        />
       ))}
       {children}
     </div>
+  );
+}
+
+type ItemProps = Pick<Props, "currentPageIndex" | "onSelect"> & { page: PageStat; index: number };
+
+function PagePickerItem({ page, index, currentPageIndex, onSelect }: ItemProps): ReactElement {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        onSelect(index);
+      }}
+      aria-current={index === currentPageIndex ? "page" : undefined}
+      className={clsx(
+        "w-full flex items-center justify-between px-3 py-1.5",
+        "text-xs hover:bg-surface-stone-100 transition-colors active:bg-surface-stone-200",
+        "border-none outline-none",
+        index === currentPageIndex && "bg-surface-stone-100",
+      )}
+    >
+      <span className="flex items-center gap-1.5">
+        {page.totalUnits !== undefined && (
+          <span
+            className={clsx(
+              "size-2 shrink-0 rounded-full",
+              page.totalUnits > 0 && page.proofreadUnits >= page.totalUnits
+                ? "bg-surface-green-500"
+                : page.totalUnits > 0 && page.translatedUnits >= page.totalUnits
+                  ? "bg-surface-orange-400"
+                  : "bg-surface-gray-400",
+            )}
+          />
+        )}
+        <span className="text-ink-stone-700 font-medium">P{index + 1}</span>
+        {page.flaggedUnits !== undefined && page.flaggedUnits > 0 && (
+          <span
+            title={`${String(page.flaggedUnits)} 个待回看的标记`}
+            aria-label={`${String(page.flaggedUnits)} 个待回看的标记`}
+            className="flex shrink-0 items-center text-[var(--status-flag)]"
+          >
+            <Star size={12} fill="currentColor" aria-hidden />
+          </span>
+        )}
+        {page.hasLocalDraft && (
+          <span
+            role="img"
+            aria-label="有未保存草稿"
+            title="有未保存草稿"
+            className="flex shrink-0 items-center text-text-muted-warm"
+          >
+            <PencilLine size={12} aria-hidden />
+          </span>
+        )}
+      </span>
+      {page.totalUnits !== undefined && (
+        <span className="flex items-center font-mono text-[11px]">
+          <span className="text-text-muted-warm">{page.totalUnits}</span>
+          <span className="text-ink-stone-300 mx-px">/</span>
+          <span className="text-text-warning">{page.translatedUnits}</span>
+          <span className="text-ink-stone-300 mx-px">/</span>
+          <span className="text-text-pink">{page.proofreadUnits}</span>
+        </span>
+      )}
+    </button>
   );
 }

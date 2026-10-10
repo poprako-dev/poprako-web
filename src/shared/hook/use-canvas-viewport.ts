@@ -15,27 +15,17 @@ type Args = {
   imageSrc: PageImageSource | null;
 };
 
-export function useCanvasViewport({ imageSrc }: Args): {
+type Viewport = {
   containerRef: React.RefObject<HTMLDivElement | null>;
   imgRef: React.RefObject<HTMLImageElement | HTMLCanvasElement | null>;
   transform: Transform;
   setTransform: React.Dispatch<React.SetStateAction<Transform>>;
   containerSize: { w: number; h: number };
   handleWheel: (e: WheelEvent) => void;
-} {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement | HTMLCanvasElement>(null);
-  const [transform, setTransform] = useState<Transform>({
-    scale: 1,
-    offsetX: 0,
-    offsetY: 0,
-  });
-  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+};
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect -- reset transform when the image source changes.
-    setTransform({ scale: 1, offsetX: 0, offsetY: 0 });
-  }, [imageSrc]);
+function useContainerSize(containerRef: Viewport["containerRef"]): Viewport["containerSize"] {
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
 
   useEffect(() => {
     const element = containerRef.current;
@@ -56,45 +46,76 @@ export function useCanvasViewport({ imageSrc }: Args): {
       observer.disconnect();
       if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
     };
-  }, []);
+  }, [containerRef]);
 
-  const handleWheel = useCallback((e: WheelEvent) => {
-    const img = imgRef.current;
-    const container = containerRef.current;
-    if (!img || !container) return;
+  return containerSize;
+}
 
-    const imgRect = img.getBoundingClientRect();
-    if (
-      e.clientX < imgRect.left ||
-      e.clientX > imgRect.right ||
-      e.clientY < imgRect.top ||
-      e.clientY > imgRect.bottom
-    ) {
-      return;
-    }
+function useViewportWheel(
+  imgRef: Viewport["imgRef"],
+  containerRef: Viewport["containerRef"],
+  setTransform: Viewport["setTransform"],
+): Viewport["handleWheel"] {
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      const img = imgRef.current;
+      const container = containerRef.current;
+      if (!img || !container) return;
 
-    e.preventDefault();
-    const direction = e.deltaY < 0 ? 1 : -1;
-    const factor = 1 + ZOOM_STEP * direction;
+      const imgRect = img.getBoundingClientRect();
+      if (
+        e.clientX < imgRect.left ||
+        e.clientX > imgRect.right ||
+        e.clientY < imgRect.top ||
+        e.clientY > imgRect.bottom
+      ) {
+        return;
+      }
 
-    setTransform((previous) => {
-      const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, previous.scale * factor));
-      if (scale === previous.scale) return previous;
+      e.preventDefault();
+      const direction = e.deltaY < 0 ? 1 : -1;
+      const factor = 1 + ZOOM_STEP * direction;
 
-      const actualFactor = scale / previous.scale;
-      const containerRect = container.getBoundingClientRect();
-      const centerX = containerRect.left + containerRect.width / 2;
-      const centerY = containerRect.top + containerRect.height / 2;
-      const mouseRelX = e.clientX - centerX - previous.offsetX;
-      const mouseRelY = e.clientY - centerY - previous.offsetY;
+      setTransform((previous) => {
+        const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, previous.scale * factor));
+        if (scale === previous.scale) return previous;
 
-      return {
-        scale,
-        offsetX: previous.offsetX - mouseRelX * (actualFactor - 1),
-        offsetY: previous.offsetY - mouseRelY * (actualFactor - 1),
-      };
-    });
-  }, []);
+        const actualFactor = scale / previous.scale;
+        const containerRect = container.getBoundingClientRect();
+        const centerX = containerRect.left + containerRect.width / 2;
+        const centerY = containerRect.top + containerRect.height / 2;
+        const mouseRelX = e.clientX - centerX - previous.offsetX;
+        const mouseRelY = e.clientY - centerY - previous.offsetY;
+
+        return {
+          scale,
+          offsetX: previous.offsetX - mouseRelX * (actualFactor - 1),
+          offsetY: previous.offsetY - mouseRelY * (actualFactor - 1),
+        };
+      });
+    },
+    [containerRef, imgRef, setTransform],
+  );
+
+  return handleWheel;
+}
+
+export function useCanvasViewport({ imageSrc }: Args): Viewport {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement | HTMLCanvasElement>(null);
+  const [transform, setTransform] = useState<Transform>({
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+  });
+  const containerSize = useContainerSize(containerRef);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect -- reset transform when the image source changes.
+    setTransform({ scale: 1, offsetX: 0, offsetY: 0 });
+  }, [imageSrc]);
+
+  const handleWheel = useViewportWheel(imgRef, containerRef, setTransform);
 
   return {
     containerRef,

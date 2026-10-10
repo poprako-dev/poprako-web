@@ -41,37 +41,50 @@ export function createDraftDatabase(): DraftDatabase {
     change: (rows: DraftRow[]) => { rows: DraftRow[]; result: T },
   ): Promise<T> {
     const db = await open();
-    return await new Promise<T>((resolve, reject) => {
-      const tx = db.transaction("pages", "readwrite");
-      const store = tx.objectStore("pages");
-      let result: T;
-      let failure: unknown;
-      const request = store.getAll();
-      request.onsuccess = () => {
-        try {
-          const before = request.result as DraftRow[];
-          const next = change(before);
-          result = next.result;
-          const keys = new Set(next.rows.map((r) => r.key));
-          for (const row of before) if (!keys.has(row.key)) store.delete(row.key);
-          for (const row of next.rows) {
-            if (before.find((r) => r.key === row.key)?.raw !== row.raw) store.put(row);
-          }
-        } catch (error) {
-          failure = error;
-          tx.abort();
-        }
-      };
-      tx.oncomplete = () => {
-        resolve(result);
-      };
-      tx.onabort = () => {
-        reject(failure instanceof Error ? failure : (tx.error ?? new Error("草稿存储写入失败")));
-      };
-      tx.onerror = () => {
-        /* onabort reports the transaction failure. */
-      };
-    });
+    return transactDraftRows(db, change);
   }
   return { transact };
+}
+
+function transactDraftRows<T>(
+  db: IDBDatabase,
+  change: (rows: DraftRow[]) => { rows: DraftRow[]; result: T },
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const tx = db.transaction("pages", "readwrite");
+    const store = tx.objectStore("pages");
+    let result: T;
+    let failure: unknown;
+    const request = store.getAll();
+    request.onsuccess = () => {
+      try {
+        const before = request.result as DraftRow[];
+        const next = change(before);
+        result = next.result;
+        applyDraftRowChanges(store, before, next.rows);
+      } catch (error) {
+        failure = error;
+        tx.abort();
+      }
+    };
+    tx.oncomplete = () => {
+      resolve(result);
+    };
+    tx.onabort = () => {
+      reject(failure instanceof Error ? failure : (tx.error ?? new Error("草稿存储写入失败")));
+    };
+    tx.onerror = () => {
+      /* onabort reports the transaction failure. */
+    };
+  });
+}
+
+function applyDraftRowChanges(store: IDBObjectStore, before: DraftRow[], next: DraftRow[]): void {
+  const keys = new Set(next.map((row) => row.key));
+  for (const row of before) {
+    if (!keys.has(row.key)) store.delete(row.key);
+  }
+  for (const row of next) {
+    if (before.find((previous) => previous.key === row.key)?.raw !== row.raw) store.put(row);
+  }
 }

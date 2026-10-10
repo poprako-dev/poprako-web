@@ -10,6 +10,7 @@ import { LoadingCircle } from "@/shared/component/LoadingCircle";
 import { WebReviewWorkspace } from "./WebReviewWorkspace";
 import { IssueImportDialog } from "@/route/_authenticated/business/issue/IssueImportDialog";
 import type { ReviewerProject } from "./reviewer-props";
+import type { PageArtwork } from "@/route/_authenticated/business/artwork/artwork";
 
 type Props = { chapterId: string; startPageId: string; onExit: () => void };
 type State =
@@ -23,79 +24,140 @@ type State =
       initialPageId: string;
     };
 
+type CurrentPage = { chapterId: string; entryPageId: string; id: string };
+type LoadedState = { key: string; state: State } | null;
+
+function mapReviewerPages(pages: PageArtwork[], chapterId: string): ReviewerProject["pages"] {
+  return pages
+    .filter((page) => page.chapterId === chapterId)
+    .sort((a, b) => a.index - b.index)
+    .map((page) => ({
+      id: page.id,
+      index: page.index,
+      imageUrl: page.imageUrl,
+      imageOptimizedUrl: page.imageOptimizedUrl,
+    }));
+}
+
+function resolveInitialPageId(
+  pages: ReviewerProject["pages"],
+  selected: CurrentPage,
+  chapterId: string,
+  startPageId: string,
+): string {
+  if (
+    selected.chapterId === chapterId &&
+    selected.entryPageId === startPageId &&
+    pages.some((page) => page.id === selected.id)
+  ) {
+    return selected.id;
+  }
+  return pages.find((page) => page.id === startPageId)?.id ?? pages[0]?.id ?? "";
+}
+
+function readyReviewerState(
+  key: string,
+  chapterId: string,
+  pages: ReviewerProject["pages"],
+  canImport: boolean,
+  permissionError: string | null,
+  initialPageId: string,
+): LoadedState {
+  return {
+    key,
+    state: {
+      status: "ready",
+      project: { chapterId, pages },
+      canImport,
+      permissionError,
+      initialPageId,
+    },
+  };
+}
+
+function setReviewerError(
+  setLoaded: (loaded: LoadedState) => void,
+  key: string,
+  message: string,
+): void {
+  setLoaded({ key, state: { status: "error", message } });
+}
+
+async function loadReviewerProject(args: {
+  client: ReturnType<typeof useApiClient>;
+  chapterId: string;
+  startPageId: string;
+  userId: string | undefined;
+  key: string;
+  currentPageRef: { current: CurrentPage };
+  isCurrent: () => boolean;
+  setLoaded: (loaded: LoadedState) => void;
+}): Promise<void> {
+  const { client, chapterId, startPageId, userId, key, currentPageRef, isCurrent, setLoaded } =
+    args;
+  try {
+    const [chapter, pages, assignment] = await Promise.all([
+      getChapter(client, chapterId),
+      listPageArtworks(client, chapterId),
+      userId
+        ? getIssueAssignment(client, chapterId, userId)
+        : Promise.resolve({ success: true as const, data: undefined }),
+    ]);
+    if (!isCurrent()) return;
+    if (!chapter.success) {
+      setReviewerError(setLoaded, key, chapter.error);
+      return;
+    }
+    if (!pages.success) {
+      setReviewerError(setLoaded, key, pages.error);
+      return;
+    }
+    const initialPages = mapReviewerPages(pages.data, chapterId);
+    const initialPageId = resolveInitialPageId(
+      initialPages,
+      currentPageRef.current,
+      chapterId,
+      startPageId,
+    );
+    const canImport = assignment.success && canImportIssues(chapter.data, assignment.data);
+    const permissionError = assignment.success ? null : assignment.error;
+    setLoaded(
+      readyReviewerState(key, chapterId, initialPages, canImport, permissionError, initialPageId),
+    );
+  } catch (error) {
+    if (!isCurrent()) return;
+    console.error("[Reviewer] 加载页面失败", { chapterId, error });
+    setReviewerError(setLoaded, key, error instanceof Error ? error.message : "页面加载失败");
+  }
+}
+
 export function WebReviewer({ chapterId, startPageId, onExit }: Props): JSX.Element {
   const client = useApiClient();
   const generation = useAppStore((state) => state.generation);
   const userId = useAppStore((state) => state.loginState?.userInfo.id);
   const [retry, setRetry] = useState(0);
   const [importOpen, setImportOpen] = useState(false);
-  const currentPageRef = useRef({ chapterId, entryPageId: startPageId, id: startPageId });
-  const [loaded, setLoaded] = useState<{ key: string; state: State } | null>(null);
+  const currentPageRef = useRef<CurrentPage>({
+    chapterId,
+    entryPageId: startPageId,
+    id: startPageId,
+  });
+  const [loaded, setLoaded] = useState<LoadedState>(null);
   const key = `${chapterId}:${startPageId}:${String(generation)}:${String(retry)}:${userId ?? ""}`;
   const state: State = loaded?.key === key ? loaded.state : { status: "loading" };
 
   useEffect(() => {
     let current = true;
-    async function load(): Promise<void> {
-      try {
-        const [chapter, pages, assignment] = await Promise.all([
-          getChapter(client, chapterId),
-          listPageArtworks(client, chapterId),
-          userId
-            ? getIssueAssignment(client, chapterId, userId)
-            : Promise.resolve({ success: true as const, data: undefined }),
-        ]);
-        if (!current) return;
-        if (!chapter.success) {
-          setLoaded({ key, state: { status: "error", message: chapter.error } });
-          return;
-        }
-        if (!pages.success) {
-          setLoaded({ key, state: { status: "error", message: pages.error } });
-          return;
-        }
-        const orderedPages = pages.data
-          .filter((page) => page.chapterId === chapterId)
-          .sort((a, b) => a.index - b.index)
-          .map((page) => ({
-            id: page.id,
-            index: page.index,
-            imageUrl: page.imageUrl,
-            imageOptimizedUrl: page.imageOptimizedUrl,
-          }));
-        const initialPages = orderedPages;
-        const selected = currentPageRef.current;
-        const initialPageId =
-          selected.chapterId === chapterId &&
-          selected.entryPageId === startPageId &&
-          initialPages.some((page) => page.id === selected.id)
-            ? selected.id
-            : (initialPages.find((page) => page.id === startPageId)?.id ??
-              initialPages[0]?.id ??
-              "");
-        setLoaded({
-          key,
-          state: {
-            status: "ready",
-            project: { chapterId, pages: initialPages },
-            canImport: assignment.success && canImportIssues(chapter.data, assignment.data),
-            permissionError: assignment.success ? null : assignment.error,
-            initialPageId,
-          },
-        });
-      } catch (error) {
-        if (!current) return;
-        console.error("[Reviewer] 加载页面失败", { chapterId, error });
-        setLoaded({
-          key,
-          state: {
-            status: "error",
-            message: error instanceof Error ? error.message : "页面加载失败",
-          },
-        });
-      }
-    }
-    void load();
+    void loadReviewerProject({
+      client,
+      chapterId,
+      startPageId,
+      userId,
+      key,
+      currentPageRef,
+      isCurrent: () => current,
+      setLoaded,
+    });
     return () => {
       current = false;
     };

@@ -76,27 +76,86 @@ function issuesForPage(pageId: string): IssueInfo[] {
       layerName: null,
     },
   ];
-  if (pageId.endsWith("3")) {
-    issues.push({
-      id: `${pageId}-5`,
-      pageArtworkId: pageId,
-      index: 4,
-      variant: "区域重叠",
-      note: "同一区域的另一条 issue，可分别选中。",
-      rect: { xCoord: 0.72, yCoord: 0.12, width: 0.18, height: 0.09 },
-      layerName: "对白",
-    });
-    issues.push({
-      id: `${pageId}-6`,
-      pageArtworkId: pageId,
-      index: 5,
-      variant: "长文本",
-      note: "这是一条需要完整保留换行与说明的 issue。\n".repeat(16),
-      rect: null,
-      layerName: null,
-    });
-  }
+  appendOverlappingIssues(issues, pageId);
   return issues;
+}
+
+function appendOverlappingIssues(issues: IssueInfo[], pageId: string): void {
+  if (!pageId.endsWith("3")) return;
+  issues.push({
+    id: `${pageId}-5`,
+    pageArtworkId: pageId,
+    index: 4,
+    variant: "区域重叠",
+    note: "同一区域的另一条 issue，可分别选中。",
+    rect: { xCoord: 0.72, yCoord: 0.12, width: 0.18, height: 0.09 },
+    layerName: "对白",
+  });
+  issues.push({
+    id: `${pageId}-6`,
+    pageArtworkId: pageId,
+    index: 5,
+    variant: "长文本",
+    note: "这是一条需要完整保留换行与说明的 issue。\n".repeat(16),
+    rect: null,
+    layerName: null,
+  });
+}
+
+const occlusionIssueTemplates: Omit<IssueInfo, "id" | "pageArtworkId">[] = [
+  {
+    index: 0,
+    variant: "文字位置",
+    note: "与 2 的左上角接近，两个标号互相遮叠。",
+    rect: { xCoord: 0.66, yCoord: 0.12, width: 0.18, height: 0.09 },
+    layerName: "对白",
+  },
+  {
+    index: 1,
+    variant: "断行",
+    note: "与 1 的标号重叠；从列表选择可观察选中后的遮挡。",
+    rect: { xCoord: 0.67, yCoord: 0.125, width: 0.18, height: 0.09 },
+    layerName: "对白",
+  },
+  {
+    index: 2,
+    variant: "文字位置",
+    note: "上边框被 4 的标号压住。",
+    rect: { xCoord: 0.09, yCoord: 0.42, width: 0.2, height: 0.12 },
+    layerName: "对白",
+  },
+  {
+    index: 3,
+    variant: "断行",
+    note: "标号跨过 3 的上边框，两个矩形也有重叠。",
+    rect: { xCoord: 0.18, yCoord: 0.442, width: 0.2, height: 0.12 },
+    layerName: "对白",
+  },
+  {
+    index: 4,
+    variant: "文字位置",
+    note: "与 6 的矩形相交，框线互相遮叠。",
+    rect: { xCoord: 0.1, yCoord: 0.73, width: 0.5, height: 0.13 },
+    layerName: null,
+  },
+  {
+    index: 5,
+    variant: "断行",
+    note: "与 5 的区域重叠；切换选中项可对比框线的层级。",
+    rect: { xCoord: 0.43, yCoord: 0.77, width: 0.3, height: 0.12 },
+    layerName: null,
+  },
+];
+
+export function loadOcclusionIssues(pageId: string, signal: AbortSignal): Promise<IssueInfo[]> {
+  signal.throwIfAborted();
+  return Promise.resolve(
+    occlusionIssueTemplates.map((issue) => ({
+      ...issue,
+      id: `${pageId}-${String(issue.index + 1)}`,
+      pageArtworkId: pageId,
+    })),
+  );
 }
 
 export function createIssueStoryArgs(

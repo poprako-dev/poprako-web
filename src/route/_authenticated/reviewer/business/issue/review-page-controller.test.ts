@@ -46,6 +46,8 @@ describe("Reviewer resource ownership", () => {
     controller.dispose();
     expect(loaded.dispose).toHaveBeenCalledOnce();
   });
+});
+describe("Reviewer resource ownership", () => {
   it("disposes stale PSDs and ignores late issues after navigation", async () => {
     const first = deferred<ReviewPage>();
     const oldIssues = deferred<IssueInfo[]>();
@@ -67,6 +69,8 @@ describe("Reviewer resource ownership", () => {
       issues: [issue("new")],
     });
   });
+});
+describe("Reviewer resource ownership", () => {
   it("renders PSD while issues remain pending and retries issues without decoding again", async () => {
     const pending = deferred<IssueInfo[]>();
     const pages = vi.fn(() => Promise.resolve(page()));
@@ -82,6 +86,8 @@ describe("Reviewer resource ownership", () => {
     expect(pages).toHaveBeenCalledOnce();
     expect(controller.getSnapshot().issues).toEqual([]);
   });
+});
+describe("Reviewer resource ownership", () => {
   it("keeps PSD on note failure and succeeds after scoped retry", async () => {
     const loaded = page();
     const issues = vi
@@ -102,6 +108,8 @@ describe("Reviewer resource ownership", () => {
     expect(pages).toHaveBeenCalledOnce();
     expect(controller.getSnapshot()).toMatchObject({ issuesError: null, issues: [issue("fixed")] });
   });
+});
+describe("Reviewer resource ownership", () => {
   it("supports absent issues and preserves issues across a PSD retry", async () => {
     const pages = vi.fn().mockRejectedValueOnce(new Error("bad PSD")).mockResolvedValue(page());
     const issues = vi.fn(() => Promise.resolve([issue("keep")]));
@@ -121,6 +129,8 @@ describe("Reviewer resource ownership", () => {
       issues: [],
     });
   });
+});
+describe("Reviewer resource ownership", () => {
   it("aborts requests on exit and never adopts late page resources", async () => {
     const late = deferred<ReviewPage>();
     const loaded = page();

@@ -6,6 +6,7 @@ import {
   TRANSLATOR_ID,
 } from "@/route/_authenticated/translator/business/test/base-translator-story-data";
 import { unitTranslatedText } from "@/route/_authenticated/translator/business/unit/unit";
+import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
 import {
   createStoryArgs,
   mockTerminology,
@@ -41,6 +42,12 @@ async function waitForCanvasImage(canvasElement: HTMLElement): Promise<void> {
     await expect(image?.complete).toBe(true);
     await expect(image?.naturalWidth).toBeGreaterThan(0);
   });
+}
+
+async function expectUnattributedUnit(unit: UnitInfo | undefined): Promise<void> {
+  await expect(unit).toMatchObject({ isFlagged: false, translatedText: "需要确认的译文" });
+  await expect(unit?.translatorId).toBeUndefined();
+  await expect(unit?.proofreaderId).toBeUndefined();
 }
 
 export const WithProofread: Story = {
@@ -346,11 +353,6 @@ export const FlaggedSave: Story = {
       await expect(canvas.getByRole("button", { name: "保存 · 已保存" })).toBeEnabled();
     });
     const units = await args.onLoadUnits("page-1");
-    await expect(units[0]).toMatchObject({
-      isFlagged: false,
-      translatedText: "需要确认的译文",
-    });
-    await expect(units[0]?.translatorId).toBeUndefined();
-    await expect(units[0]?.proofreaderId).toBeUndefined();
+    await expectUnattributedUnit(units[0]);
   },
 };

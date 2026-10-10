@@ -35,6 +35,7 @@ const OWNED_NAME = new Set([
   "export",
   "first-registration",
   "fixture",
+  "function-lines",
   "generated",
   "hash",
   "hook",
@@ -134,7 +135,15 @@ export function inspectDirectory(path: string): Finding[] {
 
 export function checkDirectories(root: string): Finding[] {
   const findings: Finding[] = [];
-  for (const base of ["src", "script", ".storybook", "docs", "public", "test-resource"]) {
+  for (const base of [
+    "src",
+    "script",
+    "linters",
+    ".storybook",
+    "docs",
+    "public",
+    "test-resource",
+  ]) {
     if (!existsSync(join(root, base))) continue;
     const pending = [base];
     while (pending.length > 0) {

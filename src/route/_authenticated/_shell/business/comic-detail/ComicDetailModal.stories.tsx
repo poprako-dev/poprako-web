@@ -156,13 +156,17 @@ export const SwitchWorkbench: Story = {
   render: (args) => <ModeScenario {...args} />,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    const toggle = await canvas.findByRole("switch", { name: "嵌监模式" });
-    await expect(toggle).not.toBeChecked();
+    const modes = within(await canvas.findByRole("group", { name: "工作台模式" }));
+    const translator = modes.getByRole("button", { name: "翻校" });
+    const reviewer = modes.getByRole("button", { name: "嵌监" });
+    await expect(translator).toHaveAttribute("aria-pressed", "true");
+    await expect(reviewer).toHaveAttribute("aria-pressed", "false");
     await expect(await canvas.findByRole("button", { name: "导入翻校" })).toBeVisible();
     await expect(canvas.getByText("总单元数")).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "上传嵌稿" })).not.toBeInTheDocument();
-    await userEvent.click(toggle);
-    await expect(toggle).toBeChecked();
+    await userEvent.click(reviewer);
+    await expect(reviewer).toHaveAttribute("aria-pressed", "true");
+    await expect(translator).toHaveAttribute("aria-pressed", "false");
     await expect(await canvas.findByRole("button", { name: "上传嵌稿" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "下载嵌稿" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "下载数据" })).toBeVisible();
@@ -180,8 +184,10 @@ export const SwitchWorkbench: Story = {
     );
     await userEvent.click(canvas.getByRole("button", { name: "工作流记录" }));
     await expect(canvas.getByRole("button", { name: "更多操作" })).toBeVisible();
-    await userEvent.click(toggle);
-    await expect(toggle).not.toBeChecked();
+    translator.focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(translator).toHaveAttribute("aria-pressed", "true");
+    await expect(reviewer).toHaveAttribute("aria-pressed", "false");
     await expect(canvas.getByRole("button", { name: "更多操作" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "导入翻校" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "下载数据" })).toBeVisible();

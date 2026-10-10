@@ -60,32 +60,35 @@ afterEach(() => {
   requests.archiveConfirm.mockReset();
 });
 
-test("uploads the PSD archive before preparing or uploading page previews", async () => {
+function deferred(): { promise: Promise<void>; resolve: () => void } {
+  let resolve: () => void = vi.fn();
+  const promise = new Promise<void>((finish) => {
+    resolve = finish;
+  });
+  return { promise, resolve };
+}
+
+function createOrderedArchiveBatch(): {
+  batch: ReturnType<typeof createArtworkBatch>;
+  putCallCount: () => number;
+  packing: ReturnType<typeof deferred>;
+  upload: ReturnType<typeof deferred>;
+} {
   requests.archiveAllocate.mockResolvedValue({
     success: true,
     data: { artworkVersion: 1, slot: { putUrl: "https://upload.test/archive", headers: {} } },
   });
   requests.archiveConfirm.mockResolvedValue({ success: true, data: undefined });
-  let finishPacking: () => void = vi.fn();
-  const packing = new Promise<void>((resolve) => {
-    finishPacking = resolve;
-  });
+  const packing = deferred();
   requests.prepareArchive.mockImplementation(async () => {
-    await packing;
+    await packing.promise;
     return { file: new File(["archive"], "artwork.tar.xz"), hash: "hash", dispose: vi.fn() };
   });
-  requests.preparePages.mockImplementation(() => {
-    expect(requests.prepareArchive).toHaveBeenCalledOnce();
-    expect(batch.getSnapshot().tasks[0]?.phase).toBe("done");
-  });
   requests.confirm.mockResolvedValue({ success: true, data: undefined });
+  const upload = deferred();
   const client = createApiClient({ baseUrl: "/api/v1", getAccessToken: () => null });
-  let finishArchiveUpload: () => void = vi.fn();
-  const upload = new Promise<void>((resolve) => {
-    finishArchiveUpload = resolve;
-  });
   const put = vi.spyOn(client, "putPresigned").mockImplementation(async (options) => {
-    if (options.url.endsWith("/archive")) await upload;
+    if (options.url.endsWith("/archive")) await upload.promise;
     return { success: true, data: undefined };
   });
   const batch = createArtworkBatch({
@@ -95,28 +98,70 @@ test("uploads the PSD archive before preparing or uploading page previews", asyn
     includeArchive: true,
     onChanged: vi.fn(),
   });
+  requests.preparePages.mockImplementation(() => {
+    expect(requests.prepareArchive).toHaveBeenCalledOnce();
+    expect(batch.getSnapshot().tasks[0]?.phase).toBe("done");
+  });
+  return { batch, putCallCount: () => put.mock.calls.length, packing, upload };
+}
+
+test("uploads the PSD archive before preparing or uploading page previews", async () => {
+  const { batch, putCallCount, packing, upload } = createOrderedArchiveBatch();
   try {
     const running = batch.run();
     await vi.waitFor(() => {
       expect(requests.prepareArchive).toHaveBeenCalledOnce();
     });
     expect(requests.preparePages).not.toHaveBeenCalled();
-    expect(put).not.toHaveBeenCalled();
+    expect(putCallCount()).toBe(0);
     expect(batch.getSnapshot().tasks[0]?.phase).toBe("packing");
-    finishPacking();
+    packing.resolve();
     await vi.waitFor(() => {
-      expect(put).toHaveBeenCalledOnce();
+      expect(putCallCount()).toBe(1);
     });
     expect(requests.preparePages).not.toHaveBeenCalled();
     expect(requests.archiveConfirm).not.toHaveBeenCalled();
-    finishArchiveUpload();
+    upload.resolve();
     await running;
     expect(requests.archiveConfirm).toHaveBeenCalledOnce();
     expect(batch.getSnapshot().tasks.map((task) => task.phase)).toEqual(["done", "done"]);
   } finally {
-    finishPacking();
-    finishArchiveUpload();
+    packing.resolve();
+    upload.resolve();
     await batch.dispose();
+  }
+});
+
+test("batch subscription and lifecycle methods work when detached from the factory result", async () => {
+  const preparing = deferred();
+  requests.preparePages.mockImplementation(async () => {
+    await preparing.promise;
+  });
+  const client = createApiClient({ baseUrl: "/api/v1", getAccessToken: () => null });
+  const batch = createArtworkBatch({
+    client,
+    chapterId: "detached-methods",
+    files: [new File(["psd"], "01.psd")],
+    includeArchive: false,
+    onChanged: vi.fn(),
+  });
+  const { getSnapshot, subscribe, run, cancel, dispose } = batch;
+  const listener = vi.fn();
+  const unsubscribe = subscribe(listener);
+  const running = run();
+  try {
+    await vi.waitFor(() => {
+      expect(getSnapshot().running).toBe(true);
+    });
+    cancel();
+    preparing.resolve();
+    await running;
+    expect(getSnapshot().running).toBe(false);
+    expect(listener).toHaveBeenCalled();
+  } finally {
+    preparing.resolve();
+    unsubscribe();
+    await dispose();
   }
 });
 

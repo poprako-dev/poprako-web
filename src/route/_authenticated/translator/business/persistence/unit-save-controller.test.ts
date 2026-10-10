@@ -39,6 +39,7 @@ function setup(initial = [unit()]): {
     saveOnce: () => Promise<void>;
     flush: () => Promise<void>;
     refresh: () => Promise<void>;
+    getPageId: () => string | undefined;
     getSnapshot: () => SaveSnapshot;
     setSuspended: (shouldSuspend: boolean) => void;
     setActive: (shouldActivate: boolean) => void;
@@ -67,6 +68,16 @@ function setup(initial = [unit()]): {
 }
 
 describe("Unit save coordination", () => {
+  test("controller methods keep their receiver when passed as callbacks", async () => {
+    const { controller } = setup();
+    const { load, commit, refresh } = controller;
+    load("p2", [unit("p2-unit")]);
+    await refresh();
+    commit([unit("p2-unit", "edited")]);
+    expect(controller.getPageId()).toBe("p2");
+    expect(controller.getSnapshot().units[0]?.translatedText).toBe("edited");
+  });
+
   test("confirmed requests accept the current server result without compensating writes", async () => {
     const { controller, reload } = setup();
     reload.mockResolvedValueOnce([unit()]);
@@ -79,6 +90,9 @@ describe("Unit save coordination", () => {
     });
     expect(controller.getSnapshot().refreshError).toBe(false);
   });
+});
+
+describe("Unit save coordination", () => {
   test("unmount before dispatch prevents network work and preserves the pending save", async () => {
     const { controller, save, reload } = setup();
     controller.commit([unit("existing", "edited")]);
@@ -92,7 +106,9 @@ describe("Unit save coordination", () => {
     expect(save).toHaveBeenCalledTimes(1);
     expect(controller.getSnapshot().dirty).toBe(false);
   });
+});
 
+describe("Unit save coordination", () => {
   test("clean pages do no network work", async () => {
     const { controller, save, reload } = setup();
     await controller.saveOnce();
@@ -100,7 +116,9 @@ describe("Unit save coordination", () => {
     expect(save).not.toHaveBeenCalled();
     expect(reload).not.toHaveBeenCalled();
   });
+});
 
+describe("Unit save coordination", () => {
   test("dependent batches complete in order before the final refresh", async () => {
     const initial = Array.from({ length: 100 }, (_, index) => ({
       ...unit(`old-${String(index)}`),
@@ -126,7 +144,9 @@ describe("Unit save coordination", () => {
     expect(save.mock.invocationCallOrder[1]).toBeLessThan(reload.mock.invocationCallOrder[0] ?? 0);
     expect(controller.getSnapshot().dirty).toBe(false);
   });
+});
 
+describe("Unit save coordination", () => {
   test("a failed final refresh never resends either completed batch", async () => {
     const initial = Array.from({ length: 100 }, (_, index) => ({
       ...unit(`old-${String(index)}`),
@@ -147,7 +167,9 @@ describe("Unit save coordination", () => {
     expect(pages.get("p1")).toHaveLength(100);
     expect(controller.getSnapshot()).toMatchObject({ dirty: false, refreshError: false });
   });
+});
 
+describe("Unit save coordination", () => {
   test("keeps edits made while the save is pending for the next cycle", async () => {
     const { controller, save, backend } = setup();
     const wait = deferred();
@@ -166,7 +188,9 @@ describe("Unit save coordination", () => {
     await controller.saveOnce();
     expect(controller.getSnapshot().dirty).toBe(false);
   });
+});
 
+describe("Unit save coordination", () => {
   test("manual flush joins auto save and drains subsequent edits once", async () => {
     const { controller, save, backend, pages } = setup();
     const wait = deferred();
@@ -186,7 +210,9 @@ describe("Unit save coordination", () => {
     expect(pages.get("p1")?.[0]?.translatedText).toBe("second");
     expect(controller.getSnapshot().dirty).toBe(false);
   });
+});
 
+describe("Unit save coordination", () => {
   test("new units keep their editor identity and use permanent IDs for later edits", async () => {
     const { controller, save, backend, pages } = setup([]);
     const wait = deferred();
@@ -210,7 +236,9 @@ describe("Unit save coordination", () => {
     });
     expect(pages.get("p1")).toHaveLength(1);
   });
+});
 
+describe("Unit save coordination", () => {
   test("deleting an in-flight creation deletes its acknowledged permanent ID", async () => {
     const { controller, save, backend, pages } = setup([]);
     const wait = deferred();
@@ -228,7 +256,9 @@ describe("Unit save coordination", () => {
     expect(save.mock.calls[1]?.[1].ops[0]?.edit).toBe("delete");
     expect(pages.get("p1")).toEqual([]);
   });
+});
 
+describe("Unit save coordination", () => {
   test("a lost successful response reuses the identical save ID and payload", async () => {
     const { controller, save, backend, pages } = setup([]);
     save.mockImplementationOnce(async (...args) => {
@@ -244,7 +274,9 @@ describe("Unit save coordination", () => {
     expect(pages.get("p1")).toHaveLength(1);
     expect(pages.get("p1")?.[0]?.translatedText).toBe("second");
   });
+});
 
+describe("Unit save coordination", () => {
   test("reload failure never resends an acknowledged batch", async () => {
     const { controller, save, reload } = setup();
     reload.mockRejectedValueOnce(new Error("read failed"));
@@ -260,7 +292,9 @@ describe("Unit save coordination", () => {
     expect(reload).toHaveBeenCalledTimes(2);
     expect(controller.getSnapshot().refreshError).toBe(false);
   });
+});
 
+describe("Unit save coordination", () => {
   test("late save and read responses cannot overwrite another page", async () => {
     const { controller, save, backend } = setup();
     const wait = deferred();
@@ -277,7 +311,9 @@ describe("Unit save coordination", () => {
     expect(controller.getSnapshot().units[0]?.id).toBe("p2");
     expect(controller.getSnapshot().saving).toBe(false);
   });
+});
 
+describe("Unit save coordination", () => {
   test("protocol errors retain the identical batch for retries", async () => {
     const { controller, save } = setup([]);
     save.mockResolvedValue({ createdUnitIds: [] });
@@ -288,7 +324,9 @@ describe("Unit save coordination", () => {
     expect(save.mock.calls[1]).toEqual(save.mock.calls[0]);
     expect(controller.getSnapshot().dirty).toBe(true);
   });
+});
 
+describe("Unit save coordination", () => {
   test("a rejected immutable batch retains its save ID before subsequent edits", async () => {
     const { controller, save } = setup();
     save.mockRejectedValueOnce(
@@ -306,7 +344,9 @@ describe("Unit save coordination", () => {
     expect(save.mock.calls[2]?.[2]).not.toBe(save.mock.calls[0]?.[2]);
     expect(controller.getSnapshot().dirty).toBe(false);
   });
+});
 
+describe("Unit save coordination", () => {
   test("a 200-op replacement acknowledges deletes before retrying creates", async () => {
     const initial = Array.from({ length: 100 }, (_, index) => ({
       ...unit(`old-${String(index)}`),
@@ -322,7 +362,9 @@ describe("Unit save coordination", () => {
     expect(save.mock.calls[2]).toEqual(save.mock.calls[1]);
     expect(pages.get("p1")).toHaveLength(100);
   });
+});
 
+describe("Unit save coordination", () => {
   test("local clearing, independent proofreading and order survive a delayed reload", async () => {
     const initial = [unit("a"), { ...unit("b"), index: 1 }];
     const { controller, reload, pages } = setup(initial);

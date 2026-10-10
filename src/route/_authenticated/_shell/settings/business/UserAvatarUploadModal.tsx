@@ -1,59 +1,23 @@
-import { useSessionOperation } from "@/route/business/session/use-session-operation";
-import { type JSX, useEffect, useRef, useState } from "react";
+import { type JSX, useRef, useState } from "react";
 import { Upload, User as UserIcon } from "lucide-react";
 import clsx from "clsx";
 import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
-import { allocateUserAvatar, confirmUserAvatar } from "@/api/identity/identity-api";
-import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
-import { useApiClient } from "@/route/business/api-context";
-import { hashPageFile } from "@/shared/utility/hash/image-hash";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
-import { useToastStore } from "@/shared/component/notification-toast/toast-store";
-import { useRefreshLoginState } from "@/route/business/session/use-refresh-session";
 import type { UserInfo } from "@/route/business/identity/user";
+import { useUserAvatarUpload } from "@/route/_authenticated/_shell/settings/business/use-user-avatar-upload";
 
 type Props = {
   user: UserInfo;
   onClose: () => void;
 };
 
-const ACCEPTED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif", "bmp", "avif"]);
-
 export function UserAvatarUploadModal({ user, onClose }: Props): JSX.Element {
-  const client = useApiClient();
-  const beginOperation = useSessionOperation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const { showToast } = useToastStore();
-  const refreshLoginState = useRefreshLoginState();
-
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(null);
+  const { isUploading, uploadProgress, localAvatarUrl, handleAvatarFile } =
+    useUserAvatarUpload(user);
   const [showExitWarning, setShowExitWarning] = useState(false);
 
   const resolvedAvatarUrl = localAvatarUrl ?? user.avatarThumbnailUrl ?? user.avatarUrl;
-
-  useEffect(() => {
-    return () => {
-      if (localAvatarUrl) {
-        URL.revokeObjectURL(localAvatarUrl);
-      }
-    };
-  }, [localAvatarUrl]);
-
-  useEffect(() => {
-    if (!isUploading) return;
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent): void => {
-      event.preventDefault();
-      event.returnValue = ""; // eslint-disable-line @typescript-eslint/no-deprecated
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [isUploading]);
 
   const handleRequestClose = (): void => {
     if (isUploading) {
@@ -66,86 +30,6 @@ export function UserAvatarUploadModal({ user, onClose }: Props): JSX.Element {
   const handleSelectFile = (): void => {
     if (isUploading) return;
     fileInputRef.current?.click();
-  };
-
-  const handleAvatarFile = async (file?: File): Promise<void> => {
-    if (!file || isUploading) return;
-
-    const fileNameParts = file.name.split(".");
-    const extension = (fileNameParts.at(-1) ?? "").toLowerCase();
-
-    if (!extension || !ACCEPTED_EXTENSIONS.has(extension) || !file.type.startsWith("image/")) {
-      showToast("请上传有效的图片文件", "error");
-      return;
-    }
-
-    const operation = beginOperation();
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    try {
-      const { imageHash } = await hashPageFile(file);
-      operation.assertCurrent();
-      const allocRes = await allocateUserAvatar(client, user.id, {
-        imageHash,
-        newByteLen: file.size,
-        ext: extension,
-      });
-      operation.assertCurrent();
-      if (!allocRes.success) {
-        showLocalApiFailure(allocRes, showToast);
-        return;
-      }
-
-      const slot = allocRes.data;
-      if (slot === null) {
-        showToast("头像图片未发生变化", "success");
-        return;
-      }
-
-      const uploadRes = await client.putPresigned({
-        signal: operation.signal,
-        url: slot.putUrl,
-        file,
-        headers: slot.headers,
-        onProgress: (percent) => {
-          setUploadProgress(percent);
-        },
-      });
-      operation.assertCurrent();
-      if (!uploadRes.success) {
-        showLocalApiFailure(uploadRes, showToast);
-        return;
-      }
-
-      const confirmRes = await confirmUserAvatar(client, user.id, slot.imageVersion);
-      operation.assertCurrent();
-      if (!confirmRes.success) {
-        showLocalApiFailure(confirmRes, showToast);
-        return;
-      }
-
-      setLocalAvatarUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return URL.createObjectURL(file);
-      });
-
-      const refreshRes = await refreshLoginState();
-      if (!refreshRes.success) {
-        showLocalApiFailure(refreshRes, showToast);
-      }
-
-      showToast("头像上传成功", "success");
-    } catch (error) {
-      if (!operation.isCurrent()) return;
-      console.error("[UserAvatarUploadModal] 上传头像异常:", error);
-      showLocalCaughtError(error, showToast, "头像上传失败", true);
-    } finally {
-      if (operation.isCurrent()) {
-        setIsUploading(false);
-        setUploadProgress(null);
-      }
-    }
   };
 
   return (

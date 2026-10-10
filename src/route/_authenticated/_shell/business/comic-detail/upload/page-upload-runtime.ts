@@ -3,6 +3,7 @@ import {
   updatePage,
 } from "@/route/_authenticated/business/page/page-request";
 import type { AllocatedPage } from "@/route/_authenticated/business/page/page";
+import type { ApiClient } from "@/api/client";
 import { isReportedValidationError, toApiRequestError } from "@/route/business/request-error";
 import {
   bumpPageUploadChapterRevision,
@@ -211,84 +212,95 @@ async function allocInitialPage(task: RuntimeTask): Promise<AllocatedPage> {
   });
 }
 
+async function allocateTaskSlot(task: RuntimeTask): Promise<AllocatedPage["slot"]> {
+  if (task.slot !== undefined) return task.slot;
+  const page = await allocInitialPage(task);
+  if (isTaskCancelled(task)) throw new Error("上传已取消");
+  task.slot = page.slot;
+  task.imageHash = page.imageHash;
+  task.extension = page.extension;
+  patchTask(task.taskId, task.sessionGeneration, { index: page.index });
+  bumpPageUploadChapterRevision(task.chapterId);
+  return page.slot;
+}
+
+function reportUploadProgress(task: RuntimeTask, progress: number): void {
+  if (isTaskCancelled(task)) return;
+  const boundedProgress = Math.min(progress, 99);
+  patchTask(task.taskId, task.sessionGeneration, { progress: boundedProgress });
+  task.callbacks?.onPageUploadProgress?.(task.pageId, boundedProgress);
+}
+
+async function putPageWithSlot(
+  task: RuntimeTask,
+  slot: NonNullable<RuntimeTask["slot"]>,
+  attempt: number,
+): ReturnType<ApiClient["putPresigned"]> {
+  patchTask(task.taskId, task.sessionGeneration, {
+    status: "uploading",
+    progress: 0,
+    attempt,
+    error: null,
+  });
+  return await task.client.putPresigned({
+    url: slot.putUrl,
+    file: task.file,
+    headers: slot.headers,
+    onProgress: (progress) => {
+      reportUploadProgress(task, progress);
+    },
+    signal: task.abortController.signal,
+  });
+}
+
+async function confirmTaskUpload(task: RuntimeTask, imageVersion: number): Promise<void> {
+  patchTask(task.taskId, task.sessionGeneration, { status: "confirming", progress: 100 });
+  task.callbacks?.onPageUploadProgress?.(task.pageId, 100);
+  await retryMarkUploaded(task, imageVersion);
+  succeedTask(task);
+}
+
+async function uploadTaskWithRetries(
+  task: RuntimeTask,
+  initialSlot: NonNullable<RuntimeTask["slot"]>,
+): Promise<void> {
+  let slot = initialSlot;
+  for (let attempt = 1; attempt <= PUT_ATTEMPTS; attempt += 1) {
+    const uploadResult = await putPageWithSlot(task, slot, attempt);
+    if (isTaskCancelled(task)) throw new Error("上传已取消");
+    if (uploadResult.success) {
+      await confirmTaskUpload(task, slot.imageVersion);
+      return;
+    }
+    if (
+      attempt >= PUT_ATTEMPTS ||
+      !canRetryPut(uploadResult.httpStatus, uploadResult.failureKind)
+    ) {
+      throw toApiRequestError(uploadResult);
+    }
+    await sleep(2 ** (attempt - 1) * 1000);
+    if (isTaskCancelled(task)) throw new Error("上传已取消");
+    const retrySlot = await allocRetrySlot(task);
+    task.slot = retrySlot;
+    if (retrySlot === null) {
+      succeedTask(task);
+      return;
+    }
+    slot = retrySlot;
+  }
+  throw new Error("上传失败");
+}
+
 async function executeTask(task: RuntimeTask): Promise<TaskOutcome> {
   try {
     if (isTaskCancelled(task)) throw new Error("上传已取消");
-
-    let slot = task.slot;
-    if (slot === undefined) {
-      const allocatedPage = await allocInitialPage(task);
-      if (isTaskCancelled(task)) throw new Error("上传已取消");
-      slot = allocatedPage.slot;
-      task.slot = slot;
-      task.imageHash = allocatedPage.imageHash;
-      task.extension = allocatedPage.extension;
-      patchTask(task.taskId, task.sessionGeneration, {
-        index: allocatedPage.index,
-      });
-      bumpPageUploadChapterRevision(task.chapterId);
-    }
-
+    const slot = await allocateTaskSlot(task);
     if (slot === null) {
       succeedTask(task);
       return { succeeded: true, reportedValidationError: false };
     }
-
-    for (let attempt = 1; attempt <= PUT_ATTEMPTS; attempt += 1) {
-      patchTask(task.taskId, task.sessionGeneration, {
-        status: "uploading",
-        progress: 0,
-        attempt,
-        error: null,
-      });
-
-      const uploadResult = await task.client.putPresigned({
-        url: slot.putUrl,
-        file: task.file,
-        headers: slot.headers,
-        onProgress: (progress) => {
-          if (isTaskCancelled(task)) return;
-          patchTask(task.taskId, task.sessionGeneration, {
-            progress: Math.min(progress, 99),
-          });
-          task.callbacks?.onPageUploadProgress?.(task.pageId, Math.min(progress, 99));
-        },
-        signal: task.abortController.signal,
-      });
-      if (isTaskCancelled(task)) throw new Error("上传已取消");
-
-      if (uploadResult.success) {
-        patchTask(task.taskId, task.sessionGeneration, {
-          status: "confirming",
-          progress: 100,
-        });
-        task.callbacks?.onPageUploadProgress?.(task.pageId, 100);
-
-        await retryMarkUploaded(task, slot.imageVersion);
-        succeedTask(task);
-        return { succeeded: true, reportedValidationError: false };
-      }
-
-      if (
-        attempt >= PUT_ATTEMPTS ||
-        !canRetryPut(uploadResult.httpStatus, uploadResult.failureKind)
-      ) {
-        throw toApiRequestError(uploadResult);
-      }
-
-      await sleep(2 ** (attempt - 1) * 1000);
-      if (isTaskCancelled(task)) throw new Error("上传已取消");
-
-      slot = await allocRetrySlot(task);
-      task.slot = slot;
-
-      if (slot === null) {
-        succeedTask(task);
-        return { succeeded: true, reportedValidationError: false };
-      }
-    }
-
-    throw new Error("上传失败");
+    await uploadTaskWithRetries(task, slot);
+    return { succeeded: true, reportedValidationError: false };
   } catch (error) {
     failTask(task, error);
     return {

@@ -1,6 +1,7 @@
 import { toApiRequestError } from "@/route/business/request-error";
 import { listPageArtworks } from "@/api/page-artwork/page-artwork-api";
 import { useEffect, useRef, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import type { JSX } from "react";
 import { FileUp, FileCheck, LoaderCircle } from "lucide-react";
 import { FilePicker } from "@/shared/component/FilePicker";
@@ -22,6 +23,93 @@ type Props = {
 };
 type Prepared = { input: ChapterIssuesInput };
 
+type ReadIssueFileArgs = {
+  client: ReturnType<typeof useApiClient>;
+  chapterId: string;
+  file: File;
+  current: number;
+  selection: AbortController;
+  selectionRef: { current: number };
+  setPrepared: Dispatch<SetStateAction<Prepared | null>>;
+  setError: Dispatch<SetStateAction<string | null>>;
+  setReading: Dispatch<SetStateAction<boolean>>;
+};
+
+async function readIssueFile(args: ReadIssueFileArgs): Promise<void> {
+  const {
+    client,
+    chapterId,
+    file,
+    current,
+    selection,
+    selectionRef,
+    setPrepared,
+    setError,
+    setReading,
+  } = args;
+  try {
+    const text = await file.text();
+    const fileInput = parseIssueImport(text);
+    const pages = await listPageArtworks(client, chapterId, selection.signal);
+    if (!pages.success) throw toApiRequestError(pages);
+    const input = resolveIssueImport(fileInput, pages.data);
+    if (selectionRef.current === current) setPrepared({ input });
+  } catch (error) {
+    if (selectionRef.current === current) {
+      setError(error instanceof Error ? error.message : String(error));
+    }
+  } finally {
+    if (selectionRef.current === current) setReading(false);
+  }
+}
+
+function beginIssueFileSelection(
+  file: File,
+  args: Omit<ReadIssueFileArgs, "file" | "current" | "selection"> & {
+    selectionRequestRef: { current: AbortController | null };
+    setFilename: Dispatch<SetStateAction<string | null>>;
+  },
+): void {
+  const current = ++args.selectionRef.current;
+  args.selectionRequestRef.current?.abort();
+  const selection = new AbortController();
+  args.selectionRequestRef.current = selection;
+  args.setPrepared(null);
+  args.setError(null);
+  args.setFilename(file.name);
+  args.setReading(true);
+  void readIssueFile({ ...args, file, current, selection });
+}
+
+async function submitIssueImport(args: {
+  client: ReturnType<typeof useApiClient>;
+  chapterId: string;
+  generation: number;
+  prepared: Prepared | null;
+  requestRef: { current: AbortController | null };
+  setBusy: Dispatch<SetStateAction<boolean>>;
+  setError: Dispatch<SetStateAction<string | null>>;
+  onImported: () => void;
+}): Promise<void> {
+  const { client, chapterId, generation, prepared, requestRef, setBusy, setError, onImported } =
+    args;
+  if (!prepared || requestRef.current) return;
+  const abort = new AbortController();
+  requestRef.current = abort;
+  setBusy(true);
+  setError(null);
+  try {
+    await replaceChapterIssues(client, chapterId, prepared.input, abort.signal);
+    if (useAppStore.getState().generation !== generation) return;
+    onImported();
+  } catch (error) {
+    if (!abort.signal.aborted) setError(error instanceof Error ? error.message : String(error));
+  } finally {
+    if (!abort.signal.aborted) setBusy(false);
+    if (requestRef.current === abort) requestRef.current = null;
+  }
+}
+
 export function IssueImportDialog({ chapterId, onImported, onClose }: Props): JSX.Element {
   const client = useApiClient();
   const generation = useAppStore((state) => state.generation);
@@ -42,47 +130,30 @@ export function IssueImportDialog({ chapterId, onImported, onClose }: Props): JS
     [generation, chapterId],
   );
 
-  async function choose(file: File): Promise<void> {
-    const current = ++selectionRef.current;
-    selectionRequestRef.current?.abort();
-    const selection = new AbortController();
-    selectionRequestRef.current = selection;
-    setPrepared(null);
-    setError(null);
-    setFilename(file.name);
-    setReading(true);
-    try {
-      const text = await file.text();
-      const fileInput = parseIssueImport(text);
-      const pages = await listPageArtworks(client, chapterId, selection.signal);
-      if (!pages.success) throw toApiRequestError(pages);
-      const input = resolveIssueImport(fileInput, pages.data);
-      if (selectionRef.current === current) setPrepared({ input });
-    } catch (error) {
-      if (selectionRef.current === current)
-        setError(error instanceof Error ? error.message : String(error));
-    } finally {
-      if (selectionRef.current === current) setReading(false);
-    }
-  }
+  const choose = (file: File): void => {
+    beginIssueFileSelection(file, {
+      client,
+      chapterId,
+      selectionRef,
+      selectionRequestRef,
+      setPrepared,
+      setError,
+      setFilename,
+      setReading,
+    });
+  };
 
-  async function submit(): Promise<void> {
-    if (!prepared || requestRef.current) return;
-    const abort = new AbortController();
-    requestRef.current = abort;
-    setBusy(true);
-    setError(null);
-    try {
-      await replaceChapterIssues(client, chapterId, prepared.input, abort.signal);
-      if (useAppStore.getState().generation !== generation) return;
-      onImported();
-    } catch (error) {
-      if (!abort.signal.aborted) setError(error instanceof Error ? error.message : String(error));
-    } finally {
-      if (!abort.signal.aborted) setBusy(false);
-      if (requestRef.current === abort) requestRef.current = null;
-    }
-  }
+  const submit = (): Promise<void> =>
+    submitIssueImport({
+      client,
+      chapterId,
+      generation,
+      prepared,
+      requestRef,
+      setBusy,
+      setError,
+      onImported,
+    });
   return (
     <AppDialog
       title="上传监稿"
@@ -122,7 +193,7 @@ export function IssueImportDialog({ chapterId, onImported, onClose }: Props): JS
             return;
           }
           const file = files[0];
-          if (file) void choose(file);
+          if (file) choose(file);
         }}
       >
         {reading ? (

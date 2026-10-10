@@ -52,6 +52,130 @@ type Props = {
   coverUpload: CoverUploadState;
 };
 
+type CoverPreviewProps = Pick<
+  Props,
+  "comicInfo" | "canUploadCover" | "coverInputRef" | "coverUpload"
+>;
+
+function ComicDetailCoverPreview({
+  comicInfo,
+  canUploadCover,
+  coverInputRef,
+  coverUpload,
+}: CoverPreviewProps): JSX.Element {
+  return (
+    <div
+      className={clsx(
+        "relative w-28 mx-auto aspect-3/4 bg-surface-stone-100 rounded-sm border border-line-stone-200",
+        "flex items-center justify-center text-text-muted-cool mb-4 mt-2",
+        "overflow-hidden shrink-0",
+        "hover:border-line-slate-300 transition-colors group",
+      )}
+    >
+      {coverUpload.localCoverUrl ? (
+        <LazyImage
+          src={coverUpload.localCoverUrl}
+          alt={comicInfo.title}
+          className="w-full h-full"
+        />
+      ) : (
+        <ImageIcon size={24} className="group-hover:scale-110 transition-transform duration-300" />
+      )}
+      {/* Hover dim overlay */}
+      <div
+        className={clsx(
+          "absolute inset-0 bg-surface-black/0 group-hover:bg-surface-black/[0.07] transition-colors",
+          "duration-200 pointer-events-none z-1",
+        )}
+      />
+      {coverUpload.isUploadingCover && (
+        <CoverUploadProgress progress={coverUpload.coverUploadProgress} />
+      )}
+      {!coverUpload.isUploadingCover && canUploadCover && (
+        <CoverUploadAction coverInputRef={coverInputRef} coverUpload={coverUpload} />
+      )}
+    </div>
+  );
+}
+
+function CoverUploadProgress({ progress }: { progress: number | null }): JSX.Element {
+  return (
+    <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/40">
+      {progress !== null && progress < 100 && (
+        <>
+          <svg
+            className="h-10 w-10 -rotate-90 rounded-full bg-image-label-overlay"
+            viewBox="0 0 40 40"
+          >
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="rgba(255,255,255,0.3)"
+              strokeWidth="3"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="rgba(255,255,255,0.9)"
+              strokeWidth="3"
+              strokeDasharray={100.531}
+              strokeDashoffset={100.531 * (1 - progress / 100)}
+              strokeLinecap="round"
+              className="transition-all duration-300 ease-out"
+            />
+          </svg>
+          <span className="absolute text-[11px] font-bold text-image-label-foreground">
+            {progress}%
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function CoverUploadAction({
+  coverInputRef,
+  coverUpload,
+}: Pick<CoverPreviewProps, "coverInputRef" | "coverUpload">): JSX.Element {
+  return (
+    <>
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={coverUpload.handleCoverFileChange}
+      />
+      <div
+        className={clsx(
+          "absolute inset-0 z-10 flex items-center justify-center",
+          "pointer-events-none",
+        )}
+      >
+        <button
+          type="button"
+          onClick={() => coverInputRef.current?.click()}
+          className={clsx(
+            "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-sm",
+            "bg-surface-slate-50 border border-line-slate-300",
+            "text-text-muted-cool hover:text-ink-slate-600",
+            "hover:bg-surface-slate-100 hover:border-line-slate-400",
+            "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
+            "transition-all active:scale-95",
+          )}
+          title="上传自定义封面"
+        >
+          <Upload className="h-3 w-3" strokeWidth={2.25} />
+        </button>
+      </div>
+    </>
+  );
+}
+
 export function ComicDetailSidebar({
   mode,
   onModeChange,
@@ -85,107 +209,12 @@ export function ComicDetailSidebar({
   return (
     <>
       <div className="min-h-0 sm:flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-scrollbar-stone-200">
-        <div
-          className={clsx(
-            "relative w-28 mx-auto aspect-3/4 bg-surface-stone-100 rounded-sm border border-line-stone-200",
-            "flex items-center justify-center text-text-muted-cool mb-4 mt-2",
-            "overflow-hidden shrink-0",
-            "hover:border-line-slate-300 transition-colors group",
-          )}
-        >
-          {coverUpload.localCoverUrl ? (
-            <LazyImage
-              src={coverUpload.localCoverUrl}
-              alt={comicInfo.title}
-              className="w-full h-full"
-            />
-          ) : (
-            <ImageIcon
-              size={24}
-              className="group-hover:scale-110 transition-transform duration-300"
-            />
-          )}
-
-          {/* Hover dim overlay */}
-          <div
-            className={clsx(
-              "absolute inset-0 bg-surface-black/0 group-hover:bg-surface-black/[0.07] transition-colors",
-              "duration-200 pointer-events-none z-1",
-            )}
-          />
-
-          {coverUpload.isUploadingCover && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-black/40">
-              {coverUpload.coverUploadProgress !== null &&
-                coverUpload.coverUploadProgress < 100 && (
-                  <>
-                    <svg
-                      className="h-10 w-10 -rotate-90 rounded-full bg-image-label-overlay"
-                      viewBox="0 0 40 40"
-                    >
-                      <circle
-                        cx="20"
-                        cy="20"
-                        r="16"
-                        fill="none"
-                        stroke="rgba(255,255,255,0.3)"
-                        strokeWidth="3"
-                      />
-                      <circle
-                        cx="20"
-                        cy="20"
-                        r="16"
-                        fill="none"
-                        stroke="rgba(255,255,255,0.9)"
-                        strokeWidth="3"
-                        strokeDasharray={100.531}
-                        strokeDashoffset={100.531 * (1 - coverUpload.coverUploadProgress / 100)}
-                        strokeLinecap="round"
-                        className="transition-all duration-300 ease-out"
-                      />
-                    </svg>
-                    <span className="absolute text-[11px] font-bold text-image-label-foreground">
-                      {coverUpload.coverUploadProgress}%
-                    </span>
-                  </>
-                )}
-            </div>
-          )}
-
-          {!coverUpload.isUploadingCover && canUploadCover && (
-            <>
-              <input
-                ref={coverInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={coverUpload.handleCoverFileChange}
-              />
-              <div
-                className={clsx(
-                  "absolute inset-0 z-10 flex items-center justify-center",
-                  "pointer-events-none",
-                )}
-              >
-                <button
-                  type="button"
-                  onClick={() => coverInputRef.current?.click()}
-                  className={clsx(
-                    "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-sm",
-                    "bg-surface-slate-50 border border-line-slate-300",
-                    "text-text-muted-cool hover:text-ink-slate-600",
-                    "hover:bg-surface-slate-100 hover:border-line-slate-400",
-                    "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
-                    "transition-all active:scale-95",
-                  )}
-                  title="上传自定义封面"
-                >
-                  <Upload className="h-3 w-3" strokeWidth={2.25} />
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        <ComicDetailCoverPreview
+          comicInfo={comicInfo}
+          canUploadCover={canUploadCover}
+          coverInputRef={coverInputRef}
+          coverUpload={coverUpload}
+        />
 
         <div className="bg-surface-stone-100 rounded-sm border border-line-stone-200 px-2.5 py-0.5 mb-3 shrink-0">
           <StatItem icon={BookOpen} label="总页数" value={selectedChapter?.pageCount ?? "-"} />

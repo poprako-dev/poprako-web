@@ -32,101 +32,120 @@ function emptySnapshot(): Snapshot {
     progress: null,
   };
 }
-export function createReviewPageController(
-  loadIssues: LoadIssues,
-  loadPage: LoadReviewPage,
-): ReviewPageController {
-  let generation = 0;
-  let pageRequest: AbortController | null = null;
-  let issuesRequest: AbortController | null = null;
-  let snapshot = emptySnapshot();
-  let released: Promise<void> | null = null;
-  const listeners = new Set<() => void>();
-  function publish(change: Partial<Snapshot>): void {
-    snapshot = { ...snapshot, ...change };
-    for (const listener of listeners) listener();
+class ReviewPageControllerImpl implements ReviewPageController {
+  private generation = 0;
+  private pageRequest: AbortController | null = null;
+  private issuesRequest: AbortController | null = null;
+  private snapshot = emptySnapshot();
+  private released: Promise<void> | null = null;
+  private readonly listeners = new Set<() => void>();
+  private readonly loadIssues: LoadIssues;
+  private readonly loadPage: LoadReviewPage;
+
+  constructor(loadIssues: LoadIssues, loadPage: LoadReviewPage) {
+    this.loadIssues = loadIssues;
+    this.loadPage = loadPage;
   }
-  function dispose(): void {
-    generation++;
-    pageRequest?.abort();
-    issuesRequest?.abort();
-    releasePage();
-    snapshot = emptySnapshot();
-  }
-  function releasePage(): void {
-    const page = snapshot.page;
-    if (!page) return;
-    const previousRelease = released;
-    const currentRelease = page.dispose();
-    released = Promise.all([previousRelease, currentRelease]).then(() => undefined);
-  }
-  async function retryPage(): Promise<void> {
-    const pageId = snapshot.pageId;
+
+  getSnapshot = (): Snapshot => this.snapshot;
+
+  subscribe = (listener: () => void): (() => void) => {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  };
+
+  load = async (pageId: string): Promise<void> => {
+    this.dispose();
+    this.publish({ pageId });
+    await Promise.all([this.retryPage(), this.retryIssues()]);
+  };
+
+  retryPage = async (): Promise<void> => {
+    const pageId = this.snapshot.pageId;
     if (!pageId) return;
-    pageRequest?.abort();
-    releasePage();
+    this.pageRequest?.abort();
+    this.releasePage();
     const request = new AbortController();
-    pageRequest = request;
-    const current = generation;
-    publish({ status: "loading", page: null, error: null, progress: null });
+    this.pageRequest = request;
+    const current = this.generation;
+    this.publish({ status: "loading", page: null, error: null, progress: null });
     try {
-      if (released) await released;
-      if (current !== generation) return;
+      if (this.released) await this.released;
+      if (current !== this.generation) return;
       request.signal.throwIfAborted();
-      if (!loadPage) throw new Error("预览暂不可用");
-      const page = await loadPage(pageId, request.signal, (progress) => {
-        if (current === generation && !request.signal.aborted) publish({ progress });
+      if (!this.loadPage) throw new Error("预览暂不可用");
+      const page = await this.loadPage(pageId, request.signal, (progress) => {
+        if (current === this.generation && !request.signal.aborted) this.publish({ progress });
       });
-      if (current !== generation || request.signal.aborted) {
+      if (current !== this.generation || request.signal.aborted) {
         await page.dispose();
         return;
       }
-      publish({ status: "ready", page, progress: null });
+      this.publish({ status: "ready", page, progress: null });
     } catch (error) {
-      if (current !== generation || request.signal.aborted) return;
-      publish({ status: "error", error: error instanceof Error ? error.message : String(error) });
+      if (current !== this.generation || request.signal.aborted) return;
+      this.publish({
+        status: "error",
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
-  }
-  async function retryIssues(): Promise<void> {
-    const pageId = snapshot.pageId;
+  };
+
+  retryIssues = async (): Promise<void> => {
+    const pageId = this.snapshot.pageId;
     if (!pageId) return;
-    issuesRequest?.abort();
+    this.issuesRequest?.abort();
     const request = new AbortController();
-    issuesRequest = request;
-    const current = generation;
-    publish({ issuesStatus: "loading", issuesError: null });
+    this.issuesRequest = request;
+    const current = this.generation;
+    this.publish({ issuesStatus: "loading", issuesError: null });
     try {
-      const issues = await loadIssues(pageId, request.signal);
-      if (current !== generation || request.signal.aborted) return;
-      publish({ issuesStatus: "ready", issues: [...issues].sort((a, b) => a.index - b.index) });
+      const issues = await this.loadIssues(pageId, request.signal);
+      if (current !== this.generation || request.signal.aborted) return;
+      this.publish({
+        issuesStatus: "ready",
+        issues: [...issues].sort((a, b) => a.index - b.index),
+      });
     } catch (error) {
-      if (current !== generation || request.signal.aborted) return;
-      publish({
+      if (current !== this.generation || request.signal.aborted) return;
+      this.publish({
         issuesStatus: "error",
         issuesError: error instanceof Error ? error.message : String(error),
       });
     }
-  }
-  return {
-    getSnapshot: () => snapshot,
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
-    async load(pageId) {
-      dispose();
-      publish({ pageId });
-      await Promise.all([retryPage(), retryIssues()]);
-    },
-    retryPage,
-    retryIssues,
-    cancelPage() {
-      pageRequest?.abort();
-      releasePage();
-      publish({ status: "cancelled", page: null, error: null, progress: null });
-    },
-    dispose,
   };
+
+  cancelPage = (): void => {
+    this.pageRequest?.abort();
+    this.releasePage();
+    this.publish({ status: "cancelled", page: null, error: null, progress: null });
+  };
+
+  dispose = (): void => {
+    this.generation++;
+    this.pageRequest?.abort();
+    this.issuesRequest?.abort();
+    this.releasePage();
+    this.snapshot = emptySnapshot();
+  };
+
+  private publish(change: Partial<Snapshot>): void {
+    this.snapshot = { ...this.snapshot, ...change };
+    for (const listener of this.listeners) listener();
+  }
+
+  private releasePage(): void {
+    const page = this.snapshot.page;
+    if (!page) return;
+    const previousRelease = this.released;
+    const currentRelease = page.dispose();
+    this.released = Promise.all([previousRelease, currentRelease]).then(() => undefined);
+  }
+}
+
+export function createReviewPageController(
+  loadIssues: LoadIssues,
+  loadPage: LoadReviewPage,
+): ReviewPageController {
+  return new ReviewPageControllerImpl(loadIssues, loadPage);
 }

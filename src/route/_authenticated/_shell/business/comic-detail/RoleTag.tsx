@@ -47,6 +47,48 @@ type StatusConfig = {
   barColor: string;
 };
 
+type RoleTagAssignmentsProps = {
+  assignments: AssignmentInfo[];
+  role: Role;
+  onRemoveUser?: Props["onRemoveUser"];
+};
+
+function RoleTagAssignments({
+  assignments,
+  role,
+  onRemoveUser,
+}: RoleTagAssignmentsProps): JSX.Element {
+  return (
+    <div className="flex flex-1 items-center flex-wrap gap-1.5 min-h-5">
+      {assignments.length === 0 ? (
+        <span className="text-[10px] text-text-muted-cool italic leading-none">未分配</span>
+      ) : (
+        assignments.map((assignment) => (
+          <UserTag
+            key={assignment.userId}
+            userId={assignment.userId}
+            name={assignment.user?.name ?? assignment.userId}
+            role={role}
+            onRemove={onRemoveUser}
+          />
+        ))
+      )}
+    </div>
+  );
+}
+
+function RoleTagStatusIndicator({ barColor }: { barColor: string }): JSX.Element {
+  return (
+    <div
+      className={clsx(
+        "absolute left-2 top-1/2 -translate-y-1/2",
+        "w-1 h-3.5 rounded-full shrink-0",
+        barColor,
+      )}
+    />
+  );
+}
+
 const STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
   pending: {
     labelText: "text-text-muted-cool",
@@ -159,21 +201,7 @@ export function RoleTag({
         </span>
 
         {/* User tags */}
-        <div className="flex flex-1 items-center flex-wrap gap-1.5 min-h-5">
-          {assignments.length === 0 ? (
-            <span className="text-[10px] text-text-muted-cool italic leading-none">未分配</span>
-          ) : (
-            assignments.map((a) => (
-              <UserTag
-                key={a.userId}
-                userId={a.userId}
-                name={a.user?.name ?? a.userId}
-                role={role}
-                onRemove={onRemoveUser}
-              />
-            ))
-          )}
-        </div>
+        <RoleTagAssignments assignments={assignments} role={role} onRemoveUser={onRemoveUser} />
 
         {/* Add user button */}
         {onAddUser && (
@@ -235,13 +263,7 @@ export function RoleTag({
         )}
 
         {/* Nav-style indicator pill */}
-        <div
-          className={clsx(
-            "absolute left-2 top-1/2 -translate-y-1/2",
-            "w-1 h-3.5 rounded-full shrink-0",
-            cfg.barColor,
-          )}
-        />
+        <RoleTagStatusIndicator barColor={cfg.barColor} />
       </div>
 
       {showTransitionDialog && (
