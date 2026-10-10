@@ -31,7 +31,7 @@ function choose(text: string): void {
   fireEvent.change(screen.getByLabelText("选择监稿文件"), { target: { files: [file] } });
 }
 
-test("previews full-chapter clearing and submits only after the replacement action", async () => {
+test("submits full-chapter clearing only after the replacement action without summary text", async () => {
   const imported = vi.fn();
   render(
     <ApiProvider client={client}>
@@ -39,7 +39,8 @@ test("previews full-chapter clearing and submits only after the replacement acti
     </ApiProvider>,
   );
   choose('{"pages":[{"issues":[]},{"issues":[]}]}');
-  await screen.findByText("此次上传将清空整章监稿标注。");
+  await waitFor(() => expect(screen.getByRole("button", { name: "替换整章监稿" })).toBeEnabled());
+  expect(screen.queryByText(/条监稿标注/u)).not.toBeInTheDocument();
   expect(replace).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "替换整章监稿" }));
   await waitFor(() => {
@@ -71,7 +72,7 @@ test("blocks invalid manifests and exposes backend recovery without treating fai
   const input = { pages: Array.from({ length: 33 }, () => ({ issues: [] })) };
   artworks.mockResolvedValue({ success: true, data: artworkPages(33) });
   choose(JSON.stringify(input));
-  await screen.findByText("此次上传将清空整章监稿标注。");
+  await waitFor(() => expect(screen.getByRole("button", { name: "替换整章监稿" })).toBeEnabled());
   fireEvent.click(screen.getByRole("button", { name: "替换整章监稿" }));
   expect(replace.mock.calls[0]?.[2]).toEqual({
     pages: input.pages.map((page, index) => ({

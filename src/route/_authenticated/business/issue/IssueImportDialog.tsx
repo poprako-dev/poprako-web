@@ -83,7 +83,6 @@ export function IssueImportDialog({ chapterId, onImported, onClose }: Props): JS
       if (requestRef.current === abort) requestRef.current = null;
     }
   }
-  const issueCount = prepared?.input.pages.reduce((sum, page) => sum + page.issues.length, 0) ?? 0;
   return (
     <AppDialog
       title="上传监稿"
@@ -146,17 +145,6 @@ export function IssueImportDialog({ chapterId, onImported, onClose }: Props): JS
           </span>
         </span>
       </FilePicker>
-      {prepared && (
-        <div
-          role="status"
-          className="mt-4 rounded-md border border-line-stone-200 bg-surface-stone-50 p-3 text-sm text-ink-stone-700"
-        >
-          <p className="mt-1">
-            {prepared.input.pages.length} 页 · {issueCount} 条监稿标注
-          </p>
-          {issueCount === 0 && <p className="mt-2">此次上传将清空整章监稿标注。</p>}
-        </div>
-      )}
       {reading && (
         <span role="status" className="sr-only">
           正在读取并检查监稿文件

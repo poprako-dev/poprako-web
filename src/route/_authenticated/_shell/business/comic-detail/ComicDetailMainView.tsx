@@ -157,6 +157,7 @@ export function ComicDetailMainView({
           <ChapterIssueImportButton
             key={chapters.selectedChapter.id}
             chapterId={chapters.selectedChapter.id}
+            onImported={artworks.reload}
           />
         ) : undefined
       }

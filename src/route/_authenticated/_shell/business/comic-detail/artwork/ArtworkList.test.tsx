@@ -1,10 +1,11 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { createApiClient } from "@/api/client";
 import { ApiProvider } from "@/route/business/ApiProvider";
 import { usePageArtworks } from "@/route/_authenticated/business/artwork/use-page-artworks";
 import { toSnakeCase } from "@/shared/utility/case-convert";
 import { ArtworkList } from "./ArtworkList";
+import { ChapterIssueImportButton } from "../ChapterIssueImportButton";
 
 function Fixture(): React.ReactElement {
   const artworks = usePageArtworks("chapter", true);
@@ -14,6 +15,7 @@ function Fixture(): React.ReactElement {
       <button type="button" onClick={artworks.reload}>
         刷新
       </button>
+      <ChapterIssueImportButton chapterId="chapter" onImported={artworks.reload} />
       <ArtworkList
         pages={artworks.pages}
         issueCounts={artworks.issueCounts}
@@ -33,6 +35,12 @@ function setup(failIssues = false): { setIssuePage: (id: string) => void } {
     getAccessToken: () => null,
     fetchImpl: (input) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      if (url.endsWith("/issues/import")) {
+        issuePage = "first";
+        return Promise.resolve(
+          Response.json({ code: 0, data: { imported_page_count: 2, imported_issue_count: 2 } }),
+        );
+      }
       if (url.endsWith("/issues")) {
         if (failIssues)
           return Promise.resolve(Response.json({ code: 1, message: "统计失败" }, { status: 503 }));
@@ -90,6 +98,24 @@ function setup(failIssues = false): { setIssuePage: (id: string) => void } {
 }
 
 afterEach(cleanup);
+
+test("refreshes artwork issue indicators immediately after importing review issues", async () => {
+  setup();
+  expect(await screen.findByLabelText("第 2 页有 issue")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "上传监稿" }));
+  const text = JSON.stringify({
+    pages: [{ issues: [{ variant: "文字", layer_name: "对白", note: "修正" }] }, { issues: [] }],
+  });
+  const file = new File([text], "issues.json", { type: "application/json" });
+  Object.defineProperty(file, "text", { value: () => Promise.resolve(text) });
+  fireEvent.change(screen.getByLabelText("选择监稿文件"), { target: { files: [file] } });
+  await waitFor(() => expect(screen.getByRole("button", { name: "替换整章监稿" })).toBeEnabled());
+  expect(screen.queryByText(/条监稿标注/u)).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "替换整章监稿" }));
+  expect(await screen.findByLabelText("第 1 页有 issue")).toBeVisible();
+  expect(screen.queryByLabelText("第 2 页有 issue")).not.toBeInTheDocument();
+  expect(screen.queryByRole("dialog", { name: "上传监稿" })).not.toBeInTheDocument();
+});
 
 test("maps issue counts to artwork IDs and refreshes the orange indicator", async () => {
   const fixture = setup();
