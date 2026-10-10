@@ -46,7 +46,9 @@ export function IssueMarker({
         isSelected ? "z-20" : "z-10",
       )}
       style={{
-        ...previewPosition(rect),
+        ...previewPosition({ ...rect, width: rect.width * scale, height: rect.height * scale }),
+        transformOrigin: "top left",
+        transform: `scale(${String(1 / scale)})`,
         borderColor: isSelected
           ? "var(--marker-selected)"
           : `color-mix(in srgb, ${appearance.border} 70%, transparent)`,
@@ -62,11 +64,9 @@ export function IssueMarker({
         )}
         style={{
           left: -2,
-          top: -2 - (MARKER_SIZE + 4) / scale,
+          top: -2 - (MARKER_SIZE + 4),
           width: MARKER_SIZE,
           height: MARKER_SIZE,
-          transformOrigin: "top left",
-          transform: `scale(${String(1 / scale)})`,
           borderColor: isSelected
             ? "var(--marker-selected)"
             : `color-mix(in srgb, ${appearance.border} 70%, transparent)`,

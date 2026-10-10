@@ -48,6 +48,105 @@ export const WithoutIssues: Story = {
     await expect(within(canvasElement).queryByLabelText("选择 PSD 图层")).toBeNull();
   },
 };
+
+export const ZoomInvariantBorders: Story = {
+  name: "缩放 · 框线固定 2px",
+  args: createIssueStoryArgs(),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const region = await canvas.findByRole("button", { name: "定位 issue 1" });
+    await waitFor(() =>
+      expect(canvasElement.querySelector("img")?.naturalWidth).toBeGreaterThan(0),
+    );
+    const image = canvasElement.querySelector("img");
+    const surface = region.parentElement;
+    if (!image || !surface) {
+      throw new Error("Reviewer canvas did not load");
+    }
+
+    const loadedImage = image;
+    const loadedSurface = surface;
+    const markers = canvas.getAllByRole("button", { name: /^定位 issue/ });
+    const imageBounds = loadedImage.getBoundingClientRect();
+    const regions = markers.map((marker) => {
+      const bounds = marker.getBoundingClientRect();
+      return {
+        x: (bounds.left - imageBounds.left) / imageBounds.width,
+        y: (bounds.top - imageBounds.top) / imageBounds.height,
+        width: bounds.width / imageBounds.width,
+        height: bounds.height / imageBounds.height,
+      };
+    });
+
+    function currentScale(): number {
+      return new DOMMatrixReadOnly(getComputedStyle(loadedSurface).transform).a;
+    }
+
+    async function expectFixedBorders(): Promise<void> {
+      const imageBounds = loadedImage.getBoundingClientRect();
+      await Promise.all(
+        markers.map(async (marker, index) => {
+          const style = getComputedStyle(marker);
+          const bounds = marker.getBoundingClientRect();
+          const screenScale = bounds.width / Number.parseFloat(style.width);
+          const badgeBounds = marker.querySelector("span")?.getBoundingClientRect();
+          for (const border of [
+            style.borderTopWidth,
+            style.borderRightWidth,
+            style.borderBottomWidth,
+            style.borderLeftWidth,
+          ]) {
+            await expect(Number.parseFloat(border) * screenScale).toBeCloseTo(2, 1);
+          }
+          await expect(badgeBounds?.width).toBeCloseTo(32, 1);
+          await expect(badgeBounds?.height).toBeCloseTo(32, 1);
+          await expect((bounds.left - imageBounds.left) / imageBounds.width).toBeCloseTo(
+            regions[index]?.x ?? -1,
+            3,
+          );
+          await expect((bounds.top - imageBounds.top) / imageBounds.height).toBeCloseTo(
+            regions[index]?.y ?? -1,
+            3,
+          );
+          await expect(bounds.width / imageBounds.width).toBeCloseTo(
+            regions[index]?.width ?? -1,
+            3,
+          );
+          await expect(bounds.height / imageBounds.height).toBeCloseTo(
+            regions[index]?.height ?? -1,
+            3,
+          );
+        }),
+      );
+    }
+
+    function zoom(deltaY: number): void {
+      const bounds = loadedImage.getBoundingClientRect();
+      for (let step = 0; step < 40; step += 1) {
+        loadedImage.dispatchEvent(
+          new WheelEvent("wheel", {
+            bubbles: true,
+            cancelable: true,
+            deltaY,
+            clientX: bounds.left + bounds.width / 2,
+            clientY: bounds.top + bounds.height / 2,
+          }),
+        );
+      }
+    }
+
+    await expectFixedBorders();
+    zoom(-100);
+    await waitFor(() => expect(currentScale()).toBe(5));
+    await expectFixedBorders();
+    await userEvent.click(canvas.getByRole("button", { name: "issue 1：文字位置" }));
+    await expect(region).toHaveAttribute("aria-pressed", "true");
+    await expectFixedBorders();
+    zoom(100);
+    await waitFor(() => expect(currentScale()).toBe(0.5));
+    await expectFixedBorders();
+  },
+};
 export const Unavailable: Story = {
   name: "预览不可用",
   args: { ...createIssueStoryArgs(), loadReviewPage: null },

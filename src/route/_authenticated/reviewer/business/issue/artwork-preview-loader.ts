@@ -12,7 +12,7 @@ export function createArtworkPreviewLoader(
   const openedPages = new Set<string>();
   return async function load(id, signal) {
     const page = project.pages.find((page) => page.id === id);
-    const url = page?.imageOptimizedUrl ?? page?.imageUrl;
+    const url = page?.imageUrl;
     if (url && !openedPages.has(id)) {
       openedPages.add(id);
       return openCompositePage(url, signal);
@@ -25,6 +25,6 @@ export function createArtworkPreviewLoader(
     if (!current?.imageUploaded || !current.imageUrl)
       throw new Error("此页预览尚未上传完成，请稍后重试。");
     openedPages.add(id);
-    return openCompositePage(current.imageOptimizedUrl ?? current.imageUrl, signal);
+    return openCompositePage(current.imageUrl, signal);
   };
 }
