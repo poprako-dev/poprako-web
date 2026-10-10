@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 
 import { Button } from "@/shared/component/Button";
 
@@ -32,7 +32,18 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = { args: { variant: "default" } };
+export const Default: Story = {
+  args: { variant: "default" },
+  async play({ canvasElement }) {
+    if (!import.meta.env["VITEST"]) return;
+    const { commands, userEvent } = await import("vitest/browser");
+    const button = within(canvasElement).getByRole("button");
+    await userEvent.hover(button);
+    await expect(button.matches(":hover")).toBe(true);
+    await commands.resetPointer();
+    await expect(button.matches(":hover")).toBe(false);
+  },
+};
 export const Destructive: Story = { args: { variant: "destructive" } };
 export const Outline: Story = { args: { variant: "outline" } };
 export const Secondary: Story = { args: { variant: "secondary" } };
