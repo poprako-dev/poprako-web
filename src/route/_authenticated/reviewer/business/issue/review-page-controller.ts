@@ -1,13 +1,15 @@
 import type { LoadIssues, IssueInfo } from "@/route/_authenticated/business/issue/issue";
 import type { LoadReviewPage, ReviewPage } from "./review-page";
+import type { ReviewLoadProgress } from "./review-load-progress";
 type Snapshot = {
   pageId: string | null;
-  status: "idle" | "loading" | "ready" | "error";
+  status: "idle" | "loading" | "ready" | "error" | "cancelled";
   issuesStatus: "idle" | "loading" | "ready" | "error";
   issues: IssueInfo[];
   page: ReviewPage | null;
   error: string | null;
   issuesError: string | null;
+  progress: ReviewLoadProgress | null;
 };
 export interface ReviewPageController {
   getSnapshot: () => Snapshot;
@@ -15,6 +17,7 @@ export interface ReviewPageController {
   load: (pageId: string) => Promise<void>;
   retryPage: () => Promise<void>;
   retryIssues: () => Promise<void>;
+  cancelPage: () => void;
   dispose: () => void;
 }
 function emptySnapshot(): Snapshot {
@@ -26,6 +29,7 @@ function emptySnapshot(): Snapshot {
     page: null,
     error: null,
     issuesError: null,
+    progress: null,
   };
 }
 export function createReviewPageController(
@@ -64,18 +68,20 @@ export function createReviewPageController(
     const request = new AbortController();
     pageRequest = request;
     const current = generation;
-    publish({ status: "loading", page: null, error: null });
+    publish({ status: "loading", page: null, error: null, progress: null });
     try {
       if (released) await released;
       if (current !== generation) return;
       request.signal.throwIfAborted();
       if (!loadPage) throw new Error("预览暂不可用");
-      const page = await loadPage(pageId, request.signal);
+      const page = await loadPage(pageId, request.signal, (progress) => {
+        if (current === generation && !request.signal.aborted) publish({ progress });
+      });
       if (current !== generation || request.signal.aborted) {
         await page.dispose();
         return;
       }
-      publish({ status: "ready", page });
+      publish({ status: "ready", page, progress: null });
     } catch (error) {
       if (current !== generation || request.signal.aborted) return;
       publish({ status: "error", error: error instanceof Error ? error.message : String(error) });
@@ -116,6 +122,11 @@ export function createReviewPageController(
     },
     retryPage,
     retryIssues,
+    cancelPage() {
+      pageRequest?.abort();
+      releasePage();
+      publish({ status: "cancelled", page: null, error: null, progress: null });
+    },
     dispose,
   };
 }

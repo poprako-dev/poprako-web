@@ -10,7 +10,7 @@ test("accepts the PRK protocol with independent optional targets and verbatim no
       pages: [
         {
           issues: [
-            { variant: "自定义", layer_path: "opaque:path", note: "" },
+            { variant: "自定义", layer_name: "他们两个…", note: "" },
             {
               variant: "位置",
               rect: { x_coord: 0, y_coord: 0, width: 1, height: 1 },
@@ -21,28 +21,31 @@ test("accepts the PRK protocol with independent optional targets and verbatim no
         { issues: [] },
       ],
     }),
-    2,
   );
   expect(input.pages[0]?.issues).toEqual([
-    { variant: "自定义", layerPath: "opaque:path", rect: null, note: "" },
+    { variant: "自定义", layerName: "他们两个…", rect: null, note: "" },
     {
       variant: "位置",
-      layerPath: null,
+      layerName: null,
       rect: { xCoord: 0, yCoord: 0, width: 1, height: 1 },
       note: " \n说明\n ",
     },
   ]);
-  expect(parseIssueImport('{"pages":[{"issues":[]},{"issues":[]}]}', 2)).toEqual({
+  expect(parseIssueImport('{"pages":[{"issues":[]},{"issues":[]}]}')).toEqual({
     pages: [{ issues: [] }, { issues: [] }],
   });
 });
 
-test("rejects native MangaProof metadata, incomplete manifests and invalid issue geometry", () => {
-  expect(() => parseIssueImport('{"schema_version":1,"issues":[]}', 1)).toThrow();
-  expect(() => parseIssueImport('{"pages":[]}', 1)).toThrow("当前章节有 1 页");
+test("accepts independent review page counts and rejects invalid issue structures and geometry", () => {
+  expect(() => parseIssueImport('{"schema_version":1,"issues":[]}')).toThrow();
+  expect(parseIssueImport('{"pages":[]}')).toEqual({ pages: [] });
+  expect(
+    parseIssueImport(JSON.stringify({ pages: Array.from({ length: 33 }, () => ({ issues: [] })) }))
+      .pages,
+  ).toHaveLength(33);
   const invalid = [
     { variant: " ", note: "" },
-    { variant: "位置", layer_path: " ", note: "" },
+    { variant: "位置", layer_name: " ", note: "" },
     { variant: "位置", note: "", rect: { x_coord: 0, y_coord: 0, width: 0, height: 0 } },
     { variant: "位置", note: "", rect: { x_coord: 0.9, y_coord: 0, width: 0.2, height: 0.1 } },
     { variant: "位置", note: "", rect: { x_coord: -0.1, y_coord: 0, width: 0.2, height: 0.1 } },
@@ -53,7 +56,7 @@ test("rejects native MangaProof metadata, incomplete manifests and invalid issue
     },
   ];
   for (const issue of invalid)
-    expect(() => parseIssueImport(JSON.stringify({ pages: [{ issues: [issue] }] }), 1)).toThrow();
+    expect(() => parseIssueImport(JSON.stringify({ pages: [{ issues: [issue] }] }))).toThrow();
 });
 
 test("only a current reviewer assignment can import an unpublished chapter", () => {
@@ -65,4 +68,14 @@ test("only a current reviewer assignment can import an unpublished chapter", () 
   expect(canImportIssues(chapter, undefined)).toBe(false);
   expect(canImportIssues(chapter, { ...reviewer, chapterId: "other" })).toBe(false);
   expect(canImportIssues({ ...chapter, stages: 2 << 10 }, reviewer)).toBe(false);
+});
+
+test("rejects obsolete numeric layer fields instead of silently importing unnamed issues", () => {
+  expect(() =>
+    parseIssueImport(
+      JSON.stringify({
+        pages: [{ issues: [{ variant: "字号错误", layer_path: "0.2.5", note: "eg2" }] }],
+      }),
+    ),
+  ).toThrow("layer_name");
 });

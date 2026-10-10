@@ -8,7 +8,7 @@ import {
   BookOpen,
   CheckSquare,
   CloudUpload,
-  Download,
+  Database,
   Image as ImageIcon,
   Languages,
   Search,
@@ -31,8 +31,6 @@ type Props = {
   comicInfo: ComicInfo;
   selectedChapter?: ChapterInfo | undefined;
   pagesLength: number;
-  canUploadArtwork: boolean;
-  onUploadArtwork: () => void;
   canReadOnly: boolean;
   canUploadCover: boolean;
   canTranslateOrProofread: boolean;
@@ -62,8 +60,6 @@ export function ComicDetailSidebar({
   comicInfo,
   selectedChapter,
   pagesLength: _pagesLength,
-  canUploadArtwork,
-  onUploadArtwork,
   canReadOnly,
   canUploadCover,
   canTranslateOrProofread,
@@ -239,9 +235,6 @@ export function ComicDetailSidebar({
                   disabled={isImportingData}
                 />
               )}
-              {mode === "reviewer" && canUploadArtwork && (
-                <ActionButton icon={Upload} title="上传嵌稿" onClick={onUploadArtwork} />
-              )}
               {mode === "reviewer" && issueImportAction}
               {mode === "reviewer" && canReadOnly && (
                 <ArtworkDownloadButton
@@ -251,7 +244,7 @@ export function ComicDetailSidebar({
               )}
               {onExport && (
                 <ActionButton
-                  icon={Download}
+                  icon={Database}
                   title="下载数据"
                   onClick={onExport}
                   disabled={isExportingData}

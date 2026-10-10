@@ -130,6 +130,10 @@ export const ArtworkActions: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const upload = await canvas.findByRole("button", { name: "上传嵌稿" });
+    await expect(await canvas.findByText("2 issue")).toBeVisible();
+    await expect(canvas.getByLabelText("第 2 页有 issue")).toBeVisible();
+    await expect(canvas.queryByLabelText("第 3 页有 issue")).not.toBeInTheDocument();
+    await expect(canvas.queryByText("1.psd")).not.toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: "只读查看" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "导入翻校" })).not.toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: "下载嵌稿" })).toBeVisible();
@@ -141,7 +145,7 @@ export const ArtworkActions: Story = {
       expect(await body.findByRole("dialog", { name: "上传嵌稿" })).toBeVisible(),
     );
     await expect(body.getByRole("button", { name: "上传" })).toBeDisabled();
-    await expect(body.queryByText(/压缩/)).not.toBeInTheDocument();
+    await expect(body.getByRole("switch", { name: "打包上传" })).toBeChecked();
     await expect(body.queryByText(/请一次选齐/)).not.toBeInTheDocument();
   },
 };
@@ -159,12 +163,14 @@ export const SwitchWorkbench: Story = {
     await expect(canvas.queryByRole("button", { name: "上传嵌稿" })).not.toBeInTheDocument();
     await userEvent.click(toggle);
     await expect(toggle).toBeChecked();
-    await expect(canvas.getByRole("button", { name: "上传嵌稿" })).toBeVisible();
+    await expect(await canvas.findByRole("button", { name: "上传嵌稿" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "下载嵌稿" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "下载数据" })).toBeVisible();
     await expect(canvas.queryByText("总单元数")).not.toBeInTheDocument();
     await expect(canvas.queryByRole("button", { name: "导入翻校" })).not.toBeInTheDocument();
-    await expect(canvas.queryByRole("button", { name: /重上传第/ })).not.toBeInTheDocument();
+    await expect(canvas.getAllByRole("button", { name: /重上传第.*嵌稿/ }).length).toBeGreaterThan(
+      0,
+    );
     await userEvent.click(canvas.getByRole("button", { name: "只读查看" }));
     await expect(args.onNavigateToWorkbench).toHaveBeenLastCalledWith(
       "chapter-1",

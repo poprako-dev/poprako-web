@@ -25,14 +25,13 @@ function Comparison({ selected, long }: Props): JSX.Element {
         </div>
         <div className="border border-line-stone-200">
           <IssueItem
-            layerName="对白"
             issue={{
               id: "issue",
-              pageId: "page",
+              pageArtworkId: "page",
               index: 6,
               variant: "断行",
               note: long ? "保留原句，调整断行。\n".repeat(12) : "保留原句，调整断行。",
-              layerPath: "0.1",
+              layerName: "对白",
               rect: null,
             }}
             isFocused={focused}

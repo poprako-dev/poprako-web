@@ -1,5 +1,4 @@
-import { openPsdPage } from "../issue/open-psd-page";
-import { reviewPsdFixture } from "./review-psd-fixture";
+import { openCompositePage } from "../issue/open-composite-page";
 import { fn } from "storybook/test";
 import type { ReviewerProps } from "../reviewer-props";
 import type { IssueInfo } from "@/route/_authenticated/business/issue/issue";
@@ -42,59 +41,59 @@ function issuesForPage(pageId: string): IssueInfo[] {
   const issues: IssueInfo[] = [
     {
       id: `${pageId}-1`,
-      pageId,
+      pageArtworkId: pageId,
       index: 0,
       variant: "文字位置",
       note: "这组文字稍微偏右。请向左移动，保持两侧留白一致。",
       rect: { xCoord: 0.707, yCoord: 0.087, width: 0.175, height: 0.072 },
-      layerPath: "0.1.0",
+      layerName: "对白",
     },
     {
       id: `${pageId}-2`,
-      pageId,
+      pageArtworkId: pageId,
       index: 1,
       variant: "断行",
       note: "建议保持两行：\n等一下，\n听我说。\n第二行的逗号不用保留。",
       rect: { xCoord: 0.092, yCoord: 0.382, width: 0.151, height: 0.08 },
-      layerPath: "0.1.1",
+      layerName: "对白",
     },
     {
       id: `${pageId}-3`,
-      pageId,
+      pageArtworkId: pageId,
       index: 2,
       variant: "自定义：叠字节奏",
       note: "这里的字号比上一格略小，连着阅读时节奏会断。请结合上下两格统一检查。",
       rect: { xCoord: 0.702, yCoord: 0.383, width: 0.2, height: 0.082 },
-      layerPath: "0.1.2",
+      layerName: "对白",
     },
     {
       id: `${pageId}-4`,
-      pageId,
+      pageArtworkId: pageId,
       index: 3,
       variant: "整页说明",
       note: "本页标点统一采用全角。调整时保留原有文字图层，便于之后核对。",
       rect: null,
-      layerPath: null,
+      layerName: null,
     },
   ];
   if (pageId.endsWith("3")) {
     issues.push({
       id: `${pageId}-5`,
-      pageId,
+      pageArtworkId: pageId,
       index: 4,
       variant: "区域重叠",
       note: "同一区域的另一条 issue，可分别选中。",
       rect: { xCoord: 0.72, yCoord: 0.12, width: 0.18, height: 0.09 },
-      layerPath: "0.1.0",
+      layerName: "对白",
     });
     issues.push({
       id: `${pageId}-6`,
-      pageId,
+      pageArtworkId: pageId,
       index: 5,
       variant: "长文本",
       note: "这是一条需要完整保留换行与说明的 issue。\n".repeat(16),
       rect: null,
-      layerPath: null,
+      layerName: null,
     });
   }
   return issues;
@@ -117,9 +116,8 @@ export function createIssueStoryArgs(
     startPageId: "page-1",
     onExit: fn(),
     loadIssues: options.available === false ? fn(() => Promise.resolve([])) : fn(loadIssues),
-    loadReviewPage: fn(async (pageId: string, signal: AbortSignal) => {
-      const file = await reviewPsdFixture(pageImage(Number(pageId.split("-").at(-1)), true));
-      return openPsdPage(file, signal);
-    }),
+    loadReviewPage: fn((pageId: string, signal: AbortSignal) =>
+      openCompositePage(pageImage(Number(pageId.split("-").at(-1)), true), signal),
+    ),
   };
 }

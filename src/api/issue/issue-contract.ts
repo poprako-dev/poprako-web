@@ -4,12 +4,14 @@ import { ApiDecodeError } from "@/api/api-error";
 export type IssueRect = { xCoord: number; yCoord: number; width: number; height: number };
 export type IssueInput = {
   variant: string;
-  layerPath: string | null;
+  layerName: string | null;
   rect: IssueRect | null;
   note: string;
 };
-export type IssueResponse = IssueInput & { id: string; pageId: string; index: number };
-export type ImportChapterIssuesRequest = { pages: { issues: IssueInput[] }[] };
+export type IssueResponse = IssueInput & { id: string; pageArtworkId: string; index: number };
+export type ImportChapterIssuesRequest = {
+  pages: { pageArtworkId: string; issues: IssueInput[] }[];
+};
 export type ImportChapterIssuesResult = { importedPageCount: number; importedIssueCount: number };
 
 function nonblank(value: unknown, label: string): string {
@@ -40,12 +42,16 @@ export function decodeIssueRect(value: unknown): IssueRect {
 
 export function decodeIssueInput(value: unknown): IssueInput {
   const object = decodeObject(value, "issue");
+  const fields = ["variant", "layerName", "rect", "note", "id", "pageArtworkId", "index"];
+  if (Object.keys(object).some((key) => !fields.includes(key))) {
+    throw new ApiDecodeError("issue 包含不支持的字段；请使用 layer_name 提供可读图层名称。");
+  }
   return {
     variant: nonblank(object["variant"], "issue.variant"),
-    layerPath:
-      object["layerPath"] === null || object["layerPath"] === undefined
+    layerName:
+      object["layerName"] === null || object["layerName"] === undefined
         ? null
-        : nonblank(object["layerPath"], "issue.layerPath"),
+        : nonblank(object["layerName"], "issue.layerName"),
     rect:
       object["rect"] === null || object["rect"] === undefined
         ? null
@@ -59,13 +65,13 @@ export function decodeIssue(value: unknown): IssueResponse {
   const index = decodeNumber(object["index"], "issue.index");
   if (!Number.isSafeInteger(index) || index < 0) throw new Error("issue.index 必须为非负整数");
   // Responses require explicit nullable fields; missing fields are contract errors.
-  if (object["layerPath"] === undefined || object["rect"] === undefined) {
-    throw new Error("issue 缺少 layerPath 或 rect");
+  if (object["layerName"] === undefined || object["rect"] === undefined) {
+    throw new Error("issue 缺少 layerName 或 rect");
   }
   return {
     ...decodeIssueInput(value),
     id: decodeString(object["id"]),
-    pageId: decodeString(object["pageId"]),
+    pageArtworkId: decodeString(object["pageArtworkId"]),
     index,
   };
 }
@@ -77,7 +83,10 @@ export function decodeIssueImport(value: unknown): ImportChapterIssuesRequest {
       object["pages"],
       (value) => {
         const page = decodeObject(value, "page");
-        return { issues: decodeArray(page["issues"], decodeIssueInput, "issues") };
+        return {
+          pageArtworkId: nonblank(page["pageArtworkId"], "pageArtworkId"),
+          issues: decodeArray(page["issues"], decodeIssueInput, "issues"),
+        };
       },
       "pages",
     ),

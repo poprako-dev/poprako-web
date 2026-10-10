@@ -3,13 +3,20 @@ import { createReviewPageController } from "./review-page-controller";
 import type { IssueInfo } from "@/route/_authenticated/business/issue/issue";
 import type { ReviewPage } from "./review-page";
 function issue(id: string, index = 0): IssueInfo {
-  return { id, pageId: "page", index, variant: "断行", note: "说明", rect: null, layerPath: null };
+  return {
+    id,
+    pageArtworkId: "page",
+    index,
+    variant: "断行",
+    note: "说明",
+    rect: null,
+    layerName: null,
+  };
 }
 function page(): ReviewPage {
   return {
     width: 10,
     height: 20,
-    layers: [],
     composite: { source: "image", bounds: { xCoord: 0, yCoord: 0, width: 1, height: 1 } },
     dispose: vi.fn(),
   };
@@ -29,7 +36,7 @@ describe("Reviewer resource ownership", () => {
     const controller = createReviewPageController(issues, pages);
     await controller.load("page-2");
     expect(issues).toHaveBeenCalledWith("page-2", expect.any(AbortSignal));
-    expect(pages).toHaveBeenCalledWith("page-2", expect.any(AbortSignal));
+    expect(pages).toHaveBeenCalledWith("page-2", expect.any(AbortSignal), expect.any(Function));
     expect(controller.getSnapshot()).toMatchObject({
       status: "ready",
       issuesStatus: "ready",
@@ -156,7 +163,7 @@ it("shows loading before awaiting old-page release and skips superseded navigati
   release.resolve(undefined);
   await Promise.all([second, third]);
   expect(pages).toHaveBeenCalledTimes(2);
-  expect(pages).toHaveBeenLastCalledWith("third", expect.any(AbortSignal));
+  expect(pages).toHaveBeenLastCalledWith("third", expect.any(AbortSignal), expect.any(Function));
   expect(controller.getSnapshot()).toMatchObject({ status: "ready", pageId: "third" });
 });
 

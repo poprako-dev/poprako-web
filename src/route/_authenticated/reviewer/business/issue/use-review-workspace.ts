@@ -7,9 +7,9 @@ import { shouldIgnoreWorkbenchKey } from "@/shared/utility/keyboard-scope";
 import type { ConfigurableShortcut } from "@/shared/utility/shortcut";
 import type { CanvasHandle } from "@/shared/component/PageCanvas";
 import type { LoadIssues, IssueInfo } from "@/route/_authenticated/business/issue/issue";
-import { includesReviewLayer } from "./review-page";
 import type { LoadReviewPage, ReviewPage } from "./review-page";
 import { createReviewPageController } from "./review-page-controller";
+import type { ReviewLoadProgress } from "./review-load-progress";
 type Args = {
   pageId: string;
   pageIndex: number;
@@ -28,15 +28,16 @@ export type ReviewWorkspace = {
   page: ReviewPage | null;
   issues: IssueInfo[];
   focusedId: string | null;
-  layerId: string | null;
   loading: boolean;
   error: string | null;
+  progress: ReviewLoadProgress | null;
+  cancelled: boolean;
+  cancel: () => void;
   issuesError: string | null;
   issuesLoading: boolean;
   retryIssues: () => void;
   retry: () => void;
   select: (id: string, relocate: boolean) => void;
-  selectLayer: (id: string | null) => void;
   onImageError: () => void;
 };
 export function useReviewWorkspace({
@@ -60,14 +61,11 @@ export function useReviewWorkspace({
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
   const [focus, setFocus] = useState<{ pageId: string; id: string } | null>(null);
   const focusedId = focus?.pageId === pageId ? focus.id : null;
-  const [selection, setSelection] = useState<{ pageId: string; id: string | null } | null>(null);
-  const layerId = selection?.pageId === pageId ? selection.id : null;
   const [imageFailed, setImageFailed] = useState(false);
   const [statePageId, setStatePageId] = useState(pageId);
   if (statePageId !== pageId) {
     setStatePageId(pageId);
     setFocus(null);
-    setSelection(null);
     setImageFailed(false);
   }
 
@@ -75,9 +73,7 @@ export function useReviewWorkspace({
   const ready = snapshot.pageId === pageId && snapshot.status === "ready";
   const issuesReady = snapshot.pageId === pageId && snapshot.issuesStatus === "ready";
   const page = ready ? snapshot.page : null;
-  const issues = snapshot.issues.filter((issue) =>
-    includesReviewLayer(page?.layers ?? [], layerId, issue.layerPath),
-  );
+  const issues = snapshot.issues;
 
   useEffect(() => {
     if (!active) return;
@@ -104,10 +100,6 @@ export function useReviewWorkspace({
     const rect = issues.find((issue) => issue.id === id)?.rect;
     if (relocate && relocation && rect)
       canvasRef.current?.centerOn(rect.xCoord + rect.width / 2, rect.yCoord + rect.height / 2);
-  }
-  function selectLayer(id: string | null): void {
-    setSelection({ pageId, id });
-    setFocus(null);
   }
   function navigate(index: number): void {
     if (index < 0 || index >= pageCount || index === pageIndex) return;
@@ -164,9 +156,12 @@ export function useReviewWorkspace({
     page,
     issues: issuesReady ? issues : [],
     focusedId,
-    layerId,
-    loading: !ready && snapshot.status !== "error",
+    loading:
+      snapshot.pageId !== pageId || snapshot.status === "loading" || snapshot.status === "idle",
     error: imageFailed ? "图片加载失败" : snapshot.error,
+    progress: snapshot.pageId === pageId ? snapshot.progress : null,
+    cancelled: snapshot.pageId === pageId && snapshot.status === "cancelled",
+    cancel: controller.cancelPage,
     retry,
     issuesError: snapshot.pageId === pageId ? snapshot.issuesError : null,
     issuesLoading: snapshot.pageId !== pageId || snapshot.issuesStatus === "loading",
@@ -174,7 +169,6 @@ export function useReviewWorkspace({
       void controller.retryIssues();
     },
     select,
-    selectLayer,
     onImageError() {
       setImageFailed(true);
     },

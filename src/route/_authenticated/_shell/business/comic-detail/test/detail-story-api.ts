@@ -132,6 +132,34 @@ export function createDetailStoryApi(scenario: Scenario): ApiClient {
         );
       }
       const chapterId = path.split("/")[4] ?? "chapter-42";
+      if (path.endsWith("/issues"))
+        return ok(
+          scenario === "artwork"
+            ? [0, 1].map((index) => ({
+                id: "issue-" + String(index),
+                pageArtworkId: "artwork-0",
+                index,
+                variant: "文字",
+                layerName: null,
+                rect: null,
+                note: "需要修正",
+              }))
+            : [],
+        );
+      if (path.endsWith("/page-artworks"))
+        return ok(
+          scenario === "empty-page"
+            ? []
+            : makePages(chapterId, 26).map((page, index) => ({
+                ...page,
+                id: "artwork-" + String(index),
+                rawIdent: String(index + 1) + ".psd",
+                imageHash: "hash",
+                ext: "webp",
+                imageVersion: 1,
+                imageUploaded: true,
+              })),
+        );
       if (path.endsWith("/pages"))
         return ok(
           scenario === "empty-page"

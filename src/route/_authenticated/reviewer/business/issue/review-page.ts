@@ -1,33 +1,17 @@
-import type { PageRect, PagePreview } from "@/shared/utility/page-geometry";
+import type { PagePreview } from "@/shared/utility/page-geometry";
+import type { ReportReviewProgress } from "./review-load-progress";
 export type { PageRect } from "@/shared/utility/page-geometry";
-export type ReviewLayer = {
-  id: string;
-  parentId: string | null;
-  name: string;
-  bounds: PageRect;
-  visible: boolean;
-};
 export type ReviewPreview = PagePreview;
 export type ReviewPage = {
-  width: number;
-  height: number;
-  layers: ReviewLayer[];
+  width?: number;
+  height?: number;
   composite: ReviewPreview;
   dispose: () => void | Promise<void>;
 };
-export type LoadReviewPage = ((pageId: string, signal: AbortSignal) => Promise<ReviewPage>) | null;
-export function includesReviewLayer(
-  layers: ReviewLayer[],
-  selectedId: string | null,
-  layerId: string | null,
-): boolean {
-  if (selectedId === null) return true;
-  const visited = new Set<string>();
-  let current = layerId;
-  while (current !== null && !visited.has(current)) {
-    if (current === selectedId) return true;
-    visited.add(current);
-    current = layers.find((layer) => layer.id === current)?.parentId ?? null;
-  }
-  return false;
-}
+export type LoadReviewPage =
+  | ((
+      pageId: string,
+      signal: AbortSignal,
+      onProgress?: ReportReviewProgress,
+    ) => Promise<ReviewPage>)
+  | null;

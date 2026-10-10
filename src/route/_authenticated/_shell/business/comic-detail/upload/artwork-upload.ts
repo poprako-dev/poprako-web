@@ -1,24 +1,5 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { type ArchiveProgress, compressTarXz } from "@/shared/utility/compress";
-import {
-  type ChapterInfo,
-  publishWorkflowStatus,
-} from "@/route/_authenticated/business/chapter/chapter";
-import { matchesAssignmentRole } from "@/route/business/identity/role";
-import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
-
-export function canUploadArtwork(
-  chapter: ChapterInfo | undefined,
-  assignment: AssignmentInfo | undefined,
-): boolean {
-  return (
-    chapter !== undefined &&
-    assignment?.chapterId === chapter.id &&
-    publishWorkflowStatus(chapter) !== "completed" &&
-    matchesAssignmentRole(assignment, "typesetter")
-  );
-}
-
 export function validateArtworkFiles(files: readonly File[]): void {
   if (files.length === 0) throw new Error("请先选择嵌稿文件");
   if (files.length > 1000) throw new Error("每次最多选择 1000 个文件");

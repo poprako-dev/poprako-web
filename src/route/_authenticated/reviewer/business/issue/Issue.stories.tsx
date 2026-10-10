@@ -18,18 +18,6 @@ const meta: Meta<typeof Reviewer> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function readPixels(image: HTMLCanvasElement | null): Uint8ClampedArray {
-  if (!image) throw new Error("Expected a rendered PSD page");
-  const copy = new OffscreenCanvas(image.width, image.height);
-  const context = copy.getContext("2d", { willReadFrequently: true });
-  if (!context) throw new Error("Expected a pixel readback context");
-  context.drawImage(image, 0, 0);
-  const pixels = context.getImageData(0, 0, copy.width, copy.height).data;
-  copy.width = 0;
-  copy.height = 0;
-  return pixels;
-}
-
 export const Interactive: Story = {
   name: "完整双栏 · 选择与切换",
   args: createIssueStoryArgs(),
@@ -53,11 +41,11 @@ export const Interactive: Story = {
 };
 
 export const WithoutIssues: Story = {
-  name: "PSD 预览 · 无 issue",
+  name: "成稿预览 · 无 issue",
   args: { ...createIssueStoryArgs(), loadIssues: () => Promise.resolve([]) },
   play: async ({ canvasElement }) => {
-    await waitFor(() => expect(canvasElement.querySelector("canvas")).not.toBeNull());
-    await expect(within(canvasElement).getByLabelText("选择 PSD 图层")).toBeVisible();
+    await waitFor(() => expect(canvasElement.querySelector("img")).not.toBeNull());
+    await expect(within(canvasElement).queryByLabelText("选择 PSD 图层")).toBeNull();
   },
 };
 export const Unavailable: Story = {
@@ -89,57 +77,57 @@ export const MarkerOcclusion: Story = {
       return Promise.resolve([
         {
           id: `${pageId}-1`,
-          pageId,
+          pageArtworkId: pageId,
           index: 0,
           variant: "文字位置",
           note: "与 2 的左上角接近，两个标号互相遮叠。",
           rect: { xCoord: 0.66, yCoord: 0.12, width: 0.18, height: 0.09 },
-          layerPath: "0.1.0",
+          layerName: "对白",
         },
         {
           id: `${pageId}-2`,
-          pageId,
+          pageArtworkId: pageId,
           index: 1,
           variant: "断行",
           note: "与 1 的标号重叠；从列表选择可观察选中后的遮挡。",
           rect: { xCoord: 0.67, yCoord: 0.125, width: 0.18, height: 0.09 },
-          layerPath: "0.1.0",
+          layerName: "对白",
         },
         {
           id: `${pageId}-3`,
-          pageId,
+          pageArtworkId: pageId,
           index: 2,
           variant: "文字位置",
           note: "上边框被 4 的标号压住。",
           rect: { xCoord: 0.09, yCoord: 0.42, width: 0.2, height: 0.12 },
-          layerPath: "0.1.1",
+          layerName: "对白",
         },
         {
           id: `${pageId}-4`,
-          pageId,
+          pageArtworkId: pageId,
           index: 3,
           variant: "断行",
           note: "标号跨过 3 的上边框，两个矩形也有重叠。",
           rect: { xCoord: 0.18, yCoord: 0.442, width: 0.2, height: 0.12 },
-          layerPath: "0.1.1",
+          layerName: "对白",
         },
         {
           id: `${pageId}-5`,
-          pageId,
+          pageArtworkId: pageId,
           index: 4,
           variant: "文字位置",
           note: "与 6 的矩形相交，框线互相遮叠。",
           rect: { xCoord: 0.1, yCoord: 0.73, width: 0.5, height: 0.13 },
-          layerPath: null,
+          layerName: null,
         },
         {
           id: `${pageId}-6`,
-          pageId,
+          pageArtworkId: pageId,
           index: 5,
           variant: "断行",
           note: "与 5 的区域重叠；切换选中项可对比框线的层级。",
           rect: { xCoord: 0.43, yCoord: 0.77, width: 0.3, height: 0.12 },
-          layerPath: null,
+          layerName: null,
         },
       ]);
     },
@@ -159,12 +147,13 @@ export const KeyboardAndNavigation: Story = {
       "aria-pressed",
       "true",
     );
-    const previousImage = canvasElement.querySelector("canvas");
-    await expect(previousImage?.width).toBeGreaterThan(0);
+    await waitFor(() =>
+      expect(canvasElement.querySelector("img")?.naturalWidth).toBeGreaterThan(0),
+    );
+    const previousImage = canvasElement.querySelector("img");
     await userEvent.click(canvas.getByRole("button", { name: "Next page" }));
     await expect(await canvas.findByText("本页没有 issue")).toBeVisible();
-    await expect(previousImage?.width).toBe(0);
-    await expect(previousImage?.height).toBe(0);
+    await expect(previousImage?.isConnected).toBe(false);
     await expect(args.loadIssues).toHaveBeenCalledTimes(2);
     await expect(args.loadIssues).toHaveBeenLastCalledWith("page-2", expect.any(AbortSignal));
     await userEvent.click(canvas.getByRole("button", { name: "Previous page" }));
@@ -181,10 +170,16 @@ export const RapidNavigation: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     await userEvent.click(await canvas.findByRole("button", { name: "Next page" }));
+    await expect(canvas.queryByLabelText("嵌稿预览状态")).not.toBeInTheDocument();
+    await expect(canvas.queryByText("正在下载当前页预览")).not.toBeInTheDocument();
     await userEvent.click(canvas.getByRole("button", { name: "Next page" }));
     await expect(await canvas.findByRole("button", { name: "issue 5：区域重叠" })).toBeVisible();
     await expect(args.loadIssues).toHaveBeenLastCalledWith("page-3", expect.any(AbortSignal));
-    await expect(args.loadReviewPage).toHaveBeenLastCalledWith("page-3", expect.any(AbortSignal));
+    await expect(args.loadReviewPage).toHaveBeenLastCalledWith(
+      "page-3",
+      expect.any(AbortSignal),
+      expect.any(Function),
+    );
     await expect(canvas.queryByText("本页没有 issue")).toBeNull();
   },
 };
@@ -210,47 +205,6 @@ export const Failed: Story = {
     await waitFor(async () => {
       await expect(args.loadIssues).toHaveBeenCalledTimes(2);
     });
-    await waitFor(() => expect(canvasElement.querySelector("canvas")).not.toBeNull());
-  },
-};
-
-export const LayerFiltering: Story = {
-  name: "PSD 图层 · 仅筛选批注",
-  args: createIssueStoryArgs(),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await canvas.findByRole("button", { name: "issue 1：文字位置" });
-    await waitFor(() => expect(canvasElement.querySelector("canvas")?.width).toBeGreaterThan(0));
-    await waitFor(() =>
-      expect(canvasElement.querySelector("canvas")?.getBoundingClientRect().width).toBeGreaterThan(
-        0,
-      ),
-    );
-    const image = canvasElement.querySelector("canvas");
-    const pixels = readPixels(image);
-    const imagePosition = image?.getBoundingClientRect();
-    await userEvent.click(canvas.getByLabelText("选择 PSD 图层"));
-    await userEvent.click(await canvas.findByRole("button", { name: "图层 0.1.1：对白" }));
-    await expect(canvas.queryByRole("button", { name: "issue 1：文字位置" })).toBeNull();
-    await expect(canvas.getByRole("button", { name: "issue 2：断行" })).toBeVisible();
-    await expect(canvas.queryByRole("button", { name: "定位 issue 1" })).toBeNull();
-    await expect(canvas.getByRole("button", { name: "定位 issue 2" })).toBeVisible();
-    await userEvent.click(canvas.getByLabelText("选择 PSD 图层"));
-    await userEvent.click(canvas.getByRole("button", { name: "图层 0.1：文字" }));
-    await expect(canvas.getByRole("button", { name: "issue 1：文字位置" })).toBeVisible();
-    await expect(canvas.queryByRole("button", { name: "issue 4：整页说明" })).toBeNull();
-    await userEvent.click(canvas.getByLabelText("选择 PSD 图层"));
-    await userEvent.click(canvas.getByRole("button", { name: "全部" }));
-    await expect(canvas.getByRole("button", { name: "issue 4：整页说明" })).toBeVisible();
-    await expect(canvasElement.querySelectorAll("canvas")).toHaveLength(1);
-    await expect(canvasElement.querySelector("canvas")).toBe(image);
-    await expect(readPixels(image)).toEqual(pixels);
-    const currentPosition = image?.getBoundingClientRect();
-    await expect([
-      currentPosition?.x,
-      currentPosition?.y,
-      currentPosition?.width,
-      currentPosition?.height,
-    ]).toEqual([imagePosition?.x, imagePosition?.y, imagePosition?.width, imagePosition?.height]);
+    await waitFor(() => expect(canvasElement.querySelector("img")).not.toBeNull());
   },
 };

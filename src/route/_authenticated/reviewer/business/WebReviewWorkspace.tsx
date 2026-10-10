@@ -1,11 +1,10 @@
-import { useCallback, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { JSX } from "react";
 import { useApiClient } from "@/route/business/api-context";
-import { loadPageIssues } from "@/route/_authenticated/business/issue/issue-request";
-import { useArtworkPages } from "./issue/use-artwork-pages";
+import { createChapterIssueSource } from "./issue/chapter-issue-source";
+import { createArtworkPreviewLoader } from "./issue/artwork-preview-loader";
 import { Reviewer } from "./Reviewer";
 import type { ReviewerProject } from "./reviewer-props";
-
 type Props = {
   project: ReviewerProject;
   startPageId: string;
@@ -13,7 +12,6 @@ type Props = {
   onPageChange: (pageId: string) => void;
   onExit: () => void;
 };
-
 export function WebReviewWorkspace({
   project,
   startPageId,
@@ -22,18 +20,25 @@ export function WebReviewWorkspace({
   onExit,
 }: Props): JSX.Element {
   const client = useApiClient();
-  const pageIds = useMemo(() => project.pages.map((page) => page.id), [project]);
-  const loadReviewPage = useArtworkPages(client, project.chapterId, pageIds);
-  const loadIssues = useCallback(
-    (pageId: string, signal: AbortSignal) => loadPageIssues(client, pageId, signal),
-    [client],
+  const chapterIssues = useMemo(() => {
+    return createChapterIssueSource(client, project.chapterId);
+  }, [client, project.chapterId]);
+  useEffect(
+    () => () => {
+      chapterIssues.dispose();
+    },
+    [chapterIssues],
+  );
+  const loadReviewPage = useMemo(
+    () => createArtworkPreviewLoader(client, project),
+    [client, project],
   );
   return (
     <Reviewer
       project={project}
       startPageId={startPageId}
       loadReviewPage={loadReviewPage}
-      loadIssues={loadIssues}
+      loadIssues={chapterIssues.load}
       onImport={onImport}
       onPageChange={onPageChange}
       onExit={onExit}

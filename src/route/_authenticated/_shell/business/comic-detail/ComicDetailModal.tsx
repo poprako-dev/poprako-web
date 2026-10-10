@@ -77,7 +77,6 @@ export function ComicDetailModal({
   const { showToast } = useToastStore();
   const [localMode, setLocalMode] = useState(() => readComicDetailMode(currentUserId));
   const currentMode = mode ?? localMode;
-  const [artworkChapter, setArtworkChapter] = useState<ChapterInfo | null>(null);
   const [activeView, setActiveView] = useState<ComicDetailView>("pages");
   const [pendingConfirmAction, setPendingConfirmAction] = useState<PendingConfirmAction>(null);
   const [isArchivingComic, setIsArchivingComic] = useState(false);
@@ -159,7 +158,7 @@ export function ComicDetailModal({
   const pageState = useComicDetailPages({
     chapterId: selectedChapterId,
     comicId: comicInfo.id,
-    isSelectedChapterAvailable,
+    isSelectedChapterAvailable: isSelectedChapterAvailable && currentMode === "translator",
     onLoadPages,
     onLoadChapters,
     onDeleteChapterPages,
@@ -281,8 +280,10 @@ export function ComicDetailModal({
         isArchivingComic={isArchivingComic}
         isDeletingComic={isDeletingComic}
         coverInputRef={coverInputRef}
-        onOpenArtwork={setArtworkChapter}
-        onArtworkExported={handleWorkflowRecordsChanged}
+        onArtworkExported={() => {
+          void reloadLoadedChapters();
+          handleWorkflowRecordsChanged();
+        }}
         onOpenComicModifier={() => {
           setShowComicModifier(true);
         }}
@@ -292,14 +293,6 @@ export function ComicDetailModal({
       />
       <ComicDetailModalDialogs
         comicInfo={comicInfo}
-        artworkChapter={artworkChapter}
-        closeArtwork={() => {
-          setArtworkChapter(null);
-        }}
-        onArtworkUploaded={() => {
-          void reloadLoadedChapters();
-          handleWorkflowRecordsChanged();
-        }}
         isExportingData={isExportingData}
         exportProgress={exportProgress}
         cancelExport={cancelExport}

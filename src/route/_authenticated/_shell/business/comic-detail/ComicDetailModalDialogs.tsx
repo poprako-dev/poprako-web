@@ -8,7 +8,6 @@ import type { Result } from "@/shared/utility/result";
 import type { ExportProgressState } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
 import type { PendingChapterImport } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-import";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
-import { ArtworkUploadDialog } from "@/route/_authenticated/_shell/business/comic-detail/ArtworkUploadDialog";
 import { ExportProgressDialog } from "@/route/_authenticated/_shell/business/comic-detail/ExportProgressDialog";
 import { ImportTranslationDialog } from "@/route/_authenticated/_shell/business/comic-detail/ImportDialog";
 import { MemberSelectorModal } from "@/route/_authenticated/_shell/business/comic-detail/MemberSelectorModal";
@@ -26,9 +25,6 @@ export type PendingConfirmAction =
 
 type Props = {
   comicInfo: ComicInfo;
-  artworkChapter: ChapterInfo | null;
-  closeArtwork: () => void;
-  onArtworkUploaded: () => void;
   isExportingData: boolean;
   exportProgress: ExportProgressState;
   cancelExport: () => void;
@@ -75,9 +71,6 @@ type Props = {
 
 export function ComicDetailModalDialogs({
   comicInfo,
-  artworkChapter,
-  closeArtwork,
-  onArtworkUploaded,
   isExportingData,
   exportProgress,
   cancelExport,
@@ -111,14 +104,6 @@ export function ComicDetailModalDialogs({
 }: Props): ReactElement {
   return (
     <>
-      {artworkChapter && (
-        <ArtworkUploadDialog
-          chapterId={artworkChapter.id}
-          chapterLabel={`第 ${String(artworkChapter.index + 1)} 话 · ${artworkChapter.subtitle}`}
-          onClose={closeArtwork}
-          onUploaded={onArtworkUploaded}
-        />
-      )}
       <ExportProgressDialog
         open={isExportingData}
         title={exportProgress.title}

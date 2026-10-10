@@ -3,7 +3,7 @@ import type { JSX } from "react";
 import { useApiClient } from "@/route/business/api-context";
 import { useAppStore } from "@/route/business/session/session-store";
 import { getChapter } from "@/route/_authenticated/business/chapter/chapter-request";
-import { listPages } from "@/route/_authenticated/business/page/page-request";
+import { listPageArtworks } from "@/api/page-artwork/page-artwork-api";
 import { getIssueAssignment } from "@/route/_authenticated/business/issue/issue-request";
 import { canImportIssues } from "@/route/_authenticated/business/issue/issue-import";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
@@ -40,7 +40,7 @@ export function WebReviewer({ chapterId, startPageId, onExit }: Props): JSX.Elem
       try {
         const [chapter, pages, assignment] = await Promise.all([
           getChapter(client, chapterId),
-          listPages(client, { chapterId }),
+          listPageArtworks(client, chapterId),
           userId
             ? getIssueAssignment(client, chapterId, userId)
             : Promise.resolve({ success: true as const, data: undefined }),
@@ -54,26 +54,30 @@ export function WebReviewer({ chapterId, startPageId, onExit }: Props): JSX.Elem
           setLoaded({ key, state: { status: "error", message: pages.error } });
           return;
         }
-        if (!pages.data.some((page) => page.id === startPageId && page.chapterId === chapterId)) {
-          setLoaded({ key, state: { status: "error", message: "页面不属于当前章节" } });
-          return;
-        }
         const orderedPages = pages.data
           .filter((page) => page.chapterId === chapterId)
           .sort((a, b) => a.index - b.index)
-          .map((page) => ({ id: page.id, index: page.index }));
+          .map((page) => ({
+            id: page.id,
+            index: page.index,
+            imageUrl: page.imageUrl,
+            imageOptimizedUrl: page.imageOptimizedUrl,
+          }));
+        const initialPages = orderedPages;
         const selected = currentPageRef.current;
         const initialPageId =
           selected.chapterId === chapterId &&
           selected.entryPageId === startPageId &&
-          orderedPages.some((page) => page.id === selected.id)
+          initialPages.some((page) => page.id === selected.id)
             ? selected.id
-            : startPageId;
+            : (initialPages.find((page) => page.id === startPageId)?.id ??
+              initialPages[0]?.id ??
+              "");
         setLoaded({
           key,
           state: {
             status: "ready",
-            project: { chapterId, pages: orderedPages },
+            project: { chapterId, pages: initialPages },
             canImport: assignment.success && canImportIssues(chapter.data, assignment.data),
             permissionError: assignment.success ? null : assignment.error,
             initialPageId,
@@ -109,13 +113,14 @@ export function WebReviewer({ chapterId, startPageId, onExit }: Props): JSX.Elem
 
   if (state.status === "loading")
     return (
-      <div className="flex h-full items-center justify-center">
-        <LoadingCircle aria-label="正在加载页面" />
+      <div className="flex h-dvh flex-col items-center justify-center gap-3 bg-surface-stone-50">
+        <LoadingCircle aria-label="正在加载章节与页面" />
+        <p className="text-sm text-ink-stone-700">正在加载章节、成稿页面和监稿权限…</p>
       </div>
     );
   if (state.status === "error")
     return (
-      <div role="alert" className="flex h-full items-center justify-center gap-3">
+      <div role="alert" className="flex h-dvh items-center justify-center gap-3">
         <span>{state.message}</span>
         <button
           type="button"
@@ -131,8 +136,17 @@ export function WebReviewer({ chapterId, startPageId, onExit }: Props): JSX.Elem
         </button>
       </div>
     );
+  if (state.project.pages.length === 0)
+    return (
+      <div role="status" className="flex h-dvh items-center justify-center gap-3">
+        尚未上传嵌稿
+        <button type="button" onClick={onExit} className="underline">
+          返回
+        </button>
+      </div>
+    );
   return (
-    <>
+    <div className="relative h-dvh min-h-0 w-full overflow-hidden">
       {state.permissionError && (
         <div role="alert" className="absolute z-40 bg-surface-white p-2 text-sm text-text-danger">
           导入权限加载失败：{state.permissionError}
@@ -167,7 +181,6 @@ export function WebReviewer({ chapterId, startPageId, onExit }: Props): JSX.Elem
         <IssueImportDialog
           key={key}
           chapterId={chapterId}
-          pageIds={state.project.pages.map((page) => page.id)}
           onImported={() => {
             setImportOpen(false);
             setRetry((value) => value + 1);
@@ -177,6 +190,6 @@ export function WebReviewer({ chapterId, startPageId, onExit }: Props): JSX.Elem
           }}
         />
       )}
-    </>
+    </div>
   );
 }

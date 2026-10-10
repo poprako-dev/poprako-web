@@ -9,7 +9,7 @@ const requests = vi.hoisted(() => ({ chapter: vi.fn(), pages: vi.fn(), reviewer:
 vi.mock("@/route/_authenticated/business/chapter/chapter-request", () => ({
   getChapter: requests.chapter,
 }));
-vi.mock("@/route/_authenticated/business/page/page-request", () => ({ listPages: requests.pages }));
+vi.mock("@/api/page-artwork/page-artwork-api", () => ({ listPageArtworks: requests.pages }));
 vi.mock("./Reviewer", () => ({
   Reviewer: (props: ReviewerProps) => {
     requests.reviewer(props);
@@ -63,21 +63,15 @@ test("loads page navigation without constructing a Unit project or preview data"
   expect(requests.chapter).toHaveBeenCalledOnce();
   expect(requests.pages).toHaveBeenCalledOnce();
 });
-test("rejects a page from another chapter and allows retry", async () => {
-  requests.pages
-    .mockResolvedValueOnce({
-      success: true,
-      data: [{ id: "page", chapterId: "other", index: 0 }],
-    })
-    .mockResolvedValue({
-      success: true,
-      data: [{ id: "page", chapterId: "chapter", index: 0 }],
-    });
+test("allows chapter recovery and opens artwork review without source pages", async () => {
+  requests.chapter.mockResolvedValueOnce({ success: false, error: "章节加载失败" });
+  requests.pages.mockResolvedValue({ success: true, data: [] });
   render(workbench("chapter", "page"));
-  expect(await screen.findByRole("alert")).toHaveTextContent("页面不属于当前章节");
+  expect(await screen.findByRole("alert")).toHaveTextContent("章节加载失败");
   expect(requests.reviewer).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "重试" }));
-  expect(await screen.findByLabelText("当前工作台")).toHaveTextContent("chapter/page");
+  expect(await screen.findByText("尚未上传嵌稿")).toBeInTheDocument();
+  expect(requests.reviewer).not.toHaveBeenCalled();
 });
 test("hides the previous workbench immediately and ignores a late response after route changes", async () => {
   let resolve!: (value: unknown) => void;

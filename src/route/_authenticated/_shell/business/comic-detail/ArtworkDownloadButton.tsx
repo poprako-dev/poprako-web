@@ -1,7 +1,7 @@
 import type { ApiClient } from "@/api/client";
 import { useEffect, useRef, useState } from "react";
 import type { JSX } from "react";
-import { Download } from "lucide-react";
+import { FileDown } from "lucide-react";
 import { useApiClient } from "@/route/business/api-context";
 import { useAppStore } from "@/route/business/session/session-store";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
@@ -64,7 +64,7 @@ export function ArtworkDownloadButton({ chapterId, onExported }: Props): JSX.Ele
   }
   return (
     <ActionButton
-      icon={Download}
+      icon={FileDown}
       title="下载嵌稿"
       disabled={
         busy?.chapterId === chapterId && busy.client === client && busy.generation === generation

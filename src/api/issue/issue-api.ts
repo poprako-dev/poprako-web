@@ -8,12 +8,12 @@ import type {
 } from "./issue-contract";
 import type { Result } from "@/shared/utility/result";
 
-export function listPageIssues(
+export function listChapterIssues(
   client: ApiClient,
-  pageId: string,
+  chapterId: string,
   signal?: AbortSignal,
 ): Promise<Result<IssueResponse[]>> {
-  return client.get(`/pages/${pageId}/issues`, {
+  return client.get(`/chapters/${chapterId}/issues`, {
     decode: (value) => decodeArray(value, decodeIssue, "issues"),
     ...(signal ? { signal } : {}),
   });

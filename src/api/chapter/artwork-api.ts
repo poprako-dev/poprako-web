@@ -26,22 +26,24 @@ export function allocArtwork(
   chapterId: string,
   artworkHash: string,
   byteLength: number,
+  signal?: AbortSignal,
 ): Promise<Result<ArtworkAllocation>> {
   return client.post(
     `/chapters/${chapterId}/artwork/alloc`,
     { artworkHash, newByteLen: byteLength, ext: "xz" },
-    { decode: decodeAllocation },
+    { decode: decodeAllocation, ...(signal ? { signal } : {}) },
   );
 }
 export function markArtworkUploaded(
   client: ApiClient,
   chapterId: string,
   artworkVersion: number,
+  signal?: AbortSignal,
 ): Promise<Result<undefined>> {
   return client.post(
     `/chapters/${chapterId}/artwork/mark-uploaded`,
     { artworkVersion },
-    { decode: decodeVoid },
+    { decode: decodeVoid, ...(signal ? { signal } : {}) },
   );
 }
 

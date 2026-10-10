@@ -11,7 +11,6 @@ import { useRelocationPreference } from "@/shared/hook/use-relocation-preference
 import { useShortcuts } from "@/shared/hook/use-shortcuts";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
 import { useReviewWorkspace } from "./issue/use-review-workspace";
-import { ReviewLayerMenu } from "./issue/ReviewLayerMenu";
 import { IssueList } from "./issue/IssueList";
 import { IssueOverlay } from "./issue/IssueOverlay";
 import { ReviewPreviewStatus } from "./issue/ReviewPreviewStatus";
@@ -28,9 +27,11 @@ export function Reviewer({
   onPageChange,
   onExit,
 }: Props): JSX.Element {
-  const [pageIndex, setPageIndex] = useState(() =>
+  const [selectedPageIndex, setSelectedPageIndex] = useState(() =>
     project.pages.findIndex((page) => page.id === startPageId),
   );
+  const pageIndex = Math.min(selectedPageIndex, project.pages.length - 1);
+  const currentPage = project.pages[pageIndex];
   const [visible, setVisible] = useState(true);
   const canvasRef = useRef<CanvasHandle>(null);
   const relocation = useRelocationPreference();
@@ -38,13 +39,13 @@ export function Reviewer({
   function navigate(index: number): Promise<void> {
     const page = project.pages[index];
     if (page) {
-      setPageIndex(index);
+      setSelectedPageIndex(index);
       onPageChange?.(page.id);
     }
     return Promise.resolve();
   }
   const review = useReviewWorkspace({
-    pageId: project.pages[pageIndex]?.id ?? "",
+    pageId: currentPage?.id ?? "",
     pageIndex,
     pageCount: project.pages.length,
     active: pageIndex >= 0,
@@ -87,7 +88,7 @@ export function Reviewer({
             ref={canvasRef}
             interaction={interaction}
             imageSrc={imageSrc}
-            isLoading={loadReviewPage !== null && review.loading}
+            isLoading={Boolean(loadReviewPage) && review.loading}
             empty={null}
             onImageError={review.onImageError}
             overlay={(scale) => (
@@ -172,7 +173,6 @@ export function Reviewer({
               >
                 <MapPin size={18} />
               </button>
-              <ReviewLayerMenu review={review} />
               <button
                 type="button"
                 title={visible ? "隐藏 issue 矩形" : "显示 issue 矩形"}
@@ -194,8 +194,12 @@ export function Reviewer({
           </div>
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-stone-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
             {review.issuesLoading && (
-              <div role="status" className="flex justify-center p-2">
+              <div
+                role="status"
+                className="flex items-center justify-center gap-2 p-3 text-xs text-ink-stone-600"
+              >
                 <LoadingCircle size={16} aria-label="正在加载 issue" />
+                <span>正在读取本页监稿标注…</span>
               </div>
             )}
             {review.issuesError && (
@@ -213,7 +217,6 @@ export function Reviewer({
             {!review.issuesLoading && !review.issuesError && (
               <IssueList
                 issues={review.issues}
-                layers={review.page?.layers ?? []}
                 focusedId={review.focusedId}
                 onSelect={(id) => {
                   review.select(id, true);

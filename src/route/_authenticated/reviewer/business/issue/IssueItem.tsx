@@ -6,13 +6,12 @@ import { WorkbenchItemFrame } from "@/shared/component/WorkbenchItemFrame";
 import type { IssueInfo } from "@/route/_authenticated/business/issue/issue";
 
 type Props = {
-  layerName: string;
   issue: IssueInfo;
   isFocused: boolean;
   onSelect: (id: string) => void;
 };
 
-export function IssueItem({ issue, layerName, isFocused, onSelect }: Props): JSX.Element {
+export function IssueItem({ issue, isFocused, onSelect }: Props): JSX.Element {
   const appearance = issueAppearance(issue.variant);
   return (
     <WorkbenchItemFrame
@@ -46,16 +45,18 @@ export function IssueItem({ issue, layerName, isFocused, onSelect }: Props): JSX
         </>
       }
     >
-      <div className="mb-1 flex min-w-0 items-center gap-2" aria-label="图层与问题类型">
+      <div className="mb-1 flex min-w-0 items-center justify-between gap-2">
+        {issue.layerName && (
+          <span
+            className="flex min-w-0 flex-1 items-center gap-1 text-sm font-semibold leading-5 text-ink-gray-600"
+            title={issue.layerName}
+          >
+            <Layers size={14} className="shrink-0" aria-hidden="true" />
+            <span className="truncate">{issue.layerName}</span>
+          </span>
+        )}
         <span
-          className="flex min-w-0 flex-1 items-center gap-1 text-sm font-semibold leading-5 text-ink-gray-600"
-          title={layerName}
-        >
-          <Layers size={14} className="shrink-0" aria-hidden="true" />
-          <span className="truncate">{layerName}</span>
-        </span>
-        <span
-          className="max-w-[50%] truncate rounded-xs border px-1.5 py-0.5 text-xs leading-4 text-ink-stone-600"
+          className="ml-auto max-w-[50%] truncate rounded-xs border px-1.5 py-0.5 text-xs leading-4 text-ink-stone-600"
           style={{
             borderColor: `color-mix(in srgb, ${appearance.border} 35%, transparent)`,
             backgroundColor: `color-mix(in srgb, ${appearance.color} 15%, transparent)`,

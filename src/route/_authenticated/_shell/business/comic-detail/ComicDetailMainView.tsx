@@ -1,3 +1,8 @@
+import { useState } from "react";
+import { ArtworkList } from "./artwork/ArtworkList";
+import { ArtworkUploadDialog } from "./ArtworkUploadDialog";
+import { usePageArtworks } from "@/route/_authenticated/business/artwork/use-page-artworks";
+import { artworkPermissions } from "@/route/_authenticated/business/artwork/artwork";
 import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import type { ReactElement, RefObject } from "react";
 import type { ComicDetailView } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailContent";
@@ -18,7 +23,6 @@ import { ComicDetailModalLayout } from "@/route/_authenticated/_shell/business/c
 import { PageList } from "@/route/_authenticated/_shell/business/comic-detail/page/PageList";
 import { Button } from "@/shared/component/Button";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
-import { canUploadArtwork } from "@/route/_authenticated/_shell/business/comic-detail/upload/artwork-upload";
 
 type Args = {
   mode: ComicDetailMode;
@@ -55,7 +59,6 @@ type Args = {
   isArchivingComic: boolean;
   isDeletingComic: boolean;
   coverInputRef: RefObject<HTMLInputElement | null>;
-  onOpenArtwork: (chapter: ChapterInfo) => void;
   onArtworkExported: () => void;
   onOpenComicModifier: () => void;
   onOpenChapterModifier: (chapter: ChapterInfo) => void;
@@ -80,7 +83,6 @@ export function ComicDetailMainView({
   isArchivingComic,
   isDeletingComic,
   coverInputRef,
-  onOpenArtwork,
   onArtworkExported,
   onOpenComicModifier,
   onOpenChapterModifier,
@@ -88,6 +90,13 @@ export function ComicDetailMainView({
   showToast,
 }: Args): ReactElement {
   const selectedChapterId = chapters.selectedChapterId;
+  const artworks = usePageArtworks(selectedChapterId, mode === "reviewer");
+  const permissions = artworkPermissions(
+    chapters.selectedChapter,
+    assignments.currentAssignment,
+    assignments.isTeamAdmin,
+  );
+  const [uploadFiles, setUploadFiles] = useState<{ chapterId: string; files: File[] } | null>(null);
   const navigateToWorkbench = callbacks.onNavigateToWorkbench;
   const canDeleteChapterPages =
     assignments.canUploadRawPages &&
@@ -153,11 +162,7 @@ export function ComicDetailMainView({
       }
       comicInfo={comicInfo}
       selectedChapter={chapters.selectedChapter}
-      pagesLength={pages.pages.length}
-      canUploadArtwork={canUploadArtwork(chapters.selectedChapter, assignments.currentAssignment)}
-      onUploadArtwork={() => {
-        if (chapters.selectedChapter) onOpenArtwork(chapters.selectedChapter);
-      }}
+      pagesLength={mode === "reviewer" ? artworks.pages.length : pages.pages.length}
       canReadOnly={mode === "reviewer" ? canClickPage : assignments.canReadOnly}
       canUploadCover={exportState.canUploadCover}
       canTranslateOrProofread={assignments.canTranslateOrProofread}
@@ -172,6 +177,14 @@ export function ComicDetailMainView({
       onNavigateReadOnly={
         (mode === "reviewer" ? canClickPage : assignments.canReadOnly) && selectedChapterId
           ? () => {
+              if (mode === "reviewer") {
+                if (!artworks.pages[0]) {
+                  showToast("当前章节尚未上传嵌稿", "error");
+                  return;
+                }
+                navigateToWorkbench(selectedChapterId, artworks.pages[0].id, true, mode);
+                return;
+              }
               const firstPageId = pages.pages[0]?.id;
               if (!firstPageId) {
                 showToast("当前章节暂无页面", "error");
@@ -199,89 +212,133 @@ export function ComicDetailMainView({
     />
   );
 
-  const pageGrid = pages.isPagesLoading ? (
-    <div className="flex h-full items-center justify-center">
-      <LoadingCircle size={22} aria-label="正在加载页面" />
-    </div>
-  ) : (
-    <PageList
-      mode={mode}
-      pages={pages.pages}
-      enableClick={canClickPage}
-      onClickPage={
-        canClickPage
-          ? (pageId) => {
-              if (!chapters.selectedChapterId) return;
-              callbacks.onNavigateToWorkbench(
-                chapters.selectedChapterId,
-                pageId,
-                !assignments.canTranslateOrProofread || undefined,
-                mode,
-              );
-            }
-          : undefined
-      }
-      onAddPages={
-        mode === "translator" && canUploadNewRawPages ? pages.handleAddRawPages : undefined
-      }
-      canReuploadPage={mode === "translator" && canReuploadRawPages ? () => true : undefined}
-      isPageReuploading={(pageId) => pages.reuploadingPageIds[pageId] === true}
-      onReuploadPage={
-        mode === "translator" && canReuploadRawPages
-          ? (pageId, file) => {
-              void pages.handleReuploadPage(pageId, file);
-            }
-          : undefined
-      }
-      reuploadAccept="image/*"
-      accept="image/*"
-      uploadProgressByPageId={pages.uploadProgressByPageId}
-      uploadStatusByPageId={pages.uploadStatusByPageId}
-      uploadErrorByPageId={pages.uploadErrorByPageId}
-    />
-  );
+  const pageGrid =
+    mode === "reviewer" ? (
+      <div>
+        {artworks.loading && artworks.pages.length === 0 && (
+          <div role="status" className="flex items-center justify-center gap-2 p-4">
+            <LoadingCircle size={18} />
+            <span>正在读取嵌稿…</span>
+          </div>
+        )}
+        {artworks.error && (
+          <div role="alert" className="p-2 text-sm text-text-danger">
+            {artworks.error}
+            <Button onClick={artworks.reload}>重新加载嵌稿</Button>
+          </div>
+        )}
+        {!artworks.loading || artworks.pages.length > 0 ? (
+          <ArtworkList
+            pages={artworks.pages}
+            issueCounts={artworks.issueCounts}
+            canUpload={permissions.images}
+            onChanged={artworks.reload}
+            onUpload={(files) => {
+              if (selectedChapterId) setUploadFiles({ chapterId: selectedChapterId, files });
+            }}
+            onOpen={(id) => {
+              if (selectedChapterId) navigateToWorkbench(selectedChapterId, id, true, "reviewer");
+            }}
+          />
+        ) : null}
+      </div>
+    ) : pages.isPagesLoading ? (
+      <div className="flex h-full items-center justify-center">
+        <LoadingCircle size={22} aria-label="正在加载页面" />
+      </div>
+    ) : (
+      <PageList
+        mode={mode}
+        pages={pages.pages}
+        enableClick={canClickPage}
+        onClickPage={
+          canClickPage
+            ? (pageId) => {
+                if (!chapters.selectedChapterId) return;
+                callbacks.onNavigateToWorkbench(
+                  chapters.selectedChapterId,
+                  pageId,
+                  !assignments.canTranslateOrProofread || undefined,
+                  mode,
+                );
+              }
+            : undefined
+        }
+        onAddPages={canUploadNewRawPages ? pages.handleAddRawPages : undefined}
+        canReuploadPage={canReuploadRawPages ? () => true : undefined}
+        isPageReuploading={(pageId) => pages.reuploadingPageIds[pageId] === true}
+        onReuploadPage={
+          canReuploadRawPages
+            ? (pageId, file) => {
+                void pages.handleReuploadPage(pageId, file);
+              }
+            : undefined
+        }
+        reuploadAccept="image/*"
+        accept="image/*"
+        uploadProgressByPageId={pages.uploadProgressByPageId}
+        uploadStatusByPageId={pages.uploadStatusByPageId}
+        uploadErrorByPageId={pages.uploadErrorByPageId}
+      />
+    );
 
   return (
-    <ComicDetailModalLayout
-      header={header}
-      sidebar={sidebar}
-      content={
-        <ComicDetailContent
-          activeView={activeView}
-          chapterId={chapters.selectedChapterId}
-          pageList={
-            <>
-              {pages.pageRecoveryNeeded && (
-                <div role="alert" className="flex items-center gap-2 p-2">
-                  <span>页面信息加载失败</span>
-                  <Button
-                    onClick={() => {
-                      void pages.reloadCurrentPages();
-                    }}
-                  >
-                    重新加载页面
-                  </Button>
-                </div>
-              )}
-              {pages.chapterStatsRecoveryNeeded && (
-                <div role="alert" className="flex items-center gap-2 p-2">
-                  <span>页面已清空，章节统计刷新失败</span>
-                  <Button
-                    onClick={() => {
-                      void pages.retryChapterStats();
-                    }}
-                  >
-                    重新加载章节信息
-                  </Button>
-                </div>
-              )}
-              {pageGrid}
-            </>
-          }
-          workflowPanel={workflowPanel}
-          onChangeView={onChangeView}
+    <>
+      {uploadFiles?.chapterId === selectedChapterId && selectedChapterId && permissions.images && (
+        <ArtworkUploadDialog
+          key={selectedChapterId}
+          chapterId={selectedChapterId}
+          chapterLabel={chapters.selectedChapter?.subtitle ?? "嵌稿"}
+          initialFiles={uploadFiles.files}
+          canArchive={permissions.archive}
+          onClose={() => {
+            setUploadFiles(null);
+          }}
+          onPagesChanged={artworks.reload}
+          onUploaded={onArtworkExported}
         />
-      }
-    />
+      )}
+      <ComicDetailModalLayout
+        header={header}
+        sidebar={sidebar}
+        content={
+          <ComicDetailContent
+            activeView={activeView}
+            chapterId={chapters.selectedChapterId}
+            pageList={
+              <>
+                {mode === "translator" && pages.pageRecoveryNeeded && (
+                  <div role="alert" className="flex items-center gap-2 p-2">
+                    <span>页面信息加载失败</span>
+                    <Button
+                      onClick={() => {
+                        void pages.reloadCurrentPages();
+                      }}
+                    >
+                      重新加载页面
+                    </Button>
+                  </div>
+                )}
+                {mode === "translator" && pages.chapterStatsRecoveryNeeded && (
+                  <div role="alert" className="flex items-center gap-2 p-2">
+                    <span>页面已清空，章节统计刷新失败</span>
+                    <Button
+                      onClick={() => {
+                        void pages.retryChapterStats();
+                      }}
+                    >
+                      重新加载章节信息
+                    </Button>
+                  </div>
+                )}
+                {pageGrid}
+              </>
+            }
+            workflowPanel={workflowPanel}
+            onChangeView={onChangeView}
+          />
+        }
+      />
+    </>
   );
 }

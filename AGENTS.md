@@ -1,5 +1,24 @@
 # Repository guidance
 
+## Highest-priority UI and UX requirements
+
+- UI style MUST be consistent across the application. UX behavior and interaction
+  logic MUST follow the same established patterns across equivalent workflows.
+- Before developing or changing ANY component, inspect existing components,
+  related screens, and their stories to find reusable implementations and
+  applicable UI/UX references. This inspection is mandatory every time.
+- When an existing reference is available, reuse it or strictly follow its
+  visual style and interaction logic. Without explicit user permission, NEVER
+  invent a different UI, redesign the interaction, or deviate from that reference.
+- Independent creative interpretation is strictly prohibited. Do not introduce
+  personal design choices for layout, spacing, typography, colors, controls,
+  states, feedback, or navigation. Follow established project patterns.
+- If no applicable reference exists, obtain explicit user direction or approval
+  for the proposed UI and UX before implementing it. The absence of a reference
+  does not authorize free-form design.
+- These requirements take precedence over conflicting design guidance or skill
+  defaults. Only explicit user authorization permits an exception.
+
 Use Deno 2.9 for dependency installation and project tasks. `deno.json` and the
 frozen `deno.lock` are authoritative. Do not use Bun, npm, pnpm, or Yarn as
 package managers. Run `deno task prepare:dependencies` after clean installs;

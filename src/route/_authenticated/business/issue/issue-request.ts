@@ -1,59 +1,50 @@
 import type { ApiClient } from "@/api/client";
-import { listPageIssues, importChapterIssues } from "@/api/issue/issue-api";
+import { listChapterIssues, importChapterIssues } from "@/api/issue/issue-api";
 import { toApiRequestError } from "@/route/business/request-error";
 import type { IssueInfo, ChapterIssuesInput } from "./issue";
-import { listPages } from "@/route/_authenticated/business/page/page-request";
-import { listAssignments } from "@/api/assignment/assignment-api";
+import { listAssignmentsByChapter } from "@/route/_authenticated/business/assignment/assignment-request";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
-import { toAssignmentInfo } from "@/route/_authenticated/business/content-adapter";
 import type { Result } from "@/shared/utility/result";
+
+const ASSIGNMENT_PAGE_SIZE = 100;
 
 export async function getIssueAssignment(
   client: ApiClient,
   chapterId: string,
   userId: string,
 ): Promise<Result<AssignmentInfo | undefined>> {
-  const result = await listAssignments(client, { chapterId, ownerId: userId, offset: 0, limit: 1 });
-  return result.success
-    ? {
-        success: true,
-        data: result.data
-          .map(toAssignmentInfo)
-          .find((assignment) => assignment.chapterId === chapterId && assignment.userId === userId),
-      }
-    : result;
+  for (let offset = 0; ; offset += ASSIGNMENT_PAGE_SIZE) {
+    const result = await listAssignmentsByChapter(client, {
+      chapterId,
+      offset,
+      limit: ASSIGNMENT_PAGE_SIZE,
+    });
+    if (!result.success) return result;
+    const assignment = result.data.find(
+      (assignment) => assignment.chapterId === chapterId && assignment.userId === userId,
+    );
+    if (assignment) return { success: true, data: assignment };
+    if (result.data.length < ASSIGNMENT_PAGE_SIZE) return { success: true, data: undefined };
+  }
 }
 
-export async function loadPageIssues(
+export async function loadChapterIssues(
   client: ApiClient,
-  pageId: string,
+  chapterId: string,
   signal: AbortSignal,
 ): Promise<IssueInfo[]> {
-  const result = await listPageIssues(client, pageId, signal);
+  const result = await listChapterIssues(client, chapterId, signal);
   signal.throwIfAborted();
   if (!result.success) throw toApiRequestError(result);
-  if (result.data.some((issue) => issue.pageId !== pageId)) throw new Error("issue 不属于当前页面");
-  return result.data.sort((a, b) => a.index - b.index);
+  return result.data;
 }
 
 export async function replaceChapterIssues(
   client: ApiClient,
   chapterId: string,
   input: ChapterIssuesInput,
-  pageIds: readonly string[],
   signal: AbortSignal,
 ): Promise<void> {
-  const manifest = await listPages(client, { chapterId });
-  signal.throwIfAborted();
-  if (!manifest.success) throw toApiRequestError(manifest);
-  const currentIds = manifest.data.sort((a, b) => a.index - b.index).map((page) => page.id);
-  if (
-    input.pages.length !== pageIds.length ||
-    currentIds.length !== pageIds.length ||
-    currentIds.some((id, index) => id !== pageIds[index])
-  ) {
-    throw new Error("章节页面或顺序已变化，请刷新工作台后重新导入");
-  }
   const result = await importChapterIssues(client, chapterId, input, signal);
   signal.throwIfAborted();
   if (!result.success) throw toApiRequestError(result);
