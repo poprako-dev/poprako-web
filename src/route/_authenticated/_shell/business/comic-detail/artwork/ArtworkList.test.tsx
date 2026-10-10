@@ -93,9 +93,8 @@ afterEach(cleanup);
 
 test("maps issue counts to artwork IDs and refreshes the orange indicator", async () => {
   const fixture = setup();
-  expect(await screen.findByText("2 issue")).toBeVisible();
-  expect(screen.getByText("0 issue")).toBeVisible();
-  const indicator = screen.getByLabelText("第 2 页有 issue");
+  const indicator = await screen.findByLabelText("第 2 页有 issue");
+  expect(screen.queryByText(/\d+ issue/u)).not.toBeInTheDocument();
   expect(indicator.firstElementChild).toHaveClass("bg-surface-orange-400");
   expect(screen.queryByLabelText("第 1 页有 issue")).not.toBeInTheDocument();
   expect(screen.queryByText("first.psd")).not.toBeInTheDocument();

@@ -79,11 +79,6 @@ export function ArtworkCard({
           <div className="h-2.5 w-2.5 rounded-full bg-surface-orange-400 shadow-sm" />
         </div>
       )}
-      {issueCount !== undefined && (
-        <div className="pointer-events-none absolute bottom-1.5 left-1.5 right-1.5 z-10 rounded bg-image-label-overlay px-2 py-1 text-center text-[10px] text-image-label-foreground">
-          {issueCount} issue
-        </div>
-      )}
       {url && failedUrl === url && (
         <button
           type="button"
