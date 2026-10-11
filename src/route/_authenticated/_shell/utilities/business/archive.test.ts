@@ -1,13 +1,13 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { compressTarXz, decompressTarXzToZip } from "@/shared/utility/compress";
+import { compressTarZst, decompressTarZstToZip } from "@/shared/utility/compress";
 import {
   prepareArchive,
   validateFiles,
 } from "@/route/_authenticated/_shell/utilities/business/archive";
 
 vi.mock("@/shared/utility/compress", () => ({
-  compressTarXz: vi.fn(),
-  decompressTarXzToZip: vi.fn(),
+  compressTarZst: vi.fn(),
+  decompressTarZstToZip: vi.fn(),
 }));
 
 afterEach(() => {
@@ -59,15 +59,17 @@ test("rejects duplicate normalized paths and multiple extraction inputs", () => 
   expect(
     validateFiles([new File([], "É.psd"), new File([], "e\u{0301}.PSD")], "compress"),
   ).toContain("同名文件");
-  expect(validateFiles([new File([], "a.tar.xz"), new File([], "b.tar.xz")], "extract")).toContain(
-    "一个 .tar.xz",
-  );
-  expect(validateFiles([new File([], "a.zip")], "extract")).toContain(".tar.xz");
+  expect(
+    validateFiles([new File([], "a.tar.zst"), new File([], "b.tar.zst")], "extract"),
+  ).toContain("一个 .tar.zst");
+  expect(validateFiles([new File([], "a.zip")], "extract")).toContain(".tar.zst");
+  expect(validateFiles([new File([], "a.tar.xz")], "extract")).toContain(".tar.zst");
+  expect(validateFiles([new File([], "a.tar.zst")], "extract")).toBeNull();
 });
 
 test("exposes output only after stream completion and disposes its URL and disk file", async () => {
   const storage = mockStorage();
-  vi.mocked(compressTarXz).mockReturnValue(
+  vi.mocked(compressTarZst).mockReturnValue(
     new ReadableStream({
       start(controller) {
         controller.enqueue(new Uint8Array([1, 2]));
@@ -93,26 +95,26 @@ test("exposes output only after stream completion and disposes its URL and disk 
 test("a late integrity error deletes partial output without exposing a download", async () => {
   const storage = mockStorage();
   let count = 0;
-  vi.mocked(decompressTarXzToZip).mockReturnValue(
+  vi.mocked(decompressTarZstToZip).mockReturnValue(
     new ReadableStream({
       pull(controller) {
         if (count++ === 0) {
           controller.enqueue(new Uint8Array([1]));
           return;
         }
-        controller.error(new Error("XZ integrity failure"));
+        controller.error(new Error("Zstandard integrity failure"));
       },
     }),
   );
   await expect(
     prepareArchive(
-      [new File(["broken"], "input.tar.xz")],
+      [new File(["broken"], "input.tar.zst")],
       "extract",
       3,
       new AbortController().signal,
       vi.fn(),
     ),
-  ).rejects.toThrow("XZ integrity failure");
+  ).rejects.toThrow("Zstandard integrity failure");
   expect(storage.abort).toHaveBeenCalledOnce();
   expect(storage.close).not.toHaveBeenCalled();
   expect(storage.createUrl).not.toHaveBeenCalled();
@@ -122,7 +124,7 @@ test("a late integrity error deletes partial output without exposing a download"
 test("cancellation aborts the destination and removes its temporary file", async () => {
   const storage = mockStorage();
   const controller = new AbortController();
-  vi.mocked(compressTarXz).mockImplementation(
+  vi.mocked(compressTarZst).mockImplementation(
     () =>
       new ReadableStream({
         pull() {

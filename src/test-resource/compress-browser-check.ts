@@ -4,11 +4,11 @@ type ArchiveEntry = {
   getData(writer: unknown, options?: Record<string, unknown>): Promise<Blob>;
 };
 type ArchiveTools = {
-  compressTarXz(
+  compressTarZst(
     files: readonly ArchiveFile[],
     options?: Record<string, unknown>,
   ): ReadableStream<Uint8Array>;
-  decompressTarXzToZip(
+  decompressTarZstToZip(
     source: Blob | ReadableStream<Uint8Array>,
     options?: Record<string, unknown>,
   ): ReadableStream<Uint8Array>;
@@ -56,7 +56,7 @@ async function expectStreamFailure(
 
 async function verifyBackpressure(files: ArchiveFile[], tools: ArchiveTools): Promise<void> {
   let progressCount = 0;
-  const reader = tools.compressTarXz(files, { onProgress: () => progressCount++ }).getReader();
+  const reader = tools.compressTarZst(files, { onProgress: () => progressCount++ }).getReader();
   await reader.read();
   await new Promise((resolve) => setTimeout(resolve, 100));
   const pausedCount = progressCount;
@@ -67,7 +67,7 @@ async function verifyBackpressure(files: ArchiveFile[], tools: ArchiveTools): Pr
 
 async function verifyAbortAndSinkFailure(files: ArchiveFile[], tools: ArchiveTools): Promise<void> {
   const abortedController = new AbortController();
-  const reader = tools.compressTarXz(files, { signal: abortedController.signal }).getReader();
+  const reader = tools.compressTarZst(files, { signal: abortedController.signal }).getReader();
   await reader.read();
   abortedController.abort();
   let aborted = false;
@@ -83,7 +83,7 @@ async function verifyAbortAndSinkFailure(files: ArchiveFile[], tools: ArchiveToo
 async function verifySinkFailure(files: ArchiveFile[], tools: ArchiveTools): Promise<void> {
   let sinkFailed = false;
   try {
-    await tools.compressTarXz(files).pipeTo(
+    await tools.compressTarZst(files).pipeTo(
       new WritableStream({
         write: () => {
           throw new Error("Disk full");
@@ -103,7 +103,7 @@ async function verifySourceCancellation(tools: ArchiveTools): Promise<void> {
       cancelled = true;
     },
   });
-  const reader = tools.decompressTarXzToZip(stalled).getReader();
+  const reader = tools.decompressTarZstToZip(stalled).getReader();
   const pending = reader.read();
   await reader.cancel();
   await pending;
@@ -114,7 +114,10 @@ async function verifySourceCancellation(tools: ArchiveTools): Promise<void> {
 async function verifyCancellation(files: ArchiveFile[], tools: ArchiveTools): Promise<void> {
   const controller = new AbortController();
   controller.abort();
-  await expectStreamFailure("pre-abort", tools.compressTarXz(files, { signal: controller.signal }));
+  await expectStreamFailure(
+    "pre-abort",
+    tools.compressTarZst(files, { signal: controller.signal }),
+  );
   await verifyBackpressure(files, tools);
   await verifyAbortAndSinkFailure(files, tools);
   await verifySourceCancellation(tools);
@@ -168,8 +171,8 @@ async function compressAndVerify(
   const archive = await saveToOpfs(
     directory,
     handles,
-    "roundtrip.tar.xz",
-    tools.compressTarXz(input, {
+    "roundtrip.tar.zst",
+    tools.compressTarZst(input, {
       preset,
       onProgress(progress: { completedFiles: number }) {
         if (performance.now() - lastLog > 5000) {
@@ -182,8 +185,8 @@ async function compressAndVerify(
   const compressMs = performance.now() - start;
   clearInterval(timer);
   assertBrowser(ticks > 0, "Main thread should remain responsive");
-  console.warn(`XZ ${String(archive.size)} bytes in ${String(Math.round(compressMs))} ms`);
-  await expectStreamFailure("truncated footer", tools.decompressTarXzToZip(archive.slice(0, -1)));
+  console.warn(`Zstandard ${String(archive.size)} bytes in ${String(Math.round(compressMs))} ms`);
+  await expectStreamFailure("truncated footer", tools.decompressTarZstToZip(archive.slice(0, -1)));
   return createZip(archive, directory, handles, input, compressMs, ticks, tools);
 }
 
@@ -201,7 +204,7 @@ async function createZip(
     directory,
     handles,
     "roundtrip.zip",
-    tools.decompressTarXzToZip(archive, {
+    tools.decompressTarZstToZip(archive, {
       extraFiles: [{ name: "translation.txt", blob: new Blob(["翻译测试"]) }],
     }),
   );
@@ -248,7 +251,7 @@ export async function runCompressionCheck(
     return {
       files: input.length,
       inputBytes,
-      xzBytes: result.archive.size,
+      zstBytes: result.archive.size,
       zipBytes: result.zip.size,
       preset,
       compressMs: result.compressMs,

@@ -15,7 +15,7 @@ export type ArchiveOptions = {
   signal?: AbortSignal;
   onProgress?: (progress: ArchiveProgress) => void;
   /**
-  XZ preset 0–6. Default 3 keeps encoder memory below the WASM heap limit.
+  Zstandard level 1–6. Default 3; 256 MiB window and long-distance matching.
   */
   preset?: number;
   /**

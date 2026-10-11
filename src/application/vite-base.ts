@@ -11,7 +11,7 @@ export function createViteBase(includeReact = true): UserConfig {
     optimizeDeps: {
       include: ["@zip.js/zip.js", "modern-tar"],
       // The archive Worker needs a stable direct ESM URL during dependency optimization.
-      exclude: ["node-liblzma"],
+      exclude: ["simple-wasi-zstd"],
     },
     build: {
       target: ["chrome111", "safari16.4"],

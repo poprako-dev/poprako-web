@@ -66,7 +66,7 @@ test("settles immediately when the upload signal is already aborted", async () =
     await expect(
       createTestApi().putPresigned({
         url: "https://upload.example/artwork",
-        file: new File(["xz"], "artwork.tar.xz"),
+        file: new File(["zst"], "artwork.tar.zst"),
         signal: controller.signal,
       }),
     ).resolves.toEqual({ success: false, error: "上传已取消", failureKind: "aborted" });

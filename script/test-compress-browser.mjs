@@ -9,6 +9,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { createViteBase } from "../src/application/vite-base.ts";
 
 const exec = promisify(execFile);
 
@@ -49,6 +50,7 @@ globalThis.testArchive = { ...tools, run: (large, preset) => runCompressionCheck
 </script>`,
 );
 await build({
+  ...createViteBase(false),
   configFile: false,
   root,
   logLevel: "warn",
@@ -130,7 +132,7 @@ try {
   // zip.js's independent verification reader keeps a reusable Worker pool alive.
   const archiveWorkers = page
     .workers()
-    .filter((worker) => worker.url().includes("/archive.worker-"));
+    .filter((worker) => worker.url().includes("/archive-worker-"));
   if (archiveWorkers.length !== 0) {
     throw new Error("Archive Worker leaked after completion");
   }

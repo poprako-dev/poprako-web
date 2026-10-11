@@ -62,7 +62,7 @@ export function addArchiveFiles(
   updateArchiveFiles(next, controllerRef, resultRef, setResult, setFiles, setPhase);
   if (mode === "extract" || files.length === 0) {
     const firstName = incoming[0]?.name ?? "嵌稿";
-    setName(firstName.replace(/(?:\.tar\.xz|\.[^.]+)$/iu, "") || "嵌稿");
+    setName(firstName.replace(/(?:\.tar\.zst|\.[^.]+)$/iu, "") || "嵌稿");
   }
 }
 

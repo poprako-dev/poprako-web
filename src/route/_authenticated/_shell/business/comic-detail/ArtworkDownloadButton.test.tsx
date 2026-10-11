@@ -22,7 +22,7 @@ function createDelayedRequest(): {
         data: {
           artwork_version: 2,
           artwork_hash: "hash",
-          ext: "xz",
+          ext: "zst",
           download_url: "https://storage.example/new",
         },
       }),
@@ -82,7 +82,7 @@ test("hands the signed URL to the browser without buffering the artifact", async
     this: HTMLAnchorElement,
   ) {
     expect(this.href).toBe("https://storage.example/file?signature=opaque");
-    expect(this.download).toBe("chapter-chapter-artwork.zst");
+    expect(this.download).toBe("chapter-chapter-artwork.tar.zst");
   });
   const exported = vi.fn();
   renderDownloadButton(client, exported);
@@ -115,7 +115,7 @@ test("changing chapter cancels the old export and ignores a late response", asyn
       data: {
         artwork_version: 1,
         artwork_hash: "hash",
-        ext: "xz",
+        ext: "zst",
         download_url: "https://storage.example/old",
       },
     }),

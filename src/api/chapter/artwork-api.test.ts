@@ -20,7 +20,7 @@ test("deduplication retains version and confirms with the original protocol", as
   expect(parseRequestBody(request.mock.calls[0]?.[1]?.body)).toEqual({
     artwork_hash: "hash",
     new_byte_len: 123,
-    ext: "xz",
+    ext: "zst",
   });
   await markArtworkUploaded(client, "chapter", 7);
   expect(request.mock.calls[1]?.[0]).toBe("/api/v1/chapters/chapter/artwork/mark-uploaded");

@@ -14,11 +14,11 @@ export type {
 } from "@/shared/utility/compress/types";
 
 /**
- * Streams a single .tar.xz in a dedicated Worker. Pipe to a file/OPFS writable
+ * Streams a single .tar.zst in a dedicated Worker. Pipe to a file/OPFS writable
  * or a bounded multipart uploader; collecting a Blob buffers the whole result.
  * Output cancellation, signal abort and errors terminate the Worker/WASM heap.
  */
-export function compressTarXz(
+export function compressTarZst(
   files: readonly ArchiveFile[],
   options: ArchiveOptions = {},
 ): ReadableStream<Uint8Array> {
@@ -27,10 +27,10 @@ export function compressTarXz(
 
 /**
  * Streams a single ZIP64 (STORE) containing the extracted files and extraFiles.
- * Does not buffer PSDs or close successfully until XZ integrity checks complete.
- * Accepts this tool's single-stream XZ archives containing regular TAR files/directories.
+ * Does not buffer PSDs or close successfully until Zstandard integrity checks complete.
+ * Accepts this tool's single-frame Zstandard archives containing regular TAR files/directories.
  */
-export function decompressTarXzToZip(
+export function decompressTarZstToZip(
   source: Blob | ReadableStream<Uint8Array>,
   options: ZipOptions = {},
 ): ReadableStream<Uint8Array> {

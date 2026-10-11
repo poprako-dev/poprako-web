@@ -3,7 +3,7 @@
   "lock": {
     "frozen": true
   },
-  "allowScripts": ["npm:node-liblzma@5.1.1", "npm:msw@2.15.0"],
+  "allowScripts": ["npm:msw@2.15.0"],
   "tasks": {
     "prepare:dependencies": "deno run -A script/prepare-dependencies.ts",
     "prepare:dependencies:check": "deno run -A script/prepare-dependencies.ts --check",

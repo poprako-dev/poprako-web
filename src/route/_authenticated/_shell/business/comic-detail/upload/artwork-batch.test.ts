@@ -82,7 +82,7 @@ function createOrderedArchiveBatch(): {
   const packing = deferred();
   requests.prepareArchive.mockImplementation(async () => {
     await packing.promise;
-    return { file: new File(["archive"], "artwork.tar.xz"), hash: "hash", dispose: vi.fn() };
+    return { file: new File(["archive"], "artwork.tar.zst"), hash: "hash", dispose: vi.fn() };
   });
   requests.confirm.mockResolvedValue({ success: true, data: undefined });
   const upload = deferred();
@@ -167,7 +167,7 @@ test("batch subscription and lifecycle methods work when detached from the facto
 
 test("a failed archive blocks previews and retry keeps the prepared archive", async () => {
   requests.prepareArchive.mockResolvedValue({
-    file: new File(["archive"], "artwork.tar.xz"),
+    file: new File(["archive"], "artwork.tar.zst"),
     hash: "hash",
     dispose: vi.fn(),
   });

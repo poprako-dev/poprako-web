@@ -101,7 +101,7 @@ export function useArchiveTool(mode: ArchiveMode): ArchiveToolApi {
     setProgress: state.setProgress,
     showToast: state.showToast,
   });
-  const extension = mode === "compress" ? ".tar.xz" : ".zip";
+  const extension = mode === "compress" ? ".tar.zst" : ".zip";
   const outputName = (state.name.trim().replaceAll(/[/\\:*?"<>|]/gu, "_") || "嵌稿") + extension;
   return {
     files: state.files,

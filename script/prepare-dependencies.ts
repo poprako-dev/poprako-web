@@ -37,14 +37,6 @@ const RADIX_ORIGINAL =
 const RADIX_PREPARED =
   'interface SelectPopperPositionProps extends Omit<PopperContentProps, "onPlaced">, ' +
   "SelectPopperPrivateProps";
-const LIBLZMA_STORE_DIRECTORY = "node-liblzma@5.1.1";
-const LIBLZMA_PACKAGE = "node-liblzma";
-const LIBLZMA_DECLARATION = "src/wasm/liblzma.d.ts";
-const LIBLZMA_ORIGINAL_HASH = "030f825f172c4a752e5878eda39e5f68a5d8fe433f425236d50fd928636a8fcd";
-const LIBLZMA_PREPARED_HASH = "096b9049209f67341c7b5063909fc9322bd9a0555f61b48d69136c923fdf2ebd";
-const LIBLZMA_ORIGINAL = 'from "./types.js"';
-const LIBLZMA_PREPARED = 'from "../../lib/wasm/types.js"';
-
 type PreparationMode = "apply" | "check";
 type PreparationResult = { path: string; changed: boolean; hash: string };
 type DependencyTarget = {
@@ -208,26 +200,6 @@ async function dependencyTargets(root: string): Promise<DependencyTarget[]> {
           RADIX_PREPARED_HASH,
         ),
       expectedHash: RADIX_PREPARED_HASH,
-    },
-    {
-      path: await findPinnedDeclaration(
-        root,
-        LIBLZMA_STORE_DIRECTORY,
-        LIBLZMA_PACKAGE,
-        "5.1.1",
-        LIBLZMA_DECLARATION,
-      ),
-      label: "node-liblzma",
-      prepare: (content: string) =>
-        preparePinnedFile(
-          content,
-          "node-liblzma",
-          LIBLZMA_ORIGINAL,
-          LIBLZMA_PREPARED,
-          LIBLZMA_ORIGINAL_HASH,
-          LIBLZMA_PREPARED_HASH,
-        ),
-      expectedHash: LIBLZMA_PREPARED_HASH,
     },
   ];
 }

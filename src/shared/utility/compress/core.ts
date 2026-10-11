@@ -1,7 +1,7 @@
 import { createTarDecoder, createTarPacker, type TarHeader } from "modern-tar";
 import { ZipWriter } from "@zip.js/zip.js";
-import { xzStream } from "@/shared/utility/compress/xz";
-import type { ArchiveFile, ArchiveProgress, WorkerJob } from "@/shared/utility/compress/types";
+import { zstdStream } from "./zstd";
+import type { ArchiveFile, ArchiveProgress, WorkerJob } from "./types";
 
 export function validateName(name: string): void {
   if (!name || name.includes("\\") || name.includes(":")) {
@@ -21,8 +21,8 @@ export function validateName(name: string): void {
 }
 
 export function validateJob(job: WorkerJob): void {
-  if (!Number.isSafeInteger(job.preset) || job.preset < 0 || job.preset > 6) {
-    throw new Error("XZ preset must be an integer between 0 and 6");
+  if (!Number.isSafeInteger(job.preset) || job.preset < 1 || job.preset > 6) {
+    throw new Error("Zstandard level must be an integer between 1 and 6");
   }
   for (const limit of [job.maxBytes, job.maxFiles]) {
     if (!Number.isSafeInteger(limit) || limit < 1) {
@@ -101,7 +101,7 @@ async function compressArchive(
       throw error;
     }
   })();
-  const consume = xzStream(tar.readable, false, job.preset).pipeTo(output);
+  const consume = zstdStream(tar.readable, false, job.preset).pipeTo(output);
   await Promise.all([produce, consume]);
 }
 
@@ -111,7 +111,7 @@ async function decompressArchive(
   tracker: ArchiveTracker,
 ): Promise<void> {
   if (!job.source) {
-    throw new Error("Missing XZ source");
+    throw new Error("Missing Zstandard source");
   }
   const zip = new ZipWriter(output, {
     level: 0,
@@ -119,7 +119,7 @@ async function decompressArchive(
     bufferedWrite: false,
     useWebWorkers: false,
   });
-  const decoded = xzStream(job.source, true);
+  const decoded = zstdStream(job.source, true);
   const entries = decoded.pipeThrough(createTarDecoder({ strict: true })).getReader();
   try {
     for (;;) {

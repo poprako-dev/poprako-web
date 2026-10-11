@@ -1,6 +1,7 @@
 import { type JSX, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MemberList } from "@/route/_authenticated/_shell/member-list/business/MemberList";
+import { MemberCard } from "@/route/_authenticated/_shell/member-list/business/member/MemberCard";
 import { EmbeddedMemberList } from "@/route/_authenticated/_shell/member-list/business/EmbeddedMemberList";
 import { MemberListFilterHeader } from "@/route/_authenticated/_shell/member-list/business/MemberListFilterHeader";
 import type { RoleFilter } from "@/route/_authenticated/_shell/member-list/business/member-list-type";
@@ -84,6 +85,16 @@ export const Embedded: StoryObj<typeof EmbeddedMemberList> = {
   render: () => (
     <div className="h-screen p-6 bg-surface-slate-50">
       <EmbeddedMemberList onLoadMembers={mockLoadMembers} />
+    </div>
+  ),
+};
+
+export const RoleStates: StoryObj<typeof MemberCard> = {
+  render: () => (
+    <div className="max-w-md space-y-3 p-6">
+      {[0, 2, 14, 127].map((roles) => (
+        <MemberCard key={roles} member={{ ...makeMockMember(0), roles }} />
+      ))}
     </div>
   ),
 };

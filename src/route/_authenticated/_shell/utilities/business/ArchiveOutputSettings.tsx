@@ -6,7 +6,7 @@ import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
 import type { useArchiveTool } from "@/route/_authenticated/_shell/utilities/business/use-archive-tool";
 
 const PRESET_OPTIONS = [
-  { id: "0", text: "速度优先" },
+  { id: "1", text: "速度优先" },
   { id: "3", text: "均衡" },
   { id: "6", text: "体积优先" },
 ];

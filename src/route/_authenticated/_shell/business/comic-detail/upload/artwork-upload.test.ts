@@ -6,9 +6,9 @@ import {
   validateArtworkFiles,
 } from "@/route/_authenticated/_shell/business/comic-detail/upload/artwork-upload";
 import { artworkPermissions } from "@/route/_authenticated/business/artwork/artwork";
-import { compressTarXz } from "@/shared/utility/compress";
+import { compressTarZst } from "@/shared/utility/compress";
 
-vi.mock("@/shared/utility/compress", () => ({ compressTarXz: vi.fn() }));
+vi.mock("@/shared/utility/compress", () => ({ compressTarZst: vi.fn() }));
 const chapter: ChapterInfo = {
   id: "chapter",
   comicId: "comic",
@@ -91,7 +91,7 @@ function mockStorage(): {
           getFileHandle: () =>
             Promise.resolve({
               createWritable,
-              getFile: () => Promise.resolve(new File(chunks, "artwork.tar.xz")),
+              getFile: () => Promise.resolve(new File(chunks, "artwork.tar.zst")),
             }),
         }),
     },
@@ -101,7 +101,7 @@ function mockStorage(): {
 
 test("stages output and hashes exact archive bytes with canonical base64", async () => {
   const storage = mockStorage();
-  vi.mocked(compressTarXz).mockReturnValue(
+  vi.mocked(compressTarZst).mockReturnValue(
     new ReadableStream({
       start(controller) {
         controller.enqueue(new TextEncoder().encode("a"));
@@ -125,7 +125,7 @@ test("stages output and hashes exact archive bytes with canonical base64", async
 
 test("aborts the output and deletes temporary files on compression failure", async () => {
   const storage = mockStorage();
-  vi.mocked(compressTarXz).mockReturnValue(
+  vi.mocked(compressTarZst).mockReturnValue(
     new ReadableStream({
       start(controller) {
         controller.error(new Error("compression failed"));

@@ -16,7 +16,6 @@ async function writePinnedFixtureFiles(root: string): Promise<void> {
     root,
     "node_modules/.deno/@radix-ui+react-select@2.3.7/node_modules/@radix-ui/react-select",
   );
-  const liblzma = join(root, "node_modules/.deno/node-liblzma@5.1.1/node_modules/node-liblzma");
   const radixOriginal = (
     await readFile(
       "node_modules/.deno/@radix-ui+react-select@2.3.7/node_modules/" +
@@ -28,14 +27,7 @@ async function writePinnedFixtureFiles(root: string): Promise<void> {
       "SelectPopperPrivateProps",
     "interface SelectPopperPositionProps extends PopperContentProps, SelectPopperPrivateProps",
   );
-  const liblzmaOriginal = (
-    await readFile(
-      "node_modules/.deno/node-liblzma@5.1.1/node_modules/" + "node-liblzma/src/wasm/liblzma.d.ts",
-      "utf8",
-    )
-  ).replace('from "../../lib/wasm/types.js"', 'from "./types.js"');
   await writeFile(join(radix, "dist/index.d.mts"), radixOriginal);
-  await writeFile(join(liblzma, "src/wasm/liblzma.d.ts"), liblzmaOriginal);
 }
 
 async function withInstallation(
@@ -51,18 +43,15 @@ async function withInstallation(
       root,
       "node_modules/.deno/@radix-ui+react-select@2.3.7/node_modules/@radix-ui/react-select",
     );
-    const liblzma = join(root, "node_modules/.deno/node-liblzma@5.1.1/node_modules/node-liblzma");
     await mkdir(framework, { recursive: true });
     await mkdir(join(renderer, "dist"), { recursive: true });
     await mkdir(join(radix, "dist"), { recursive: true });
-    await mkdir(join(liblzma, "src/wasm"), { recursive: true });
     await writeFile(join(framework, "package.json"), '{"name":"@storybook/react-vite"}');
     await writeFile(
       join(renderer, "package.json"),
       '{"name":"@storybook/react","version":"10.6.0"}',
     );
     await writeFile(join(radix, "package.json"), '{"version":"2.3.7"}');
-    await writeFile(join(liblzma, "package.json"), '{"version":"5.1.1"}');
     const declaration = join(renderer, "dist/chunk-ojHmM-yX.d.ts");
     await writeFile(declaration, original);
     await writePinnedFixtureFiles(root);

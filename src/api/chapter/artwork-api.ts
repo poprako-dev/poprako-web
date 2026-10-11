@@ -30,7 +30,7 @@ export function allocArtwork(
 ): Promise<Result<ArtworkAllocation>> {
   return client.post(
     `/chapters/${chapterId}/artwork/alloc`,
-    { artworkHash, newByteLen: byteLength, ext: "xz" },
+    { artworkHash, newByteLen: byteLength, ext: "zst" },
     { decode: decodeAllocation, ...(signal ? { signal } : {}) },
   );
 }

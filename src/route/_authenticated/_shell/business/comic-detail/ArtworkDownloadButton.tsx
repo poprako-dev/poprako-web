@@ -35,7 +35,7 @@ function useArtworkDownload(
       const link = document.createElement("a");
       link.href = result.data.downloadUrl;
       link.download = sanitizeExportFileName(
-        "chapter-" + chapterId + "-artwork." + result.data.ext,
+        "chapter-" + chapterId + "-artwork.tar." + result.data.ext,
       );
       link.rel = "noopener";
       link.target = "_blank";
