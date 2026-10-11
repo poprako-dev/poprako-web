@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import {
   type AccessibilityViolation,
   compareContrastBaseline,
@@ -46,7 +46,7 @@ function violation(
   };
 }
 
-void test("contrast entries include only valid color-contrast check fields and group counts", () => {
+test("contrast entries include only valid color-contrast check fields and group counts", () => {
   const entries = contrastEntries([
     violation(["#radix-a", ".label"]),
     violation(["#radix-b", ".label"]),
@@ -87,7 +87,7 @@ function oneEntry(violations: AccessibilityViolation[]): ContrastEntry {
   return entry;
 }
 
-void test("new rule and new story are unexpected, even when contrast has no baseline", () => {
+test("new rule and new story are unexpected, even when contrast has no baseline", () => {
   const baseline = { known: [oneEntry([violation([".label"])])] };
   const result = compareContrastBaseline("new-story", [violation([".label"])], baseline);
   assert.equal(result.known, 0);
@@ -106,7 +106,7 @@ void test("new rule and new story are unexpected, even when contrast has no base
   assert.equal(nonContrast.unexpected.length, 1);
 });
 
-void test("malformed contrast data and nested rules are never registered", () => {
+test("malformed contrast data and nested rules are never registered", () => {
   assert.deepEqual(
     contrastEntries([
       violation([".bad-color"], { fgColor: "red" }),
@@ -131,7 +131,7 @@ void test("malformed contrast data and nested rules are never registered", () =>
   assert.equal(result.unexpected.length, 2);
 });
 
-void test("worse color values and new targets do not match a baseline entry", () => {
+test("worse color values and new targets do not match a baseline entry", () => {
   const baseline = { story: contrastEntries([violation([".label"])]) };
   assert.equal(
     compareContrastBaseline("story", [violation([".label"], { fgColor: "#666666" })], baseline)
@@ -141,7 +141,7 @@ void test("worse color values and new targets do not match a baseline entry", ()
   assert.equal(compareContrastBaseline("story", [violation([".other"])], baseline).known, 0);
 });
 
-void test("known violations consume baseline count and duplicate overflow fails", () => {
+test("known violations consume baseline count and duplicate overflow fails", () => {
   const baseline = {
     story: [{ ...oneEntry([violation([".label"])]), count: 1 }],
   };
@@ -156,7 +156,7 @@ void test("known violations consume baseline count and duplicate overflow fails"
   assert.equal(two.unexpected.length, 1);
 });
 
-void test("removed baseline issues do not fail", () => {
+test("removed baseline issues do not fail", () => {
   const result = compareContrastBaseline("story", [], {
     story: [{ target: '[".label"]', checks: "[]", count: 1 }],
   });

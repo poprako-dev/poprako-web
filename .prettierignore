@@ -2,5 +2,5 @@ node_modules/
 dist/
 storybook-static/
 coverage/
-deno.lock
+pnpm-lock.yaml
 src/route-tree.gen.ts

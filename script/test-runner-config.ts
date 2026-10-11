@@ -4,3 +4,4 @@ export const STORYBOOK_STORY_GLOBS = [
   "../src/**/*.mdx",
   "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)",
 ];
+export const VITEST_SCRIPT_INCLUDE = ["script/**/*.test.ts", "script/**/*.test.mjs"];

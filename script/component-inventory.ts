@@ -1,3 +1,4 @@
+import { readFile, writeFile } from "node:fs/promises";
 import ts from "typescript";
 import { relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -280,15 +281,15 @@ function collectComponentEntries(program: ts.Program, checker: ts.TypeChecker): 
 async function main(): Promise<void> {
   const inventory = buildComponentInventory();
   const report = JSON.stringify(inventory, null, 2) + "\n";
-  if (Deno.args.includes("--check")) {
-    const existing = await Deno.readTextFile(artifactPath);
+  if (process.argv.slice(2).includes("--check")) {
+    const existing = await readFile(artifactPath, "utf8");
     if (existing !== report) {
-      throw new Error("Component inventory is stale; run `deno task component:audit`.");
+      throw new Error("Component inventory is stale; run `pnpm run component:audit`.");
     }
     console.log("Component inventory is current; semantic review remains manual.");
     return;
   }
-  await Deno.writeTextFile(artifactPath, report);
+  await writeFile(artifactPath, report);
   console.log(
     `Wrote ${String(inventory.components.length)} component entries to ${sourceRelative(
       artifactPath,

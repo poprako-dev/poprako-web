@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { inspectStyleFile } from "./check-style.ts";
 
-void test("style checker accepts the registered Storybook default export", () => {
+test("style checker accepts the registered Storybook default export", () => {
   assert.deepEqual(inspectStyleFile(".storybook/main.ts", "export default {};\n"), []);
 });
 
-void test("style checker permits only the router register module augmentation", () => {
+test("style checker permits only the router register module augmentation", () => {
   assert.deepEqual(
     inspectStyleFile(
       "src/application/router.ts",
@@ -25,7 +25,7 @@ void test("style checker permits only the router register module augmentation", 
   );
 });
 
-void test("style checker rejects old structure, data interfaces and arrow exports", () => {
+test("style checker rejects old structure, data interfaces and arrow exports", () => {
   const findings = inspectStyleFile(
     "src/features/sample/business/sample.ts",
     [
@@ -41,7 +41,7 @@ void test("style checker rejects old structure, data interfaces and arrow export
   assert.match(findings.map((finding) => finding.rule).join(" "), /export\.default/u);
 });
 
-void test("style checker enforces the physical 400-line limit", () => {
+test("style checker enforces the physical 400-line limit", () => {
   assert.deepEqual(inspectStyleFile("src/shared/utility/small.ts", `${"\n".repeat(399)}\n`), []);
   assert.match(
     inspectStyleFile("src/shared/utility/large.ts", `${"\n".repeat(400)}\n`)
@@ -51,7 +51,7 @@ void test("style checker enforces the physical 400-line limit", () => {
   );
 });
 
-void test("route entry exports cannot silently disable lazy component splitting", () => {
+test("route entry exports cannot silently disable lazy component splitting", () => {
   const route = 'export const Route = createFileRoute("/sample")({ component: Page });';
   const file = "src/route/sample/Index.tsx";
   for (const page of [
@@ -65,7 +65,7 @@ void test("route entry exports cannot silently disable lazy component splitting"
   assert.deepEqual(inspectStyleFile(file, route + "function Page() { return null; }"), []);
 });
 
-void test("TSX always uses PascalCase, including route entries and tests", () => {
+test("TSX always uses PascalCase, including route entries and tests", () => {
   for (const name of ["index.tsx", "route.tsx", "settings.tsx", "use-session.test.tsx"]) {
     assert.ok(
       inspectStyleFile(`src/route/settings/${name}`, "").some(

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { inspectApiBoundary } from "./check-api-boundary.ts";
 
-void test("API checker rejects global network bypasses and UI dependency", () => {
+test("API checker rejects global network bypasses and UI dependency", () => {
   assert.equal(
     inspectApiBoundary(
       "src/route/business/request.ts",
@@ -21,7 +21,7 @@ void test("API checker rejects global network bypasses and UI dependency", () =>
   );
 });
 
-void test("API checker separates mechanical key conversion from domain semantics", () => {
+test("API checker separates mechanical key conversion from domain semantics", () => {
   const findings = inspectApiBoundary(
     "src/route/business/model.ts",
     [

@@ -27,7 +27,7 @@ if (!checkOnly) {
       "utf8",
     );
     if (generatedTree !== expectedTree) {
-      throw new Error("route-tree.gen.ts is stale; run `deno task generate`.");
+      throw new Error("route-tree.gen.ts is stale; run `pnpm run generate`.");
     }
 
     const originalRoutes = resolve(root, "src/route");

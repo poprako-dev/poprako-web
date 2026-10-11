@@ -23,5 +23,5 @@ export function runFunctionLineCheck(root: string): number {
 
 if (import.meta.main) {
   const root = resolve(fileURLToPath(new URL("../../", import.meta.url)));
-  Deno.exitCode = runFunctionLineCheck(root);
+  process.exitCode = runFunctionLineCheck(root);
 }

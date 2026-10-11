@@ -1,3 +1,4 @@
+import { readFileSync, readdirSync } from "node:fs";
 import ts from "typescript";
 import { inspectApiBoundary } from "./check-api-boundary.ts";
 
@@ -23,6 +24,7 @@ const DEFAULT_EXPORT_FILES = new Set([
   ".storybook/preview.ts",
   "vite.config.ts",
   "vitest.unit.config.ts",
+  "vitest.script.config.ts",
   "vitest.integration.config.ts",
   "vitest.storybook.config.ts",
   "storybook.vite.config.ts",
@@ -39,17 +41,17 @@ function sourceFiles(root: string): string[] {
     while (pending.length > 0) {
       const current = pending.pop();
       if (!current) continue;
-      for (const entry of Deno.readDirSync(current)) {
+      for (const entry of readdirSync(current, { withFileTypes: true })) {
         const path = `${current}/${entry.name}`;
-        if (entry.isDirectory) {
+        if (entry.isDirectory()) {
           if (entry.name === "node_modules" || entry.name === "dist") continue;
           pending.push(path);
         } else if (isSource(path)) files.push(path);
       }
     }
   }
-  for (const entry of Deno.readDirSync(root)) {
-    if (entry.isFile && entry.name.endsWith(".config.ts")) files.push(`${root}/${entry.name}`);
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith(".config.ts")) files.push(`${root}/${entry.name}`);
   }
   return files.sort();
 }
@@ -377,7 +379,7 @@ export function checkStyle(root: string): Finding[] {
   const findings: Finding[] = [];
   for (const file of sourceFiles(root)) {
     const path = normalized(file, root);
-    const content = Deno.readTextFileSync(file);
+    const content = readFileSync(file, "utf8");
     findings.push(...inspectStyleFile(path, content), ...inspectApiBoundary(path, content));
   }
   return findings;

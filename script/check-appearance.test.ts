@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { inspectAppearanceFile } from "./check-appearance.ts";
 
-void test("appearance checker inspects className and class helper expressions", () => {
+test("appearance checker inspects className and class helper expressions", () => {
   const findings = inspectAppearanceFile(
     "src/shared/component/Sample.tsx",
     [
@@ -16,7 +16,7 @@ void test("appearance checker inspects className and class helper expressions", 
   );
 });
 
-void test("appearance checker covers adjacent classes, templates, top-level helpers and paint styles", () => {
+test("appearance checker covers adjacent classes, templates, top-level helpers and paint styles", () => {
   const findings = inspectAppearanceFile(
     "src/shared/component/Sample.tsx",
     [
@@ -29,7 +29,7 @@ void test("appearance checker covers adjacent classes, templates, top-level help
   assert.equal(findings.filter((finding) => finding.rule === "appearance.raw-color").length, 3);
 });
 
-void test("appearance checker permits transparent and inherited neutral utilities", () => {
+test("appearance checker permits transparent and inherited neutral utilities", () => {
   assert.deepEqual(
     inspectAppearanceFile(
       "src/shared/component/Sample.tsx",
@@ -39,7 +39,7 @@ void test("appearance checker permits transparent and inherited neutral utilitie
   );
 });
 
-void test("semantic aliases containing color words are references, not literal CSS colors", () => {
+test("semantic aliases containing color words are references, not literal CSS colors", () => {
   assert.deepEqual(
     inspectAppearanceFile(
       "src/application/appearance.css",
@@ -69,7 +69,7 @@ void test("semantic aliases containing color words are references, not literal C
   );
 });
 
-void test("white and black remain palette colors unless one exact media exception is documented", () => {
+test("white and black remain palette colors unless one exact media exception is documented", () => {
   const findings = inspectAppearanceFile(
     "src/shared/component/Sample.tsx",
     [
@@ -82,7 +82,7 @@ void test("white and black remain palette colors unless one exact media exceptio
   );
 });
 
-void test("appearance checker ignores tests, stories and plain data strings", () => {
+test("appearance checker ignores tests, stories and plain data strings", () => {
   assert.deepEqual(
     inspectAppearanceFile("src/shared/component/Sample.test.tsx", '<div className="text-white" />'),
     [],
@@ -93,7 +93,7 @@ void test("appearance checker ignores tests, stories and plain data strings", ()
   );
 });
 
-void test("appearance checker permits semantic CSS tokens and exact documented exceptions", () => {
+test("appearance checker permits semantic CSS tokens and exact documented exceptions", () => {
   assert.deepEqual(
     inspectAppearanceFile(
       "src/application/style.css",
@@ -111,7 +111,7 @@ void test("appearance checker permits semantic CSS tokens and exact documented e
   );
 });
 
-void test("appearance checker detects dark CSS and literal component colors", () => {
+test("appearance checker detects dark CSS and literal component colors", () => {
   const findings = inspectAppearanceFile(
     "src/application/feature.css",
     [".dark .panel {", "  color: #fff;", "}", "@media (prefers-color-scheme: dark) {"].join("\n"),
@@ -122,7 +122,7 @@ void test("appearance checker detects dark CSS and literal component colors", ()
   );
 });
 
-void test("CSS palette declarations are allowed only in the semantic root token block", () => {
+test("CSS palette declarations are allowed only in the semantic root token block", () => {
   const findings = inspectAppearanceFile(
     "src/application/feature.css",
     [":root {", "  --foreground: #111;", "}", ".panel {", "  --local-color: #fff;", "}"].join("\n"),

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import ts from "typescript";
 import { routeDirectories, routeRelation, sourceDomain } from "./route-ownership.ts";
@@ -162,7 +163,7 @@ function moduleHasDefaultExport(root: string, path: string): boolean {
     const file = resolve(root, path);
     const source = ts.createSourceFile(
       file,
-      Deno.readTextFileSync(file),
+      readFileSync(file, "utf8"),
       ts.ScriptTarget.Latest,
       true,
       file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
@@ -192,7 +193,7 @@ function moduleHasDefaultExport(root: string, path: string): boolean {
 export function checkDependencies(root: string): Finding[] {
   const entries = sourceFiles(root).map((absolute) => ({
     path: relative(root, absolute).replaceAll("\\", "/"),
-    content: Deno.readTextFileSync(absolute),
+    content: readFileSync(absolute, "utf8"),
   }));
   return inspectDependencyEntries(entries, root);
 }

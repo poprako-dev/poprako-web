@@ -1,8 +1,10 @@
+import { realpathSync } from "node:fs";
+import { createRequire } from "node:module";
 import assert from "node:assert/strict";
 import { link, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { test } from "node:test";
+import { test } from "vitest";
 import {
   declarationHash,
   findDeclaration,
@@ -12,14 +14,12 @@ import {
 } from "./prepare-dependencies.ts";
 
 async function writePinnedFixtureFiles(root: string): Promise<void> {
-  const radix = join(
-    root,
-    "node_modules/.deno/@radix-ui+react-select@2.3.7/node_modules/@radix-ui/react-select",
-  );
+  const radix = join(root, "node_modules/@radix-ui/react-select");
   const radixOriginal = (
     await readFile(
-      "node_modules/.deno/@radix-ui+react-select@2.3.7/node_modules/" +
-        "@radix-ui/react-select/dist/index.d.mts",
+      createRequire(realpathSync("node_modules/radix-ui/package.json"))
+        .resolve("@radix-ui/react-select")
+        .replace(/dist\/index\.js$/u, "dist/index.d.mts"),
       "utf8",
     )
   ).replace(
@@ -39,11 +39,10 @@ async function withInstallation(
     const original = restoreDeclarationFixture(prepareDeclaration(prepared));
     const framework = join(root, "node_modules/@storybook/react-vite");
     const renderer = join(root, "node_modules/@storybook/react");
-    const radix = join(
-      root,
-      "node_modules/.deno/@radix-ui+react-select@2.3.7/node_modules/@radix-ui/react-select",
-    );
+    const radix = join(root, "node_modules/@radix-ui/react-select");
     await mkdir(framework, { recursive: true });
+    await mkdir(join(root, "node_modules/radix-ui"), { recursive: true });
+    await writeFile(join(root, "node_modules/radix-ui/package.json"), "{}");
     await mkdir(join(renderer, "dist"), { recursive: true });
     await mkdir(join(radix, "dist"), { recursive: true });
     await writeFile(join(framework, "package.json"), '{"name":"@storybook/react-vite"}');
@@ -51,7 +50,8 @@ async function withInstallation(
       join(renderer, "package.json"),
       '{"name":"@storybook/react","version":"10.6.0"}',
     );
-    await writeFile(join(radix, "package.json"), '{"version":"2.3.7"}');
+    await writeFile(join(radix, "package.json"), '{"version":"2.3.7","main":"dist/index.js"}');
+    await writeFile(join(radix, "dist/index.js"), "");
     const declaration = join(renderer, "dist/chunk-ojHmM-yX.d.ts");
     await writeFile(declaration, original);
     await writePinnedFixtureFiles(root);
@@ -61,7 +61,7 @@ async function withInstallation(
   }
 }
 
-void test("preparation is local, atomic and idempotent; check does not write", async () => {
+test("preparation is local, atomic and idempotent; check does not write", async () => {
   await withInstallation(async (root, declaration, original) => {
     const cached = join(root, "cached-original.d.ts");
     await link(declaration, cached);
@@ -78,7 +78,7 @@ void test("preparation is local, atomic and idempotent; check does not write", a
   });
 });
 
-void test("unknown declarations and package upgrades fail without writes", async () => {
+test("unknown declarations and package upgrades fail without writes", async () => {
   await withInstallation(async (root, declaration) => {
     await writeFile(declaration, "unknown content\n");
     await assert.rejects(prepareDependencies(root, "apply"), /Unknown Storybook declaration/u);

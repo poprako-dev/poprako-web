@@ -1,9 +1,18 @@
+import { spawnSync } from "node:child_process";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  existsSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { test } from "node:test";
+import { test } from "vitest";
 import { checkFunctionLines, discoverSourceFiles } from "../linters/function-lines/scan.ts";
 
 function writeFixture(root: string, path: string, content: string): void {
@@ -20,7 +29,7 @@ function withFixture(run: (root: string) => void | Promise<void>): Promise<void>
     });
 }
 
-void test("source discovery includes owned code and excludes generated, declaration and output files", async () => {
+test("source discovery includes owned code and excludes generated, declaration and output files", async () => {
   await withFixture((root) => {
     const included = [
       "src/work.ts",
@@ -53,7 +62,7 @@ void test("source discovery includes owned code and excludes generated, declarat
   });
 });
 
-void test("repository scanning reports violations in tests and in the linter itself", async () => {
+test("repository scanning reports violations in tests and in the linter itself", async () => {
   await withFixture((root) => {
     const source = ["function work() {", ...Array.from({ length: 49 }, () => "// line"), "}"].join(
       "\n",
@@ -70,37 +79,30 @@ void test("repository scanning reports violations in tests and in the linter its
   });
 });
 
-async function runFixtureCli(root: string): Promise<{ code: number; text: string }> {
+function runFixtureCli(root: string): { code: number; text: string } {
   const directory = "linters/function-lines";
   const sourceDirectory = fileURLToPath(new URL("../linters/function-lines/", import.meta.url));
   for (const name of ["check.ts", "scan.ts", "inspect.ts", "function-node.ts"]) {
     const content = readFileSync(join(sourceDirectory, name), "utf8");
-    writeFixture(
-      root,
-      `${directory}/${name}`,
-      content.replace('from "typescript"', 'from "npm:typescript@6.0.3"'),
-    );
+    writeFixture(root, `${directory}/${name}`, content);
   }
 
-  const command = new Deno.Command(Deno.execPath(), {
-    args: ["run", "-A", "--no-config", "--no-lock", `${directory}/check.ts`],
-    cwd: new URL(`file://${root}/`),
-    stdout: "piped",
-    stderr: "piped",
+  const modules = join(root, "node_modules");
+  if (!existsSync(modules)) {
+    symlinkSync(fileURLToPath(new URL("../node_modules", import.meta.url)), modules, "dir");
+  }
+  const result = spawnSync(process.execPath, [`${directory}/check.ts`], {
+    cwd: root,
+    encoding: "utf8",
   });
-  const child = command.spawn();
-  const [status, stdout, stderr] = await Promise.all([
-    child.status,
-    new Response(child.stdout).text(),
-    new Response(child.stderr).text(),
-  ]);
-  return { code: status.code, text: stdout + stderr };
+  if (result.error) throw result.error;
+  return { code: result.status ?? 1, text: result.stdout + result.stderr };
 }
 
-void test("CLI returns zero for passing repositories and one for violations with locations", async () => {
-  await withFixture(async (root) => {
+test("CLI returns zero for passing repositories and one for violations with locations", async () => {
+  await withFixture((root) => {
     writeFixture(root, "src/pass.ts", "function work() {}");
-    const pass = await runFixtureCli(root);
+    const pass = runFixtureCli(root);
     assert.equal(pass.code, 0, pass.text);
     assert.match(pass.text, /Function logic \(50 lines\).*passed/u);
 
@@ -109,7 +111,7 @@ void test("CLI returns zero for passing repositories and one for violations with
       "src/fail.ts",
       ["function fail() {", ...Array.from({ length: 49 }, () => "// line"), "}"].join("\n"),
     );
-    const fail = await runFixtureCli(root);
+    const fail = runFixtureCli(root);
     assert.equal(fail.code, 1, fail.text);
     assert.match(
       fail.text,
@@ -118,7 +120,7 @@ void test("CLI returns zero for passing repositories and one for violations with
   });
 });
 
-void test("linter implementation satisfies its own limits", () => {
+test("linter implementation satisfies its own limits", () => {
   const root = fileURLToPath(new URL("../", import.meta.url));
   const findings = checkFunctionLines(root).filter(
     ({ file }) => file.startsWith("linters/") || /^script\/function-lines.*\.test\.ts$/u.test(file),

@@ -3,18 +3,18 @@ set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
-run_deno() {
-    command -v deno >/dev/null 2>&1 || {
-        echo "Deno 2.9 is required to build the application." >&2
+run_pnpm() {
+    command -v pnpm >/dev/null 2>&1 || {
+        echo "Node.js 26 and pnpm 12.11.2 is required to build the application." >&2
         exit 127
     }
 
-    deno "$@"
+    pnpm "$@"
 }
 
 cd "$project_root"
 
-sh script/assert-deno-version.sh
-run_deno ci
-run_deno task prepare:dependencies
-run_deno task build
+sh script/assert-js-version.sh
+run_pnpm install --frozen-lockfile
+run_pnpm run prepare:dependencies
+run_pnpm run build

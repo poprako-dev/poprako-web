@@ -48,11 +48,11 @@ await zip.pipeTo(zipWritable);
 ## 验证
 
 ```sh
-deno task test:unit src/shared/utility/compress/core.test.ts
-deno run -A --unstable-sloppy-imports script/test-compress-interop.mjs
-deno task test:compress-browser
-deno task lint:function-lines
-deno task check
+pnpm run test:unit src/shared/utility/compress/core.test.ts
+node script/test-compress-interop.mjs
+pnpm run test:compress-browser
+pnpm run lint:function-lines
+pnpm run check
 ```
 
 单元测试检查 ZST 魔数、256 MiB 窗口和帧校验标识，并覆盖往返、中文/空文件、分片输入、

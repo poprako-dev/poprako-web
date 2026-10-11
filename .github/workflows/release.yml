@@ -24,11 +24,8 @@ jobs:
       - name: Verify tagged commit belongs to main
         run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
 
-      - name: Set up Deno
-        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
-        with:
-          deno-version: 2.9.6
-          cache: true
+      - name: Set up independent Node.js and pnpm
+        run: sh script/setup-js.sh "$RUNNER_TEMP/poprako-js"
 
       - name: Run required checks
         run: sh script/ci-check.sh

@@ -1,3 +1,4 @@
+import { readdirSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import ts from "typescript";
 import type { ModuleEdge } from "./check-cycle.ts";
@@ -19,9 +20,9 @@ export function sourceFiles(root: string): string[] {
     while (pending.length > 0) {
       const current = pending.pop();
       if (!current) continue;
-      for (const entry of Deno.readDirSync(current)) {
+      for (const entry of readdirSync(current, { withFileTypes: true })) {
         const path = join(current, entry.name);
-        if (entry.isDirectory) {
+        if (entry.isDirectory()) {
           if (entry.name !== "node_modules" && entry.name !== "dist") pending.push(path);
         } else if (/\.(?:ts|tsx|js|mjs)$/u.test(path) && !path.endsWith(".d.ts")) {
           files.push(path);
@@ -29,8 +30,8 @@ export function sourceFiles(root: string): string[] {
       }
     }
   }
-  for (const entry of Deno.readDirSync(root)) {
-    if (entry.isFile && entry.name.endsWith(".config.ts")) files.push(join(root, entry.name));
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith(".config.ts")) files.push(join(root, entry.name));
   }
   return files.sort();
 }
@@ -168,8 +169,8 @@ function recordEdge(
     to: target,
     line: (edgeOptions.lineOffset ?? 0) + source.getLineAndCharacterOfPosition(position).line + 1,
     clause,
-    defaultImport: edgeOptions.defaultImport,
-    typeOnly: edgeOptions.typeOnly,
+    defaultImport: edgeOptions.defaultImport ?? false,
+    typeOnly: edgeOptions.typeOnly ?? false,
   });
 }
 

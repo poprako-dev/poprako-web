@@ -20,7 +20,7 @@ jobs:
   frontend:
     name: Frontend checks (${{ matrix.suite }})
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -30,11 +30,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Set up Deno
-        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
-        with:
-          deno-version: 2.9.6
-          cache: true
+      - name: Set up independent Node.js and pnpm
+        run: sh script/setup-js.sh "$RUNNER_TEMP/poprako-js"
 
       - name: Run required checks
         run: sh script/ci-check.sh ${{ matrix.suite }}
@@ -57,11 +54,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Set up Deno
-        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
-        with:
-          deno-version: 2.9.6
-          cache: true
+      - name: Set up independent Node.js and pnpm
+        run: sh script/setup-js.sh "$RUNNER_TEMP/poprako-js"
 
       - name: Audit dependencies
         run: sh script/ci-audit.sh
@@ -94,11 +88,8 @@ jobs:
         with:
           ref: ${{ github.sha }}
 
-      - name: Set up Deno
-        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
-        with:
-          deno-version: 2.9.6
-          cache: true
+      - name: Set up independent Node.js and pnpm
+        run: sh script/setup-js.sh "$RUNNER_TEMP/poprako-js"
 
       - name: Build, upload, and deploy
         run: sh script/ci-deploy-production.sh

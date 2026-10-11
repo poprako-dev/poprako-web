@@ -1,4 +1,4 @@
-// deno run -A --unstable-sloppy-imports script/test-compress-interop.mjs
+// node script/test-compress-interop.mjs
 import { runArchive } from "../src/shared/utility/compress/core.ts";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createWriteStream } from "node:fs";

@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { test } from "node:test";
+import { test } from "vitest";
 import { inspectDependencyEntries } from "./check-dependency.ts";
 
-void test("dependency checker resolves aliases and allows explicit integration assembly", async () => {
+test("dependency checker resolves aliases and allows explicit integration assembly", async () => {
   const root = await mkdtemp(join(tmpdir(), "poprako-dependency-check-"));
   try {
     await writeFile(
@@ -49,7 +49,7 @@ void test("dependency checker resolves aliases and allows explicit integration a
   }
 });
 
-void test("route modules may import their own route business package", async () => {
+test("route modules may import their own route business package", async () => {
   const root = await mkdtemp(join(tmpdir(), "poprako-dependency-allowed-"));
   try {
     await writeFile(
@@ -79,7 +79,7 @@ void test("route modules may import their own route business package", async () 
   }
 });
 
-void test("checker rejects common business to route imports and dynamic generated HTML errors", async () => {
+test("checker rejects common business to route imports and dynamic generated HTML errors", async () => {
   const root = await mkdtemp(join(tmpdir(), "poprako-dependency-generated-"));
   try {
     await writeFile(
@@ -138,7 +138,7 @@ function assertCommonBusinessFindings(findings: ReturnType<typeof inspectDepende
   );
 }
 
-void test("page routes retain ownership and API type imports cannot depend on routes", async () => {
+test("page routes retain ownership and API type imports cannot depend on routes", async () => {
   const root = await mkdtemp(join(tmpdir(), "poprako-api-direction-"));
   try {
     await writeFile(

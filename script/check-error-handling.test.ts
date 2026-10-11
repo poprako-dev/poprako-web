@@ -1,3 +1,4 @@
+import { test } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { deepStrictEqual } from "node:assert/strict";
@@ -70,41 +71,38 @@ function isDroppedResultMetadata(node: ts.Node): boolean {
   );
 }
 
-Deno.test(
-  "API error handling guard reports no hardcoded failed Result toasts or dropped metadata",
-  () => {
-    const violations: string[] = [];
+test("API error handling guard reports no hardcoded failed Result toasts or dropped metadata", () => {
+  const violations: string[] = [];
 
-    for (const filePath of sourceFiles("src")) {
-      const source = ts.createSourceFile(
-        filePath,
-        fs.readFileSync(filePath, "utf8"),
-        ts.ScriptTarget.Latest,
-        true,
-      );
+  for (const filePath of sourceFiles("src")) {
+    const source = ts.createSourceFile(
+      filePath,
+      fs.readFileSync(filePath, "utf8"),
+      ts.ScriptTarget.Latest,
+      true,
+    );
 
-      const visit = (node: ts.Node): void => {
-        if (ts.isIfStatement(node) && isFailedResultCheck(node.expression)) {
-          const inspectFailureBranch = (child: ts.Node): void => {
-            if (isHardcodedErrorToast(child)) {
-              const line = source.getLineAndCharacterOfPosition(child.getStart()).line + 1;
-              violations.push(`${filePath}:${String(line)}: hardcoded failed Result toast`);
-            }
-            ts.forEachChild(child, inspectFailureBranch);
-          };
-          inspectFailureBranch(node.thenStatement);
-        }
+    const visit = (node: ts.Node): void => {
+      if (ts.isIfStatement(node) && isFailedResultCheck(node.expression)) {
+        const inspectFailureBranch = (child: ts.Node): void => {
+          if (isHardcodedErrorToast(child)) {
+            const line = source.getLineAndCharacterOfPosition(child.getStart()).line + 1;
+            violations.push(`${filePath}:${String(line)}: hardcoded failed Result toast`);
+          }
+          ts.forEachChild(child, inspectFailureBranch);
+        };
+        inspectFailureBranch(node.thenStatement);
+      }
 
-        if (isDroppedResultMetadata(node)) {
-          const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-          violations.push(`${filePath}:${String(line)}: use toApiRequestError`);
-        }
-        ts.forEachChild(node, visit);
-      };
+      if (isDroppedResultMetadata(node)) {
+        const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+        violations.push(`${filePath}:${String(line)}: use toApiRequestError`);
+      }
+      ts.forEachChild(node, visit);
+    };
 
-      visit(source);
-    }
+    visit(source);
+  }
 
-    deepStrictEqual(violations, []);
-  },
-);
+  deepStrictEqual(violations, []);
+});
