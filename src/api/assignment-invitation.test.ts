@@ -61,7 +61,9 @@ describe("assignment invitation protocol", () => {
       ],
     });
   });
+});
 
+describe("assignment invitation protocol", () => {
   test("creates, joins and deletes with unchanged server operations", async () => {
     const { client, fetchImpl } = clientFor({ id: "invite", code: "keep_this_code" });
     expect(
@@ -105,7 +107,9 @@ describe("assignment invitation protocol", () => {
     expect(fetchImpl.mock.calls[2]?.[0]).toBe("/api/v1/assignment-invitations/invite");
     expect(fetchImpl.mock.calls[2]?.[1]?.method).toBe("DELETE");
   });
+});
 
+describe("assignment invitation protocol", () => {
   test("invalid list payloads are protocol failures, never empty success", async () => {
     const { client } = clientFor({ items: [] });
     expect(

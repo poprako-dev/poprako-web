@@ -26,6 +26,44 @@ const browserChecks = [
 ];
 const buildChecks = ["run -A npm:vite@8.0.16 build", "deployment"];
 
+async function writeFakeExecutables(root: string): Promise<void> {
+  await writeFile(
+    `${root}/bin/deno`,
+    `#!/bin/sh
+if [ "$1" = --version ]; then printf 'deno 2.9.6\n'; exit 0; fi
+printf '%s\n' "$*" >> "$CI_TASK_LOG"
+if [ "$*" = "$CI_FAIL_TASK" ]; then exit 1; fi
+`,
+  );
+  await chmod(`${root}/bin/deno`, 0o755);
+  await writeFile(
+    `${root}/script/test-deployment.sh`,
+    `#!/bin/sh
+printf 'deployment\n' >> "$CI_TASK_LOG"
+`,
+  );
+}
+
+async function runCiScript(
+  root: string,
+  suite: string | undefined,
+  failingTask: string,
+): Promise<boolean> {
+  try {
+    await execute("sh", [`${root}/script/ci-check.sh`, ...(suite ? [suite] : [])], {
+      env: {
+        ...process.env,
+        PATH: `${root}/bin:${process.env["PATH"] ?? ""}`,
+        CI_TASK_LOG: `${root}/calls`,
+        CI_FAIL_TASK: failingTask,
+      },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function runSuite(
   suite?: string,
   failingTask = "",
@@ -43,44 +81,21 @@ async function runSuite(
     ]) {
       await copyFile(source, `${root}/script/${basename(source.pathname)}`);
     }
-    await writeFile(
-      `${root}/bin/deno`,
-      `#!/bin/sh
-if [ "$1" = --version ]; then printf 'deno 2.9.6\n'; exit 0; fi
-printf '%s\n' "$*" >> "$CI_TASK_LOG"
-if [ "$*" = "$CI_FAIL_TASK" ]; then exit 1; fi
-`,
-    );
-    await chmod(`${root}/bin/deno`, 0o755);
-    await writeFile(
-      `${root}/script/test-deployment.sh`,
-      `#!/bin/sh
-printf 'deployment\n' >> "$CI_TASK_LOG"
-`,
-    );
-    let success = false;
-    try {
-      await execute("sh", [`${root}/script/ci-check.sh`, ...(suite ? [suite] : [])], {
-        env: {
-          ...process.env,
-          PATH: `${root}/bin:${process.env["PATH"] ?? ""}`,
-          CI_TASK_LOG: `${root}/calls`,
-          CI_FAIL_TASK: failingTask,
-        },
-      });
-      success = true;
-    } catch {
-      // The unsuccessful-check cases must propagate a nonzero shell exit.
-    }
-    let calls: string[] = [];
-    try {
-      calls = (await readFile(`${root}/calls`, "utf8")).trim().split("\n");
-    } catch (error) {
-      if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
-    }
+    await writeFakeExecutables(root);
+    const success = await runCiScript(root, suite, failingTask);
+    const calls = await readCiCalls(root);
     return { success, calls };
   } finally {
     await rm(root, { recursive: true });
+  }
+}
+
+async function readCiCalls(root: string): Promise<string[]> {
+  try {
+    return (await readFile(`${root}/calls`, "utf8")).trim().split("\n");
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") return [];
+    throw error;
   }
 }
 

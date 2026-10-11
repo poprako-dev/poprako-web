@@ -20,89 +20,93 @@ function userLabel(userId: string): string {
   );
 }
 
-describe("formatWorkflowRecordEvent", () => {
-  test.each<[ChapterWorkflowRecordEvent, string]>([
-    [{ kind: "chapter_created" }, "章节创建：创建了章节"],
-    [
-      {
-        kind: "chapter_subtitle_updated",
-        data: { previousSubtitle: "", nextSubtitle: "终幕" },
+const WORKFLOW_EVENT_CASES: [ChapterWorkflowRecordEvent, string][] = [
+  [{ kind: "chapter_created" }, "章节创建：创建了章节"],
+  [
+    {
+      kind: "chapter_subtitle_updated",
+      data: { previousSubtitle: "", nextSubtitle: "终幕" },
+    },
+    "章节副标题修改：将“无副标题”修改为“终幕”",
+  ],
+  [{ kind: "chapter_pinned" }, "章节置顶：设为置顶章节"],
+  [{ kind: "chapter_unpinned" }, "取消章节置顶：取消置顶"],
+  [
+    {
+      kind: "assignment_created",
+      data: { subjectUserId: "subject_1", roles: 2 },
+    },
+    "章节分工添加：为 Aki 添加了翻译分工",
+  ],
+  [
+    {
+      kind: "assignment_roles_updated",
+      data: {
+        subjectUserId: "subject_1",
+        previousRoles: 2,
+        nextRoles: 6,
       },
-      "章节副标题修改：将“无副标题”修改为“终幕”",
-    ],
-    [{ kind: "chapter_pinned" }, "章节置顶：设为置顶章节"],
-    [{ kind: "chapter_unpinned" }, "取消章节置顶：取消置顶"],
-    [
-      {
-        kind: "assignment_created",
-        data: { subjectUserId: "subject_1", roles: 2 },
+    },
+    "章节分工调整：将 Aki 的分工由“翻译”调整为“翻译、校对”",
+  ],
+  [
+    {
+      kind: "assignment_deleted",
+      data: { subjectUserId: "subject_1", previousRoles: 4 },
+    },
+    "章节分工移除：移除了 Aki 的校对分工",
+  ],
+  [
+    {
+      kind: "translation_imported",
+      data: {
+        format: "poprako",
+        importedPageCount: 32,
+        importedUnitCount: 120,
       },
-      "章节分工添加：为 Aki 添加了翻译分工",
-    ],
-    [
-      {
-        kind: "assignment_roles_updated",
-        data: {
-          subjectUserId: "subject_1",
-          previousRoles: 2,
-          nextRoles: 6,
+    },
+    "翻校数据导入：以 PopRaKo 格式导入了 32 页，共 120 个翻校单元",
+  ],
+  [
+    {
+      kind: "translation_exported",
+      data: {
+        formats: {
+          labelPlus: true,
+          poprako: true,
         },
       },
-      "章节分工调整：将 Aki 的分工由“翻译”调整为“翻译、校对”",
-    ],
-    [
-      {
-        kind: "assignment_deleted",
-        data: { subjectUserId: "subject_1", previousRoles: 4 },
+    },
+    "翻校数据导出：以 PopRaKo 和 LabelPlus 格式导出",
+  ],
+  [
+    {
+      kind: "artwork_exported",
+      data: { artworkVersion: 7 },
+    },
+    "嵌稿导出：导出了第 7 版嵌稿",
+  ],
+  [
+    {
+      kind: "stage_transitioned",
+      data: {
+        stage: "translate",
+        previousPhase: "active",
+        nextPhase: "completed",
+        origin: "translation_import",
       },
-      "章节分工移除：移除了 Aki 的校对分工",
-    ],
-    [
-      {
-        kind: "translation_imported",
-        data: {
-          format: "poprako",
-          importedPageCount: 32,
-          importedUnitCount: 120,
-        },
-      },
-      "翻校数据导入：以 PopRaKo 格式导入了 32 页，共 120 个翻校单元",
-    ],
-    [
-      {
-        kind: "translation_exported",
-        data: {
-          formats: {
-            labelPlus: true,
-            poprako: true,
-          },
-        },
-      },
-      "翻校数据导出：以 PopRaKo 和 LabelPlus 格式导出",
-    ],
-    [
-      {
-        kind: "artwork_exported",
-        data: { artworkVersion: 7 },
-      },
-      "嵌稿导出：导出了第 7 版嵌稿",
-    ],
-    [
-      {
-        kind: "stage_transitioned",
-        data: {
-          stage: "translate",
-          previousPhase: "active",
-          nextPhase: "completed",
-          origin: "translation_import",
-        },
-      },
-      "翻译阶段已完成：翻校数据导入推进",
-    ],
-  ])("formats $kind", (event, expected) => {
+    },
+    "翻译阶段已完成：翻校数据导入推进",
+  ],
+];
+
+function registerWorkflowEventFormatting(): void {
+  test.each(WORKFLOW_EVENT_CASES)("formats $kind", (event, expected) => {
     expect(formatWorkflowRecordEvent(event, userLabel)).toBe(expected);
   });
+}
 
+function registerManualTransitionFormatting(): void {
   test("formats a manual transition as an explicit action", () => {
     expect(
       formatWorkflowRecordEvent({
@@ -116,7 +120,9 @@ describe("formatWorkflowRecordEvent", () => {
       }),
     ).toBe("嵌字阶段已开始：手动推进");
   });
+}
 
+function registerArtworkTransitionFormatting(): void {
   test("formats an artwork upload transition without throwing", () => {
     expect(
       formatWorkflowRecordEvent({
@@ -130,7 +136,9 @@ describe("formatWorkflowRecordEvent", () => {
       }),
     ).toBe("嵌字阶段已完成：嵌稿上传推进");
   });
+}
 
+function registerImportVariableFormatting(): void {
   test("marks every displayed import payload value as variable", () => {
     const presentation = presentWorkflowRecordEvent({
       kind: "translation_imported",
@@ -147,6 +155,13 @@ describe("formatWorkflowRecordEvent", () => {
       { text: "120", variable: true },
     ]);
   });
+}
+
+describe("formatWorkflowRecordEvent", () => {
+  registerWorkflowEventFormatting();
+  registerManualTransitionFormatting();
+  registerArtworkTransitionFormatting();
+  registerImportVariableFormatting();
 });
 
 describe("workflow record metadata", () => {

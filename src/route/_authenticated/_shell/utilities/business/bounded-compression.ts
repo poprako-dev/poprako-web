@@ -11,6 +11,28 @@ import {
 } from "@/route/_authenticated/_shell/utilities/business/bounded-images";
 import type { BoundedImage } from "@/route/_authenticated/_shell/utilities/business/bounded-images";
 
+async function disposeTemporaryArchive(
+  root: FileSystemDirectoryHandle,
+  name: string,
+  url: string | undefined,
+): Promise<void> {
+  if (url) URL.revokeObjectURL(url);
+  await root.removeEntry(name);
+}
+
+function validateAndCalculateLimits(
+  items: readonly BoundedImage[],
+  body: string,
+  cover: string,
+): { sorted: BoundedImage[]; limits: (number | null)[] } {
+  const sorted = sortImages(items);
+  const error = validateImages(sorted);
+  if (error) throw new Error(error);
+  const limits = sorted.map((item, index) => limitBytes(imageLimit(item, index, body, cover)));
+  if (limits.includes(null)) throw new Error("压缩上限必须至少为 1 KiB");
+  return { sorted, limits };
+}
+
 export async function compressImage(
   file: File,
   maxBytes: number,
@@ -42,11 +64,7 @@ export async function prepareBoundedArchive(
   signal: AbortSignal,
   onProgress: (completed: number) => void,
 ): Promise<ArchiveResult> {
-  const sorted = sortImages(items);
-  const error = validateImages(sorted);
-  if (error) throw new Error(error);
-  const limits = sorted.map((item, index) => limitBytes(imageLimit(item, index, body, cover)));
-  if (limits.includes(null)) throw new Error("压缩上限必须至少为 1 KiB");
+  const { sorted, limits } = validateAndCalculateLimits(items, body, cover);
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!navigator.storage?.getDirectory) {
     throw new Error("浏览器不支持本地临时文件，请使用新版 Chrome 或 Edge");
@@ -57,10 +75,7 @@ export async function prepareBoundedArchive(
   const handle = await root.getFileHandle(name, { create: true });
   let url: string | undefined;
   let output: FileSystemWritableFileStream | undefined;
-  async function dispose(): Promise<void> {
-    if (url) URL.revokeObjectURL(url);
-    await root.removeEntry(name);
-  }
+  const dispose = (): Promise<void> => disposeTemporaryArchive(root, name, url);
   try {
     signal.throwIfAborted();
     output = await handle.createWritable();

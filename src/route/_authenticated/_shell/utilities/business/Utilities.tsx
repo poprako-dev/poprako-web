@@ -5,8 +5,8 @@ import { ArchiveTool } from "@/route/_authenticated/_shell/utilities/business/Ar
 import { BoundedCompressionTool } from "@/route/_authenticated/_shell/utilities/business/BoundedCompressionTool";
 
 const archiveTools = [
-  { id: "compress", label: "打包并压缩嵌稿" },
-  { id: "extract", label: "解压并解包嵌稿" },
+  { id: "compress", label: "打包并压缩" },
+  { id: "extract", label: "解压并解包" },
   { id: "bounded", label: "定界压缩" },
 ] as const;
 

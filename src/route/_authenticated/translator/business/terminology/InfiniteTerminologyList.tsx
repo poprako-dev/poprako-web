@@ -1,5 +1,5 @@
 import type { JSX } from "react/jsx-runtime";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, type RefObject, useEffect, useRef } from "react";
 import { BookOpenText, RefreshCcw } from "lucide-react";
 import clsx from "clsx";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
@@ -18,6 +18,60 @@ type Props = {
   onRetry: () => void;
 };
 
+function useSentinelObserver(
+  sentinelRef: RefObject<HTMLDivElement | null>,
+  scrollRef: RefObject<HTMLDivElement | null>,
+  hasMore: boolean,
+  onLoadMore: () => void,
+): void {
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const scrollContainer = scrollRef.current;
+    if (!sentinel || !scrollContainer) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore) onLoadMore();
+      },
+      { root: scrollContainer, rootMargin: "72px 0px" },
+    );
+    observer.observe(sentinel);
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMore, onLoadMore, scrollRef, sentinelRef]);
+}
+
+function useLoadVisibleSentinel(
+  sentinelRef: RefObject<HTMLDivElement | null>,
+  scrollRef: RefObject<HTMLDivElement | null>,
+  previousLoadingRef: RefObject<boolean>,
+  hasMore: boolean,
+  isInitialLoading: boolean,
+  isLoadingMore: boolean,
+  onLoadMore: () => void,
+): void {
+  useEffect(() => {
+    const isLoading = isInitialLoading || isLoadingMore;
+    const wasLoading = previousLoadingRef.current;
+    previousLoadingRef.current = isLoading;
+    if (!wasLoading || isLoading || !hasMore) return;
+    const scrollContainer = scrollRef.current;
+    const sentinel = sentinelRef.current;
+    if (!scrollContainer || !sentinel) return;
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const sentinelRect = sentinel.getBoundingClientRect();
+    if (sentinelRect.top < containerRect.bottom + 72) onLoadMore();
+  }, [
+    hasMore,
+    isInitialLoading,
+    isLoadingMore,
+    onLoadMore,
+    previousLoadingRef,
+    scrollRef,
+    sentinelRef,
+  ]);
+}
+
 export function InfiniteTerminologyList({
   children,
   itemCount,
@@ -35,38 +89,16 @@ export function InfiniteTerminologyList({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const previousLoadingRef = useRef(isInitialLoading || isLoadingMore);
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    const scrollContainer = scrollRef.current;
-    if (!sentinel || !scrollContainer) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting && hasMore) onLoadMore();
-      },
-      { root: scrollContainer, rootMargin: "72px 0px" },
-    );
-    observer.observe(sentinel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [hasMore, onLoadMore]);
-
-  useEffect(() => {
-    const isLoading = isInitialLoading || isLoadingMore;
-    const wasLoading = previousLoadingRef.current;
-    previousLoadingRef.current = isLoading;
-    if (!wasLoading || isLoading || !hasMore) return;
-
-    const scrollContainer = scrollRef.current;
-    const sentinel = sentinelRef.current;
-    if (!scrollContainer || !sentinel) return;
-
-    const containerRect = scrollContainer.getBoundingClientRect();
-    const sentinelRect = sentinel.getBoundingClientRect();
-    if (sentinelRect.top < containerRect.bottom + 72) onLoadMore();
-  }, [hasMore, isInitialLoading, isLoadingMore, onLoadMore]);
+  useSentinelObserver(sentinelRef, scrollRef, hasMore, onLoadMore);
+  useLoadVisibleSentinel(
+    sentinelRef,
+    scrollRef,
+    previousLoadingRef,
+    hasMore,
+    isInitialLoading,
+    isLoadingMore,
+    onLoadMore,
+  );
 
   if (isInitialLoading) {
     return (

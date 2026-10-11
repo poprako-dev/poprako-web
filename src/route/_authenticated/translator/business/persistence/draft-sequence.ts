@@ -14,72 +14,120 @@ export function replayEdits(
   let result = identifyUnits(units, resolve);
   target = identifyUnits(target, resolve);
   const hidden = new Set<string>();
-  // Match the server: register every creation before applying ordered edits.
+  registerCreatedUnits(result, diff, resolve);
+  for (const op of diff.ops) result = replayOperation(result, target, op, resolve, hidden);
+  return normalizeUnitIndexes(result.filter((u) => !hidden.has(u.id)));
+}
+
+function registerCreatedUnits(
+  units: UnitInfo[],
+  diff: UnitDiff,
+  resolve: (id: string) => string,
+): void {
   for (const op of diff.ops) {
-    if (op.edit !== "create" || result.some((u) => u.id === resolve(op.localId))) continue;
-    result.push({
+    if (op.edit !== "create" || units.some((unit) => unit.id === resolve(op.localId))) continue;
+    units.push({
       id: resolve(op.localId),
-      index: result.length,
+      index: units.length,
       ...op.coord,
       isBubble: op.isBubble,
       isFlagged: op.isFlagged,
       isProofread: op.revision?.isProofread ?? false,
     });
   }
-  for (const op of diff.ops) {
-    const id = resolve(op.edit === "create" ? op.localId : op.id);
-    // A patch restores a tombstone on the server. Retain the corresponding local
-    // row too, when an earlier independent batch deleted it from the projection.
-    const before = result.find((u) => u.id === id) ?? target.find((u) => u.id === id);
-    if (op.edit === "delete") {
-      hidden.add(id);
-      continue;
-    }
-    hidden.delete(id);
-    let unit: UnitInfo;
-    if (op.edit === "create") {
-      unit = {
-        id,
-        index: 0,
-        ...op.coord,
-        isBubble: op.isBubble,
-        isFlagged: op.isFlagged,
-        isProofread: op.revision?.isProofread ?? false,
-        translatedText: op.translation?.translatedText,
-        proofreadText: op.revision?.proofreadText,
-      };
-    } else {
-      if (!before) continue;
-      unit = {
-        ...before,
-        ...op.coord,
-        isBubble: op.isBubble ?? before.isBubble,
-        isFlagged: op.isFlagged ?? before.isFlagged,
-      };
-      if (op.translation.type !== "skip")
-        unit = {
-          ...unit,
-          translatedText:
-            op.translation.type === "assign" ? op.translation.value.translatedText : undefined,
-        };
-      if (op.revision.type !== "skip")
-        unit = {
-          ...unit,
-          isProofread: op.revision.type === "assign" ? op.revision.value.isProofread : false,
-          proofreadText:
-            op.revision.type === "assign" ? op.revision.value.proofreadText : undefined,
-        };
-    }
-    const oldIndex = result.findIndex((u) => u.id === id);
-    result = result.filter((u) => u.id !== id);
-    const skip = op.edit === "patch" && op.nextId.type === "skip";
-    const next =
-      op.edit === "create" ? op.nextId : op.nextId.type === "assign" ? op.nextId.value : undefined;
-    const anchor = next === undefined ? -1 : result.findIndex((u) => u.id === resolve(next));
-    if (!skip && next !== undefined && anchor < 0) throw new Error("草稿排序锚点不存在");
-    result.splice(skip && oldIndex >= 0 ? oldIndex : anchor < 0 ? result.length : anchor, 0, unit);
+}
+
+function replayOperation(
+  units: UnitInfo[],
+  target: UnitInfo[],
+  op: UnitDiff["ops"][number],
+  resolve: (id: string) => string,
+  hidden: Set<string>,
+): UnitInfo[] {
+  const id = resolve(op.edit === "create" ? op.localId : op.id);
+  const before = units.find((unit) => unit.id === id) ?? target.find((unit) => unit.id === id);
+  if (op.edit === "delete") {
+    hidden.add(id);
+    return units;
   }
-  return normalizeUnitIndexes(result.filter((u) => !hidden.has(u.id)));
+  hidden.delete(id);
+  const unit = applyOperationFields(op, id, before);
+  if (!unit) return units;
+  return placeOperationUnit(units, op, unit, resolve);
+}
+
+function applyOperationFields(
+  op: UnitDiff["ops"][number],
+  id: string,
+  before: UnitInfo | undefined,
+): UnitInfo | undefined {
+  if (op.edit === "create") {
+    return {
+      id,
+      index: 0,
+      ...op.coord,
+      isBubble: op.isBubble,
+      isFlagged: op.isFlagged,
+      isProofread: op.revision?.isProofread ?? false,
+      translatedText: op.translation?.translatedText,
+      proofreadText: op.revision?.proofreadText,
+    };
+  }
+  if (op.edit !== "patch") return undefined;
+  if (!before) return undefined;
+  let unit: UnitInfo = {
+    ...before,
+    ...op.coord,
+    isBubble: op.isBubble ?? before.isBubble,
+    isFlagged: op.isFlagged ?? before.isFlagged,
+  };
+  unit = applyTranslationFields(unit, op);
+  return applyRevisionFields(unit, op);
+}
+
+function applyTranslationFields(
+  unit: UnitInfo,
+  op: Extract<UnitDiff["ops"][number], { edit: "patch" }>,
+): UnitInfo {
+  if (op.translation.type === "skip") return unit;
+  return {
+    ...unit,
+    translatedText:
+      op.translation.type === "assign" ? op.translation.value.translatedText : undefined,
+  };
+}
+
+function applyRevisionFields(
+  unit: UnitInfo,
+  op: Extract<UnitDiff["ops"][number], { edit: "patch" }>,
+): UnitInfo {
+  if (op.revision.type === "skip") return unit;
+  return {
+    ...unit,
+    isProofread: op.revision.type === "assign" ? op.revision.value.isProofread : false,
+    proofreadText: op.revision.type === "assign" ? op.revision.value.proofreadText : undefined,
+  };
+}
+
+function placeOperationUnit(
+  units: UnitInfo[],
+  op: UnitDiff["ops"][number],
+  unit: UnitInfo,
+  resolve: (id: string) => string,
+): UnitInfo[] {
+  const oldIndex = units.findIndex((item) => item.id === unit.id);
+  const result = units.filter((item) => item.id !== unit.id);
+  const skip = op.edit === "patch" && op.nextId.type === "skip";
+  const next =
+    op.edit === "create"
+      ? op.nextId
+      : op.edit === "patch" && op.nextId.type === "assign"
+        ? op.nextId.value
+        : undefined;
+  const anchor = next === undefined ? -1 : result.findIndex((item) => item.id === resolve(next));
+  if (!skip && next !== undefined && anchor < 0) throw new Error("草稿排序锚点不存在");
+  result.splice(skip && oldIndex >= 0 ? oldIndex : anchor < 0 ? result.length : anchor, 0, unit);
+  return result;
 }
 
 export function concatenateDraftBatches(

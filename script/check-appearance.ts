@@ -54,6 +54,69 @@ function isRawCssColor(value: string): boolean {
   );
 }
 
+type StringInspector = (value: string, position: number) => void;
+
+function helperName(expression: ts.Expression): string {
+  return ts.isIdentifier(expression)
+    ? expression.text
+    : ts.isPropertyAccessExpression(expression)
+      ? expression.name.text
+      : "";
+}
+
+function inspectExpression(
+  expression: ts.Expression,
+  source: ts.SourceFile,
+  inspectString: StringInspector,
+): void {
+  if (ts.isStringLiteralLike(expression) || ts.isNoSubstitutionTemplateLiteral(expression)) {
+    inspectString(expression.text, expression.getStart(source));
+  } else if (ts.isTemplateExpression(expression)) {
+    inspectTemplateExpression(expression, source, inspectString);
+  } else if (ts.isCallExpression(expression)) {
+    if (CLASS_HELPERS.has(helperName(expression.expression))) {
+      for (const argument of expression.arguments)
+        inspectExpression(argument, source, inspectString);
+    }
+  } else if (ts.isArrayLiteralExpression(expression)) {
+    for (const element of expression.elements) inspectExpression(element, source, inspectString);
+  } else if (ts.isObjectLiteralExpression(expression)) {
+    inspectObjectExpression(expression, source, inspectString);
+  } else if (ts.isConditionalExpression(expression)) {
+    inspectExpression(expression.whenTrue, source, inspectString);
+    inspectExpression(expression.whenFalse, source, inspectString);
+  } else if (ts.isBinaryExpression(expression)) {
+    inspectExpression(expression.left, source, inspectString);
+    inspectExpression(expression.right, source, inspectString);
+  }
+}
+
+function inspectTemplateExpression(
+  expression: ts.TemplateExpression,
+  source: ts.SourceFile,
+  inspectString: StringInspector,
+): void {
+  inspectString(expression.head.text, expression.head.getStart(source));
+  for (const span of expression.templateSpans) {
+    inspectString(span.literal.text, span.literal.getStart(source));
+    inspectExpression(span.expression, source, inspectString);
+  }
+}
+
+function inspectObjectExpression(
+  expression: ts.ObjectLiteralExpression,
+  source: ts.SourceFile,
+  inspectString: StringInspector,
+): void {
+  for (const property of expression.properties) {
+    if (!ts.isPropertyAssignment(property)) continue;
+    if (ts.isStringLiteralLike(property.name)) {
+      inspectString(property.name.text, property.name.getStart(source));
+    }
+    inspectExpression(property.initializer, source, inspectString);
+  }
+}
+
 function inspectTypeScript(path: string, content: string): Finding[] {
   if (!isProductionSource(path)) return [];
   const normalized = path.replaceAll("\\", "/");
@@ -91,94 +154,70 @@ function inspectTypeScript(path: string, content: string): Finding[] {
       report(position, "appearance.raw-color", "use a semantic color token for interface colors");
     }
   };
-  const helperName = (expression: ts.Expression): string =>
-    ts.isIdentifier(expression)
-      ? expression.text
-      : ts.isPropertyAccessExpression(expression)
-        ? expression.name.text
-        : "";
-  const inspectExpression = (
-    expression: ts.Expression,
-    inspectString: (value: string, position: number) => void,
-  ): void => {
-    if (ts.isStringLiteralLike(expression) || ts.isNoSubstitutionTemplateLiteral(expression)) {
-      inspectString(expression.text, expression.getStart(source));
-      return;
-    }
-    if (ts.isTemplateExpression(expression)) {
-      inspectString(expression.head.text, expression.head.getStart(source));
-      for (const span of expression.templateSpans) {
-        inspectString(span.literal.text, span.literal.getStart(source));
-        inspectExpression(span.expression, inspectString);
-      }
-      return;
-    }
-    if (ts.isCallExpression(expression)) {
-      if (CLASS_HELPERS.has(helperName(expression.expression))) {
-        for (const argument of expression.arguments) inspectExpression(argument, inspectString);
-      }
-      return;
-    }
-    if (ts.isArrayLiteralExpression(expression)) {
-      for (const element of expression.elements) inspectExpression(element, inspectString);
-      return;
-    }
-    if (ts.isObjectLiteralExpression(expression)) {
-      for (const property of expression.properties) {
-        if (!ts.isPropertyAssignment(property)) continue;
-        if (ts.isStringLiteralLike(property.name)) {
-          inspectString(property.name.text, property.name.getStart(source));
-        }
-        inspectExpression(property.initializer, inspectString);
-      }
-      return;
-    }
-    if (ts.isConditionalExpression(expression)) {
-      inspectExpression(expression.whenTrue, inspectString);
-      inspectExpression(expression.whenFalse, inspectString);
-      return;
-    }
-    if (ts.isBinaryExpression(expression)) {
-      inspectExpression(expression.left, inspectString);
-      inspectExpression(expression.right, inspectString);
-    }
-  };
+  visitTypeScript(source, content, inspectClass, inspectColor);
+  return findings;
+}
+
+function visitTypeScript(
+  source: ts.SourceFile,
+  content: string,
+  inspectClass: StringInspector,
+  inspectColor: StringInspector,
+): void {
   const visit = (node: ts.Node): void => {
     if (ts.isCallExpression(node) && CLASS_HELPERS.has(helperName(node.expression))) {
-      for (const argument of node.arguments) inspectExpression(argument, inspectClass);
+      for (const argument of node.arguments) inspectExpression(argument, source, inspectClass);
     }
-    if (ts.isJsxAttribute(node)) {
-      const name = node.name.getText(source);
-      const initializer = node.initializer;
-      if (!initializer) return;
-      if (name === "className" || name === "class") {
-        if (ts.isStringLiteralLike(initializer))
-          inspectClass(initializer.text, initializer.getStart(source));
-        if (ts.isJsxExpression(initializer) && initializer.expression) {
-          inspectExpression(initializer.expression, inspectClass);
-        }
-      } else if (COLOR_PROPS.has(name)) {
-        if (ts.isStringLiteralLike(initializer))
-          inspectColor(initializer.text, initializer.getStart(source));
-        if (ts.isJsxExpression(initializer) && initializer.expression) {
-          inspectExpression(initializer.expression, inspectColor);
-        }
-      } else if (name === "style" && ts.isJsxExpression(initializer) && initializer.expression) {
-        const style = initializer.expression;
-        if (ts.isObjectLiteralExpression(style)) {
-          for (const property of style.properties) {
-            if (!ts.isPropertyAssignment(property) || !ts.isIdentifier(property.name)) continue;
-            if (COLOR_PROPS.has(property.name.text)) {
-              inspectExpression(property.initializer, inspectColor);
-            }
-          }
-        }
-      }
-    }
+    if (ts.isJsxAttribute(node)) inspectJsxAttribute(node, source, inspectClass, inspectColor);
     ts.forEachChild(node, visit);
   };
   visit(source);
-  return findings;
+}
+
+function inspectJsxAttribute(
+  node: ts.JsxAttribute,
+  source: ts.SourceFile,
+  inspectClass: StringInspector,
+  inspectColor: StringInspector,
+): void {
+  const name = node.name.getText(source);
+  const initializer = node.initializer;
+  if (!initializer) return;
+  if (name === "className" || name === "class") {
+    inspectJsxString(initializer, source, inspectClass);
+  } else if (COLOR_PROPS.has(name)) {
+    inspectJsxString(initializer, source, inspectColor);
+  } else if (name === "style") {
+    inspectStyleAttribute(initializer, source, inspectColor);
+  }
+}
+
+function inspectJsxString(
+  initializer: ts.JsxAttributeValue,
+  source: ts.SourceFile,
+  inspectString: StringInspector,
+): void {
+  if (ts.isStringLiteralLike(initializer)) {
+    inspectString(initializer.text, initializer.getStart(source));
+  } else if (ts.isJsxExpression(initializer) && initializer.expression) {
+    inspectExpression(initializer.expression, source, inspectString);
+  }
+}
+
+function inspectStyleAttribute(
+  initializer: ts.JsxAttributeValue,
+  source: ts.SourceFile,
+  inspectColor: StringInspector,
+): void {
+  if (!ts.isJsxExpression(initializer) || !initializer.expression) return;
+  const style = initializer.expression;
+  if (!ts.isObjectLiteralExpression(style)) return;
+  for (const property of style.properties) {
+    if (!ts.isPropertyAssignment(property) || !ts.isIdentifier(property.name)) continue;
+    if (COLOR_PROPS.has(property.name.text)) {
+      inspectExpression(property.initializer, source, inspectColor);
+    }
+  }
 }
 
 function inspectCss(path: string, content: string): Finding[] {

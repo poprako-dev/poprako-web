@@ -1,5 +1,4 @@
 // deno run -A --unstable-sloppy-imports script/test-compress-interop.mjs
-import { initModule } from "node-liblzma/wasm";
 import { runArchive } from "../src/shared/utility/compress/core.ts";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
@@ -12,7 +11,6 @@ import path from "node:path";
 const exec = promisify(execFile);
 const directory = fileURLToPath(new URL("../test-resource/generated/", import.meta.url));
 await mkdir(directory, { recursive: true });
-await initModule();
 const bytes = Uint8Array.from({ length: 256 * 1024 }, (_, index) => index % 251);
 await writeFile(path.join(directory, "interop.bin"), bytes);
 const options = { preset: 3, maxFiles: 1000, maxBytes: 8 * 1024 ** 3 };
@@ -23,11 +21,27 @@ await runArchive(
     operation: "compress",
     files: [{ name, blob: new Blob([bytes]) }],
   },
-  Writable.toWeb(createWriteStream(path.join(directory, "interop.tar.xz"))),
+  Writable.toWeb(createWriteStream(path.join(directory, "interop.tar.zst"))),
   () => {},
 );
-await exec("tar", ["-cJf", path.join(directory, "native.tar.xz"), "-C", directory, "interop.bin"]);
-const native = new Blob([await readFile(path.join(directory, "native.tar.xz"))]);
+await exec("tar", ["-cf", path.join(directory, "native.tar"), "-C", directory, "interop.bin"]);
+await exec("zstd", [
+  "-f",
+  "-3",
+  "--long=28",
+  path.join(directory, "native.tar"),
+  "-o",
+  path.join(directory, "native.tar.zst"),
+]);
+await exec("zstd", [
+  "-f",
+  "-d",
+  "--long=28",
+  path.join(directory, "interop.tar.zst"),
+  "-o",
+  path.join(directory, "interop.tar"),
+]);
+const native = new Blob([await readFile(path.join(directory, "native.tar.zst"))]);
 await runArchive(
   {
     ...options,
@@ -38,13 +52,16 @@ await runArchive(
   Writable.toWeb(createWriteStream(path.join(directory, "native.zip"))),
   () => {},
 );
-const { stdout } = await exec("python3", [
+const { stdout } = await exec("uv", [
+  "run",
+  "--no-project",
+  "python",
   "-c",
   `
 import tarfile, zipfile, hashlib, pathlib, sys, json
 root = pathlib.Path(sys.argv[1])
 expected = (root / 'interop.bin').read_bytes()
-with tarfile.open(root / 'interop.tar.xz', 'r:xz') as archive:
+with tarfile.open(root / 'interop.tar', 'r:') as archive:
     members = archive.getmembers()
     assert len(members) == 1
     assert members[0].name == sys.argv[2]
@@ -52,7 +69,7 @@ with tarfile.open(root / 'interop.tar.xz', 'r:xz') as archive:
 with zipfile.ZipFile(root / 'native.zip') as archive:
     assert archive.read('interop.bin') == expected
     assert archive.testzip() is None
-print(json.dumps({'nativeTarReadsWasmXz': True, 'wasmReadsNativeTarXz': True,
+print(json.dumps({'nativeTarReadsWasmZst': True, 'wasmReadsNativeTarZst': True,
     'pythonReadsZip64': True, 'longUnicodePath': True,
     'sha256': hashlib.sha256(expected).hexdigest()}, indent=2))
 `,

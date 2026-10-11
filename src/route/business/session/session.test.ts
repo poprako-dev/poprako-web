@@ -116,6 +116,14 @@ describe("session identity recovery", () => {
     expect(newState.userInfo.id).toBe("user-new");
     expect(useAppStore.getState().loginState?.userInfo.id).toBe("user-new");
   });
+});
+
+describe("session identity recovery", () => {
+  beforeEach(() => {
+    clearSession();
+    requests.getMyUser.mockReset();
+    requests.listMyMembers.mockReset();
+  });
 
   test("rejects memberships with no included team instead of inventing a team", async () => {
     requests.getMyUser.mockResolvedValue(ok(user("user-a")));
@@ -138,6 +146,14 @@ describe("session identity recovery", () => {
     expect(useAppStore.getState().loginState).toBeNull();
     expect(useAppStore.getState().selectedTeamId).toBeNull();
   });
+});
+
+describe("session identity recovery", () => {
+  beforeEach(() => {
+    clearSession();
+    requests.getMyUser.mockReset();
+    requests.listMyMembers.mockReset();
+  });
 
   test("validates selection and clears identity on logout", async () => {
     requests.getMyUser.mockResolvedValue(ok(user("user-a")));
@@ -155,6 +171,14 @@ describe("session identity recovery", () => {
     expect(useAppStore.getState().accessToken).toBeNull();
     expect(useAppStore.getState().loginState).toBeNull();
     expect(useAppStore.getState().selectedTeamId).toBeNull();
+  });
+});
+
+describe("session identity recovery", () => {
+  beforeEach(() => {
+    clearSession();
+    requests.getMyUser.mockReset();
+    requests.listMyMembers.mockReset();
   });
 
   test("persists credentials and team choice without persisting recovered identity", () => {

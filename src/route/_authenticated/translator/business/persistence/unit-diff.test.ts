@@ -58,6 +58,9 @@ describe("unit diff", () => {
       ],
     });
   });
+});
+
+describe("unit diff", () => {
   test("updates proofreading status without changing revision text", () => {
     const baseline: UnitInfo[] = [
       {
@@ -89,6 +92,9 @@ describe("unit diff", () => {
       ],
     });
   });
+});
+
+describe("unit diff", () => {
   test("normalizes indexes and expresses order through nextId edits", () => {
     const baseline = normalizeUnitIndexes([
       { ...localUnit, id: "unit_a", index: 10 },

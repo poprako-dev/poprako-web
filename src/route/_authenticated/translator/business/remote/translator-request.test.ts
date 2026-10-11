@@ -36,34 +36,36 @@ function requestBody(fetchMock: ReturnType<typeof vi.fn>, callIndex = 0): unknow
   return JSON.parse(init.body);
 }
 
-describe("translator unit API adapter", () => {
-  beforeEach(() => vi.restoreAllMocks());
+function normalizedUnitsResponse(): Response {
+  return okJson({
+    total_unit_count: 2,
+    translated_unit_count: 1,
+    proofread_unit_count: 0,
+    unit_infos: [
+      {
+        id: "unit-1",
+        page_id: "page-1",
+        x_coord: 0.1,
+        y_coord: 0.2,
+        is_bubble: true,
+        is_flagged: true,
+        is_proofread: false,
+        translated_text: "hello",
+        last_translator_id: "user-1",
+        proofread_text: null,
+        last_proofreader_id: null,
+        created_at: 1,
+        updated_at: 2,
+      },
+    ],
+  });
+}
 
+beforeEach(() => vi.restoreAllMocks());
+
+describe("translator unit API adapter", () => {
   test("maps normalized API units into page-indexed editor units", async () => {
-    const { client } = clientWith(
-      okJson({
-        total_unit_count: 2,
-        translated_unit_count: 1,
-        proofread_unit_count: 0,
-        unit_infos: [
-          {
-            id: "unit-1",
-            page_id: "page-1",
-            x_coord: 0.1,
-            y_coord: 0.2,
-            is_bubble: true,
-            is_flagged: true,
-            is_proofread: false,
-            translated_text: "hello",
-            last_translator_id: "user-1",
-            proofread_text: null,
-            last_proofreader_id: null,
-            created_at: 1,
-            updated_at: 2,
-          },
-        ],
-      }),
-    );
+    const { client } = clientWith(normalizedUnitsResponse());
 
     const result = await listUnits(client, "page-1");
 
@@ -89,7 +91,9 @@ describe("translator unit API adapter", () => {
       },
     });
   });
+});
 
+describe("translator unit API adapter", () => {
   test("maps editor patch semantics while the API client owns key conversion", async () => {
     const { client, fetchMock } = clientWith(okJson({ created_unit_ids: [] }));
     const diff: UnitDiff = {
@@ -125,7 +129,9 @@ describe("translator unit API adapter", () => {
       },
     ]);
   });
+});
 
+describe("translator unit API adapter", () => {
   test("preserves assign tags and values for all three patch fields", async () => {
     const { client, fetchMock } = clientWith(okJson({ created_unit_ids: [] }));
 
@@ -156,7 +162,9 @@ describe("translator unit API adapter", () => {
       },
     ]);
   });
+});
 
+describe("translator unit API adapter", () => {
   test("sends explicit clear tags for all three patch fields", async () => {
     const { client, fetchMock } = clientWith(okJson({ created_unit_ids: [] }));
 
@@ -187,7 +195,9 @@ describe("translator unit API adapter", () => {
       },
     ]);
   });
+});
 
+describe("translator unit API adapter", () => {
   test("omits skip fields from the serialized request while preserving a flag edit", async () => {
     const { client, fetchMock } = clientWith(okJson({ created_unit_ids: [] }));
 
@@ -211,7 +221,9 @@ describe("translator unit API adapter", () => {
 
     expect(requestBody(fetchMock)).toEqual([{ edit: "patch", id: "unit-1", is_flagged: false }]);
   });
+});
 
+describe("translator unit API adapter", () => {
   test("converts search matches and the selected text field", async () => {
     const { client, fetchMock } = clientWith(
       okJson([
@@ -243,7 +255,9 @@ describe("translator unit API adapter", () => {
       unit: { id: "unit-1", index: 0, proofreadText: "new phrase" },
     });
   });
+});
 
+describe("translator unit API adapter", () => {
   test("sends transform operations with camel-case DTOs", async () => {
     const { client, fetchMock } = clientWith(new Response(null, { status: 204 }));
 

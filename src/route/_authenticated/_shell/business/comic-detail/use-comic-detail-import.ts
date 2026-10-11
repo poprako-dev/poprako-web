@@ -30,19 +30,56 @@ function detectImportFormat(file: File): "json" | "lp" | null {
   return null;
 }
 
-export function useComicDetailImport({
-  selectedChapterId,
-  onImportChapter,
-  reloadCurrentPages,
-  reloadLoadedChapters,
-  onWorkflowRecordsChanged,
-  showToast,
-}: Args): ComicDetailImportState {
-  const [isImportingData, setIsImportingData] = useState(false);
-  const [pendingImport, setPendingImport] = useState<PendingChapterImport | null>(null);
-  const importInFlightRef = useRef(false);
+function reportImportFailure(error: unknown, showToast: Args["showToast"]): void {
+  console.error("[ComicDetailModal] 导入章节数据异常:", error);
+  showLocalCaughtError(error, showToast, "导入失败");
+}
 
-  const handleImportFileChange = useCallback(
+type ImportRequest = {
+  pendingImport: PendingChapterImport;
+  mode: ImportChapterMode;
+  onImportChapter: Args["onImportChapter"];
+  reloadCurrentPages: Args["reloadCurrentPages"];
+  reloadLoadedChapters: Args["reloadLoadedChapters"];
+  onWorkflowRecordsChanged: Args["onWorkflowRecordsChanged"];
+  showToast: Args["showToast"];
+  setPendingImport: (value: PendingChapterImport | null) => void;
+};
+
+async function importChapterData(request: ImportRequest): Promise<void> {
+  const { pendingImport, mode, onImportChapter, showToast, setPendingImport } = request;
+  const format = detectImportFormat(pendingImport.file);
+  if (!format) return;
+
+  const content = await pendingImport.file.text();
+  const result = await onImportChapter({
+    chapterId: pendingImport.chapterId,
+    content,
+    format,
+    mode,
+  });
+  if (!result.success) {
+    showLocalApiFailure(result, showToast);
+    return;
+  }
+
+  setPendingImport(null);
+  await Promise.all([request.reloadCurrentPages(), request.reloadLoadedChapters()]);
+  request.onWorkflowRecordsChanged();
+  showToast(
+    `导入成功：${String(result.data.importedPageCount)} 页，` +
+      `${String(result.data.importedUnitCount)} 单元`,
+    "success",
+  );
+}
+
+function useImportFileChange(
+  selectedChapterId: string | null,
+  importInFlightRef: { current: boolean },
+  setPendingImport: (value: PendingChapterImport | null) => void,
+  showToast: Args["showToast"],
+): ComicDetailImportState["handleImportFileChange"] {
+  return useCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
       const selectedFile = event.target.files?.[0];
       event.target.value = "";
@@ -55,64 +92,64 @@ export function useComicDetailImport({
       }
       setPendingImport({ file: selectedFile, chapterId: selectedChapterId });
     },
-    [selectedChapterId, showToast],
+    [selectedChapterId, importInFlightRef, setPendingImport, showToast],
   );
+}
 
-  const cancelImport = useCallback((): void => {
-    if (!importInFlightRef.current) setPendingImport(null);
-  }, []);
-
+function useImportConfirmation(
+  request: Omit<ImportRequest, "pendingImport" | "mode" | "setPendingImport">,
+  pendingImport: PendingChapterImport | null,
+  setPendingImport: (value: PendingChapterImport | null) => void,
+  importInFlightRef: { current: boolean },
+): Pick<ComicDetailImportState, "isImportingData" | "confirmImport" | "cancelImport"> {
+  const [isImportingData, setIsImportingData] = useState(false);
   const confirmImport = useCallback(
     async (mode: ImportChapterMode): Promise<void> => {
       if (!pendingImport || importInFlightRef.current) return;
-      const format = detectImportFormat(pendingImport.file);
-      if (!format) return;
       importInFlightRef.current = true;
       setIsImportingData(true);
       try {
-        const content = await pendingImport.file.text();
-        const result = await onImportChapter({
-          chapterId: pendingImport.chapterId,
-          content,
-          format,
+        await importChapterData({
+          pendingImport,
           mode,
+          ...request,
+          setPendingImport,
         });
-        if (!result.success) {
-          showLocalApiFailure(result, showToast);
-          return;
-        }
-
-        setPendingImport(null);
-        await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
-        onWorkflowRecordsChanged();
-        showToast(
-          `导入成功：${String(result.data.importedPageCount)} 页，` +
-            `${String(result.data.importedUnitCount)} 单元`,
-          "success",
-        );
       } catch (error) {
-        console.error("[ComicDetailModal] 导入章节数据异常:", error);
-        showLocalCaughtError(error, showToast, "导入失败");
+        reportImportFailure(error, request.showToast);
       } finally {
         importInFlightRef.current = false;
         setIsImportingData(false);
       }
     },
-    [
-      onImportChapter,
-      onWorkflowRecordsChanged,
-      reloadCurrentPages,
-      reloadLoadedChapters,
-      pendingImport,
-      showToast,
-    ],
+    [pendingImport, request, setPendingImport, importInFlightRef],
+  );
+  const cancelImport = useCallback((): void => {
+    if (!importInFlightRef.current) setPendingImport(null);
+  }, [setPendingImport, importInFlightRef]);
+
+  return { isImportingData, confirmImport, cancelImport };
+}
+
+export function useComicDetailImport(args: Args): ComicDetailImportState {
+  const [pendingImport, setPendingImport] = useState<PendingChapterImport | null>(null);
+  const importInFlightRef = useRef(false);
+  const handleImportFileChange = useImportFileChange(
+    args.selectedChapterId,
+    importInFlightRef,
+    setPendingImport,
+    args.showToast,
+  );
+  const confirmation = useImportConfirmation(
+    args,
+    pendingImport,
+    setPendingImport,
+    importInFlightRef,
   );
 
   return {
-    isImportingData,
+    ...confirmation,
     pendingImport,
     handleImportFileChange,
-    confirmImport,
-    cancelImport,
   };
 }

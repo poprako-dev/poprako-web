@@ -2,6 +2,7 @@ import type { ReactElement, ReactNode } from "react";
 import { act, renderHook, type RenderHookResult } from "@testing-library/react";
 import { vi, type Mock } from "vitest";
 import { createApiClient } from "@/api/client";
+import type { ApiClient } from "@/api/client";
 import { ApiProvider } from "@/route/business/ApiProvider";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
 import type { PageInfo } from "@/route/_authenticated/business/page/page";
@@ -24,6 +25,20 @@ export type Deferred<T> = {
   resolve: (value: T) => void;
   reject: (reason: unknown) => void;
 };
+
+function responseAccessor(responses: Deferred<Response>[]): (index: number) => Deferred<Response> {
+  return (index) => {
+    const item = responses[index];
+    if (!item) throw new Error(`请求 ${String(index)} 尚未开始`);
+    return item;
+  };
+}
+
+function createApiWrapper(client: ApiClient): (props: Props) => ReactElement {
+  return function Wrapper({ children }: Props): ReactElement {
+    return <ApiProvider client={client}>{children}</ApiProvider>;
+  };
+}
 export function deferred<T>(): Deferred<T> {
   let resolve!: (value: T) => void;
   let reject!: (reason: unknown) => void;
@@ -73,16 +88,8 @@ export function harness(
     responses[request] ??= deferred<Response>();
     return responses[request].promise;
   });
-  function responseAt(index: number): Deferred<Response> {
-    const item = responses[index];
-    if (!item) throw new Error(`请求 ${String(index)} 尚未开始`);
-    return item;
-  }
+  const responseAt = responseAccessor(responses);
   const client = createApiClient({ baseUrl: "/api", getAccessToken: () => "token", fetchImpl });
-  function Wrapper({ children }: Props): ReactElement {
-    const content = <ApiProvider client={client}>{children}</ApiProvider>;
-    return content;
-  }
   const onDeleteChapterPages = vi.fn(() =>
     Promise.resolve<Result<void>>({ success: true, data: undefined }),
   );
@@ -100,7 +107,11 @@ export function harness(
         reloadLoadedChapters,
         showToast,
       }),
-    { initialProps: { chapterId: "a" }, wrapper: Wrapper, reactStrictMode: strict },
+    {
+      initialProps: { chapterId: "a" },
+      wrapper: createApiWrapper(client),
+      reactStrictMode: strict,
+    },
   );
   return {
     ...view,

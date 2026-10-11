@@ -1,7 +1,7 @@
 import {
   type ArchiveProgress,
-  compressTarXz,
-  decompressTarXzToZip,
+  compressTarZst,
+  decompressTarZstToZip,
 } from "@/shared/utility/compress";
 
 export type ArchiveMode = "compress" | "extract";
@@ -20,8 +20,8 @@ export function formatSize(bytes: number): string {
 
 export function validateFiles(files: readonly File[], mode: ArchiveMode): string | null {
   if (files.length === 0) return "请先选择文件";
-  if (mode === "extract" && (files.length !== 1 || !/\.tar\.xz$/iu.test(files[0]?.name ?? ""))) {
-    return "请选择一个 .tar.xz 文件";
+  if (mode === "extract" && (files.length !== 1 || !/\.tar\.zst$/iu.test(files[0]?.name ?? ""))) {
+    return "请选择一个 .tar.zst 文件";
   }
   if (files.length > 1000) return "每次最多选择 1000 个文件";
   if (files.reduce((sum, file) => sum + file.size, 0) > 8 * 1024 ** 3) {
@@ -66,11 +66,11 @@ export async function prepareArchive(
     const options = { signal, onProgress, preset };
     const stream =
       mode === "compress"
-        ? compressTarXz(
+        ? compressTarZst(
             files.map((blob) => ({ name: blob.name, blob })),
             options,
           )
-        : decompressTarXzToZip(source, options);
+        : decompressTarZstToZip(source, options);
     await stream.pipeTo(output, { signal });
     const file = await handle.getFile();
     signal.throwIfAborted();

@@ -24,6 +24,27 @@ export type OnlineUserStatus = "loading" | "ready" | "error";
 type OnlineUserIds = { userIds: ReadonlySet<string>; status: OnlineUserStatus };
 type OnlineUserInfos = { users: readonly UserInfo[]; status: OnlineUserStatus };
 
+async function loadOnlineUsers(
+  client: ReturnType<typeof useApiClient>,
+  teamId: string,
+  userIdSignature: string,
+): Promise<OnlineUserInfosState> {
+  const results = await Promise.all(
+    userIdSignature.split("\0").map((userId) => getUser(client, userId)),
+  );
+  const users: UserInfo[] = [];
+  let hasError = false;
+  for (const result of results) {
+    if (result.success) users.push(result.data);
+    else {
+      hasError = true;
+      console.error("[TeamOnline] 获取在线用户资料失败:", result.error);
+    }
+  }
+  users.sort((left, right) => left.name.localeCompare(right.name, "zh-CN"));
+  return { teamId, userIdSignature, users, status: hasError ? "error" : "ready" };
+}
+
 export function useOnlineUserIds(teamId: string | null): OnlineUserIds {
   const client = useApiClient();
   const [state, setState] = useState<OnlineUsersState | null>(null);
@@ -72,34 +93,9 @@ export function useOnlineUsers(teamId: string | null, onlineUsers: OnlineUserIds
     if (!teamId || onlineUsers.status !== "ready" || !userIdSignature) return;
 
     let isCurrent = true;
-
-    const load = async (): Promise<void> => {
-      const results = await Promise.all(
-        userIdSignature.split("\0").map((userId) => getUser(client, userId)),
-      );
-
-      if (!isCurrent) return;
-
-      const users: UserInfo[] = [];
-      let hasError = false;
-      for (const result of results) {
-        if (result.success) users.push(result.data);
-        else {
-          hasError = true;
-          console.error("[TeamOnline] 获取在线用户资料失败:", result.error);
-        }
-      }
-
-      users.sort((left, right) => left.name.localeCompare(right.name, "zh-CN"));
-      setState({
-        teamId,
-        userIdSignature,
-        users,
-        status: hasError ? "error" : "ready",
-      });
-    };
-
-    void load();
+    void loadOnlineUsers(client, teamId, userIdSignature).then((result) => {
+      if (isCurrent) setState(result);
+    });
 
     return () => {
       isCurrent = false;

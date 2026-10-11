@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import type { ReactNode, ReactElement } from "react";
+import { useMemo, useState } from "react";
+import type { ReactNode, ReactElement, ComponentProps } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { ComicDetailModal } from "./ComicDetailModal";
@@ -52,6 +52,11 @@ function StoryProvider({ scenario, children }: ProviderProps): ReactElement {
     </ApiProvider>
   );
 }
+type Props = ComponentProps<typeof ComicDetailModal>;
+function ModeScenario(args: Props): ReactElement {
+  const [mode, setMode] = useState(args.mode ?? "translator");
+  return <ComicDetailModal {...args} mode={mode} onModeChange={setMode} />;
+}
 const meta = {
   title: "Route/ComicDetail",
   component: ComicDetailModal,
@@ -60,9 +65,10 @@ const meta = {
     comicInfo: comic,
     pinnedChapter,
     initialChapterId: null,
+    mode: "translator",
     onClose: fn(),
     onChanged: fn(),
-    onNavigateToTranslator: fn(),
+    onNavigateToWorkbench: fn(),
   },
   decorators: [
     (Story, context) => (
@@ -118,13 +124,20 @@ export const SlowNetwork: Story = { name: "慢网络", parameters: { scenario: "
 export const AllCompleted: Story = { name: "全部完成", parameters: { scenario: "completed" } };
 export const LoadError: Story = { name: "加载失败", parameters: { scenario: "error" } };
 export const ArtworkActions: Story = {
-  name: "嵌稿上传",
+  name: "嵌监 · 上传与管理",
+  args: { mode: "reviewer" },
   parameters: { scenario: "artwork" },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const upload = await canvas.findByRole("button", { name: "上传嵌稿" });
-    await expect(canvas.queryByRole("button", { name: "只读查看" })).not.toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: "导入翻校" })).toBeVisible();
+    await expect(await canvas.findByLabelText("第 2 页有 issue")).toBeVisible();
+    await expect(canvas.queryByText(/\d+ issue/u)).not.toBeInTheDocument();
+    await expect(canvas.queryByLabelText("第 3 页有 issue")).not.toBeInTheDocument();
+    await expect(canvas.queryByText("1.psd")).not.toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: "只读查看" })).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "导入翻校" })).not.toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: "下载嵌稿" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "更多操作" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "清空页面" })).not.toBeInTheDocument();
     await userEvent.click(upload);
     const body = within(document.body);
@@ -132,7 +145,51 @@ export const ArtworkActions: Story = {
       expect(await body.findByRole("dialog", { name: "上传嵌稿" })).toBeVisible(),
     );
     await expect(body.getByRole("button", { name: "上传" })).toBeDisabled();
-    await expect(body.queryByText(/压缩/)).not.toBeInTheDocument();
+    await expect(body.getByRole("switch", { name: "打包上传" })).toBeChecked();
     await expect(body.queryByText(/请一次选齐/)).not.toBeInTheDocument();
+  },
+};
+
+export const SwitchWorkbench: Story = {
+  name: "翻校 / 嵌监切换",
+  parameters: { scenario: "artwork" },
+  render: (args) => <ModeScenario {...args} />,
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const modes = within(await canvas.findByRole("group", { name: "工作台模式" }));
+    const translator = modes.getByRole("button", { name: "翻校" });
+    const reviewer = modes.getByRole("button", { name: "嵌监" });
+    await expect(translator).toHaveAttribute("aria-pressed", "true");
+    await expect(reviewer).toHaveAttribute("aria-pressed", "false");
+    await expect(await canvas.findByRole("button", { name: "导入翻校" })).toBeVisible();
+    await expect(canvas.getByText("总单元数")).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "上传嵌稿" })).not.toBeInTheDocument();
+    await userEvent.click(reviewer);
+    await expect(reviewer).toHaveAttribute("aria-pressed", "true");
+    await expect(translator).toHaveAttribute("aria-pressed", "false");
+    await expect(await canvas.findByRole("button", { name: "上传嵌稿" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "下载嵌稿" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "下载数据" })).toBeVisible();
+    await expect(canvas.queryByText("总单元数")).not.toBeInTheDocument();
+    await expect(canvas.queryByRole("button", { name: "导入翻校" })).not.toBeInTheDocument();
+    await expect(canvas.getAllByRole("button", { name: /重上传第.*嵌稿/ }).length).toBeGreaterThan(
+      0,
+    );
+    await userEvent.click(canvas.getByRole("button", { name: "只读查看" }));
+    await expect(args.onNavigateToWorkbench).toHaveBeenLastCalledWith(
+      "chapter-1",
+      expect.any(String),
+      true,
+      "reviewer",
+    );
+    await userEvent.click(canvas.getByRole("button", { name: "工作流记录" }));
+    await expect(canvas.getByRole("button", { name: "更多操作" })).toBeVisible();
+    translator.focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(translator).toHaveAttribute("aria-pressed", "true");
+    await expect(reviewer).toHaveAttribute("aria-pressed", "false");
+    await expect(canvas.getByRole("button", { name: "更多操作" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "导入翻校" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "下载数据" })).toBeVisible();
   },
 };

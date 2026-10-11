@@ -33,6 +33,19 @@ type Props = {
   onClose: () => void;
 };
 
+function useComicTitleLongPress(
+  onLongPressTitle: Props["onLongPressTitle"],
+): ReturnType<typeof useLongPress> {
+  return useLongPress({
+    onLongPress:
+      onLongPressTitle ??
+      (() => {
+        return;
+      }),
+    threshold: 500,
+  });
+}
+
 export function ComicDetailHeader({
   comicInfo,
   activeMember,
@@ -53,14 +66,7 @@ export function ComicDetailHeader({
   onCopyTitle,
   onClose,
 }: Props): JSX.Element {
-  const titleLongPress = useLongPress({
-    onLongPress:
-      onLongPressTitle ??
-      (() => {
-        return;
-      }),
-    threshold: 500,
-  });
+  const titleLongPress = useComicTitleLongPress(onLongPressTitle);
 
   const chapterOption = (
     <ChapterOption

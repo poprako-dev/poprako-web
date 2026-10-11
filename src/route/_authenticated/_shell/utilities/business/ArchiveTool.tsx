@@ -30,7 +30,7 @@ export function ArchiveTool({ mode }: Props): JSX.Element {
         className="hidden"
         aria-label="选择嵌稿文件"
         multiple={isCompress}
-        accept={isCompress ? undefined : ".tar.xz"}
+        accept={isCompress ? undefined : ".tar.zst"}
         disabled={isBusy}
         onChange={(event) => {
           tool.addFiles([...(event.target.files ?? [])]);
@@ -70,7 +70,7 @@ export function ArchiveTool({ mode }: Props): JSX.Element {
           {hasFiles ? (isCompress ? "添加文件" : "重新选择文件") : "选择或拖入文件"}
         </span>
         <span className={clsx("text-xs text-muted-foreground", hasFiles && "hidden sm:inline")}>
-          {isCompress ? "多个文件 → TAR.XZ" : "TAR.XZ → ZIP"}
+          {isCompress ? "多个文件 → TAR.ZST" : "TAR.ZST → ZIP"}
         </span>
       </button>
       <p className="mt-2 shrink-0 text-xs text-muted-foreground">

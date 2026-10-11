@@ -1,24 +1,5 @@
 import { sha256 } from "@noble/hashes/sha2.js";
-import { type ArchiveProgress, compressTarXz } from "@/shared/utility/compress";
-import {
-  type ChapterInfo,
-  publishWorkflowStatus,
-} from "@/route/_authenticated/business/chapter/chapter";
-import { matchesAssignmentRole } from "@/route/business/identity/role";
-import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
-
-export function canUploadArtwork(
-  chapter: ChapterInfo | undefined,
-  assignment: AssignmentInfo | undefined,
-): boolean {
-  return (
-    chapter !== undefined &&
-    assignment?.chapterId === chapter.id &&
-    publishWorkflowStatus(chapter) !== "completed" &&
-    matchesAssignmentRole(assignment, "typesetter")
-  );
-}
-
+import { type ArchiveProgress, compressTarZst } from "@/shared/utility/compress";
 export function validateArtworkFiles(files: readonly File[]): void {
   if (files.length === 0) throw new Error("请先选择嵌稿文件");
   if (files.length > 1000) throw new Error("每次最多选择 1000 个文件");
@@ -54,7 +35,7 @@ export async function prepareArtwork(
     throw new Error("当前浏览器不支持本地临时文件，请使用新版 Chrome 或 Edge 上传嵌稿");
   }
   const root = await navigator.storage.getDirectory();
-  const name = `artwork-${crypto.randomUUID()}.tar.xz`;
+  const name = `artwork-${crypto.randomUUID()}.tar.zst`;
   const handle = await root.getFileHandle(name, { create: true });
   const dispose = async (): Promise<void> => {
     await root.removeEntry(name);
@@ -63,7 +44,7 @@ export async function prepareArtwork(
     signal.throwIfAborted();
     const output = await handle.createWritable();
     const hash = sha256.create();
-    await compressTarXz(
+    await compressTarZst(
       files.map((blob) => ({ name: blob.name, blob })),
       { signal, onProgress },
     )

@@ -22,17 +22,23 @@ type Props = {
   className?: string;
 };
 
-export function HoverSelect({
-  hintText = "请选择",
-  checkedOptionId,
-  options,
-  onSelect,
-  maxHeight = 8,
-  isActive = false,
-  className = "",
-}: Props): ReactElement {
-  const [isOpen, setIsOpen] = useState(false);
+type DropdownTimers = {
+  openTimerRef: React.RefObject<ReturnType<typeof setTimeout> | null>;
+  closeTimerRef: React.RefObject<ReturnType<typeof setTimeout> | null>;
+  clearOpenTimer: () => void;
+  clearCloseTimer: () => void;
+};
 
+type HoverDropdown = Pick<DropdownTimers, "clearOpenTimer" | "clearCloseTimer"> & {
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  scheduleClose: () => void;
+  scheduleOpen: () => void;
+  closeDropdown: () => void;
+};
+
+function useDropdownTimers(): DropdownTimers {
   // 交互逻辑：hover 500ms 后展开
   const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clearOpenTimer = useCallback(() => {
@@ -55,12 +61,15 @@ export function HoverSelect({
     closeTimerRef.current = null;
   }, []);
 
-  // 用于处理点击外部直接关闭的逻辑
+  return { openTimerRef, closeTimerRef, clearOpenTimer, clearCloseTimer };
+}
+
+function useHoverDropdown(): HoverDropdown {
+  const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const timers = useDropdownTimers();
+  const { openTimerRef, closeTimerRef, clearOpenTimer, clearCloseTimer } = timers;
 
-  const selectedOption = options.find((opt) => opt.id === checkedOptionId) ?? null;
-
-  // 立即关闭（用于点击外部、选中选项等场景）
   const closeDropdown = useCallback(() => {
     clearOpenTimer();
     clearCloseTimer();
@@ -74,7 +83,7 @@ export function HoverSelect({
       setIsOpen(false);
       closeTimerRef.current = null;
     }, 150);
-  }, [clearOpenTimer]);
+  }, [clearOpenTimer, closeTimerRef]);
 
   function scheduleOpen(): void {
     clearOpenTimer();
@@ -84,6 +93,24 @@ export function HoverSelect({
     }, 500);
   }
 
+  useDropdownDismissal(containerRef, closeDropdown, timers);
+  return {
+    isOpen,
+    setIsOpen,
+    containerRef,
+    clearOpenTimer,
+    clearCloseTimer,
+    scheduleClose,
+    scheduleOpen,
+    closeDropdown,
+  };
+}
+
+function useDropdownDismissal(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  closeDropdown: () => void,
+  { clearOpenTimer, clearCloseTimer }: ReturnType<typeof useDropdownTimers>,
+): void {
   // 交互逻辑：点击外部自动关闭
   useEffect(() => {
     function handleClickOutside(event: globalThis.MouseEvent): void {
@@ -97,7 +124,7 @@ export function HoverSelect({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [closeDropdown]);
+  }, [closeDropdown, containerRef]);
 
   // 组件卸载时，确保清理所有 timer
   useEffect(() => {
@@ -106,6 +133,28 @@ export function HoverSelect({
       clearCloseTimer();
     };
   }, [clearOpenTimer, clearCloseTimer]);
+}
+
+export function HoverSelect({
+  hintText = "请选择",
+  checkedOptionId,
+  options,
+  onSelect,
+  maxHeight = 8,
+  isActive = false,
+  className = "",
+}: Props): ReactElement {
+  const {
+    isOpen,
+    setIsOpen,
+    containerRef,
+    clearOpenTimer,
+    clearCloseTimer,
+    scheduleClose,
+    scheduleOpen,
+    closeDropdown,
+  } = useHoverDropdown();
+  const selectedOption = options.find((opt) => opt.id === checkedOptionId) ?? null;
 
   // 交互逻辑：选择处理
   function handleSelect(option: Option): void {

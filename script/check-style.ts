@@ -34,7 +34,7 @@ function isSource(path: string): boolean {
 
 function sourceFiles(root: string): string[] {
   const files: string[] = [];
-  for (const directory of ["src", "script", ".storybook"]) {
+  for (const directory of ["src", "script", "linters", ".storybook"]) {
     const pending = [`${root}/${directory}`];
     while (pending.length > 0) {
       const current = pending.pop();
@@ -104,6 +104,13 @@ function isRegisteredAmbientInterface(file: string, node: ts.InterfaceDeclaratio
   );
 }
 
+type StyleContext = {
+  file: string;
+  content: string;
+  source: ts.SourceFile;
+  findings: Finding[];
+};
+
 export function inspectStyleFile(file: string, content: string): Finding[] {
   const normalizedFile = file.replaceAll("\\", "/");
   const source = ts.createSourceFile(
@@ -113,159 +120,257 @@ export function inspectStyleFile(file: string, content: string): Finding[] {
     true,
     normalizedFile.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
-  const findings: Finding[] = [];
-  const report = (position: number, rule: string, message: string): void => {
-    findings.push({ file: normalizedFile, line: lineAt(source, position), rule, message });
-  };
-  const segments = normalizedFile.split("/");
-  const generated = normalizedFile === "src/route-tree.gen.ts";
-  if (generated) return findings;
+  const context: StyleContext = { file: normalizedFile, content, source, findings: [] };
+  if (normalizedFile === "src/route-tree.gen.ts") return context.findings;
+  inspectRouteExports(context);
+  inspectDirectoryNames(context);
+  inspectFileName(context);
+  inspectFileSize(context);
+  inspectTopLevelDeclarations(context, allowsDefaultExport(context));
+  return context.findings;
+}
+
+function reportStyle(context: StyleContext, position: number, rule: string, message: string): void {
+  context.findings.push({
+    file: context.file,
+    line: lineAt(context.source, position),
+    rule,
+    message,
+  });
+}
+
+function inspectRouteExports(context: StyleContext): void {
+  const segments = context.file.split("/");
   if (
-    normalizedFile.startsWith("src/route/") &&
-    !segments.includes("business") &&
-    content.includes("createFileRoute(")
-  ) {
-    for (const statement of source.statements) {
-      const exported =
-        ts.canHaveModifiers(statement) &&
+    !context.file.startsWith("src/route/") ||
+    segments.includes("business") ||
+    !context.content.includes("createFileRoute(")
+  )
+    return;
+  for (const statement of context.source.statements) {
+    if (isAllowedRouteExport(statement) || !isExported(statement)) continue;
+    reportStyle(
+      context,
+      statement.getStart(context.source),
+      "route.lazy-export",
+      "route entry modules export only Route; exporting page components prevents automatic lazy splitting",
+    );
+  }
+}
+
+function isAllowedRouteExport(statement: ts.Statement): boolean {
+  const routeDeclaration =
+    ts.isVariableStatement(statement) &&
+    statement.declarationList.declarations.every(
+      (declaration) => ts.isIdentifier(declaration.name) && declaration.name.text === "Route",
+    );
+  return (
+    routeDeclaration ||
+    ts.isTypeAliasDeclaration(statement) ||
+    ts.isInterfaceDeclaration(statement) ||
+    (ts.isExportDeclaration(statement) && statement.isTypeOnly)
+  );
+}
+
+function isExported(statement: ts.Statement): boolean {
+  return (
+    (ts.canHaveModifiers(statement) &&
+      Boolean(
         ts
           .getModifiers(statement)
-          ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
-      const routeDeclaration =
-        ts.isVariableStatement(statement) &&
-        statement.declarationList.declarations.every(
-          (declaration) => ts.isIdentifier(declaration.name) && declaration.name.text === "Route",
-        );
-      const typeOnly =
-        ts.isTypeAliasDeclaration(statement) ||
-        ts.isInterfaceDeclaration(statement) ||
-        (ts.isExportDeclaration(statement) && statement.isTypeOnly);
-      if (!typeOnly && !routeDeclaration && (exported || ts.isExportDeclaration(statement))) {
-        report(
-          statement.getStart(source),
-          "route.lazy-export",
-          "route entry modules export only Route; exporting page components prevents automatic lazy splitting",
-        );
-      }
-    }
-  }
+          ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword),
+      )) ||
+    ts.isExportDeclaration(statement)
+  );
+}
+
+function inspectDirectoryNames(context: StyleContext): void {
+  const segments = context.file.split("/");
   if (segments.includes("features")) {
-    report(0, "structure.features", "implementation directories cannot use `features`");
+    reportStyle(
+      context,
+      0,
+      "structure.features",
+      "implementation directories cannot use `features`",
+    );
   }
   if (segments.includes("entities")) {
-    report(0, "structure.entities", "implementation directories cannot use `entities`");
+    reportStyle(
+      context,
+      0,
+      "structure.entities",
+      "implementation directories cannot use `entities`",
+    );
   }
   if (segments[0] === "src" && OLD_ROOTS.has(segments[1] ?? "")) {
-    report(
+    reportStyle(
+      context,
       0,
       "structure.root",
       `legacy top-level directory \`${segments[1] ?? "<unknown>"}\` is forbidden`,
     );
   }
-  for (const segment of segments.slice(1, -1)) {
-    if (
-      SPECIAL_ROUTE_NAMES.has(segment) ||
-      segment === "business" ||
-      segment === "shared" ||
-      (normalizedFile.startsWith("src/route/") && /^\([a-z-]+\)$/u.test(segment))
-    ) {
-      continue;
-    }
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(segment)) {
-      report(0, "naming.directory", `directory \`${segment}\` must use lowercase kebab-case`);
-    }
+  for (const segment of segments.slice(1, -1)) inspectDirectorySegment(context, segment);
+}
+
+function inspectDirectorySegment(context: StyleContext, segment: string): void {
+  if (
+    SPECIAL_ROUTE_NAMES.has(segment) ||
+    segment === "business" ||
+    segment === "shared" ||
+    (context.file.startsWith("src/route/") && /^\([a-z-]+\)$/u.test(segment))
+  )
+    return;
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(segment)) {
+    reportStyle(
+      context,
+      0,
+      "naming.directory",
+      `directory \`${segment}\` must use lowercase kebab-case`,
+    );
   }
-  const fileName = segments.at(-1) ?? "";
+}
+
+function inspectFileName(context: StyleContext): void {
+  const fileName = context.file.split("/").at(-1) ?? "";
   const baseName = fileName
     .replace(/\.(?:test|spec|stories)\.(?:tsx?|jsx?)$/u, "")
     .replace(/\.[^.]+$/u, "");
   const isTsx = fileName.endsWith(".tsx");
-  const frameworkRoot = normalizedFile === "src/route/__root.ts";
-  const kebabBase = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(baseName);
-  const pascalBase = /^[A-Z][A-Za-z0-9]*$/u.test(baseName);
-  const validBase = frameworkRoot || (isTsx ? pascalBase : kebabBase);
+  const frameworkRoot = context.file === "src/route/__root.ts";
+  const validBase =
+    frameworkRoot ||
+    (isTsx ? /^[A-Z][A-Za-z0-9]*$/u.test(baseName) : /^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(baseName));
   const isConfig =
     /(?:^|\.)(?:config|setup|shim|type)$/u.test(baseName) || fileName.endsWith(".d.ts");
   if (!validBase && !(isConfig && !isTsx)) {
-    report(0, "naming.file", `file \`${fileName}\` does not follow its TS/TSX filename convention`);
+    reportStyle(
+      context,
+      0,
+      "naming.file",
+      `file \`${fileName}\` does not follow its TS/TSX filename convention`,
+    );
   }
-  const lineCount = content.endsWith("\n")
-    ? content.split("\n").length - 1
-    : content.split("\n").length;
-  if (lineCount > 400) {
-    report(0, "size.lines", `${String(lineCount)} physical lines exceed the 400-line limit`);
-  }
+}
 
-  const relativeFile = normalizedFile.replace(/^.*?(?=(?:src|script)\/)/u, "");
-  const allowDefault =
+function inspectFileSize(context: StyleContext): void {
+  const lineCount = context.content.endsWith("\n")
+    ? context.content.split("\n").length - 1
+    : context.content.split("\n").length;
+  if (lineCount > 400) {
+    reportStyle(
+      context,
+      0,
+      "size.lines",
+      `${String(lineCount)} physical lines exceed the 400-line limit`,
+    );
+  }
+}
+
+function allowsDefaultExport(context: StyleContext): boolean {
+  const relativeFile = context.file.replace(/^.*?(?=(?:src|script)\/)/u, "");
+  const fileName = context.file.split("/").at(-1) ?? "";
+  return (
     DEFAULT_EXPORT_FILES.has(relativeFile) ||
     fileName.endsWith(".stories.tsx") ||
-    fileName.endsWith(".stories.ts");
-  const visit = (node: ts.Node): void => {
-    if (ts.isExportAssignment(node) && !node.isExportEquals && !allowDefault) {
-      report(
-        node.getStart(source),
-        "export.default",
-        "default exports require a registered tool exception",
-      );
-    }
-    if (
-      ts.isInterfaceDeclaration(node) &&
-      (node.name.text.endsWith("Props") ||
-        (!isPureCallInterface(node) && !isRegisteredAmbientInterface(normalizedFile, node)))
-    ) {
-      report(
-        node.getStart(source),
-        "type.interface-data",
-        "interfaces are reserved for pure call contracts; use a type for data properties",
-      );
-    }
-    if (
-      ts.isTypeAliasDeclaration(node) &&
-      ts.isTypeLiteralNode(node.type) &&
-      isPureCallMembers(node.type.members) &&
-      !node.name.text.endsWith("Props")
-    ) {
-      report(
-        node.getStart(source),
-        "type.interface-call",
-        "pure call contracts should use an interface",
-      );
-    }
-    ts.forEachChild(node, visit);
-  };
-  for (const statement of source.statements) {
-    if (
-      ts.canHaveModifiers(statement) &&
-      ts
-        .getModifiers(statement)
-        ?.some((modifier) => modifier.kind === ts.SyntaxKind.DefaultKeyword) &&
-      !allowDefault
-    ) {
-      report(
-        statement.getStart(source),
-        "export.default",
-        "default exports require a registered tool exception",
-      );
-    }
-    if (ts.isVariableStatement(statement)) {
-      for (const declaration of statement.declarationList.declarations) {
-        if (
-          declaration.initializer &&
-          (ts.isArrowFunction(declaration.initializer) ||
-            ts.isFunctionExpression(declaration.initializer))
-        ) {
-          report(
-            declaration.getStart(source),
-            "function.named",
-            "top-level functions must use a named function declaration",
-          );
-        }
-      }
-    }
-    visit(statement);
+    fileName.endsWith(".stories.ts")
+  );
+}
+
+function inspectTopLevelDeclarations(context: StyleContext, allowDefault: boolean): void {
+  for (const statement of context.source.statements) {
+    inspectTopLevelStatement(context, statement, allowDefault);
+    inspectTypeTree(context, statement, allowDefault);
   }
-  return findings;
+}
+
+function inspectTopLevelStatement(
+  context: StyleContext,
+  statement: ts.Statement,
+  allowDefault: boolean,
+): void {
+  if (
+    ts.canHaveModifiers(statement) &&
+    ts
+      .getModifiers(statement)
+      ?.some((modifier) => modifier.kind === ts.SyntaxKind.DefaultKeyword) &&
+    !allowDefault
+  ) {
+    reportStyle(
+      context,
+      statement.getStart(context.source),
+      "export.default",
+      "default exports require a registered tool exception",
+    );
+  }
+  if (!ts.isVariableStatement(statement)) return;
+  for (const declaration of statement.declarationList.declarations) {
+    if (isFunctionVariable(declaration)) {
+      reportStyle(
+        context,
+        declaration.getStart(context.source),
+        "function.named",
+        "top-level functions must use a named function declaration",
+      );
+    }
+  }
+}
+
+function isFunctionVariable(declaration: ts.VariableDeclaration): boolean {
+  return Boolean(
+    declaration.initializer &&
+      (ts.isArrowFunction(declaration.initializer) ||
+        ts.isFunctionExpression(declaration.initializer)),
+  );
+}
+
+function inspectTypeTree(context: StyleContext, node: ts.Node, allowDefault: boolean): void {
+  inspectTypeRules(context, node, allowDefault);
+  ts.forEachChild(node, (child) => {
+    inspectTypeTree(context, child, allowDefault);
+  });
+}
+
+function inspectTypeRules(context: StyleContext, node: ts.Node, allowDefault: boolean): void {
+  if (ts.isExportAssignment(node) && !node.isExportEquals && !allowDefault) {
+    reportStyle(
+      context,
+      node.getStart(context.source),
+      "export.default",
+      "default exports require a registered tool exception",
+    );
+  }
+  if (ts.isInterfaceDeclaration(node)) inspectInterface(context, node);
+  if (ts.isTypeAliasDeclaration(node)) inspectTypeAlias(context, node);
+}
+
+function inspectInterface(context: StyleContext, node: ts.InterfaceDeclaration): void {
+  if (
+    node.name.text.endsWith("Props") ||
+    (!isPureCallInterface(node) && !isRegisteredAmbientInterface(context.file, node))
+  ) {
+    reportStyle(
+      context,
+      node.getStart(context.source),
+      "type.interface-data",
+      "interfaces are reserved for pure call contracts; use a type for data properties",
+    );
+  }
+}
+
+function inspectTypeAlias(context: StyleContext, node: ts.TypeAliasDeclaration): void {
+  if (
+    ts.isTypeLiteralNode(node.type) &&
+    isPureCallMembers(node.type.members) &&
+    !node.name.text.endsWith("Props")
+  ) {
+    reportStyle(
+      context,
+      node.getStart(context.source),
+      "type.interface-call",
+      "pure call contracts should use an interface",
+    );
+  }
 }
 
 export function checkStyle(root: string): Finding[] {

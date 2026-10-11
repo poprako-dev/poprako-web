@@ -15,7 +15,9 @@ describe("existing Web HTTP behavior at the injected boundary", () => {
     );
     expect(fetchImpl.mock.calls[0]?.[1]?.credentials).toBe("omit");
   });
+});
 
+describe("existing Web HTTP behavior at the injected boundary", () => {
   test("reads credentials per request and never adds them to public or external requests", async () => {
     let token = "first-session";
     const fetchImpl = vi
@@ -36,7 +38,9 @@ describe("existing Web HTTP behavior at the injected boundary", () => {
     );
     expect(new Headers(fetchImpl.mock.calls[3]?.[1]?.headers).has("content-type")).toBe(false);
   });
+});
 
+describe("existing Web HTTP behavior at the injected boundary", () => {
   test("keeps business failure metadata even for successful HTTP status", async () => {
     const api = createApiClient({
       baseUrl: "/api/v1",
@@ -53,7 +57,9 @@ describe("existing Web HTTP behavior at the injected boundary", () => {
       httpStatus: 200,
     });
   });
+});
 
+describe("existing Web HTTP behavior at the injected boundary", () => {
   test("uses HTTP fallback for missing 422 message without UI or logging side effects", async () => {
     const log = vi.spyOn(console, "error");
     try {

@@ -103,6 +103,20 @@ describe("team online lease lifecycle", () => {
     });
     expect(fetchImpl).toHaveBeenCalledTimes(4);
   });
+});
+
+describe("team online lease lifecycle", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
+  });
+
+  afterEach(() => {
+    cleanup();
+    useAppStore.getState().setAccessToken(null);
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
 
   test("strict-mode remount aborts the discarded request without leaking its timer", async () => {
     const fetchImpl = vi
@@ -118,6 +132,20 @@ describe("team online lease lifecycle", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(3);
     view.unmount();
     expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe("team online lease lifecycle", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
+  });
+
+  afterEach(() => {
+    cleanup();
+    useAppStore.getState().setAccessToken(null);
+    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   test("ignores a failed response belonging to an old login generation", async () => {

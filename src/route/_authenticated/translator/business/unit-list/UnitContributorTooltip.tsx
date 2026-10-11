@@ -28,6 +28,19 @@ function userDisplayName(user: UserInfo): string {
   return user.name.trim() || user.id;
 }
 
+function cancelTooltipTimer(timerRef: { current: ReturnType<typeof setTimeout> | null }): void {
+  if (timerRef.current === null) return;
+  clearTimeout(timerRef.current);
+  timerRef.current = null;
+}
+
+function isContributorTrigger(event: ReactPointerEvent<HTMLDivElement>): boolean {
+  const target = event.target;
+  if (!(target instanceof Element)) return false;
+  const trigger = target.closest("[data-unit-contributor-trigger]");
+  return trigger !== null && event.currentTarget.contains(trigger);
+}
+
 function ContributorAvatar({ user }: AvatarProps): React.ReactElement {
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
   const avatarUrl = user.avatarThumbnailUrl ?? user.avatarUrl;
@@ -66,22 +79,12 @@ export function UnitContributorTooltip({ contributors, children }: Props): React
   const isOpen = contributorKey !== "" && openContributorKey === contributorKey;
 
   function cancelTimer(): void {
-    if (timerRef.current === null) return;
-    clearTimeout(timerRef.current);
-    timerRef.current = null;
+    cancelTooltipTimer(timerRef);
   }
 
   function closeTooltip(): void {
     cancelTimer();
     setOpenContributorKey(null);
-  }
-
-  function isContributorTrigger(event: ReactPointerEvent<HTMLDivElement>): boolean {
-    const target = event.target;
-    if (!(target instanceof Element)) return false;
-
-    const trigger = target.closest("[data-unit-contributor-trigger]");
-    return trigger !== null && event.currentTarget.contains(trigger);
   }
 
   function handlePointerHover(event: ReactPointerEvent<HTMLDivElement>): void {

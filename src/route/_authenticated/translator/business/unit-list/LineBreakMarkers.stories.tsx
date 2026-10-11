@@ -14,6 +14,36 @@ const sampleText =
   "这是一段足够长的文字，会随着侧边栏宽度自动折行，但只有句末是真实换行。\n" +
   "\n他说：「请保留引号、空格  和换行。」\n";
 
+async function expectLineBreakMarkerGeometry(
+  canvasElement: HTMLElement,
+  narrowInput: HTMLTextAreaElement,
+): Promise<void> {
+  const mirror = narrowInput.nextElementSibling;
+  if (!mirror) throw new Error("Missing text mirror");
+  const probe = mirror.cloneNode(false) as HTMLDivElement;
+  probe.textContent = narrowInput.value;
+  mirror.after(probe);
+  try {
+    const textNode = probe.firstChild;
+    if (!textNode) throw new Error("Missing probe text");
+    const markers = canvasElement.querySelectorAll("[data-line-break-marker]");
+    await expect(markers).toHaveLength(narrowInput.value.split("\n").length - 1);
+    let index = 0;
+    for (const match of narrowInput.value.matchAll(/\n/gu)) {
+      const range = document.createRange();
+      range.setStart(textNode, match.index);
+      range.setEnd(textNode, match.index + 1);
+      const expected = range.getBoundingClientRect();
+      const actual = markers.item(index).getBoundingClientRect();
+      await expect(Math.abs(actual.x - expected.x)).toBeLessThan(1);
+      await expect(Math.abs(actual.y - expected.y)).toBeLessThan(1);
+      index += 1;
+    }
+  } finally {
+    probe.remove();
+  }
+}
+
 function LineBreakExample(): JSX.Element {
   const [unit, setUnit] = useState<UnitInfo>(() => ({
     ...createUnit(0, 0, true),
@@ -107,29 +137,6 @@ export const HardAndSoftBreaks: Story = {
         });
       });
     });
-    const mirror = narrowInput.nextElementSibling;
-    if (!mirror) throw new Error("Missing text mirror");
-    const probe = mirror.cloneNode(false) as HTMLDivElement;
-    probe.textContent = narrowInput.value;
-    mirror.after(probe);
-    try {
-      const textNode = probe.firstChild;
-      if (!textNode) throw new Error("Missing probe text");
-      const markers = canvasElement.querySelectorAll("[data-line-break-marker]");
-      await expect(markers).toHaveLength(narrowInput.value.split("\n").length - 1);
-      let index = 0;
-      for (const match of narrowInput.value.matchAll(/\n/gu)) {
-        const range = document.createRange();
-        range.setStart(textNode, match.index);
-        range.setEnd(textNode, match.index + 1);
-        const expected = range.getBoundingClientRect();
-        const actual = markers.item(index).getBoundingClientRect();
-        await expect(Math.abs(actual.x - expected.x)).toBeLessThan(1);
-        await expect(Math.abs(actual.y - expected.y)).toBeLessThan(1);
-        index += 1;
-      }
-    } finally {
-      probe.remove();
-    }
+    await expectLineBreakMarkerGeometry(canvasElement, narrowInput);
   },
 };

@@ -1,20 +1,10 @@
 import type { JSX } from "react/jsx-runtime";
-import { useMemo, useRef, useState } from "react";
+import { useUnitSearchTransformDialog } from "./use-unit-search-transform-dialog";
 import clsx from "clsx";
 import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
-import { useToastStore } from "@/shared/component/notification-toast/toast-store";
-import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { Page } from "@/route/_authenticated/business/page/page";
-import { unitId } from "@/route/_authenticated/translator/business/unit/unit";
-import type {
-  UnitSearchMatch,
-  UnitTextPart,
-} from "@/route/_authenticated/translator/business/contract/unit-search-transform";
-import {
-  defaultSelectedUnitIds,
-  groupUnitSearchMatches,
-  MAX_SELECTED_UNIT_COUNT,
-} from "@/route/_authenticated/translator/business/search-transform/search-transform";
+import type { UnitTextPart } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
+import { MAX_SELECTED_UNIT_COUNT } from "@/route/_authenticated/translator/business/search-transform/search-transform";
 import { SearchResultList } from "@/route/_authenticated/translator/business/search-transform/SearchResultList";
 
 import type { EditorSearchCoordinator } from "../editor/editor-search-coordinator";
@@ -26,114 +16,30 @@ type Props = {
   onClose: () => void;
 };
 
-type SearchState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; matches: UnitSearchMatch[]; phrase: string };
-
 export function UnitSearchTransformDialog({
   pages,
   part,
   coordinator,
   onClose,
 }: Props): JSX.Element {
-  const [searchValue, setSearchValue] = useState("");
-  const [targetValue, setTargetValue] = useState("");
-  const [searchState, setSearchState] = useState<SearchState>({
-    status: "idle",
-  });
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
-  const [isTransforming, setIsTransforming] = useState(false);
-  const requestIdRef = useRef(0);
-  const showToast = useToastStore((state) => state.showToast);
-
-  const matches = useMemo(
-    () => (searchState.status === "ready" ? searchState.matches : []),
-    [searchState],
-  );
-  const groups = useMemo(() => groupUnitSearchMatches(matches, pages), [matches, pages]);
+  const {
+    searchValue,
+    setSearchValue,
+    targetValue,
+    setTargetValue,
+    searchState,
+    matches,
+    groups,
+    selectedIds,
+    setSelectedIds,
+    isTransforming,
+    canTransform,
+    resetSearchSnapshot,
+    search,
+    handleTransform,
+    handleNavigate,
+  } = useUnitSearchTransformDialog({ pages, part, coordinator, onClose });
   const isTransformEnabled = matches.length > 0;
-  const canTransform =
-    isTransformEnabled && targetValue.length > 0 && selectedIds.size > 0 && !isTransforming;
-
-  function resetSearchSnapshot(): void {
-    requestIdRef.current += 1;
-    setSearchState({ status: "idle" });
-    setSelectedIds(new Set());
-    setTargetValue("");
-  }
-
-  function commitSearchResult(resultMatches: UnitSearchMatch[], phrase: string): void {
-    setSearchState({ status: "ready", matches: resultMatches, phrase });
-    setSelectedIds(defaultSelectedUnitIds(resultMatches));
-  }
-
-  async function search(): Promise<boolean> {
-    const requestId = ++requestIdRef.current;
-    setSearchState({ status: "loading" });
-    setSelectedIds(new Set());
-
-    try {
-      const result = await coordinator.search(searchValue);
-      if (requestIdRef.current !== requestId) return false;
-
-      if (!result.success) {
-        setSearchState({ status: "error", message: result.error });
-        return false;
-      }
-
-      commitSearchResult(result.data.matches, result.data.phrase);
-      return true;
-    } catch (error) {
-      if (requestIdRef.current !== requestId) return false;
-      console.error("[UnitSearchTransformDialog] 搜索失败", error);
-      setSearchState({
-        status: "error",
-        message: "搜索失败，请重试",
-      });
-      return false;
-    }
-  }
-
-  async function handleTransform(): Promise<void> {
-    if (!canTransform || searchState.status !== "ready") return;
-
-    const selectedMatches = searchState.matches.filter((match) =>
-      selectedIds.has(unitId(match.unit)),
-    );
-    setIsTransforming(true);
-
-    try {
-      const result = await coordinator.transform(searchState.phrase, targetValue, selectedMatches);
-      if (result.status === "failed") {
-        showLocalApiFailure(result.failure, showToast);
-      } else if (result.status === "refresh-failed") {
-        requestIdRef.current += 1;
-        setSearchState({
-          status: "error",
-          message: "替换已完成，但刷新失败。请重新搜索以恢复最新结果。",
-        });
-        setSelectedIds(new Set());
-        showToast("替换已完成，但刷新失败", "error");
-      } else {
-        commitSearchResult(result.matches, searchState.phrase);
-        showToast("替换请求已完成", "success");
-      }
-    } catch (error) {
-      console.error("[UnitSearchTransformDialog] 替换请求异常", error);
-      showLocalCaughtError(error, showToast, "替换失败，请重试");
-    } finally {
-      setIsTransforming(false);
-    }
-  }
-
-  async function handleNavigate(pageId: string, targetUnitId?: string): Promise<void> {
-    if (isTransforming) return;
-    requestIdRef.current += 1;
-    onClose();
-    await coordinator.navigate(pageId, targetUnitId);
-  }
 
   return (
     <AppDialog

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
 export type CharItem = {
   id: string;
@@ -39,6 +40,60 @@ function saveToStorage(chars: CharItem[]): void {
   }, 0);
 }
 
+function reorderStoredChars(current: CharItem[], activeId: string, overId: string): CharItem[] {
+  const activeIndex = current.findIndex((char) => char.id === activeId);
+  const overIndex = current.findIndex((char) => char.id === overId);
+  if (activeIndex === -1 || overIndex === -1) return current;
+
+  const next = [...current];
+  const [activeChar] = next.splice(activeIndex, 1);
+  if (!activeChar) return current;
+  next.splice(overIndex, 0, activeChar);
+  saveToStorage(next);
+  return next;
+}
+
+interface SpecialCharActions {
+  addChar: (text: string) => void;
+  deleteChar: (id: string) => void;
+  toggleFavorite: (id: string) => void;
+  reorderChars: (activeId: string, overId: string) => void;
+}
+
+function createSpecialCharActions(
+  allChars: CharItem[],
+  setAllChars: Dispatch<SetStateAction<CharItem[]>>,
+): SpecialCharActions {
+  const addChar = (text: string): void => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const next = [...allChars, { id: Date.now().toString(), text: trimmed, isFavorite: false }];
+    setAllChars(next);
+    saveToStorage(next);
+  };
+
+  const deleteChar = (id: string): void => {
+    const next = allChars.filter((char) => char.id !== id);
+    setAllChars(next);
+    saveToStorage(next);
+  };
+
+  const toggleFavorite = (id: string): void => {
+    const next = allChars.map((char) =>
+      char.id === id ? { ...char, isFavorite: !char.isFavorite } : char,
+    );
+    setAllChars(next);
+    saveToStorage(next);
+  };
+
+  const reorderChars = (activeId: string, overId: string): void => {
+    if (activeId === overId) return;
+    setAllChars((current) => reorderStoredChars(current, activeId, overId));
+  };
+
+  return { addChar, deleteChar, toggleFavorite, reorderChars };
+}
+
 export function useSpecialChars(): {
   allChars: CharItem[];
   favoriteChars: string[];
@@ -68,51 +123,11 @@ export function useSpecialChars(): {
   }, []);
 
   const favoriteChars = allChars.filter((c) => c.isFavorite).map((c) => c.text);
-
-  const addChar = (text: string): void => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    const next = [...allChars, { id: Date.now().toString(), text: trimmed, isFavorite: false }];
-    setAllChars(next);
-    saveToStorage(next);
-  };
-
-  const deleteChar = (id: string): void => {
-    const next = allChars.filter((c) => c.id !== id);
-    setAllChars(next);
-    saveToStorage(next);
-  };
-
-  const toggleFavorite = (id: string): void => {
-    const next = allChars.map((c) => (c.id === id ? { ...c, isFavorite: !c.isFavorite } : c));
-    setAllChars(next);
-    saveToStorage(next);
-  };
-
-  const reorderChars = (activeId: string, overId: string): void => {
-    if (activeId === overId) return;
-
-    setAllChars((current) => {
-      const activeIndex = current.findIndex((c) => c.id === activeId);
-      const overIndex = current.findIndex((c) => c.id === overId);
-
-      if (activeIndex === -1 || overIndex === -1) return current;
-
-      const next = [...current];
-      const [activeChar] = next.splice(activeIndex, 1);
-      if (!activeChar) return current;
-      next.splice(overIndex, 0, activeChar);
-      saveToStorage(next);
-      return next;
-    });
-  };
+  const actions = createSpecialCharActions(allChars, setAllChars);
 
   return {
     allChars,
     favoriteChars,
-    addChar,
-    deleteChar,
-    toggleFavorite,
-    reorderChars,
+    ...actions,
   };
 }

@@ -6,11 +6,47 @@ import { MemberCard } from "@/route/_authenticated/_shell/member-list/business/m
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { Result } from "@/shared/utility/result";
+import type { Dispatch, SetStateAction } from "react";
+import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 
 type Props = {
   onLoadMembers: (offset: number, limit: number) => Promise<Result<MemberInfo[]>>;
   onMemberClick?: ((member: MemberInfo) => void) | undefined;
 };
+
+type LoadMembersArgs = {
+  onLoadMembers: Props["onLoadMembers"];
+  offset: number;
+  setMembers: Dispatch<SetStateAction<MemberInfo[]>>;
+  setOffset: Dispatch<SetStateAction<number>>;
+  setHasMore: Dispatch<SetStateAction<boolean>>;
+  showToast: (message: string, type: ToastType) => void;
+};
+
+async function loadMemberPage({
+  onLoadMembers,
+  offset,
+  setMembers,
+  setOffset,
+  setHasMore,
+  showToast,
+}: LoadMembersArgs): Promise<void> {
+  try {
+    const result = await onLoadMembers(offset, 20);
+    if (result.success) {
+      if (result.data.length < 20) setHasMore(false);
+      setMembers((previous) => [...previous, ...result.data]);
+      setOffset((previous) => previous + result.data.length);
+      return;
+    }
+    console.error("[EmbeddedMemberList] 加载成员列表失败:", result.error);
+    showLocalApiFailure(result, showToast);
+    setHasMore(false);
+  } catch (error) {
+    console.error("[EmbeddedMemberList] 加载成员列表异常:", error);
+    showLocalCaughtError(error, showToast, "发生未知错误");
+  }
+}
 
 // 受控的成员列表展示组件，负责无限下滑加载
 // 过滤/搜索逻辑由父组件通过 onLoadMembers 闭包注入
@@ -28,19 +64,7 @@ export function EmbeddedMemberList({ onLoadMembers, onMemberClick }: Props): JSX
     if (isLoading || !hasMore) return;
     setIsLoading(true);
     try {
-      const result = await onLoadMembers(offset, 20);
-      if (result.success) {
-        if (result.data.length < 20) setHasMore(false);
-        setMembers((prev) => [...prev, ...result.data]);
-        setOffset((prev) => prev + result.data.length);
-      } else {
-        console.error("[EmbeddedMemberList] 加载成员列表失败:", result.error);
-        showLocalApiFailure(result, showToast);
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("[EmbeddedMemberList] 加载成员列表异常:", error);
-      showLocalCaughtError(error, showToast, "发生未知错误");
+      await loadMemberPage({ onLoadMembers, offset, setMembers, setOffset, setHasMore, showToast });
     } finally {
       setIsLoading(false);
     }

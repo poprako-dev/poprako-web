@@ -29,7 +29,9 @@ describe("page image preload order", () => {
     expect(centerOutPageIndexes(4, 0)).toEqual([0, 1, 2, 3]);
     expect(centerOutPageIndexes(4, 3)).toEqual([3, 2, 1, 0]);
   });
+});
 
+describe("page image preload order", () => {
   test("resolves the initial page before preloading starts", () => {
     const pages = [{ id: "page-0" }, { id: "page-1" }, { id: "page-2" }];
 
@@ -66,7 +68,9 @@ describe("page image preloader", () => {
       "page-0-optimized",
     ]);
   });
+});
 
+describe("page image preloader", () => {
   test("never exceeds four concurrent image loads", async () => {
     const pending: Deferred[] = [];
     let activeCount = 0;
@@ -105,7 +109,9 @@ describe("page image preloader", () => {
     for (const task of pending) task.resolve();
     await flushTasks();
   });
+});
 
+describe("page image preloader", () => {
   test("reprioritizes waiting jobs when page or quality changes", async () => {
     const firstLoad = deferred();
     const loadedUrls: string[] = [];
@@ -144,7 +150,9 @@ describe("page image preloader", () => {
     expect(loadedUrls).toContain("page-2-optimized");
     expect(loadedUrls.filter((url) => url === "page-0-optimized")).toHaveLength(1);
   });
+});
 
+describe("page image preloader", () => {
   test("triggers the same final URL only once", async () => {
     const loadImage = vi.fn(() => Promise.resolve());
     const preloader = new PageImagePreloader({
@@ -162,7 +170,9 @@ describe("page image preloader", () => {
 
     expect(loadImage).toHaveBeenCalledTimes(1);
   });
+});
 
+describe("page image preloader", () => {
   test("continues after failures and stops dispatching after teardown", async () => {
     const heldLoad = deferred();
     const loadImage = vi
@@ -193,7 +203,9 @@ describe("page image preloader", () => {
 
     expect(loadImage).toHaveBeenCalledTimes(2);
   });
+});
 
+describe("page image preloader", () => {
   test("resumes when StrictMode replays effect setup after cleanup", async () => {
     const loadImage = vi.fn(() => Promise.resolve());
     const preloader = new PageImagePreloader({

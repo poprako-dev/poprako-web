@@ -1,18 +1,16 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
-import { initModule } from "node-liblzma/wasm";
 import { BlobReader, BlobWriter, ZipReader } from "@zip.js/zip.js";
 import { packTar } from "modern-tar";
 import { runArchive } from "@/shared/utility/compress/core";
-import { xzStream } from "@/shared/utility/compress/xz";
+import { zstdStream } from "@/shared/utility/compress/zstd";
 import type { WorkerJob } from "@/shared/utility/compress/types";
 
 const fixture = new URL("../../../../test-resource/generated/roundtrip.bin", import.meta.url);
-const defaults = { preset: 1, maxBytes: 8 * 1024 ** 3, maxFiles: 1000 };
+const defaults = { preset: 3, maxBytes: 8 * 1024 ** 3, maxFiles: 1000 };
 type Sample = { bytes: Uint8Array; archive: Blob };
 
 beforeAll(async () => {
-  await initModule();
   await mkdir(new URL(".", fixture), { recursive: true });
   const bytes = Uint8Array.from({ length: 256 * 1024 }, (_, index) => index % 251);
   await writeFile(fixture, bytes);
@@ -45,9 +43,15 @@ async function sample(): Promise<Sample> {
   return { bytes, archive };
 }
 
-describe("streaming TAR/XZ to ZIP", () => {
+describe("streaming TAR/Zstandard to ZIP", () => {
   it("round trips unicode paths, binary content, empty files and extra ZIP files", async () => {
     const { bytes, archive } = await sample();
+    expect(new Uint8Array(await archive.slice(0, 4).arrayBuffer())).toEqual(
+      new Uint8Array([0x28, 0xb5, 0x2f, 0xfd]),
+    );
+    const header = new Uint8Array(await archive.slice(0, 6).arrayBuffer());
+    expect((header[4] ?? 0) & 4).toBe(4);
+    expect(header[5]).toBe(0x90); // windowLog=28, 256 MiB.
     const zip = await collect({
       ...defaults,
       operation: "decompress",
@@ -69,8 +73,10 @@ describe("streaming TAR/XZ to ZIP", () => {
     expect(new Uint8Array(await restored.arrayBuffer())).toEqual(new Uint8Array(bytes));
     await reader.close();
   });
+});
 
-  it("rejects truncated XZ footers even after all PSD bytes have been decoded", async () => {
+describe("streaming TAR/Zstandard to ZIP", () => {
+  it("rejects truncated Zstandard footers even after all PSD bytes have been decoded", async () => {
     const { archive } = await sample();
     for (const trim of [1, 8, 12, 24]) {
       await expect(
@@ -83,8 +89,10 @@ describe("streaming TAR/XZ to ZIP", () => {
       ).rejects.toThrow();
     }
   });
+});
 
-  it("rejects corrupt XZ data and trailing garbage", async () => {
+describe("streaming TAR/Zstandard to ZIP", () => {
+  it("rejects corrupt Zstandard data and trailing garbage", async () => {
     const { archive } = await sample();
     const bytes = new Uint8Array(await archive.arrayBuffer());
     bytes[40] = (bytes[40] ?? 0) ^ 255;
@@ -99,7 +107,22 @@ describe("streaming TAR/XZ to ZIP", () => {
       ).rejects.toThrow();
     }
   });
+});
 
+describe("streaming TAR/Zstandard to ZIP", () => {
+  it("rejects empty sources, concatenated frames and oversized windows", async () => {
+    const { archive } = await sample();
+    const oversized = new Uint8Array(await archive.arrayBuffer());
+    oversized[5] = 0x98; // windowLog=29 exceeds the 256 MiB decoder limit.
+    for (const blob of [new Blob(), new Blob([archive, archive]), new Blob([oversized])]) {
+      await expect(
+        collect({ ...defaults, operation: "decompress", files: [], source: blob.stream() }),
+      ).rejects.toThrow();
+    }
+  });
+});
+
+describe("streaming TAR/Zstandard to ZIP", () => {
   it("rejects unsafe paths, duplicate paths and resource limits", async () => {
     for (const names of [["../x"], ["/x"], [String.raw`a\b`], ["a", "A"], ["folder/"]]) {
       await expect(
@@ -123,8 +146,10 @@ describe("streaming TAR/XZ to ZIP", () => {
       ).rejects.toThrow();
     }
   });
+});
 
-  it("handles fragmented XZ input and rejects collisions with extra ZIP files", async () => {
+describe("streaming TAR/Zstandard to ZIP", () => {
+  it("handles fragmented Zstandard input and rejects collisions with extra ZIP files", async () => {
     const { archive } = await sample();
     const bytes = new Uint8Array(await archive.arrayBuffer());
     let offset = 0;
@@ -147,8 +172,10 @@ describe("streaming TAR/XZ to ZIP", () => {
       }),
     ).rejects.toThrow("Duplicate");
   });
+});
 
-  it("rejects truncated TAR content inside an otherwise valid XZ stream", async () => {
+describe("streaming TAR/Zstandard to ZIP", () => {
+  it("rejects truncated TAR content inside an otherwise valid Zstandard stream", async () => {
     const tar = await packTar([
       {
         header: { name: "broken.psd", size: 1024 },
@@ -156,7 +183,7 @@ describe("streaming TAR/XZ to ZIP", () => {
       },
     ]);
     const body = new Blob([new Uint8Array(tar).slice(0, 600)]);
-    const source = xzStream(body.stream(), false);
+    const source = zstdStream(body.stream(), false);
     await expect(
       collect({
         ...defaults,
@@ -166,14 +193,16 @@ describe("streaming TAR/XZ to ZIP", () => {
       }),
     ).rejects.toThrow();
   });
+});
 
+describe("streaming TAR/Zstandard to ZIP", () => {
   it("rejects links and unsafe names supplied by external TAR archives", async () => {
     for (const header of [
       { name: "../evil", size: 0, type: "file" as const },
       { name: "link", size: 0, type: "symlink" as const, linkname: "/etc/passwd" },
     ]) {
       const tar = await packTar([{ header }]);
-      const source = xzStream(new Blob([new Uint8Array(tar)]).stream(), false, 1);
+      const source = zstdStream(new Blob([new Uint8Array(tar)]).stream(), false, 1);
       await expect(
         collect({
           ...defaults,
@@ -184,10 +213,12 @@ describe("streaming TAR/XZ to ZIP", () => {
       ).rejects.toThrow();
     }
   });
+});
 
+describe("streaming TAR/Zstandard to ZIP", () => {
   it("bounds highly compressible decoder output and cancels the upstream", async () => {
     const zeros = new Blob([new Uint8Array(16 * 1024 * 1024)]);
-    const compressed = await new Response(xzStream(zeros.stream(), false, 1)).arrayBuffer();
+    const compressed = await new Response(zstdStream(zeros.stream(), false, 1)).arrayBuffer();
     let isCancelled = false;
     let reads = 0;
     const source = new ReadableStream<Uint8Array>(
@@ -204,7 +235,7 @@ describe("streaming TAR/XZ to ZIP", () => {
       },
       { highWaterMark: 0 },
     );
-    const reader = xzStream(source, true).getReader();
+    const reader = zstdStream(source, true).getReader();
     const first = await reader.read();
     expect(first.value?.length).toBeLessThanOrEqual(64 * 1024);
     expect(reads).toBe(1);

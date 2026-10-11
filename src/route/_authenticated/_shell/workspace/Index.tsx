@@ -1,6 +1,7 @@
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import { Workspace } from "@/route/_authenticated/_shell/workspace/business/Workspace";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import type { TranslatorDestination } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
+import type { WorkbenchDestination } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
 import type { ReactElement } from "react";
 
 export const Route = createFileRoute("/_authenticated/_shell/workspace/")({
@@ -22,17 +23,24 @@ function parseDetailSearch(
 function WorkspacePage(): ReactElement {
   const search = Route.useSearch();
   const navigate = useNavigate();
-  const onChangeSearch = (comicId: string | null, chapterId: string | null): void => {
+  const onChangeSearch = (
+    comicId: string | null,
+    chapterId: string | null,
+    mode?: ComicDetailMode,
+  ): void => {
     void navigate({
       to: "/workspace",
       replace: true,
       search: (previous) => {
         const next = Object.fromEntries(
-          Object.entries(previous).filter(([key]) => key !== "comicId" && key !== "chapterId"),
+          Object.entries(previous).filter(
+            ([key]) => key !== "comicId" && key !== "chapterId" && key !== "detailMode",
+          ),
         );
         if (comicId) {
           next["comicId"] = comicId;
         }
+        if (comicId && mode) next["detailMode"] = mode;
         if (comicId && chapterId) {
           next["chapterId"] = chapterId;
         }
@@ -40,9 +48,12 @@ function WorkspacePage(): ReactElement {
       },
     });
   };
-  const onNavigateToTranslator = (destination: TranslatorDestination): void => {
+  const onNavigateToWorkbench = (destination: WorkbenchDestination): void => {
     void navigate({
-      to: "/translator/$chapterId/$pageId",
+      to:
+        destination.mode === "reviewer"
+          ? "/reviewer/$chapterId/$pageId"
+          : "/translator/$chapterId/$pageId",
       params: { chapterId: destination.chapterId, pageId: destination.pageId },
       search: {
         returnTo: destination.returnTo,
@@ -57,7 +68,7 @@ function WorkspacePage(): ReactElement {
       <Workspace
         search={search}
         onChangeSearch={onChangeSearch}
-        onNavigateToTranslator={onNavigateToTranslator}
+        onNavigateToWorkbench={onNavigateToWorkbench}
       />
     </div>
   );

@@ -35,7 +35,7 @@ cp .env.example .env.development
 `src/shared/` 存放不依赖路由的通用组件、hooks 和工具。`src/route-tree.gen.ts` 是生成
 文件，应修改路由输入后运行 `deno task generate`，不要直接编辑它。
 
-路由目录、模块依赖边界、测试和命名规则见 [AGENTS.md](AGENTS.md)。
+模块依赖边界、测试和命名规则见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 常用命令
 

@@ -14,6 +14,7 @@ import type { CoverUploadState } from "@/route/_authenticated/_shell/business/co
 import { getFileExtension } from "@/route/_authenticated/_shell/business/comic-detail/utils";
 import { resolveComicDetailCoverUrl } from "@/route/_authenticated/_shell/business/comic-detail/cover-url";
 import { useAppStore } from "@/route/business/session/session-store";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 
 type Args = {
   comicId: string;
@@ -30,6 +31,222 @@ type CoverUpload = {
   canUploadCover: boolean;
   coverUpload: CoverUploadState;
 };
+
+type CoverUploadExecutionArgs = {
+  client: ReturnType<typeof useApiClient>;
+  comicId: string;
+  file: File;
+  extension: string;
+  controller: AbortController;
+  sessionGeneration: number;
+  setProgress: Dispatch<SetStateAction<number | null>>;
+  showToast: Args["showToast"];
+};
+
+type CoverUploadHandlerArgs = {
+  client: ReturnType<typeof useApiClient>;
+  comicId: string;
+  isUploadingCover: boolean;
+  controllerRef: RefObject<AbortController | null>;
+  setIsUploadingCover: Dispatch<SetStateAction<boolean>>;
+  setCoverUploadProgress: Dispatch<SetStateAction<number | null>>;
+  setLocalCoverUrl: Dispatch<SetStateAction<string | null>>;
+  showToast: Args["showToast"];
+};
+
+function currentCoverSession(generation: number): boolean {
+  return useAppStore.getState().generation === generation;
+}
+
+function publishCoverPreview(
+  file: File,
+  setLocalCoverUrl: CoverUploadHandlerArgs["setLocalCoverUrl"],
+  showToast: Args["showToast"],
+): void {
+  setLocalCoverUrl((previous) => {
+    if (previous) URL.revokeObjectURL(previous);
+    return URL.createObjectURL(file);
+  });
+  showToast("封面上传成功", "success");
+}
+
+function finishCoverUpload(
+  args: CoverUploadHandlerArgs,
+  sessionGeneration: number,
+  controller: AbortController,
+): void {
+  if (currentCoverSession(sessionGeneration)) {
+    args.setIsUploadingCover(false);
+    args.setCoverUploadProgress(null);
+  }
+  if (args.controllerRef.current === controller) args.controllerRef.current = null;
+}
+
+async function uploadCoverFile(file: File, args: CoverUploadHandlerArgs): Promise<void> {
+  if (args.isUploadingCover) return;
+  const sessionGeneration = useAppStore.getState().generation;
+  const controller = new AbortController();
+  args.controllerRef.current = controller;
+  const extension = getFileExtension(file);
+  if (!extension) {
+    args.showToast("请选择带后缀的图片文件", "error");
+    return;
+  }
+  args.setIsUploadingCover(true);
+  args.setCoverUploadProgress(0);
+  try {
+    const isUploaded = await executeCoverUpload({
+      client: args.client,
+      comicId: args.comicId,
+      file,
+      extension,
+      controller,
+      sessionGeneration,
+      setProgress: args.setCoverUploadProgress,
+      showToast: args.showToast,
+    });
+    if (!isUploaded) return;
+    publishCoverPreview(file, args.setLocalCoverUrl, args.showToast);
+  } catch (error) {
+    if (currentCoverSession(sessionGeneration)) {
+      console.error("[ComicDetailModal] 封面上传异常:", error);
+      showLocalCaughtError(error, args.showToast, "封面上传失败", true);
+    }
+  } finally {
+    finishCoverUpload(args, sessionGeneration, controller);
+  }
+}
+
+async function executeCoverUpload({
+  client,
+  comicId,
+  file,
+  extension,
+  controller,
+  sessionGeneration,
+  setProgress,
+  showToast,
+}: CoverUploadExecutionArgs): Promise<boolean> {
+  const { imageHash } = await hashPageFile(file);
+  assertCoverSessionCurrent(sessionGeneration);
+  const allocation = await allocCoverUpload(client, comicId, {
+    imageHash,
+    newByteLen: file.size,
+    extension,
+  });
+  assertCoverSessionCurrent(sessionGeneration);
+  if (!allocation.success) {
+    showLocalApiFailure(allocation, showToast);
+    return false;
+  }
+  const slot = allocation.data;
+  if (slot === null) {
+    showToast("封面图片未发生变化", "success");
+    return false;
+  }
+  const upload = await client.putPresigned({
+    url: slot.putUrl,
+    file,
+    headers: slot.headers,
+    onProgress: (percent) => {
+      if (useAppStore.getState().generation === sessionGeneration) setProgress(percent);
+    },
+    signal: controller.signal,
+  });
+  assertCoverSessionCurrent(sessionGeneration);
+  if (!upload.success) {
+    showLocalApiFailure(upload, showToast);
+    return false;
+  }
+  const marked = await markCoverUploaded(client, comicId, slot.imageVersion);
+  assertCoverSessionCurrent(sessionGeneration);
+  if (!marked.success) {
+    showLocalApiFailure(marked, showToast);
+    return false;
+  }
+  return true;
+}
+
+function useCoverUploadSessionGuard(controllerRef: RefObject<AbortController | null>): void {
+  useEffect(() => {
+    const abortCurrentController = (): void => {
+      abortCoverUpload(controllerRef);
+    };
+    const unsubscribe = useAppStore.subscribe((state, previous) => {
+      if (state.generation !== previous.generation) abortCurrentController();
+    });
+    return () => {
+      unsubscribe();
+      abortCurrentController();
+    };
+  }, [controllerRef]);
+}
+
+function abortCoverUpload(controllerRef: RefObject<AbortController | null>): void {
+  controllerRef.current?.abort();
+}
+
+function useCoverPreviewCleanup(localCoverUrl: string | null): void {
+  useEffect(() => {
+    return () => {
+      if (localCoverUrl) URL.revokeObjectURL(localCoverUrl);
+    };
+  }, [localCoverUrl]);
+}
+
+function displayedCoverUrl(
+  isCoverUploaded: boolean,
+  comicCoverThumbnailUrl: string | null | undefined,
+  selectedChapterIndex: number | undefined,
+  pages: PageInfo[],
+): string | null {
+  return resolveComicDetailCoverUrl({
+    isCoverUploaded,
+    comicCoverThumbnailUrl,
+    selectedChapterIndex,
+    pages,
+  });
+}
+
+function assertCoverSessionCurrent(sessionGeneration: number): void {
+  if (!currentCoverSession(sessionGeneration)) throw new Error("会话已变更，封面上传已取消");
+}
+
+function useCoverInputHandler(
+  handleUploadCover: (file: File) => Promise<void>,
+): CoverUploadState["handleCoverFileChange"] {
+  return useCallback(
+    (event) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (file) void handleUploadCover(file);
+    },
+    [handleUploadCover],
+  );
+}
+
+function useCoverUploadAction(args: CoverUploadHandlerArgs): (file: File) => Promise<void> {
+  return useCallback((file: File) => uploadCoverFile(file, args), [args]);
+}
+
+function createCoverUploadResult(
+  canUploadCover: boolean,
+  isUploadingCover: boolean,
+  coverUploadProgress: number | null,
+  localCoverUrl: string | null,
+  coverUrl: string | null,
+  handleCoverFileChange: CoverUploadState["handleCoverFileChange"],
+): CoverUpload {
+  return {
+    canUploadCover,
+    coverUpload: {
+      isUploadingCover,
+      coverUploadProgress,
+      localCoverUrl: localCoverUrl ?? coverUrl,
+      handleCoverFileChange,
+    },
+  };
+}
 
 export function useComicDetailCoverUpload({
   comicId,
@@ -48,131 +265,35 @@ export function useComicDetailCoverUpload({
   const controllerRef = useRef<AbortController | null>(null);
   const canUploadCover =
     (activeMember !== null && hasRole(activeMember, "admin")) || canUploadRawPages;
-  const displayedCoverUrl = resolveComicDetailCoverUrl({
+  const coverUrl = displayedCoverUrl(
     isCoverUploaded,
     comicCoverThumbnailUrl,
     selectedChapterIndex,
     pages,
+  );
+
+  useCoverUploadSessionGuard(controllerRef);
+  useCoverPreviewCleanup(localCoverUrl);
+
+  const handleUploadCover = useCoverUploadAction({
+    client,
+    comicId,
+    isUploadingCover,
+    controllerRef,
+    setIsUploadingCover,
+    setCoverUploadProgress,
+    setLocalCoverUrl,
+    showToast,
   });
 
-  useEffect(() => {
-    const unsubscribe = useAppStore.subscribe((state, previous) => {
-      if (state.generation !== previous.generation) {
-        controllerRef.current?.abort();
-      }
-    });
-    return () => {
-      unsubscribe();
-      controllerRef.current?.abort();
-    };
-  }, []);
+  const handleCoverFileChange = useCoverInputHandler(handleUploadCover);
 
-  useEffect(() => {
-    return () => {
-      if (localCoverUrl) URL.revokeObjectURL(localCoverUrl);
-    };
-  }, [localCoverUrl]);
-
-  const handleUploadCover = useCallback(
-    async (file: File): Promise<void> => {
-      if (isUploadingCover) return;
-      const sessionGeneration = useAppStore.getState().generation;
-      const controller = new AbortController();
-      controllerRef.current = controller;
-      const assertCurrentSession = (): void => {
-        if (useAppStore.getState().generation !== sessionGeneration) {
-          throw new Error("会话已变更，封面上传已取消");
-        }
-      };
-      const ext = getFileExtension(file);
-      if (!ext) {
-        showToast("请选择带后缀的图片文件", "error");
-        return;
-      }
-
-      setIsUploadingCover(true);
-      setCoverUploadProgress(0);
-      try {
-        const { imageHash } = await hashPageFile(file);
-        assertCurrentSession();
-        const allocRes = await allocCoverUpload(client, comicId, {
-          imageHash,
-          newByteLen: file.size,
-          extension: ext,
-        });
-        assertCurrentSession();
-        if (!allocRes.success) {
-          showLocalApiFailure(allocRes, showToast);
-          return;
-        }
-
-        const slot = allocRes.data;
-        if (slot === null) {
-          showToast("封面图片未发生变化", "success");
-          return;
-        }
-
-        const uploadRes = await client.putPresigned({
-          url: slot.putUrl,
-          file,
-          headers: slot.headers,
-          onProgress: (percent) => {
-            if (useAppStore.getState().generation === sessionGeneration) {
-              setCoverUploadProgress(percent);
-            }
-          },
-          signal: controller.signal,
-        });
-        assertCurrentSession();
-        if (!uploadRes.success) {
-          showLocalApiFailure(uploadRes, showToast);
-          return;
-        }
-
-        const markRes = await markCoverUploaded(client, comicId, slot.imageVersion);
-        assertCurrentSession();
-        if (!markRes.success) {
-          showLocalApiFailure(markRes, showToast);
-          return;
-        }
-
-        setLocalCoverUrl((previous) => {
-          if (previous) URL.revokeObjectURL(previous);
-          return URL.createObjectURL(file);
-        });
-        showToast("封面上传成功", "success");
-      } catch (error) {
-        if (useAppStore.getState().generation === sessionGeneration) {
-          console.error("[ComicDetailModal] 封面上传异常:", error);
-          showLocalCaughtError(error, showToast, "封面上传失败", true);
-        }
-      } finally {
-        if (useAppStore.getState().generation === sessionGeneration) {
-          setIsUploadingCover(false);
-          setCoverUploadProgress(null);
-        }
-        if (controllerRef.current === controller) controllerRef.current = null;
-      }
-    },
-    [client, comicId, isUploadingCover, showToast],
-  );
-
-  const handleCoverFileChange: CoverUploadState["handleCoverFileChange"] = useCallback(
-    (event) => {
-      const file = event.target.files?.[0];
-      event.target.value = "";
-      if (file) void handleUploadCover(file);
-    },
-    [handleUploadCover],
-  );
-
-  return {
+  return createCoverUploadResult(
     canUploadCover,
-    coverUpload: {
-      isUploadingCover,
-      coverUploadProgress,
-      localCoverUrl: localCoverUrl ?? displayedCoverUrl,
-      handleCoverFileChange,
-    },
-  };
+    isUploadingCover,
+    coverUploadProgress,
+    localCoverUrl,
+    coverUrl,
+    handleCoverFileChange,
+  );
 }

@@ -1,6 +1,3 @@
-import createLZMA from "node-liblzma/wasm/liblzma.js";
-import wasmUrl from "node-liblzma/wasm/liblzma.wasm?url";
-import { initModule } from "node-liblzma/wasm";
 import { runArchive } from "@/shared/utility/compress/core";
 import type { WorkerJob, WorkerReply } from "@/shared/utility/compress/types";
 
@@ -15,13 +12,6 @@ function reply(message: WorkerReply, transfer: Transferable[] = []): void {
 
 async function run(job: WorkerJob): Promise<void> {
   try {
-    await initModule(async () => {
-      const response = await fetch(wasmUrl);
-      if (!response.ok) {
-        throw new Error("Could not load XZ codec");
-      }
-      return createLZMA({ wasmBinary: await response.arrayBuffer() });
-    });
     const output = new WritableStream<Uint8Array>({
       async write(chunk) {
         if (!state.hasDemand) {

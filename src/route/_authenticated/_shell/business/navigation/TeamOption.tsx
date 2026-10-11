@@ -1,19 +1,12 @@
-import { useSessionOperation } from "@/route/business/session/use-session-operation";
 import { Globe2, Upload } from "lucide-react";
-import { type ReactElement, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactElement, useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import type { TeamConfig } from "@/route/_authenticated/_shell/business/navigation/app-sidebar-type";
-import { allocateTeamAvatar, confirmTeamAvatar } from "@/api/identity/identity-api";
-import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
-import { useApiClient } from "@/route/business/api-context";
-import { hashPageFile } from "@/shared/utility/hash/image-hash";
-import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
-import { useTeamSelection } from "@/route/business/session/use-active-team";
-import { hasRole } from "@/route/business/identity/role";
 import { TeamModifierModal } from "@/route/_authenticated/_shell/business/navigation/TeamModifierModal";
 import type { Result } from "@/shared/utility/result";
 import { TeamList } from "@/route/_authenticated/_shell/business/navigation/TeamOptionMenu";
+import { useTeamAvatarUpload } from "@/route/_authenticated/_shell/business/navigation/use-team-avatar-upload";
 
 type Props = {
   teams: TeamConfig[];
@@ -30,6 +23,37 @@ type Props = {
     | undefined;
   onAvatarUploadingChange: (isUploading: boolean) => void;
 };
+
+function toggleTeamList(
+  isListOpen: boolean,
+  isUploadingAvatar: boolean,
+  onToggleList: (isNextOpen: boolean) => void,
+  setShowExitWarning: (show: boolean) => void,
+): void {
+  const isNextOpen = !isListOpen;
+  if (!isNextOpen && isUploadingAvatar) {
+    setShowExitWarning(true);
+    return;
+  }
+  onToggleList(isNextOpen);
+}
+
+function usePreventUnloadDuringUpload(isUploading: boolean): void {
+  useEffect(() => {
+    if (!isUploading) {
+      return;
+    }
+    const handleBeforeUnload = (event: BeforeUnloadEvent): void => {
+      event.preventDefault();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isUploading]);
+}
 
 function TeamAvatar({
   team,
@@ -135,38 +159,22 @@ export function TeamOption({
   onUpdateTeam,
   onAvatarUploadingChange,
 }: Props): ReactElement {
-  const client = useApiClient();
-  const beginOperation = useSessionOperation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const selection = useTeamSelection();
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [avatarUploadProgress, setAvatarUploadProgress] = useState<number | null>(null);
-  const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(null);
+  const {
+    isUploadingAvatar,
+    avatarUploadProgress,
+    localAvatarUrl,
+    canUploadTeamAvatar,
+    handleAvatarFileChange,
+  } = useTeamAvatarUpload(activeTeam, onJoinTeam);
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [teamToModify, setTeamToModify] = useState<TeamConfig | null>(null);
-
-  const showToast = useToastStore((s) => s.showToast);
 
   useEffect(() => {
     onAvatarUploadingChange(isUploadingAvatar);
   }, [isUploadingAvatar, onAvatarUploadingChange]);
 
-  useEffect(() => {
-    if (!isUploadingAvatar) {
-      return;
-    }
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent): void => {
-      event.preventDefault();
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      event.returnValue = "";
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [isUploadingAvatar]);
+  usePreventUnloadDuringUpload(isUploadingAvatar);
 
   useEffect(() => {
     return () => {
@@ -176,101 +184,8 @@ export function TeamOption({
     };
   }, [localAvatarUrl]);
 
-  const acceptedExtensions = useMemo(
-    () => new Set(["jpg", "jpeg", "png", "webp", "gif", "bmp", "avif"]),
-    [],
-  );
-
-  const canUploadTeamAvatar =
-    selection.status === "ready" && hasRole(selection.activeMember, "admin");
-
-  const handleAvatarFileChange = async (file?: File): Promise<void> => {
-    if (!file || isUploadingAvatar || !canUploadTeamAvatar) {
-      return;
-    }
-
-    const fileNameParts = file.name.split(".");
-    const extension = (fileNameParts.at(-1) ?? "").toLowerCase();
-
-    if (!extension || !acceptedExtensions.has(extension) || !file.type.startsWith("image/")) {
-      showToast("请上传有效的图片文件", "error");
-      return;
-    }
-
-    const operation = beginOperation();
-    setIsUploadingAvatar(true);
-    setAvatarUploadProgress(0);
-
-    try {
-      const { imageHash } = await hashPageFile(file);
-      operation.assertCurrent();
-      const allocRes = await allocateTeamAvatar(client, activeTeam.id, {
-        imageHash,
-        newByteLen: file.size,
-        ext: extension,
-      });
-      operation.assertCurrent();
-      if (!allocRes.success) {
-        showLocalApiFailure(allocRes, showToast);
-        return;
-      }
-
-      const slot = allocRes.data;
-      if (slot === null) {
-        showToast("团队头像未发生变化", "success");
-        return;
-      }
-
-      const uploadRes = await client.putPresigned({
-        signal: operation.signal,
-        url: slot.putUrl,
-        file,
-        headers: slot.headers,
-        onProgress: (percent) => {
-          setAvatarUploadProgress(percent);
-        },
-      });
-      operation.assertCurrent();
-      if (!uploadRes.success) {
-        showLocalApiFailure(uploadRes, showToast);
-        return;
-      }
-
-      const confirmRes = await confirmTeamAvatar(client, activeTeam.id, slot.imageVersion);
-      operation.assertCurrent();
-      if (!confirmRes.success) {
-        showLocalApiFailure(confirmRes, showToast);
-        return;
-      }
-
-      setLocalAvatarUrl((prev) => {
-        if (prev) {
-          URL.revokeObjectURL(prev);
-        }
-        return URL.createObjectURL(file);
-      });
-
-      await onJoinTeam();
-      showToast("团队头像上传成功", "success");
-    } catch (error) {
-      if (!operation.isCurrent()) return;
-      console.error("[TeamOption] 上传团队头像异常:", error);
-      showLocalCaughtError(error, showToast, "团队头像上传失败", true);
-    } finally {
-      if (operation.isCurrent()) {
-        setIsUploadingAvatar(false);
-        setAvatarUploadProgress(null);
-      }
-    }
-  };
-
   const handleToggleList = (): void => {
-    const isNextOpen = !isListOpen;
-    if (!isNextOpen && isUploadingAvatar) {
-      setShowExitWarning(true);
-      return;
-    }
-    onToggleList(isNextOpen);
+    toggleTeamList(isListOpen, isUploadingAvatar, onToggleList, setShowExitWarning);
   };
 
   return (

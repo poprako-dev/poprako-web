@@ -98,30 +98,40 @@ export function reviewWorkflowStatus(chapter: WithWorkflow): WorkflowStatus {
 export function publishWorkflowStatus(chapter: WithWorkflow): WorkflowStatus {
   return workflowStatusFromStages(chapter.stages, "publish");
 }
+
+function transitionStatus(chapter: WithWorkflow, transition: WorkflowTransition): WorkflowStatus {
+  switch (transition) {
+    case "upload_complete":
+    case "upload_revert":
+      return uploadWorkflowStatus(chapter);
+    case "translate_start":
+    case "translate_complete":
+    case "translate_start_revert":
+    case "translate_revert":
+      return translateWorkflowStatus(chapter);
+    case "proofread_start":
+    case "proofread_complete":
+    case "proofread_start_revert":
+    case "proofread_revert":
+      return proofreadWorkflowStatus(chapter);
+    case "typeset_start":
+    case "typeset_complete":
+    case "typeset_start_revert":
+    case "typeset_revert":
+      return typesetWorkflowStatus(chapter);
+    case "review_complete":
+    case "review_revert":
+      return reviewWorkflowStatus(chapter);
+    case "publish_complete":
+      return publishWorkflowStatus(chapter);
+  }
+}
+
 export function canApplyWorkflowTransition(
   chapter: WithWorkflow,
   transition: WorkflowTransition,
 ): boolean {
-  const statusByTransition: Record<WorkflowTransition, WorkflowStatus> = {
-    upload_complete: uploadWorkflowStatus(chapter),
-    translate_start: translateWorkflowStatus(chapter),
-    translate_complete: translateWorkflowStatus(chapter),
-    proofread_start: proofreadWorkflowStatus(chapter),
-    proofread_complete: proofreadWorkflowStatus(chapter),
-    typeset_start: typesetWorkflowStatus(chapter),
-    typeset_complete: typesetWorkflowStatus(chapter),
-    review_complete: reviewWorkflowStatus(chapter),
-    publish_complete: publishWorkflowStatus(chapter),
-    upload_revert: uploadWorkflowStatus(chapter),
-    translate_start_revert: translateWorkflowStatus(chapter),
-    translate_revert: translateWorkflowStatus(chapter),
-    proofread_start_revert: proofreadWorkflowStatus(chapter),
-    proofread_revert: proofreadWorkflowStatus(chapter),
-    typeset_start_revert: typesetWorkflowStatus(chapter),
-    typeset_revert: typesetWorkflowStatus(chapter),
-    review_revert: reviewWorkflowStatus(chapter),
-  };
-  const status = statusByTransition[transition];
+  const status = transitionStatus(chapter, transition);
 
   switch (transition) {
     case "upload_complete":

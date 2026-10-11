@@ -34,18 +34,7 @@ function installFetch(
   return fetchMock;
 }
 
-describe("comic detail team contract", () => {
-  beforeEach(() => {
-    useAppStore.setState({
-      accessToken: null,
-      selectedTeamId: "team-a",
-      loginState: null,
-    });
-  });
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
+function registerComicContextTests(): void {
   test("loads comic context independently of the selected team", async () => {
     const fetchMock = installFetch();
     const result = await loadComicDetail(createTestApi(), "comic-b");
@@ -89,7 +78,9 @@ describe("comic detail team contract", () => {
     }
     expect(detailResult.data.comicInfo).toEqual(directResult.data);
   });
+}
 
+function registerComicValidationTests(): void {
   test.each(["workset", "team"] as const)("rejects missing included %s", async (field) => {
     const comic = { ...detailComic(), [field]: undefined };
     installFetch(comic);
@@ -112,7 +103,9 @@ describe("comic detail team contract", () => {
       data: { pinnedChapter: null },
     });
   });
+}
 
+function registerMemberCandidateTests(): void {
   test("uses only the owning team's membership and role-filtered candidates", async () => {
     const fetchMock = installFetch();
     const result = await loadComicDetail(createTestApi(), "comic-b");
@@ -143,7 +136,9 @@ describe("comic detail team contract", () => {
       data: [{ teamId: "team-b", userId: "proofreader-b" }],
     });
   });
+}
 
+function registerMemberFailureTests(): void {
   test("preserves member failures and distinguishes actual empty results", async () => {
     const fetchMock = installFetch();
     const result = await loadComicDetail(createTestApi(), "comic-b");
@@ -163,4 +158,22 @@ describe("comic detail team contract", () => {
       data: [],
     });
   });
+}
+
+describe("comic detail team contract", () => {
+  beforeEach(() => {
+    useAppStore.setState({
+      accessToken: null,
+      selectedTeamId: "team-a",
+      loginState: null,
+    });
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  registerComicContextTests();
+  registerComicValidationTests();
+  registerMemberCandidateTests();
+  registerMemberFailureTests();
 });

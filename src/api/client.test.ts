@@ -63,7 +63,9 @@ describe("ApiClient JSON transport", () => {
       nested_values: [0, false, null],
     });
   });
+});
 
+describe("ApiClient JSON transport", () => {
   test("does not alter caller headers or nested headers dictionary keys", async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
@@ -88,7 +90,9 @@ describe("ApiClient JSON transport", () => {
     expect(new Headers(init?.headers).get("x-custom-key")).toBe("HeaderValue");
     expect(new Headers(init?.headers).has("authorization")).toBe(false);
   });
+});
 
+describe("ApiClient JSON transport", () => {
   test("accepts 204 through the endpoint's explicit void decoder", async () => {
     const client = createClient(
       vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 })),
@@ -98,7 +102,9 @@ describe("ApiClient JSON transport", () => {
       data: undefined,
     });
   });
+});
 
+describe("ApiClient JSON transport", () => {
   test("preserves HTTP status and business code, including 422 validation", async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
@@ -121,7 +127,9 @@ describe("ApiClient JSON transport", () => {
       code: 1604,
     });
   });
+});
 
+describe("ApiClient JSON transport", () => {
   test("rejects invalid envelopes and invalid endpoint data as protocol failures", async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
@@ -142,7 +150,9 @@ describe("ApiClient JSON transport", () => {
       httpStatus: 200,
     });
   });
+});
 
+describe("ApiClient JSON transport", () => {
   test("preserves cancellation during response body consumption", async () => {
     const controller = new AbortController();
     let finishRead: (() => void) | undefined;

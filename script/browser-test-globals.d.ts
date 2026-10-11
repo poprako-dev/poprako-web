@@ -24,20 +24,22 @@ type BoundedBrowserTools = {
   ZipReader: new (reader: BrowserBlobReader) => BrowserZipReader;
   BlobReader: new (blob: Blob) => BrowserBlobReader;
   BlobWriter: new () => BrowserBlobWriter;
+  run(): Promise<{ sizes: number[]; png: number[] }>;
 };
 
 type CompressBrowserTools = {
-  compressTarXz(
+  compressTarZst(
     files: readonly { name: string; blob: Blob }[],
     options?: Record<string, unknown>,
   ): ReadableStream<Uint8Array>;
-  decompressTarXzToZip(
+  decompressTarZstToZip(
     source: Blob | ReadableStream<Uint8Array>,
     options?: Record<string, unknown>,
   ): ReadableStream<Uint8Array>;
   ZipReader: new (reader: BrowserBlobReader) => BrowserZipReader;
   BlobReader: new (blob: Blob) => BrowserBlobReader;
   BlobWriter: new () => BrowserBlobWriter;
+  run(large: boolean, preset: number): Promise<Record<string, unknown>>;
 };
 
 declare global {

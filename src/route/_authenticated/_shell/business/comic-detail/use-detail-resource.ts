@@ -37,21 +37,54 @@ export function useDetailResource({
   const client = useApiClient();
   const session = useReadySession();
   const operations = useMemo(() => createDetailActions(client), [client]);
-  const onLoadAssignableMembers = useCallback(
+  const onLoadAssignableMembers = useAssignableMemberLoader(client, comic);
+  const onUpdateComic = useComicUpdater(client, comic.id, onChanged);
+  const onUpdateChapter = useChapterUpdater(client, onChanged);
+  const { onDeleteComic, onArchiveComic } = useComicRemovers(client, onChanged, onClose);
+  return {
+    ...operations,
+    currentUserId: session.userInfo.id,
+    activeMember: findComicMember(comic, session.memberInfos),
+    onLoadAssignableMembers,
+    onUpdateComic,
+    onUpdateChapter,
+    onDeleteComic,
+    onArchiveComic,
+  };
+}
+
+function useAssignableMemberLoader(
+  client: ReturnType<typeof useApiClient>,
+  comic: DetailComicInfo,
+): NonNullable<DetailContract["onLoadAssignableMembers"]> {
+  return useCallback(
     (_chapterId: string, args: AssignableMemberArgs) => listComicMembers(client, comic, args),
     [client, comic],
   );
-  const onUpdateComic = useCallback(
+}
+
+function useComicUpdater(
+  client: ReturnType<typeof useApiClient>,
+  comicId: string,
+  onChanged: () => void,
+): NonNullable<DetailContract["onUpdateComic"]> {
+  return useCallback(
     async (
       args: Parameters<NonNullable<DetailContract["onUpdateComic"]>>[0],
     ): Promise<Result<void>> => {
-      const result = await updateComic(client, comic.id, args);
+      const result = await updateComic(client, comicId, args);
       if (result.success) onChanged();
       return result;
     },
-    [client, comic.id, onChanged],
+    [client, comicId, onChanged],
   );
-  const onUpdateChapter = useCallback(
+}
+
+function useChapterUpdater(
+  client: ReturnType<typeof useApiClient>,
+  onChanged: () => void,
+): NonNullable<DetailContract["onUpdateChapter"]> {
+  return useCallback(
     async (id: string, subtitle?: string): Promise<Result<void>> => {
       const result = await updateChapter(client, id, { subtitle });
       if (result.success) onChanged();
@@ -59,6 +92,13 @@ export function useDetailResource({
     },
     [client, onChanged],
   );
+}
+
+function useComicRemovers(
+  client: ReturnType<typeof useApiClient>,
+  onChanged: () => void,
+  onClose: () => void,
+): Pick<Required<DetailContract>, "onDeleteComic" | "onArchiveComic"> {
   const removeComic = useCallback(
     async (id: string, archive: boolean): Promise<Result<void>> => {
       const result = await (archive ? archiveComic(client, id) : deleteComic(client, id));
@@ -70,16 +110,8 @@ export function useDetailResource({
     },
     [client, onClose, onChanged],
   );
-  const onDeleteComic = useCallback((id: string) => removeComic(id, false), [removeComic]);
-  const onArchiveComic = useCallback((id: string) => removeComic(id, true), [removeComic]);
   return {
-    ...operations,
-    currentUserId: session.userInfo.id,
-    activeMember: findComicMember(comic, session.memberInfos),
-    onLoadAssignableMembers,
-    onUpdateComic,
-    onUpdateChapter,
-    onDeleteComic,
-    onArchiveComic,
+    onDeleteComic: useCallback((id: string) => removeComic(id, false), [removeComic]),
+    onArchiveComic: useCallback((id: string) => removeComic(id, true), [removeComic]),
   };
 }

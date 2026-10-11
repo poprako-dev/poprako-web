@@ -78,7 +78,9 @@ describe("unit search transform helpers", () => {
     expect(unitSearchText(match, "translatedText")).toBe("translated");
     expect(unitSearchText(match, "proofreadText")).toBe("proofread");
   });
+});
 
+describe("unit search transform helpers", () => {
   test("defaults to the first 100 unique units and enforces the limit", () => {
     const matches = Array.from({ length: 102 }, (_, index) =>
       makeMatch(`unit-${String(index)}`, "page-1"),

@@ -37,7 +37,9 @@ describe("identity API contracts", () => {
     expect(team.avatarUrl).toBeNull();
     expect("createdAt" in member).toBe(false);
   });
+});
 
+describe("identity API contracts", () => {
   test("rejects malformed required identity fields", () => {
     expect(() =>
       decodeApiMember({

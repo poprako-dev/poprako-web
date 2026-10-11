@@ -1,5 +1,5 @@
-import { Check, Plus } from "lucide-react";
-import { type KeyboardEvent, type ReactElement, useCallback, useRef, useState } from "react";
+import { Plus } from "lucide-react";
+import { type KeyboardEvent, type ReactElement, useState } from "react";
 import clsx from "clsx";
 import type { TeamConfig } from "@/route/_authenticated/_shell/business/navigation/app-sidebar-type";
 import { joinTeam } from "@/api/identity/identity-api";
@@ -7,6 +7,33 @@ import { useApiClient } from "@/route/business/api-context";
 import { showLocalApiFailure } from "@/route/business/request-error";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
+import { TeamOptionItem } from "@/route/_authenticated/_shell/business/navigation/TeamOptionItem";
+import { useTeamListInteractions } from "@/route/_authenticated/_shell/business/navigation/use-team-list-interactions";
+
+async function joinTeamWithCode(
+  client: ReturnType<typeof useApiClient>,
+  inviteCode: string,
+  isJoining: boolean,
+  setInviteCode: (code: string) => void,
+  setIsJoining: (isJoining: boolean) => void,
+  onJoin: () => void,
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"],
+): Promise<void> {
+  const code = inviteCode.trim();
+  if (!code || isJoining) {
+    return;
+  }
+  setIsJoining(true);
+  const result = await joinTeam(client, code);
+  setIsJoining(false);
+  if (result.success) {
+    setInviteCode("");
+    showToast("成功加入汉化组", "success");
+    onJoin();
+  } else {
+    showLocalApiFailure(result, showToast);
+  }
+}
 
 export function TeamList({
   teams,
@@ -22,80 +49,26 @@ export function TeamList({
   onLongPressTeam?: ((team: TeamConfig) => void) | undefined;
 }): ReactElement {
   const client = useApiClient();
+  const showToast = useToastStore((state) => state.showToast);
   const [inviteCode, setInviteCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
-  const showToast = useToastStore((s) => s.showToast);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTeamRef = useRef<TeamConfig | null>(null);
-  const longPressHandledRef = useRef(false);
-
-  const clearLongPress = useCallback(() => {
-    if (!longPressTimerRef.current) {
-      return;
-    }
-
-    clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = null;
-  }, []);
-
-  const handleTeamPointerDown = useCallback(
-    (t: TeamConfig) => (e: React.PointerEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      longPressHandledRef.current = false;
-      longPressTeamRef.current = t;
-      longPressTimerRef.current = setTimeout(() => {
-        longPressHandledRef.current = true;
-        onLongPressTeam?.(t);
-      }, 500);
-    },
-    [onLongPressTeam],
-  );
-
-  const handleTeamPointerUp = useCallback(
-    () => (e: React.PointerEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      clearLongPress();
-      if (!longPressHandledRef.current) {
-        const t = longPressTeamRef.current;
-        if (t) {
-          onSelect(t);
-        }
-      }
-    },
-    [clearLongPress, onSelect],
-  );
-
-  const handleTeamPointerCancel = useCallback(
-    () => () => {
-      clearLongPress();
-    },
-    [clearLongPress],
-  );
-
-  const handleTeamContextMenu = useCallback(
-    () => (e: React.MouseEvent) => {
-      e.preventDefault();
-    },
-    [],
-  );
+  const {
+    handlePointerDown: handleTeamPointerDown,
+    handlePointerUp: handleTeamPointerUp,
+    handlePointerCancel: handleTeamPointerCancel,
+    handleContextMenu: handleTeamContextMenu,
+  } = useTeamListInteractions(onSelect, onLongPressTeam);
 
   const handleJoin = async (): Promise<void> => {
-    const code = inviteCode.trim();
-    if (!code || isJoining) {
-      return;
-    }
-    setIsJoining(true);
-    const result = await joinTeam(client, code);
-    setIsJoining(false);
-    if (result.success) {
-      setInviteCode("");
-      showToast("成功加入汉化组", "success");
-      onJoin();
-    } else {
-      showLocalApiFailure(result, showToast);
-    }
+    await joinTeamWithCode(
+      client,
+      inviteCode,
+      isJoining,
+      setInviteCode,
+      setIsJoining,
+      onJoin,
+      showToast,
+    );
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>): void => {
@@ -136,84 +109,20 @@ export function TeamList({
         </div>
 
         <div className="space-y-1 px-2 pb-2">
-          {teams.map((t) => {
-            const isSelected = t.id === activeId;
-            const itemContent = (
-              <>
-                <div
-                  className={clsx(
-                    "w-10 h-10 rounded-lg flex shrink-0",
-                    "items-center justify-center overflow-hidden",
-                    "font-black text-sm relative",
-                    isSelected
-                      ? "bg-brand-leaf text-ink-white"
-                      : "bg-surface-gray-100 text-text-muted-neutral",
-                  )}
-                >
-                  {(t.avatarThumbnailUrl ?? t.avatarUrl) ? (
-                    <img
-                      src={t.avatarThumbnailUrl ?? t.avatarUrl}
-                      alt={t.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    t.short
-                  )}
-                </div>
-                <div className={clsx("flex flex-col items-start min-w-0", "text-left")}>
-                  <span className="text-sm font-bold truncate w-full">{t.name}</span>
-                  <span className="text-[10px] text-text-muted-neutral truncate w-full">
-                    {t.desc}
-                  </span>
-                </div>
-                {isSelected && (
-                  <Check size={16} className={clsx("ml-auto", "text-ink-green-500")} />
-                )}
-              </>
-            );
-
-            const baseClasses = clsx(
-              "w-full flex items-center gap-4",
-              "px-4 py-3 rounded-sm transition-all",
-              isSelected
-                ? "bg-surface-green-50"
-                : "text-text-muted-neutral hover:bg-surface-gray-50",
-              isSelected ? "text-ink-green-800" : "hover:text-ink-gray-900",
-            );
-
-            return onLongPressTeam ? (
-              <div
-                key={t.id}
-                onPointerDown={handleTeamPointerDown(t)}
-                role="button"
-                tabIndex={0}
-                onPointerUp={handleTeamPointerUp()}
-                onPointerCancel={handleTeamPointerCancel()}
-                onPointerLeave={handleTeamPointerCancel()}
-                onContextMenu={handleTeamContextMenu()}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    onSelect(t);
-                  }
-                }}
-                className={clsx(baseClasses, "select-none touch-none cursor-pointer")}
-                title="长按修改汉化组信息"
-              >
-                {itemContent}
-              </div>
-            ) : (
-              <button
-                type="button"
-                key={t.id}
-                onClick={() => {
-                  onSelect(t);
-                }}
-                className={baseClasses}
-              >
-                {itemContent}
-              </button>
-            );
-          })}
+          {teams.map((team) => (
+            <TeamOptionItem
+              key={team.id}
+              team={team}
+              isSelected={team.id === activeId}
+              onSelect={() => {
+                onSelect(team);
+              }}
+              onPointerDown={onLongPressTeam ? handleTeamPointerDown(team) : undefined}
+              onPointerUp={onLongPressTeam ? handleTeamPointerUp() : undefined}
+              onPointerCancel={onLongPressTeam ? handleTeamPointerCancel() : undefined}
+              onContextMenu={onLongPressTeam ? handleTeamContextMenu() : undefined}
+            />
+          ))}
         </div>
 
         <div

@@ -20,6 +20,11 @@ export default mergeConfig(
             name: "storybook",
             browser: {
               enabled: true,
+              commands: {
+                async resetPointer({ page }) {
+                  await page.mouse.move(-1, -1);
+                },
+              },
               headless: true,
               screenshotFailures: false,
               provider: playwright({ contextOptions: { timezoneId: "Asia/Shanghai" } }),

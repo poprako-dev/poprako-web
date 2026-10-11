@@ -52,7 +52,9 @@ describe("workspace comment API", () => {
       "/api/v1/teams/team-1/comments?offset=2&limit=10&incl=user",
     );
   });
+});
 
+describe("workspace comment API", () => {
   test("creates a comment using the normalized input contract", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()

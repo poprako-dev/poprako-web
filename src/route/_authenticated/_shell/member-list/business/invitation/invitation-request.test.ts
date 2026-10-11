@@ -58,7 +58,9 @@ describe("member invitation API", () => {
       "/api/v1/teams/team-1/member-invitations?offset=5&limit=20&is_pending=true&incl=invitor",
     );
   });
+});
 
+describe("member invitation API", () => {
   test("posts invitation values in the backend wire format", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()

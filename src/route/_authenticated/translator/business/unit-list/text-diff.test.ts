@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { buildUnitTextDiff } from "@/route/_authenticated/translator/business/unit-list/text-diff";
 
-describe("buildUnitTextDiff", () => {
+function registerCoreDiffCases(): void {
   test("keeps untranslated proofreading absence as unchanged translation", () => {
     expect(buildUnitTextDiff("原始翻译", null)).toEqual([{ kind: "unchanged", text: "原始翻译" }]);
   });
@@ -30,7 +30,9 @@ describe("buildUnitTextDiff", () => {
       { kind: "unchanged", text: "。" },
     ]);
   });
+}
 
+function registerTextStateCases(): void {
   test("shows a pure deletion without inventing a proofreading patch", () => {
     expect(buildUnitTextDiff("我真的很好", "我很好")).toEqual([
       { kind: "unchanged", text: "我" },
@@ -63,7 +65,9 @@ describe("buildUnitTextDiff", () => {
   test("returns no parts when both texts are absent", () => {
     expect(buildUnitTextDiff(null, null)).toEqual([]);
   });
+}
 
+function registerGraphemeAndInsertionCases(): void {
   test("keeps a joined emoji as one grapheme", () => {
     expect(buildUnitTextDiff("一家人", "一家人👨‍👩‍👧‍👦")).toEqual([
       { kind: "unchanged", text: "一家人" },
@@ -94,7 +98,9 @@ describe("buildUnitTextDiff", () => {
       ]);
     },
   );
+}
 
+function registerLineBreakCases(): void {
   test("separates whitespace deletion from new text on the next line", () => {
     expect(buildUnitTextDiff("诶 大山吗！？", "诶\n玩大山吗！？")).toEqual([
       { kind: "unchanged", text: "诶" },
@@ -133,7 +139,9 @@ describe("buildUnitTextDiff", () => {
       { kind: "replacement-added", text: after },
     ]);
   });
+}
 
+function registerReconstructionCase(): void {
   test("can reconstruct both source texts from the parts", () => {
     const translatedText = "早安，天气很好。\n明天见。";
     const proofreadText = "早上好，今天天气不错。\n后天见。";
@@ -150,4 +158,12 @@ describe("buildUnitTextDiff", () => {
     expect(reconstructedTranslation).toBe(translatedText);
     expect(reconstructedProofreading).toBe(proofreadText);
   });
+}
+
+describe("buildUnitTextDiff", () => {
+  registerCoreDiffCases();
+  registerTextStateCases();
+  registerGraphemeAndInsertionCases();
+  registerLineBreakCases();
+  registerReconstructionCase();
 });

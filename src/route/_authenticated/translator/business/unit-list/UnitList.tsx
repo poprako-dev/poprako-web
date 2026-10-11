@@ -1,4 +1,5 @@
 import type { JSX } from "react/jsx-runtime";
+import type { RefObject } from "react";
 import clsx from "clsx";
 import { ListCheck } from "lucide-react";
 import { Tooltip } from "radix-ui";
@@ -17,6 +18,7 @@ import type { UnitEdit } from "@/route/_authenticated/translator/business/unit/u
 import { useUnitReorder } from "@/route/_authenticated/translator/business/unit-list/use-unit-reorder";
 import { useUnitContributors } from "@/route/_authenticated/translator/business/unit-list/use-unit-contributors";
 import type { UnitUserResolver } from "@/route/_authenticated/translator/business/unit-list/unit-contributor-cache";
+import type { UserInfo } from "@/route/business/identity/user";
 import { TranslateModeUnitItem } from "@/route/_authenticated/translator/business/unit-list/TranslateModeUnitItem";
 import { ProofreadModeUnitItem } from "@/route/_authenticated/translator/business/unit-list/ProofreadModeUnitItem";
 import { ReadOnlyDiffUnitItem } from "@/route/_authenticated/translator/business/unit-list/ReadOnlyDiffUnitItem";
@@ -46,6 +48,103 @@ type Props = {
   onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
 };
 
+type UnitListItemProps = {
+  unit: UnitInfo;
+  pendingUnitIds: string[] | undefined;
+  focusedUnitId: string | undefined;
+  mode: TranslatorMode;
+  onFocusUnit: Props["onFocusUnit"];
+  activateIndex: (unitId: string) => void;
+  getContributor: (userId: string | null) => UserInfo | undefined;
+  canToggleBubble: boolean;
+  onModifyUnit: ((unitId: string, unit: UnitEdit) => void) | undefined;
+  canReorder: boolean;
+  handleIndexPointerDown: ReturnType<typeof useUnitReorder>["handleIndexPointerDown"];
+  draggingUnitId: string | null;
+  readOnly: boolean;
+  specialCharInsertRequest: Props["specialCharInsertRequest"];
+  specialCharsBar: Props["specialCharsBar"];
+  onSpecialCharUse: Props["onSpecialCharUse"];
+  onSpecialCharInserted: Props["onSpecialCharInserted"];
+};
+
+function activateUnitIndex(
+  targetUnitId: string,
+  units: UnitInfo[],
+  canToggleBubble: boolean,
+  onModifyUnit: ((unitId: string, unit: UnitEdit) => void) | undefined,
+  onFocusUnit: Props["onFocusUnit"],
+): void {
+  const targetUnit = units.find((unit) => unitId(unit) === targetUnitId);
+  if (canToggleBubble && targetUnit) {
+    onModifyUnit?.(targetUnitId, { isBubble: !unitIsBubble(targetUnit) });
+    return;
+  }
+  onFocusUnit?.(targetUnitId);
+}
+
+function proofreadAllUnits(options: {
+  units: UnitInfo[];
+  readOnly: boolean;
+  onModifyUnit: ((unitId: string, unit: UnitEdit) => void) | undefined;
+  isAllUnitsProofread: boolean;
+  showToast: ReturnType<typeof useToastStore.getState>["showToast"];
+}): void {
+  const { units, readOnly, onModifyUnit, isAllUnitsProofread, showToast } = options;
+  if (readOnly || !onModifyUnit || units.length === 0) return;
+  for (const unit of units) {
+    onModifyUnit(unitId(unit), { isProofread: !isAllUnitsProofread });
+  }
+  showToast(isAllUnitsProofread ? "已取消全部校对" : "全部校对已确认", "success");
+}
+
+function useFocusedUnitScroll(
+  listRef: RefObject<HTMLDivElement | null>,
+  focusedUnitId: string | undefined,
+): void {
+  useEffect(() => {
+    if (!(focusedUnitId && listRef.current)) return;
+    const focusedElement = listRef.current.querySelector(
+      `[data-unit-id="${CSS.escape(focusedUnitId)}"]`,
+    );
+    focusedElement?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [focusedUnitId, listRef]);
+}
+
+function UnitListItem(props: UnitListItemProps): JSX.Element {
+  const { unit } = props;
+  const commonProps = {
+    unit,
+    hasLocalDraft: props.pendingUnitIds?.includes(unitId(unit)),
+    isFocused: props.focusedUnitId === unitId(unit),
+    onSelect: props.onFocusUnit,
+    onIndexActivate: props.activateIndex,
+    translator: props.getContributor(unitTranslatorId(unit)),
+    proofreader: props.getContributor(unitProofreaderId(unit)),
+    dataUnitId: unitId(unit),
+  };
+  if (props.mode === "readOnly") {
+    return <ReadOnlyDiffUnitItem {...commonProps} />;
+  }
+  const ItemComponent = props.mode === "translate" ? TranslateModeUnitItem : ProofreadModeUnitItem;
+  return (
+    <ItemComponent
+      {...commonProps}
+      canToggleBubble={props.canToggleBubble}
+      onModifyUnit={props.onModifyUnit}
+      onIndexPointerDown={props.canReorder ? props.handleIndexPointerDown : undefined}
+      isDragging={props.draggingUnitId === unitId(unit)}
+      isDragDimmed={props.draggingUnitId !== null && props.draggingUnitId !== unitId(unit)}
+      showDropIndicator={props.draggingUnitId === unitId(unit)}
+      enableReadOnly={props.readOnly}
+      specialCharInsertRequest={props.specialCharInsertRequest}
+      specialCharsBar={props.specialCharsBar}
+      onSpecialCharUse={props.onSpecialCharUse}
+      onSpecialCharInserted={props.onSpecialCharInserted}
+    />
+  );
+}
+
 export function UnitList({
   units,
   pendingUnitIds,
@@ -64,15 +163,11 @@ export function UnitList({
   const onReorderUnit = editing?.reorderUnit;
   const readOnly = enableReadOnly || editing === null || mode === "readOnly";
   const listRef = useRef<HTMLDivElement>(null);
+  useFocusedUnitScroll(listRef, focusedUnitId);
   const canReorder = !readOnly && onReorderUnit !== undefined;
   const canToggleBubble = !readOnly && onModifyUnit !== undefined;
   const activateIndex = (targetUnitId: string): void => {
-    const targetUnit = units.find((unit) => unitId(unit) === targetUnitId);
-    if (canToggleBubble && targetUnit) {
-      onModifyUnit(targetUnitId, { isBubble: !unitIsBubble(targetUnit) });
-      return;
-    }
-    onFocusUnit?.(targetUnitId);
+    activateUnitIndex(targetUnitId, units, canToggleBubble, onModifyUnit, onFocusUnit);
   };
   const { orderedUnits, draggingUnitId, handleIndexPointerDown } = useUnitReorder({
     units,
@@ -83,28 +178,11 @@ export function UnitList({
   });
   const getContributor = useUnitContributors({ units, onResolveUser });
 
-  useEffect(() => {
-    if (!(focusedUnitId && listRef.current)) {
-      return;
-    }
-
-    const focusedElement = listRef.current.querySelector(
-      `[data-unit-id="${CSS.escape(focusedUnitId)}"]`,
-    );
-    if (focusedElement) {
-      focusedElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }, [focusedUnitId]);
-
   const { showToast } = useToastStore();
   const isAllUnitsProofread = units.length > 0 && units.every(unitIsProofread);
 
   const proofreadAll = (): void => {
-    if (readOnly || !onModifyUnit || units.length === 0) return;
-    for (const unit of units) {
-      onModifyUnit(unitId(unit), { isProofread: !isAllUnitsProofread });
-    }
-    showToast(isAllUnitsProofread ? "已取消全部校对" : "全部校对已确认", "success");
+    proofreadAllUnits({ units, readOnly, onModifyUnit, isAllUnitsProofread, showToast });
   };
 
   return (
@@ -114,41 +192,28 @@ export function UnitList({
           ref={listRef}
           className={clsx("min-h-0 flex-1 overflow-y-auto", draggingUnitId && "select-none")}
         >
-          {orderedUnits.map((unit) => {
-            const commonProps = {
-              unit,
-              hasLocalDraft: pendingUnitIds?.includes(unitId(unit)),
-              isFocused: focusedUnitId === unitId(unit),
-              onSelect: onFocusUnit,
-              onIndexActivate: activateIndex,
-              translator: getContributor(unitTranslatorId(unit)),
-              proofreader: getContributor(unitProofreaderId(unit)),
-              dataUnitId: unitId(unit),
-            };
-            if (mode === "readOnly") {
-              return <ReadOnlyDiffUnitItem key={unitId(unit)} {...commonProps} />;
-            }
-
-            const ItemComponent =
-              mode === "translate" ? TranslateModeUnitItem : ProofreadModeUnitItem;
-            return (
-              <ItemComponent
-                key={unitId(unit)}
-                {...commonProps}
-                canToggleBubble={canToggleBubble}
-                onModifyUnit={onModifyUnit}
-                onIndexPointerDown={canReorder ? handleIndexPointerDown : undefined}
-                isDragging={draggingUnitId === unitId(unit)}
-                isDragDimmed={draggingUnitId !== null && draggingUnitId !== unitId(unit)}
-                showDropIndicator={draggingUnitId === unitId(unit)}
-                enableReadOnly={readOnly}
-                specialCharInsertRequest={specialCharInsertRequest}
-                specialCharsBar={specialCharsBar}
-                onSpecialCharUse={onSpecialCharUse}
-                onSpecialCharInserted={onSpecialCharInserted}
-              />
-            );
-          })}
+          {orderedUnits.map((unit) => (
+            <UnitListItem
+              key={unitId(unit)}
+              unit={unit}
+              pendingUnitIds={pendingUnitIds}
+              focusedUnitId={focusedUnitId}
+              mode={mode}
+              onFocusUnit={onFocusUnit}
+              activateIndex={activateIndex}
+              getContributor={getContributor}
+              canToggleBubble={canToggleBubble}
+              onModifyUnit={onModifyUnit}
+              canReorder={canReorder}
+              handleIndexPointerDown={handleIndexPointerDown}
+              draggingUnitId={draggingUnitId}
+              readOnly={readOnly}
+              specialCharInsertRequest={specialCharInsertRequest}
+              specialCharsBar={specialCharsBar}
+              onSpecialCharUse={onSpecialCharUse}
+              onSpecialCharInserted={onSpecialCharInserted}
+            />
+          ))}
         </div>
         {mode === "proofread" && !readOnly && (
           <button

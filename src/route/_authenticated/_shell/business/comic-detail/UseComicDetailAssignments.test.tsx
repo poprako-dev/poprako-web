@@ -6,7 +6,10 @@ import { useComicDetailAssignments } from "./use-comic-detail-assignments";
 
 afterEach(cleanup);
 
-test("joining immediately refreshes assignments and permissions without reopening the dialog", async () => {
+function createAssignmentTestClient(): {
+  client: ReturnType<typeof createApiClient>;
+  fetchImpl: ReturnType<typeof vi.fn<typeof fetch>>;
+} {
   let joined = false;
   const assignment = {
     id: "assignment",
@@ -32,6 +35,11 @@ test("joining immediately refreshes assignments and permissions without reopenin
     getAccessToken: () => "session",
     fetchImpl,
   });
+  return { client, fetchImpl };
+}
+
+test("joining immediately refreshes assignments and permissions without reopening the dialog", async () => {
+  const { client, fetchImpl } = createAssignmentTestClient();
   const actions = createDetailActions(client);
   const showToast = vi.fn();
   const onWorkflowRecordsChanged = vi.fn();

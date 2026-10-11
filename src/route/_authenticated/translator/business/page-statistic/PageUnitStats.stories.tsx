@@ -81,6 +81,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+async function expectChartBarGeometry(row: HTMLElement): Promise<void> {
+  const translated = row.querySelector('[data-stat="translated"]')?.getBoundingClientRect();
+  const edited = row.querySelector('[data-stat="edited"]')?.getBoundingClientRect();
+  const appended = row.querySelector('[data-stat="appended"]')?.getBoundingClientRect();
+  if (!translated || !edited || !appended) throw new Error("Missing chart bars");
+  await expect(translated.height).toBe(4);
+  await expect(edited.height).toBe(2);
+  await expect(edited.x).toBe(translated.x);
+  await expect(appended.x).toBeCloseTo(translated.right, 0);
+  await expect(edited.width / translated.width).toBeCloseTo(0.3, 2);
+  await expect(appended.width / translated.width).toBeCloseTo(0.2, 2);
+}
+
 export const Chapter: Story = {
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
@@ -109,18 +122,7 @@ export const Chapter: Story = {
     const row = page.getByRole("button", {
       name: "第 2 页，翻译 10，编辑 3，追加 2",
     });
-    const translated = row.querySelector('[data-stat="translated"]')?.getBoundingClientRect();
-    const edited = row.querySelector('[data-stat="edited"]')?.getBoundingClientRect();
-    const appended = row.querySelector('[data-stat="appended"]')?.getBoundingClientRect();
-    if (!translated || !edited || !appended) {
-      throw new Error("Missing chart bars");
-    }
-    await expect(translated.height).toBe(4);
-    await expect(edited.height).toBe(2);
-    await expect(edited.x).toBe(translated.x);
-    await expect(appended.x).toBeCloseTo(translated.right, 0);
-    await expect(edited.width / translated.width).toBeCloseTo(0.3, 2);
-    await expect(appended.width / translated.width).toBeCloseTo(0.2, 2);
+    await expectChartBarGeometry(row);
     const longestRow = page.getByRole("button", {
       name: "第 12 页，翻译 23，编辑 0，追加 0",
     });

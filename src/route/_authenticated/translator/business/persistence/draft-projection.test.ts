@@ -10,6 +10,20 @@ import { replayEdits } from "./draft-sequence";
 function unit(id: string, index = 0): UnitInfo {
   return { id, index, xCoord: 0, yCoord: 0, isBubble: true, isFlagged: false, isProofread: false };
 }
+
+function makeController(
+  drafts: DraftStore,
+  save: SaveUnits,
+  pages: Map<string, UnitInfo[]>,
+): ReturnType<typeof createUnitSaveController> {
+  return createUnitSaveController({
+    drafts,
+    save,
+    reload: (id) => Promise.resolve(pages.get(id) ?? []),
+    changed: vi.fn(),
+    failed: vi.fn(),
+  });
+}
 test("all same-batch creations exist before positioning, matching the server", async () => {
   const base = [unit("a"), unit("b", 1)];
   for (const ids of [
@@ -85,16 +99,7 @@ test("two tabs project local and permanent aliases into one row without changing
     if (offline) throw new Error("offline");
     return await backend(...args);
   });
-  function make(drafts: DraftStore): ReturnType<typeof createUnitSaveController> {
-    return createUnitSaveController({
-      drafts,
-      save,
-      reload: (id) => Promise.resolve(pages.get(id) ?? []),
-      changed: vi.fn(),
-      failed: vi.fn(),
-    });
-  }
-  const ca = make(a);
+  const ca = makeController(a, save, pages);
   ca.load("p", []);
   ca.commit([unit("local")]);
   await ca.flush();
@@ -102,7 +107,7 @@ test("two tabs project local and permanent aliases into one row without changing
   if (!remote) throw new Error("missing creation");
   const b = createDraftStore("u", "c", db);
   await b.ready;
-  const cb = make(b);
+  const cb = makeController(b, save, pages);
   cb.load("p", [remote]);
   offline = true;
   ca.commit([{ ...unit("local"), translatedText: "A" }]);

@@ -68,11 +68,18 @@ const meta = {
 } satisfies Meta<typeof DraftIndicators>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-async function checkDraftIndicators({
-  canvasElement,
-}: {
-  canvasElement: HTMLElement;
-}): Promise<void> {
+type UnitDraftLayout = {
+  row: HTMLElement;
+  input: HTMLElement;
+  rowRect: DOMRect;
+  inputRect: DOMRect;
+};
+
+async function verifyUnitDrafts(canvasElement: HTMLElement): Promise<{
+  dots: HTMLElement[];
+  colors: string[];
+  layouts: UnitDraftLayout[];
+}> {
   const canvas = within(canvasElement);
   const unitDots = canvas.getAllByLabelText("有未保存草稿");
   await expect(unitDots).toHaveLength(3);
@@ -101,6 +108,15 @@ async function checkDraftIndicators({
     await expect(style.width).toBe("10px");
     await expect(style.height).toBe("10px");
   }
+  return { dots: unitDots, colors: unitColors, layouts: unitLayouts };
+}
+
+async function verifyPageDrafts(canvasElement: HTMLElement): Promise<{
+  dots: HTMLElement[];
+  icons: HTMLElement[];
+  fills: string[];
+}> {
+  const canvas = within(canvasElement);
   await userEvent.click(canvas.getByRole("button", { name: "Open page list" }));
   await expect(canvas.getAllByLabelText("有未保存草稿")).toHaveLength(6);
   const pageDots: HTMLElement[] = [];
@@ -124,28 +140,75 @@ async function checkDraftIndicators({
   }
   const pageFills = pageDots.map((dot) => getComputedStyle(dot).backgroundColor);
   await expect(new Set(pageFills).size).toBe(3);
+  return { dots: pageDots, icons: draftIcons, fills: pageFills };
+}
+
+async function verifySavedDraftIndicators(
+  canvasElement: HTMLElement,
+  unitState: Awaited<ReturnType<typeof verifyUnitDrafts>>,
+  pageState: Awaited<ReturnType<typeof verifyPageDrafts>>,
+): Promise<void> {
+  const canvas = within(canvasElement);
   await userEvent.click(canvas.getByRole("button", { name: "模拟保存成功" }));
   await expect(canvas.queryAllByLabelText("有未保存草稿")).toHaveLength(0);
-  for (const icon of draftIcons) await expect(icon).not.toBeInTheDocument();
-  for (const [index, dot] of unitDots.entries()) {
+  for (const icon of pageState.icons) await expect(icon).not.toBeInTheDocument();
+  for (const [index, dot] of unitState.dots.entries()) {
     const style = getComputedStyle(dot);
     await expect(dot).toBeInTheDocument();
-    await expect(style.backgroundColor).toBe(unitColors[index]);
-    await expect(style.color).toBe(unitColors[index]);
+    await expect(style.backgroundColor).toBe(unitState.colors[index]);
+    await expect(style.color).toBe(unitState.colors[index]);
     await expect(style.borderWidth).toBe("0px");
     await expect(style.width).toBe("10px");
     await expect(style.height).toBe("10px");
   }
-  for (const { row, input, rowRect, inputRect } of unitLayouts) {
+  for (const { row, input, rowRect, inputRect } of unitState.layouts) {
     await expect(row.getBoundingClientRect().width).toBe(rowRect.width);
     await expect(row.getBoundingClientRect().height).toBe(rowRect.height);
     await expect(input.getBoundingClientRect().width).toBe(inputRect.width);
   }
-  for (const [index, dot] of pageDots.entries()) {
+  for (const [index, dot] of pageState.dots.entries()) {
     await expect(dot).toBeInTheDocument();
-    await expect(getComputedStyle(dot).backgroundColor).toBe(pageFills[index]);
+    await expect(getComputedStyle(dot).backgroundColor).toBe(pageState.fills[index]);
   }
 }
+
+async function checkDraftIndicators({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}): Promise<void> {
+  const unitState = await verifyUnitDrafts(canvasElement);
+  const pageState = await verifyPageDrafts(canvasElement);
+  await verifySavedDraftIndicators(canvasElement, unitState, pageState);
+}
+
+async function prepareConcurrentDrafts(
+  firstStore: ReturnType<typeof createDraftStore>,
+  secondStore: ReturnType<typeof createDraftStore>,
+): Promise<void> {
+  const failedSave = fn().mockRejectedValue(new Error("offline"));
+  const firstController = createUnitSaveController({
+    drafts: firstStore,
+    save: failedSave,
+    reload: () => Promise.resolve([unit]),
+    changed: fn(),
+    failed: fn(),
+  });
+  const secondController = createUnitSaveController({
+    drafts: secondStore,
+    save: failedSave,
+    reload: () => Promise.resolve([unit]),
+    changed: fn(),
+    failed: fn(),
+  });
+  firstController.load("p", [unit]);
+  secondController.load("p", [unit]);
+  firstController.commit([{ ...unit, translatedText: "A" }]);
+  secondController.commit([{ ...unit, proofreadText: "B" }]);
+  const outcomes = await Promise.allSettled([firstController.flush(), secondController.flush()]);
+  await expect(outcomes.every((outcome) => outcome.status === "rejected")).toBe(true);
+}
+
 export const Translation: Story = { play: checkDraftIndicators };
 export const Proofreading: Story = { args: { mode: "proofread" }, play: checkDraftIndicators };
 export const ReadOnly: Story = { args: { mode: "readOnly" }, play: checkDraftIndicators };
@@ -158,27 +221,7 @@ export const BrowserRecovery: Story = {
     await Promise.all([a.ready, b.ready]);
     const pages = new Map([["p", [unit]]]);
     const backend = createUnitSaveFixture(pages);
-    const failedSave = fn().mockRejectedValue(new Error("offline"));
-    const ca = createUnitSaveController({
-      drafts: a,
-      save: failedSave,
-      reload: () => Promise.resolve([unit]),
-      changed: fn(),
-      failed: fn(),
-    });
-    const cb = createUnitSaveController({
-      drafts: b,
-      save: failedSave,
-      reload: () => Promise.resolve([unit]),
-      changed: fn(),
-      failed: fn(),
-    });
-    ca.load("p", [unit]);
-    cb.load("p", [unit]);
-    ca.commit([{ ...unit, translatedText: "A" }]);
-    cb.commit([{ ...unit, proofreadText: "B" }]);
-    const outcomes = await Promise.allSettled([ca.flush(), cb.flush()]);
-    await expect(outcomes.every((outcome) => outcome.status === "rejected")).toBe(true);
+    await prepareConcurrentDrafts(a, b);
     const reopened = createDraftStore(user, "chapter");
     await reopened.ready;
     await expect(reopened.getState().drafts["p"]?.pending).toHaveLength(2);

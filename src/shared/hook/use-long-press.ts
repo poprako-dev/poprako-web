@@ -14,12 +14,44 @@ interface Handlers {
   onContextMenu: (event: MouseEvent) => void;
 }
 
+function usePressTimer(): React.RefObject<ReturnType<typeof setTimeout> | null> {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
+  return timerRef;
+}
+
+function preventContextMenu(event: MouseEvent): void {
+  event.preventDefault();
+}
+
+function usePressCancellation(
+  timerRef: React.RefObject<ReturnType<typeof setTimeout> | null>,
+): () => void {
+  return useCallback(() => {
+    if (!timerRef.current) {
+      return;
+    }
+
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
+  }, [timerRef]);
+}
+
 export function useLongPress({
   onLongPress,
   onClick,
   threshold = 500,
 }: UseLongPressOptions): Handlers {
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = usePressTimer();
   const longPressHandledRef = useRef(false);
 
   const onPointerDown = useCallback(
@@ -35,7 +67,7 @@ export function useLongPress({
         onLongPress();
       }, threshold);
     },
-    [onLongPress, threshold],
+    [onLongPress, threshold, timerRef],
   );
 
   const onPointerUp = useCallback(
@@ -50,30 +82,15 @@ export function useLongPress({
         onClick?.();
       }
     },
-    [onClick],
+    [onClick, timerRef],
   );
 
-  const onPointerCancel = useCallback(() => {
-    if (!timerRef.current) {
-      return;
-    }
+  const onPointerCancel = usePressCancellation(timerRef);
 
-    clearTimeout(timerRef.current);
-    timerRef.current = null;
-  }, []);
-
-  const onContextMenu = useCallback((e: MouseEvent) => {
-    e.preventDefault();
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, []);
-
-  return { onPointerDown, onPointerUp, onPointerCancel, onContextMenu };
+  return {
+    onPointerDown,
+    onPointerUp,
+    onPointerCancel,
+    onContextMenu: preventContextMenu,
+  };
 }

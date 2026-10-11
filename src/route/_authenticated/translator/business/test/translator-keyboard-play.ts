@@ -14,23 +14,14 @@ export function configureKeyboardFixture() {
   };
 }
 
-export async function verifyTranslatorKeyboard({
-  canvasElement,
-  args,
-}: {
-  canvasElement: HTMLElement;
-  args: ComponentProps<typeof BaseTranslator>;
-}): Promise<void> {
+async function verifySearchAndDialogFocus(
+  canvasElement: HTMLElement,
+  first: HTMLElement,
+  selectedRow: Element | null,
+  args: ComponentProps<typeof BaseTranslator>,
+): Promise<void> {
   const canvas = within(canvasElement);
   const page = within(canvasElement.ownerDocument.body);
-  const fields = await canvas.findAllByPlaceholderText("点击输入翻译...");
-  const first = fields[0];
-  const second = fields[1];
-  if (!first || !second) throw new Error("Expected two translation units");
-  await userEvent.type(first, "abc");
-  const selectedRow = first.closest("[data-unit-id]");
-  await expect(selectedRow).toHaveClass("z-10");
-
   await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
   await userEvent.click(await canvas.findByRole("option", { name: /角色称谓/ }));
   const search = canvas.getByRole("combobox", { name: "搜索术语原文" });
@@ -52,6 +43,16 @@ export async function verifyTranslatorKeyboard({
   await userEvent.keyboard("{Control>}s{/Control}{Control>}d{/Control}");
   await expect(args.onSaveUnits).not.toHaveBeenCalled();
   await expect(args.onLoadUnits).toHaveBeenCalledTimes(1);
+}
+
+async function verifyComposingEscapeAndClose(
+  canvasElement: HTMLElement,
+  first: HTMLElement,
+  selectedRow: Element | null,
+): Promise<void> {
+  const page = within(canvasElement.ownerDocument.body);
+  const source = page.getByRole("textbox", { name: "原文" });
+  const dialog = page.getByRole("dialog", { name: "新建术语" });
   await expect(first.isConnected).toBe(true);
   await fireEvent.keyDown(source, { key: "Escape", isComposing: true });
   await expect(dialog).toBeVisible();
@@ -61,12 +62,20 @@ export async function verifyTranslatorKeyboard({
     await expect(page.queryByRole("dialog", { name: "新建术语" })).toBeNull();
   });
   await expect(selectedRow).toHaveClass("z-10");
+}
 
+async function verifyUnitKeyboardNavigation(
+  canvasElement: HTMLElement,
+  first: HTMLElement,
+  second: HTMLElement,
+  args: ComponentProps<typeof BaseTranslator>,
+): Promise<void> {
+  const canvas = within(canvasElement);
   await userEvent.click(first);
   await fireEvent.keyDown(first, { key: "Tab", isComposing: true });
   await fireEvent.keyDown(first, { key: "Escape", keyCode: 229 });
   await expect(first).toHaveFocus();
-  await expect(selectedRow).toHaveClass("z-10");
+  await expect(first.closest("[data-unit-id]")).toHaveClass("z-10");
   await userEvent.keyboard("{Tab}");
   await expect(second).toHaveFocus();
   await userEvent.keyboard("{Shift>}{Tab}{/Shift}");
@@ -80,12 +89,30 @@ export async function verifyTranslatorKeyboard({
     await expect(args.onLoadUnits).toHaveBeenLastCalledWith("page-2");
   });
   const nextPageInput = await canvas.findAllByPlaceholderText("点击输入翻译...");
-  if (!nextPageInput[0]) {
-    throw new Error("Expected translation input on page 2");
-  }
+  if (!nextPageInput[0]) throw new Error("Expected translation input on page 2");
   await userEvent.click(nextPageInput[0]);
   await userEvent.keyboard("j");
   await waitFor(async () => {
     await expect(args.onLoadUnits).toHaveBeenLastCalledWith("page-1");
   });
+}
+
+export async function verifyTranslatorKeyboard({
+  canvasElement,
+  args,
+}: {
+  canvasElement: HTMLElement;
+  args: ComponentProps<typeof BaseTranslator>;
+}): Promise<void> {
+  const canvas = within(canvasElement);
+  const fields = await canvas.findAllByPlaceholderText("点击输入翻译...");
+  const first = fields[0];
+  const second = fields[1];
+  if (!first || !second) throw new Error("Expected two translation units");
+  await userEvent.type(first, "abc");
+  const selectedRow = first.closest("[data-unit-id]");
+  await expect(selectedRow).toHaveClass("z-10");
+  await verifySearchAndDialogFocus(canvasElement, first, selectedRow, args);
+  await verifyComposingEscapeAndClose(canvasElement, first, selectedRow);
+  await verifyUnitKeyboardNavigation(canvasElement, first, second, args);
 }

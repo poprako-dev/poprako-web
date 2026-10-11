@@ -1,3 +1,4 @@
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import { type JSX, useRef, useState } from "react";
 import clsx from "clsx";
 import { Plus, UploadCloud } from "lucide-react";
@@ -6,6 +7,7 @@ import type { PageUploadTaskStatus } from "@/route/_authenticated/_shell/busines
 import { PageCard } from "@/route/_authenticated/_shell/business/comic-detail/page/PageCard";
 
 type Props = {
+  mode?: ComicDetailMode;
   pages: PageInfo[];
   onClickPage?: ((pageId: string) => void) | undefined;
   onDeletePage?: ((pageId: string) => void) | undefined;
@@ -37,6 +39,7 @@ function naturalSort(files: FileList): File[] {
 // PageCard extracted to its own file: ./PageCard
 
 export function PageList({
+  mode = "translator",
   pages,
   onClickPage,
   onDeletePage,
@@ -116,6 +119,7 @@ export function PageList({
           <PageCard
             key={page.id}
             page={page}
+            showTranslationProgress={mode === "translator"}
             onClick={
               onClickPage
                 ? () => {

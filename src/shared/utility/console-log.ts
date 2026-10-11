@@ -32,6 +32,43 @@ function redactText(value: string): string {
     .replaceAll(SENSITIVE_TEXT, (_match, prefix: string) => prefix + REDACTED);
 }
 
+function serializeNestedValue(key: string, value: unknown, seen: WeakSet<object>): unknown {
+  if (SENSITIVE_KEY.test(key)) {
+    return REDACTED;
+  }
+  if (typeof value === "bigint") {
+    return `${value.toString()}n`;
+  }
+  if (typeof value === "function") {
+    return `[Function ${value.name || "anonymous"}]`;
+  }
+  if (typeof value === "symbol") {
+    return value.toString();
+  }
+  if (value instanceof Error) {
+    return { name: value.name, message: value.message, stack: value.stack };
+  }
+  if (value && typeof value === "object") {
+    if (seen.has(value)) {
+      return "[Circular]";
+    }
+    seen.add(value);
+  }
+  return value;
+}
+
+function serializeObject(value: unknown): string {
+  try {
+    const seen = new WeakSet();
+    const serialized = JSON.stringify(value, (key, nestedValue: unknown) =>
+      serializeNestedValue(key, nestedValue, seen),
+    );
+    return redactText(serialized);
+  } catch {
+    return "[Unserializable value]";
+  }
+}
+
 function serializeValue(value: unknown): string {
   if (typeof value === "string") {
     return redactText(value);
@@ -64,41 +101,7 @@ function serializeValue(value: unknown): string {
     return redactText(String(value));
   }
 
-  try {
-    const seen = new WeakSet();
-    const serialized = JSON.stringify(value, function (key, nestedValue: unknown) {
-      if (SENSITIVE_KEY.test(key)) {
-        return REDACTED;
-      }
-      if (typeof nestedValue === "bigint") {
-        return `${nestedValue.toString()}n`;
-      }
-      if (typeof nestedValue === "function") {
-        return `[Function ${nestedValue.name || "anonymous"}]`;
-      }
-      if (typeof nestedValue === "symbol") {
-        return nestedValue.toString();
-      }
-      if (nestedValue instanceof Error) {
-        return {
-          name: nestedValue.name,
-          message: nestedValue.message,
-          stack: nestedValue.stack,
-        };
-      }
-      if (nestedValue && typeof nestedValue === "object") {
-        if (seen.has(nestedValue)) {
-          return "[Circular]";
-        }
-        seen.add(nestedValue);
-      }
-      return nestedValue;
-    });
-
-    return redactText(serialized);
-  } catch {
-    return "[Unserializable value]";
-  }
+  return serializeObject(value);
 }
 
 function addEntry(level: ConsoleLevel, values: unknown[]): void {

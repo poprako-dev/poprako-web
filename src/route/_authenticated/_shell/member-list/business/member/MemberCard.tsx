@@ -38,10 +38,12 @@ function RoleTag({ label, isActive, isFirst, isLast }: RoleTagProps): JSX.Elemen
     <div
       className={clsx(
         "flex flex-1 items-center justify-center py-0.5",
-        "text-[11px] font-semibold transition-all duration-150",
+        "text-[11px] transition-colors duration-150",
         isFirst && "rounded-l-[2px]",
         isLast && "rounded-r-[2px]",
-        isActive ? "bg-role-active text-text-muted-warm" : "text-text-subtle-warm",
+        isActive
+          ? "bg-role-active-emphasis text-ink-stone-700 font-semibold"
+          : "text-ink-stone-400 font-normal",
       )}
     >
       {label}

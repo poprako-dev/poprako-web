@@ -55,7 +55,9 @@ describe("page flag statistics", () => {
     expect(pageFlaggedCount("p3", "p1", [unit], counts)).toBe(3);
     expect(pageFlaggedCount("p3", "p3", undefined, counts)).toBe(3);
   });
+});
 
+describe("page flag statistics", () => {
   test("failed refresh preserves counts, and successful empty retry clears them", async () => {
     const load = vi.fn(() => Promise.resolve(stats));
     const controller = createPageFlaggedStatsController(load);

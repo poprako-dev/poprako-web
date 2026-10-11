@@ -1,3 +1,9 @@
+import { useState } from "react";
+
+import { ArtworkUploadDialog } from "./ArtworkUploadDialog";
+import { usePageArtworks } from "@/route/_authenticated/business/artwork/use-page-artworks";
+import { artworkPermissions } from "@/route/_authenticated/business/artwork/artwork";
+import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import type { ReactElement, RefObject } from "react";
 import type { ComicDetailView } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailContent";
 import type { DetailContract } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
@@ -8,16 +14,19 @@ import type { useComicDetailPages } from "@/route/_authenticated/_shell/business
 import type { useComicDetailExport } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-export";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
-import { ComicDetailHeader } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailHeader";
-import { ComicDetailSidebar } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailSidebar";
+
 import { ComicDetailContent } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailContent";
 import { ComicDetailModalLayout } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailModalLayout";
-import { PageList } from "@/route/_authenticated/_shell/business/comic-detail/page/PageList";
-import { Button } from "@/shared/component/Button";
-import { LoadingCircle } from "@/shared/component/LoadingCircle";
-import { canUploadArtwork } from "@/route/_authenticated/_shell/business/comic-detail/upload/artwork-upload";
 
-type Args = {
+import { Button } from "@/shared/component/Button";
+
+import { ComicDetailMainHeader } from "./ComicDetailMainHeader";
+import { ComicDetailMainSidebar } from "./ComicDetailMainSidebar";
+import { ComicDetailMainPages } from "./ComicDetailMainPages";
+
+export type ComicDetailMainViewProps = {
+  mode: ComicDetailMode;
+  onModeChange: (mode: ComicDetailMode) => void;
   comicInfo: DetailContract["comicInfo"];
   activeMember: DetailContract["activeMember"];
   onClose: DetailContract["onClose"];
@@ -40,7 +49,7 @@ type Args = {
     | "onUpdateChapter"
     | "onArchiveComic"
     | "onDeleteComic"
-    | "onNavigateToTranslator"
+    | "onNavigateToWorkbench"
     | "onDeleteChapterPages"
     | "onExportChapter"
   >;
@@ -50,213 +59,102 @@ type Args = {
   isArchivingComic: boolean;
   isDeletingComic: boolean;
   coverInputRef: RefObject<HTMLInputElement | null>;
-  onOpenArtwork: (chapter: ChapterInfo) => void;
+  onArtworkExported: () => void;
   onOpenComicModifier: () => void;
   onOpenChapterModifier: (chapter: ChapterInfo) => void;
   onConfirmAction: (action: PendingConfirmAction) => void;
   showToast: (message: string, type: ToastType) => void;
 };
 
-export function ComicDetailMainView({
-  comicInfo,
-  activeMember,
-  onClose,
-  chapters,
-  assignments,
-  pages,
-  exportState,
-  callbacks,
-  activeView,
-  onChangeView,
-  workflowPanel,
-  isArchivingComic,
-  isDeletingComic,
-  coverInputRef,
-  onOpenArtwork,
-  onOpenComicModifier,
-  onOpenChapterModifier,
-  onConfirmAction,
-  showToast,
-}: Args): ReactElement {
+type Props = ComicDetailMainViewProps;
+
+export function ComicDetailMainView(props: Props): ReactElement {
+  const {
+    mode,
+    chapters,
+    assignments,
+    pages,
+    callbacks,
+    activeView,
+    onChangeView,
+    workflowPanel,
+    onArtworkExported,
+  } = props;
   const selectedChapterId = chapters.selectedChapterId;
-  const navigateToTranslator = callbacks.onNavigateToTranslator;
-  const canDeleteChapterPages =
-    assignments.canUploadRawPages &&
-    pages.pages.length > 0 &&
-    Boolean(chapters.selectedChapterId) &&
-    Boolean(callbacks.onDeleteChapterPages);
-  const canUploadNewRawPages = assignments.canUploadRawPages && Boolean(chapters.selectedChapterId);
-  const canReuploadRawPages = assignments.canUploadRawPages;
-  const canClickPage = assignments.canTranslateOrProofread || assignments.canReadOnly;
-
-  async function copyTitle(): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(`[${comicInfo.author}]${comicInfo.title}`);
-      showToast("已复制格式化标题", "success");
-    } catch (error: unknown) {
-      console.error("[ComicDetailModal] 复制格式化标题失败:", error);
-      showToast("复制失败，请重试", "error");
-    }
-  }
-
-  const header = (
-    <ComicDetailHeader
-      comicInfo={comicInfo}
-      activeMember={activeMember}
-      chapters={chapters.chapters}
-      selectedChapter={chapters.selectedChapter}
-      selectedChapterId={chapters.selectedChapterId}
-      hasMore={chapters.chaptersHasMore}
-      isLoading={chapters.isChaptersLoading}
-      canCreateChapter={assignments.canCreateChapter}
-      onLoadMore={chapters.handleLoadMoreChapters}
-      onSelect={chapters.setSelectedChapterId}
-      onCreateChapter={callbacks.onCreateChapter}
-      onCreate={(subtitle, presetAssignmentRoles) =>
-        chapters.handleCreateChapter(subtitle, presetAssignmentRoles, callbacks.onCreateChapter)
-      }
-      onDeleteChapter={callbacks.onDeleteChapter}
-      onDelete={(chapterId) => chapters.handleDeleteChapter(chapterId, callbacks.onDeleteChapter)}
-      onLongPressTitle={assignments.isTeamAdmin ? onOpenComicModifier : undefined}
-      onLongPressChapter={
-        assignments.canManageChapterAssignments ? onOpenChapterModifier : undefined
-      }
-      onCopyTitle={() => {
-        void copyTitle();
-      }}
-      onClose={onClose}
-    />
+  const artworks = usePageArtworks(selectedChapterId, mode === "reviewer");
+  const permissions = artworkPermissions(
+    chapters.selectedChapter,
+    assignments.currentAssignment,
+    assignments.isTeamAdmin,
   );
-
-  const sidebar = (
-    <ComicDetailSidebar
-      comicInfo={comicInfo}
-      selectedChapter={chapters.selectedChapter}
-      pagesLength={pages.pages.length}
-      canUploadArtwork={canUploadArtwork(chapters.selectedChapter, assignments.currentAssignment)}
-      onUploadArtwork={() => {
-        if (chapters.selectedChapter) onOpenArtwork(chapters.selectedChapter);
-      }}
-      canReadOnly={assignments.canReadOnly}
-      canUploadCover={exportState.canUploadCover}
-      canTranslateOrProofread={assignments.canTranslateOrProofread}
-      canDeleteChapterPages={canDeleteChapterPages}
-      canArchiveComic={assignments.isTeamAdmin}
-      isTeamAdmin={assignments.isTeamAdmin}
-      isDeletingChapterPages={pages.isDeletingChapterPages}
-      isArchivingComic={isArchivingComic}
-      isDeletingComic={isDeletingComic}
-      isExportingData={exportState.isExportingData}
-      isImportingData={exportState.isImportingData}
-      onNavigateReadOnly={
-        assignments.canReadOnly && selectedChapterId
-          ? () => {
-              const firstPageId = pages.pages[0]?.id;
-              if (!firstPageId) {
-                showToast("当前章节暂无页面", "error");
-                return;
-              }
-              navigateToTranslator(selectedChapterId, firstPageId, true);
-            }
-          : undefined
-      }
-      onExport={() => {
-        onConfirmAction("export-data");
-      }}
-      onImportFileChange={exportState.handleImportFileChange}
-      onDeletePages={() => {
-        onConfirmAction("delete-pages");
-      }}
-      onArchiveComic={() => {
-        onConfirmAction("archive-comic");
-      }}
-      onDeleteComic={() => {
-        onConfirmAction("delete-comic");
-      }}
-      coverInputRef={coverInputRef}
-      coverUpload={exportState.coverUpload}
-    />
-  );
-
-  const pageGrid = pages.isPagesLoading ? (
-    <div className="flex h-full items-center justify-center">
-      <LoadingCircle size={22} aria-label="正在加载页面" />
-    </div>
-  ) : (
-    <PageList
-      pages={pages.pages}
-      enableClick={canClickPage}
-      onClickPage={
-        canClickPage
-          ? (pageId) => {
-              if (!chapters.selectedChapterId) return;
-              callbacks.onNavigateToTranslator(
-                chapters.selectedChapterId,
-                pageId,
-                !assignments.canTranslateOrProofread || undefined,
-              );
-            }
-          : undefined
-      }
-      onAddPages={canUploadNewRawPages ? pages.handleAddRawPages : undefined}
-      canReuploadPage={canReuploadRawPages ? () => true : undefined}
-      isPageReuploading={(pageId) => pages.reuploadingPageIds[pageId] === true}
-      onReuploadPage={
-        canReuploadRawPages
-          ? (pageId, file) => {
-              void pages.handleReuploadPage(pageId, file);
-            }
-          : undefined
-      }
-      reuploadAccept="image/*"
-      accept="image/*"
-      uploadProgressByPageId={pages.uploadProgressByPageId}
-      uploadStatusByPageId={pages.uploadStatusByPageId}
-      uploadErrorByPageId={pages.uploadErrorByPageId}
-    />
-  );
+  const [uploadFiles, setUploadFiles] = useState<{ chapterId: string; files: File[] } | null>(null);
 
   return (
-    <ComicDetailModalLayout
-      header={header}
-      sidebar={sidebar}
-      content={
-        <ComicDetailContent
-          activeView={activeView}
-          chapterId={chapters.selectedChapterId}
-          pageList={
-            <>
-              {pages.pageRecoveryNeeded && (
-                <div role="alert" className="flex items-center gap-2 p-2">
-                  <span>页面信息加载失败</span>
-                  <Button
-                    onClick={() => {
-                      void pages.reloadCurrentPages();
-                    }}
-                  >
-                    重新加载页面
-                  </Button>
-                </div>
-              )}
-              {pages.chapterStatsRecoveryNeeded && (
-                <div role="alert" className="flex items-center gap-2 p-2">
-                  <span>页面已清空，章节统计刷新失败</span>
-                  <Button
-                    onClick={() => {
-                      void pages.retryChapterStats();
-                    }}
-                  >
-                    重新加载章节信息
-                  </Button>
-                </div>
-              )}
-              {pageGrid}
-            </>
-          }
-          workflowPanel={workflowPanel}
-          onChangeView={onChangeView}
+    <>
+      {uploadFiles?.chapterId === selectedChapterId && selectedChapterId && permissions.images && (
+        <ArtworkUploadDialog
+          key={selectedChapterId}
+          chapterId={selectedChapterId}
+          chapterLabel={chapters.selectedChapter?.subtitle ?? "嵌稿"}
+          initialFiles={uploadFiles.files}
+          canArchive={permissions.archive}
+          onClose={() => {
+            setUploadFiles(null);
+          }}
+          onPagesChanged={artworks.reload}
+          onUploaded={onArtworkExported}
         />
-      }
-    />
+      )}
+      <ComicDetailModalLayout
+        header={<ComicDetailMainHeader {...props} />}
+        sidebar={<ComicDetailMainSidebar {...props} artworks={artworks} />}
+        content={
+          <ComicDetailContent
+            activeView={activeView}
+            chapterId={chapters.selectedChapterId}
+            pageList={
+              <>
+                {mode === "translator" && pages.pageRecoveryNeeded && (
+                  <div role="alert" className="flex items-center gap-2 p-2">
+                    <span>页面信息加载失败</span>
+                    <Button
+                      onClick={() => {
+                        void pages.reloadCurrentPages();
+                      }}
+                    >
+                      重新加载页面
+                    </Button>
+                  </div>
+                )}
+                {mode === "translator" && pages.chapterStatsRecoveryNeeded && (
+                  <div role="alert" className="flex items-center gap-2 p-2">
+                    <span>页面已清空，章节统计刷新失败</span>
+                    <Button
+                      onClick={() => {
+                        void pages.retryChapterStats();
+                      }}
+                    >
+                      重新加载章节信息
+                    </Button>
+                  </div>
+                )}
+                <ComicDetailMainPages
+                  mode={mode}
+                  chapters={chapters}
+                  assignments={assignments}
+                  pages={pages}
+                  callbacks={callbacks}
+                  artworks={artworks}
+                  permissions={permissions}
+                  setUploadFiles={setUploadFiles}
+                />
+              </>
+            }
+            workflowPanel={workflowPanel}
+            onChangeView={onChangeView}
+          />
+        }
+      />
+    </>
   );
 }

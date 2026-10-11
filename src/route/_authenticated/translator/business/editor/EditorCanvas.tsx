@@ -6,6 +6,7 @@ import { ToolboxDropdown } from "@/shared/component/toolbox-dropdown/ToolboxDrop
 import { Canvas } from "@/route/_authenticated/translator/business/canvas/Canvas";
 import { TerminologyLookupBar } from "@/route/_authenticated/translator/business/terminology/TerminologyLookupBar";
 import { ReadOnlyPageActions } from "@/route/_authenticated/translator/business/page-statistic/ReadOnlyPageActions";
+import type { ToolboxOption } from "@/shared/component/toolbox-dropdown/toolbox-option";
 import type { EditorSession } from "./use-editor-session";
 type Props = {
   session: Pick<
@@ -47,6 +48,34 @@ type Props = {
     | "completionStage"
   >;
 };
+
+function toolboxOptions(session: Props["session"]): ToolboxOption[] {
+  if (session.isReadOnly) return [];
+  return [
+    {
+      icon: <Command size={20} />,
+      title: "快捷键说明",
+      onClick: () => {
+        session.setIsShortcutPanelOpen(true);
+      },
+    },
+    {
+      icon: <CaseSensitive size={20} />,
+      title: "特殊符号面板",
+      onClick: () => {
+        session.setIsSpecialCharPanelOpen(true);
+      },
+    },
+    {
+      icon: <ReplaceAll size={20} />,
+      title: "搜索与替换",
+      onClick: () => {
+        session.setIsUnitSearchTransformOpen(true);
+      },
+    },
+  ];
+}
+
 export function EditorCanvas({ session }: Props): JSX.Element {
   const {
     project,
@@ -63,9 +92,6 @@ export function EditorCanvas({ session }: Props): JSX.Element {
     imageUrl,
     isLoadingPage,
     isUnitCreationEnabled,
-    setIsShortcutPanelOpen,
-    setIsSpecialCharPanelOpen,
-    setIsUnitSearchTransformOpen,
     isCompletingStage,
     hasCompletedStage,
     setIsCompleteConfirmOpen,
@@ -83,31 +109,7 @@ export function EditorCanvas({ session }: Props): JSX.Element {
     handleDeleteUnit,
     completionStage,
   } = session;
-  const toolboxOptions = isReadOnly
-    ? []
-    : [
-        {
-          icon: <Command size={20} />,
-          title: "快捷键说明",
-          onClick: () => {
-            setIsShortcutPanelOpen(true);
-          },
-        },
-        {
-          icon: <CaseSensitive size={20} />,
-          title: "特殊符号面板",
-          onClick: () => {
-            setIsSpecialCharPanelOpen(true);
-          },
-        },
-        {
-          icon: <ReplaceAll size={20} />,
-          title: "搜索与替换",
-          onClick: () => {
-            setIsUnitSearchTransformOpen(true);
-          },
-        },
-      ];
+  const options = toolboxOptions(session);
 
   return (
     <div className="@container relative w-full h-full bg-surface-stone-700">
@@ -130,7 +132,7 @@ export function EditorCanvas({ session }: Props): JSX.Element {
       />
       {!isReadOnly && <TerminologyLookupBar dataSource={terminology} />}
       <div className="absolute top-2 left-2 flex items-center gap-2">
-        {!isReadOnly && <ToolboxDropdown options={toolboxOptions} direction="down" />}
+        {!isReadOnly && <ToolboxDropdown options={options} direction="down" />}
         <button
           type="button"
           title="退出"

@@ -23,6 +23,96 @@ interface MailActions {
   markRead: (client: ApiClient, mailId: string) => Promise<Result<undefined>>;
 }
 
+type StoreSetter = (
+  partial: Partial<MailData> | ((state: MailData & MailActions) => Partial<MailData>),
+) => void;
+type StoreGetter = () => MailData & MailActions;
+
+async function loadInitial(
+  client: ApiClient,
+  pageSize: number,
+  set: StoreSetter,
+  get: StoreGetter,
+): Promise<Result<SysMailInfo[]>> {
+  const generation = useAppStore.getState().generation;
+  if (get().generation !== generation) set({ ...initialMailData(), generation });
+  const current = get();
+  if (current.loadState === "loading" || current.loadState === "ready") {
+    return { success: true, data: current.mails };
+  }
+
+  set({ loadState: "loading", loadError: null, isLoadingMore: false, loadMoreError: null });
+  const result = await listSysMails(client, 0, pageSize + 1);
+  if (generation !== useAppStore.getState().generation) return result;
+  if (!result.success) {
+    set({ loadState: "error", loadError: result.error });
+    return result;
+  }
+
+  const mails = result.data.slice(0, pageSize);
+  set({
+    mails,
+    hasMore: result.data.length > pageSize,
+    loadState: "ready",
+    loadError: null,
+    isLoadingMore: false,
+    loadMoreError: null,
+    generation,
+  });
+  return { success: true, data: mails };
+}
+
+async function loadMore(
+  client: ApiClient,
+  pageSize: number,
+  set: StoreSetter,
+  get: StoreGetter,
+): Promise<Result<SysMailInfo[]>> {
+  const generation = useAppStore.getState().generation;
+  const current = get();
+  if (
+    current.generation !== generation ||
+    current.loadState !== "ready" ||
+    !current.hasMore ||
+    current.isLoadingMore
+  ) {
+    return { success: true, data: current.mails };
+  }
+  set({ isLoadingMore: true, loadMoreError: null });
+  const result = await listSysMails(client, current.mails.length, pageSize + 1);
+  if (generation !== useAppStore.getState().generation) return result;
+  if (!result.success) {
+    set({ isLoadingMore: false, loadMoreError: result.error });
+    return result;
+  }
+
+  const batch = result.data.slice(0, pageSize);
+  const latestMails = get().mails;
+  const seen = new Set(latestMails.map((mail) => mail.id));
+  const mails = [...latestMails, ...batch.filter((mail) => !seen.has(mail.id))];
+  set({
+    mails,
+    hasMore: result.data.length > pageSize,
+    isLoadingMore: false,
+    loadMoreError: null,
+  });
+  return { success: true, data: mails };
+}
+
+async function markRead(
+  client: ApiClient,
+  mailId: string,
+  set: StoreSetter,
+): Promise<Result<undefined>> {
+  const generation = useAppStore.getState().generation;
+  const result = await markSysMailRead(client, mailId);
+  if (generation !== useAppStore.getState().generation || !result.success) return result;
+  set((state) => ({
+    mails: state.mails.map((mail) => (mail.id === mailId ? { ...mail, isRead: true } : mail)),
+  }));
+  return result;
+}
+
 function initialMailData(): MailData {
   return {
     mails: [],
@@ -37,83 +127,9 @@ function initialMailData(): MailData {
 
 export const useMailStore = create<MailData & MailActions>((set, get) => ({
   ...initialMailData(),
-
-  loadInitial: async (client, pageSize = 15) => {
-    const generation = useAppStore.getState().generation;
-    if (get().generation !== generation) set({ ...initialMailData(), generation });
-    const current = get();
-    if (current.loadState === "loading") {
-      return { success: true, data: current.mails };
-    }
-    if (current.loadState === "ready") {
-      return { success: true, data: current.mails };
-    }
-
-    set({ loadState: "loading", loadError: null, isLoadingMore: false, loadMoreError: null });
-    const result = await listSysMails(client, 0, pageSize + 1);
-    if (generation !== useAppStore.getState().generation) return result;
-
-    if (!result.success) {
-      set({ loadState: "error", loadError: result.error });
-      return result;
-    }
-
-    const mails = result.data.slice(0, pageSize);
-    set({
-      mails,
-      hasMore: result.data.length > pageSize,
-      loadState: "ready",
-      loadError: null,
-      isLoadingMore: false,
-      loadMoreError: null,
-      generation,
-    });
-    return { success: true, data: mails };
-  },
-
-  loadMore: async (client, pageSize = 15) => {
-    const generation = useAppStore.getState().generation;
-    const current = get();
-    if (
-      current.generation !== generation ||
-      current.loadState !== "ready" ||
-      !current.hasMore ||
-      current.isLoadingMore
-    ) {
-      return { success: true, data: current.mails };
-    }
-
-    set({ isLoadingMore: true, loadMoreError: null });
-    const result = await listSysMails(client, current.mails.length, pageSize + 1);
-    if (generation !== useAppStore.getState().generation) return result;
-
-    if (!result.success) {
-      set({ isLoadingMore: false, loadMoreError: result.error });
-      return result;
-    }
-
-    const batch = result.data.slice(0, pageSize);
-    const latestMails = get().mails;
-    const seen = new Set(latestMails.map((mail) => mail.id));
-    const mails = [...latestMails, ...batch.filter((mail) => !seen.has(mail.id))];
-    set({
-      mails,
-      hasMore: result.data.length > pageSize,
-      isLoadingMore: false,
-      loadMoreError: null,
-    });
-    return { success: true, data: mails };
-  },
-
-  markRead: async (client, mailId) => {
-    const generation = useAppStore.getState().generation;
-    const result = await markSysMailRead(client, mailId);
-    if (generation !== useAppStore.getState().generation || !result.success) return result;
-    set((state) => ({
-      mails: state.mails.map((mail) => (mail.id === mailId ? { ...mail, isRead: true } : mail)),
-    }));
-    return result;
-  },
+  loadInitial: (client, pageSize = 15) => loadInitial(client, pageSize, set, get),
+  loadMore: (client, pageSize = 15) => loadMore(client, pageSize, set, get),
+  markRead: (client, mailId) => markRead(client, mailId, set),
 }));
 
 /** Clear request-owned state whenever the authenticated identity changes. */

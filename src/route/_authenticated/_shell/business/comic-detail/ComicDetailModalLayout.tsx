@@ -49,7 +49,7 @@ export function ComicDetailModalLayout({ header, sidebar, content }: Props): JSX
                 "shrink-0 border-line-stone-200 p-2",
                 "flex flex-col bg-surface-stone-50",
                 "w-full border-b",
-                "sm:w-45 sm:border-b-0 sm:border-r sm:overflow-y-auto",
+                "sm:w-45 sm:border-b-0 sm:border-r sm:overflow-hidden",
                 "sm:scrollbar-thin sm:scrollbar-thumb-scrollbar-stone-200",
               )}
             >
