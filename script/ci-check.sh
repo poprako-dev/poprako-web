@@ -3,13 +3,13 @@ set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
-run_deno() {
-    command -v deno >/dev/null 2>&1 || {
-        echo "Deno 2.9 is required to run CI checks." >&2
+run_pnpm() {
+    command -v pnpm >/dev/null 2>&1 || {
+        echo "Node.js 26 and pnpm 12.11.2 is required to run CI checks." >&2
         exit 127
     }
 
-    deno "$@"
+    pnpm "$@"
 }
 
 cd "$project_root"
@@ -23,9 +23,9 @@ case "$suite" in
         ;;
 esac
 
-sh script/assert-deno-version.sh
-run_deno ci
-run_deno task prepare:dependencies
+sh script/assert-js-version.sh
+run_pnpm install --frozen-lockfile
+run_pnpm run prepare:dependencies
 
 wait_checks() {
     check_status=0
@@ -36,18 +36,18 @@ wait_checks() {
 }
 
 check_source() {
-    run_deno task format:check
-    run_deno task project:check
-    run_deno task generate:check
-    run_deno task test:unit
-    run_deno task test:integration
-    run_deno task test:script
+    run_pnpm run format:check
+    run_pnpm run project:check
+    run_pnpm run generate:check
+    run_pnpm run test:unit
+    run_pnpm run test:integration
+    run_pnpm run test:script
 }
 
 check_static() {
-    run_deno task typecheck &
+    run_pnpm run typecheck &
     typecheck_pid=$!
-    run_deno task lint &
+    run_pnpm run lint &
     lint_pid=$!
     check_source &
     source_pid=$!
@@ -55,15 +55,17 @@ check_static() {
 }
 
 check_browser() {
-    run_deno run -A npm:playwright@1.63.0 install --with-deps chromium
-    run_deno task test:storybook
-    run_deno task test:compress-browser
-    run_deno task test:bounded-browser
+    run_pnpm exec playwright install --with-deps chromium
+    run_pnpm run test:storybook
+    run_pnpm run test:storybook-start
+    run_pnpm run test:compress-browser
+    run_pnpm run test:bounded-browser
 }
 
 check_build() {
     # The static suite owns type checking; CI requires every suite to pass.
-    run_deno run -A npm:vite@8.0.16 build
+    run_pnpm exec vite build
+    run_pnpm run build-storybook
     sh script/test-deployment.sh
 }
 

@@ -1,3 +1,4 @@
+import { readFileSync, readdirSync } from "node:fs";
 import ts from "typescript";
 import type { Finding } from "./check-style.ts";
 
@@ -154,13 +155,12 @@ function inspectTypeScript(path: string, content: string): Finding[] {
       report(position, "appearance.raw-color", "use a semantic color token for interface colors");
     }
   };
-  visitTypeScript(source, content, inspectClass, inspectColor);
+  visitTypeScript(source, inspectClass, inspectColor);
   return findings;
 }
 
 function visitTypeScript(
   source: ts.SourceFile,
-  content: string,
   inspectClass: StringInspector,
   inspectColor: StringInspector,
 ): void {
@@ -280,13 +280,13 @@ export function checkAppearance(root: string): Finding[] {
   while (pending.length > 0) {
     const directory = pending.pop();
     if (!directory) continue;
-    for (const entry of Deno.readDirSync(directory)) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
       const path = `${directory}/${entry.name}`;
-      if (entry.isDirectory) {
+      if (entry.isDirectory()) {
         if (entry.name !== "node_modules" && entry.name !== "dist") pending.push(path);
       } else if (/\.(?:tsx?|css)$/u.test(entry.name)) {
         const relativePath = path.replaceAll("\\", "/").slice(normalizedRoot.length + 1);
-        findings.push(...inspectAppearanceFile(relativePath, Deno.readTextFileSync(path)));
+        findings.push(...inspectAppearanceFile(relativePath, readFileSync(path, "utf8")));
       }
     }
   }

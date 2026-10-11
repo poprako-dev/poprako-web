@@ -1,0 +1,6 @@
+allowBuilds:
+  msw: true
+  esbuild: true
+# Keep the existing accessibility baseline's detector version during migration.
+overrides:
+  axe-core: 4.13.0

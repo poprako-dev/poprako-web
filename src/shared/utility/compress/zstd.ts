@@ -1,5 +1,5 @@
-import { fromIterator, readChunks } from "./streams";
-import { ZstdCodec } from "./zstd-codec";
+import { fromIterator, readChunks } from "./streams.ts";
+import { ZstdCodec } from "./zstd-codec.ts";
 
 async function* transform(
   source: ReadableStream<Uint8Array>,

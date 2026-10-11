@@ -1,4 +1,4 @@
-// Deno's native storage survives jsdom installation. Isolate each test worker's origin.
+// Node.js native storage survives jsdom installation. Isolate each test worker's origin.
 const storage = new Map<string, string>();
 Object.defineProperty(globalThis, "localStorage", {
   configurable: true,

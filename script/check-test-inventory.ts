@@ -1,8 +1,10 @@
+import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import {
   STORYBOOK_STORY_GLOBS,
   VITEST_INTEGRATION_INCLUDE,
   VITEST_UNIT_INCLUDE,
+  VITEST_SCRIPT_INCLUDE,
 } from "./test-runner-config.ts";
 
 export type TestInventoryIssue = {
@@ -25,7 +27,7 @@ function globExpression(pattern: string): RegExp {
   const normalized = pattern.replace(/^\.\.\//u, "");
   let source = "^";
   for (let index = 0; index < normalized.length; index++) {
-    const character = normalized[index];
+    const character = normalized.charAt(index);
     if (character === "*" && normalized[index + 1] === "*") {
       index++;
       if (normalized[index + 1] === "/") {
@@ -70,30 +72,17 @@ async function discoverFiles(
 ): Promise<string[]> {
   const directory = relative.length === 0 ? root : `${root}/${relative}`;
   const files: string[] = [];
-  for await (const entry of Deno.readDir(directory)) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
     const child = relative.length === 0 ? entry.name : `${relative}/${entry.name}`;
-    if (entry.isDirectory) {
+    if (entry.isDirectory()) {
       files.push(...(await discoverFiles(root, bucket, child)));
       continue;
     }
-    if (entry.isFile && isTestOrStoryFile(child)) {
+    if (entry.isFile() && isTestOrStoryFile(child)) {
       files.push(`${bucket}/${child}`);
     }
   }
   return files;
-}
-
-function denoTestRoot(denoConfig: { tasks?: Record<string, unknown> }): string | null {
-  const task = denoConfig.tasks?.["test:script"];
-  if (typeof task !== "string") {
-    return null;
-  }
-  const match = /^deno\s+test\s+-A\s+([\w./-]+)$/u.exec(task.trim());
-  return match?.[1] ?? null;
-}
-
-function hasDenoDiscoverySuffix(file: string): boolean {
-  return /(?:_test|\.test)\.(?:[cm]?[jt]sx?)$/u.test(file);
 }
 
 export function assignTestRunners(file: string, scriptRoot: string | null): string[] {
@@ -105,17 +94,20 @@ export function assignTestRunners(file: string, scriptRoot: string | null): stri
   const owners = runners
     .filter(({ patterns }) => matchesAny(file, patterns))
     .map(({ name }) => name);
-  if (scriptRoot && file.startsWith(`${scriptRoot}/`) && hasDenoDiscoverySuffix(file)) {
-    owners.push("deno:test-script");
+  if (scriptRoot && file.startsWith(`${scriptRoot}/`) && matchesAny(file, VITEST_SCRIPT_INCLUDE)) {
+    owners.push("vitest:script");
   }
   return owners;
 }
 
 export async function buildTestInventory(root: string): Promise<TestInventory> {
-  const denoConfig = JSON.parse(await Deno.readTextFile(`${root}/deno.json`)) as {
-    tasks?: Record<string, unknown>;
+  const config = JSON.parse(await readFile(`${root}/package.json`, "utf8")) as {
+    scripts?: Record<string, unknown>;
   };
-  const scriptRoot = denoTestRoot(denoConfig);
+  const scriptRoot =
+    config.scripts?.["test:script"] === "vitest run --config vitest.script.config.ts"
+      ? "script"
+      : null;
   const files = (
     await Promise.all([
       discoverFiles(`${root}/src`, "src"),
@@ -137,8 +129,8 @@ export async function buildTestInventory(root: string): Promise<TestInventory> {
 
   if (scriptRoot !== "script") {
     issues.push({
-      file: "deno.json#tasks.test:script",
-      runners: scriptRoot ? [scriptRoot] : [],
+      file: "package.json#scripts.test:script",
+      runners: [],
     });
   }
   return { files, assignments, issues };
@@ -152,7 +144,7 @@ if (import.meta.main) {
       const owners = issue.runners.length === 0 ? "none" : issue.runners.join(", ");
       console.error(`${issue.file}: expected exactly one test runner, found ${owners}`);
     }
-    Deno.exitCode = 1;
+    process.exitCode = 1;
   } else {
     console.log(
       `Test inventory passed: ${String(

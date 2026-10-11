@@ -8,6 +8,6 @@
 Release。补丁版本包含兼容修复，次版本增加兼容能力，主版本可以改变公开行为。
 
 Release 产物必须由 GitHub Actions 构建，不能从维护者机器上传。每个 Release
-包含静态站点压缩包、构建使用的 Deno lockfile、构建来源信息和 SHA-256 校验
+包含静态站点压缩包、构建使用的 pnpm lockfile、构建来源信息和 SHA-256 校验
 文件。部署脚本的原子切换、幂等和失败回滚行为由仓库测试覆盖；生产发布仍须经过
 `production` environment 的保护规则。

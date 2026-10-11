@@ -16,7 +16,7 @@ if (findings.length > 0) {
   for (const finding of findings) {
     console.error(`${finding.file}:${String(finding.line)} ${finding.rule}: ${finding.message}`);
   }
-  Deno.exitCode = 1;
+  process.exitCode = 1;
 } else {
   console.log("Project structure, naming, size, exports, and import boundaries passed.");
 }

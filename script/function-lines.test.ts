@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import {
   inspectFunctionLines,
   type FunctionLineFinding,
@@ -38,7 +38,7 @@ function componentSource(logic: number, render: number): string {
   ].join("\n");
 }
 
-void test("function checker includes comments and blank lines at the 50/51 boundary", () => {
+test("function checker includes comments and blank lines at the 50/51 boundary", () => {
   assert.deepEqual(inspectFunctionLines("work.ts", functionSource(50)), []);
   const source = functionSource(51).replace("  // physical line", "");
   assert.deepEqual(inspectFunctionLines("work.ts", source), [
@@ -54,7 +54,7 @@ void test("function checker includes comments and blank lines at the 50/51 bound
   ]);
 });
 
-void test("function checker includes multiline signatures, CRLF and the closing brace", () => {
+test("function checker includes multiline signatures, CRLF and the closing brace", () => {
   const source = functionSource(49).replace(
     "function work() {",
     "function work(\n  value: number,\n) {",
@@ -64,14 +64,14 @@ void test("function checker includes multiline signatures, CRLF and the closing 
   assert.equal(finding.functionName, "work");
 });
 
-void test("function checker reports source positions after leading trivia", () => {
+test("function checker reports source positions after leading trivia", () => {
   const source = "// preceding comment\n\n  " + functionSource(51);
   const finding = onlyFinding("work.ts", source);
   assert.equal(finding.line, 3);
   assert.equal(finding.column, 3);
 });
 
-void test("function checker covers expressions, callbacks, methods, constructors and accessors", () => {
+test("function checker covers expressions, callbacks, methods, constructors and accessors", () => {
   const forms = [
     ["const work = () => {", "};", "work"],
     ["const work = function () {", "};", "work"],
@@ -81,7 +81,7 @@ void test("function checker covers expressions, callbacks, methods, constructors
     ["class Example { get value() {", "} }", "value"],
     ["class Example { set value(next) {", "} }", "value"],
     ["class Example { async *work() {", "} }", "work"],
-  ];
+  ] as const;
 
   for (const [opening, closing, name] of forms) {
     const finding = onlyFinding("work.ts", functionSource(51, opening, closing));
@@ -90,7 +90,7 @@ void test("function checker covers expressions, callbacks, methods, constructors
   }
 });
 
-void test("nested functions are checked independently and remain part of the outer function", () => {
+test("nested functions are checked independently and remain part of the outer function", () => {
   const source = ["function outer() {", functionSource(51, "function inner() {"), "}"].join("\n");
   const findings = inspectFunctionLines("work.ts", source);
   assert.deepEqual(
@@ -102,7 +102,7 @@ void test("nested functions are checked independently and remain part of the out
   );
 });
 
-void test("bodyless signatures and function-looking text do not produce findings", () => {
+test("bodyless signatures and function-looking text do not produce findings", () => {
   const source = [
     "declare function work(): void;",
     "interface Contract { work(): void; }",
@@ -112,7 +112,7 @@ void test("bodyless signatures and function-looking text do not produce findings
   assert.deepEqual(inspectFunctionLines("work.ts", source), []);
 });
 
-void test("component logic and render returns have independent inclusive limits", () => {
+test("component logic and render returns have independent inclusive limits", () => {
   assert.deepEqual(inspectFunctionLines("Page.tsx", componentSource(50, 150)), []);
   assert.deepEqual(
     inspectFunctionLines("Page.tsx", componentSource(51, 151)).map(({ rule, actual, limit }) => ({
@@ -127,7 +127,7 @@ void test("component logic and render returns have independent inclusive limits"
   );
 });
 
-void test("component return lines are aggregated across early and primary returns", () => {
+test("component return lines are aggregated across early and primary returns", () => {
   const source = componentSource(2, 150).replace(
     "function Page() {",
     "function Page() {\nif (empty) {\nreturn null;\n}",
@@ -145,7 +145,7 @@ void test("component return lines are aggregated across early and primary return
   assert.equal(onlyFinding("Page.tsx", branches).actual, 151);
 });
 
-void test("implicit JSX returns of component arrows receive the 150-line render limit", () => {
+test("implicit JSX returns of component arrows receive the 150-line render limit", () => {
   const source = renderSource(150).replace("  return (", "const Page = () => (");
   assert.deepEqual(inspectFunctionLines("Page.tsx", source), []);
   const finding = onlyFinding("Page.tsx", source.replace("    <div>", "    <div>\n<span />"));
@@ -153,7 +153,7 @@ void test("implicit JSX returns of component arrows receive the 150-line render 
   assert.equal(finding.actual, 151);
 });
 
-void test("callbacks inside component returns retain their own 50-line limit", () => {
+test("callbacks inside component returns retain their own 50-line limit", () => {
   const callback = functionSource(51, "{(() => {", "})()}");
   const source = ["function Page() {", "return <div>", callback, "</div>;", "}"].join("\n");
   const finding = onlyFinding("Page.tsx", source);
@@ -161,7 +161,7 @@ void test("callbacks inside component returns retain their own 50-line limit", (
   assert.equal(finding.actual, 51);
 });
 
-void test("nested callback returns are not deducted from component logic", () => {
+test("nested callback returns are not deducted from component logic", () => {
   const callback = [
     "const cleanup = () => {",
     "return (",
@@ -176,7 +176,7 @@ void test("nested callback returns are not deducted from component logic", () =>
   assert.equal(finding.actual, 52);
 });
 
-void test("component return intervals sharing a physical line are counted only once", () => {
+test("component return intervals sharing a physical line are counted only once", () => {
   const source = componentSource(50, 150).replace(
     "function Page() {",
     "function Page() { if (empty) return null; if (other) return null;",
@@ -184,7 +184,7 @@ void test("component return intervals sharing a physical line are counted only o
   assert.equal(onlyFinding("Page.tsx", source).actual, 151);
 });
 
-void test("ordinary functions and hooks cannot deduct their returns", () => {
+test("ordinary functions and hooks cannot deduct their returns", () => {
   for (const opening of ["function work() {", "function usePage() {"]) {
     const source = componentSource(2, 60).replace("function Page() {", opening);
     const finding = onlyFinding("Page.tsx", source);
@@ -195,7 +195,7 @@ void test("ordinary functions and hooks cannot deduct their returns", () => {
   assert.equal(onlyFinding("Page.tsx", functionSource(51, "function Factory() {")).actual, 51);
 });
 
-void test("JSX returned through a list callback identifies a named component", () => {
+test("JSX returned through a list callback identifies a named component", () => {
   const source = [
     "function Page() {",
     "return items.map(item => (",
@@ -206,7 +206,7 @@ void test("JSX returned through a list callback identifies a named component", (
   assert.deepEqual(inspectFunctionLines("Page.tsx", source), []);
 });
 
-void test("JavaScript, MJS and JSX are parsed in their native script modes", () => {
+test("JavaScript, MJS and JSX are parsed in their native script modes", () => {
   for (const file of ["work.js", "work.mjs", "work.cjs", "work.mts", "work.cts"]) {
     assert.equal(onlyFinding(file, functionSource(51)).actual, 51, file);
   }

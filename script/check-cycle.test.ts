@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { checkRuntimeCycles } from "./check-cycle.ts";
 
-void test("cycle checker follows runtime imports but not type-only references", () => {
+test("cycle checker follows runtime imports but not type-only references", () => {
   const edge = { line: 1, clause: "module declaration" };
   assert.equal(
     checkRuntimeCycles([

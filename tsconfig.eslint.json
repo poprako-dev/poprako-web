@@ -8,7 +8,6 @@
     "*.config.js",
     "*.config.mjs",
     "vitest.shims.d.ts",
-    "script/deno-namespace.eslint.d.ts",
     ".storybook/**/*.ts",
     "script/**/*.ts",
     "linters/**/*.ts",

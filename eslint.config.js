@@ -127,10 +127,6 @@ const configuration = tseslint.config(
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
-    files: ["script/**/*.mjs"],
-    languageOptions: { globals: { ...globals.node, Deno: "readonly" } },
-  },
-  {
     files: ["src/**/*.test.{ts,tsx}", "src/application/test/**/*.ts"],
     languageOptions: {
       parserOptions: {

@@ -1,4 +1,4 @@
-// Deno 2.9: deno run -A script/test-compress-browser.mjs [--large]
+// Node.js 26: node script/test-compress-browser.mjs [--large]
 /// <reference lib="dom" />
 /// <reference path="./browser-test-globals.d.ts" />
 // All input/output data stays under test-resource. Production Vite bundle, real Chromium Worker.

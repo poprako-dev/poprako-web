@@ -3,39 +3,40 @@ import { execFile } from "node:child_process";
 import { chmod, copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
-import { test } from "node:test";
+import { test } from "vitest";
 import { promisify } from "node:util";
 
 const execute = promisify(execFile);
 
 const staticChecks = [
-  "task format:check",
-  "task typecheck",
-  "task lint",
-  "task project:check",
-  "task generate:check",
-  "task test:unit",
-  "task test:integration",
-  "task test:script",
+  "run format:check",
+  "run typecheck",
+  "run lint",
+  "run project:check",
+  "run generate:check",
+  "run test:unit",
+  "run test:integration",
+  "run test:script",
 ];
 const browserChecks = [
-  "run -A npm:playwright@1.63.0 install --with-deps chromium",
-  "task test:storybook",
-  "task test:compress-browser",
-  "task test:bounded-browser",
+  "exec playwright install --with-deps chromium",
+  "run test:storybook",
+  "run test:storybook-start",
+  "run test:compress-browser",
+  "run test:bounded-browser",
 ];
-const buildChecks = ["run -A npm:vite@8.0.16 build", "deployment"];
+const buildChecks = ["exec vite build", "run build-storybook", "deployment"];
 
 async function writeFakeExecutables(root: string): Promise<void> {
   await writeFile(
-    `${root}/bin/deno`,
+    `${root}/bin/pnpm`,
     `#!/bin/sh
-if [ "$1" = --version ]; then printf 'deno 2.9.6\n'; exit 0; fi
+if [ "$1" = --version ]; then printf '12.11.2\n'; exit 0; fi
 printf '%s\n' "$*" >> "$CI_TASK_LOG"
 if [ "$*" = "$CI_FAIL_TASK" ]; then exit 1; fi
 `,
   );
-  await chmod(`${root}/bin/deno`, 0o755);
+  await chmod(`${root}/bin/pnpm`, 0o755);
   await writeFile(
     `${root}/script/test-deployment.sh`,
     `#!/bin/sh
@@ -77,10 +78,11 @@ async function runSuite(
     await mkdir(`${root}/bin`);
     for (const source of [
       new URL("./ci-check.sh", import.meta.url),
-      new URL("./assert-deno-version.sh", import.meta.url),
+      new URL("./assert-js-version.sh", import.meta.url),
     ]) {
       await copyFile(source, `${root}/script/${basename(source.pathname)}`);
     }
+    await writeFile(`${root}/script/assert-js-version.sh`, "#!/bin/sh\nexit 0\n");
     await writeFakeExecutables(root);
     const success = await runCiScript(root, suite, failingTask);
     const calls = await readCiCalls(root);
@@ -104,32 +106,38 @@ for (const [suite, checks] of [
   ["browser", browserChecks],
   ["build", buildChecks],
 ] as const) {
-  void test(`CI ${suite} suite runs its correctness checks`, async () => {
+  test(`CI ${suite} suite runs its correctness checks`, async () => {
     const result = await runSuite(suite);
     assert.equal(result.success, true);
-    assert.deepEqual(result.calls.slice(0, 2), ["ci", "task prepare:dependencies"]);
+    assert.deepEqual(result.calls.slice(0, 2), [
+      "install --frozen-lockfile",
+      "run prepare:dependencies",
+    ]);
     assert.deepEqual(result.calls.slice(2).sort(), [...checks].sort());
   });
 }
 
-void test("default CI covers every suite with one typecheck and no demo builds", async () => {
+test("default CI covers every suite with one typecheck and both builds", async () => {
   const result = await runSuite();
   assert.equal(result.success, true);
-  assert.deepEqual(result.calls.slice(0, 2), ["ci", "task prepare:dependencies"]);
+  assert.deepEqual(result.calls.slice(0, 2), [
+    "install --frozen-lockfile",
+    "run prepare:dependencies",
+  ]);
   assert.deepEqual(
     result.calls.slice(2).sort(),
     [...staticChecks, ...browserChecks, ...buildChecks].sort(),
   );
 });
 
-void test("CI fails on an unsuccessful correctness check", async () => {
-  const result = await runSuite("static", "task lint");
+test("CI fails on an unsuccessful correctness check", async () => {
+  const result = await runSuite("static", "run lint");
   assert.equal(result.success, false);
-  assert.ok(result.calls.includes("task lint"));
-  assert.ok(result.calls.includes("task test:script"));
+  assert.ok(result.calls.includes("run lint"));
+  assert.ok(result.calls.includes("run test:script"));
 });
 
-void test("unknown CI suites fail before dependency installation", async () => {
+test("unknown CI suites fail before dependency installation", async () => {
   const result = await runSuite("missing");
   assert.equal(result.success, false);
   assert.deepEqual(result.calls, []);

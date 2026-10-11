@@ -1,7 +1,7 @@
 import { createTarDecoder, createTarPacker, type TarHeader } from "modern-tar";
 import { ZipWriter } from "@zip.js/zip.js";
-import { zstdStream } from "./zstd";
-import type { ArchiveFile, ArchiveProgress, WorkerJob } from "./types";
+import { zstdStream } from "./zstd.ts";
+import type { ArchiveFile, ArchiveProgress, WorkerJob } from "./types.ts";
 
 export function validateName(name: string): void {
   if (!name || name.includes("\\") || name.includes(":")) {

@@ -1,20 +1,27 @@
-const command = new Deno.Command(Deno.execPath(), {
-  args: ["task", "storybook", "--ci", "--no-open", "--disable-telemetry", "--port", "6006"],
-  cwd: new URL("../", import.meta.url),
-  stdout: "piped",
-  stderr: "piped",
-});
+import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
+import { text } from "node:stream/consumers";
 
-const child = command.spawn();
-const stdoutPromise = new Response(child.stdout).text();
-const stderrPromise = new Response(child.stderr).text();
+const require = createRequire(import.meta.url);
+const cli = join(dirname(require.resolve("storybook/package.json")), "dist/bin/dispatcher.js");
+const child = spawn(
+  process.execPath,
+  [cli, "dev", "--ci", "--no-open", "--disable-telemetry", "--port", "6006"],
+  { cwd: new URL("../", import.meta.url), stdio: ["ignore", "pipe", "pipe"] },
+);
+const stdoutPromise = text(child.stdout);
+const stderrPromise = text(child.stderr);
 let exited = false;
 function hasExited(): boolean {
   return exited;
 }
-const statusPromise = child.status.then((status) => {
-  exited = true;
-  return status;
+const statusPromise = new Promise<number | null>((resolve, reject) => {
+  child.once("error", reject);
+  child.once("close", (code) => {
+    exited = true;
+    resolve(code);
+  });
 });
 const timeout = setTimeout(() => {
   child.kill("SIGTERM");
@@ -36,7 +43,7 @@ try {
     const status = await statusPromise;
     const [stdout, stderr] = await Promise.all([stdoutPromise, stderrPromise]);
     throw new Error(
-      `Storybook did not serve /iframe.html (${String(status.code)}).\n${stdout}\n${stderr}`,
+      `Storybook did not serve /iframe.html (${String(status)}).\n${stdout}\n${stderr}`,
     );
   }
   console.log("Storybook HTTP startup smoke passed.");

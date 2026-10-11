@@ -27,7 +27,6 @@ const PREPARED_STORY =
   "  story<TInput extends Simplify<StoryAnnotations<T, AddMocks<T['args'], MetaInput['args']>, " +
   "SetOptional<T['args'], keyof T['args'] & keyof MetaInput['args']>>>>" +
   "(story: TInput): ReactStory<T, TInput>;";
-const RADIX_STORE_DIRECTORY = "@radix-ui+react-select@2.3.7";
 const RADIX_PACKAGE = "@radix-ui/react-select";
 const RADIX_DECLARATION = "dist/index.d.mts";
 const RADIX_ORIGINAL_HASH = "a0fa43b27364a340ea7639ff5fdffbcd375ecf49e6ed5df3eec73b3d74a84d58";
@@ -84,15 +83,13 @@ export async function findDeclaration(root: string): Promise<string> {
 
 async function findPinnedDeclaration(
   root: string,
-  storeDirectory: string,
   packageName: string,
   version: string,
   declaration: string,
 ): Promise<string> {
   const installation = await realpath(join(root, "node_modules"));
-  const packageDirectory = await realpath(
-    join(installation, ".deno", storeDirectory, "node_modules", packageName),
-  );
+  const require = createRequire(await realpath(join(installation, "radix-ui/package.json")));
+  const packageDirectory = resolve(dirname(await realpath(require.resolve(packageName))), "..");
   requireLocalPath(installation, packageDirectory);
   const manifestPath = join(packageDirectory, "package.json");
   const parsed: unknown = JSON.parse(await readFile(manifestPath, "utf8"));
@@ -182,13 +179,7 @@ async function dependencyTargets(root: string): Promise<DependencyTarget[]> {
       expectedHash: PREPARED_HASH,
     },
     {
-      path: await findPinnedDeclaration(
-        root,
-        RADIX_STORE_DIRECTORY,
-        RADIX_PACKAGE,
-        "2.3.7",
-        RADIX_DECLARATION,
-      ),
+      path: await findPinnedDeclaration(root, RADIX_PACKAGE, "2.3.7", RADIX_DECLARATION),
       label: "Radix Select",
       prepare: (content: string) =>
         preparePinnedFile(
@@ -220,7 +211,7 @@ function verifyPreparedTarget(target: DependencyTarget, content: string): Prepar
   const hash = declarationHash(content);
   if (hash !== target.expectedHash) {
     throw new Error(
-      `${target.label} declarations are not prepared; run deno task prepare:dependencies.`,
+      `${target.label} declarations are not prepared; run pnpm run prepare:dependencies.`,
     );
   }
   return { path: target.path, changed: false, hash };
@@ -242,7 +233,7 @@ if (
 ) {
   const args = process.argv.slice(2);
   if (args.some((argument) => argument !== "--check") || args.length > 1) {
-    throw new Error("Usage: deno task prepare:dependencies [--check]");
+    throw new Error("Usage: pnpm run prepare:dependencies [--check]");
   }
   const result = await prepareDependencies(
     process.cwd(),

@@ -1,4 +1,4 @@
-// Deno 2.9: deno run -A script/test-bounded-browser.mjs
+// Node.js 26: node script/test-bounded-browser.mjs
 /// <reference lib="dom" />
 /// <reference path="./browser-test-globals.d.ts" />
 import { build, preview } from "vite";
