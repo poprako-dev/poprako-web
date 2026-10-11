@@ -58,7 +58,7 @@ type ComicDetailHostState = {
   urlChapterId: string | null;
   detailMode: ComicDetailMode;
   changeDetailMode: (mode: ComicDetailMode, chapterId: string | null) => void;
-  openComicDetail: (comicId: string, chapterId?: string | null, mode?: ComicDetailMode) => void;
+  openComicDetail: (comicId: string, chapterId?: string | null) => void;
   clearComicDetail: () => void;
   retryComicDetail: () => void;
   navigateToWorkbench: (
@@ -153,9 +153,8 @@ function useComicDetailSearchActions(
   userId: string,
 ): Pick<ComicDetailHostState, "openComicDetail" | "clearComicDetail" | "retryComicDetail"> {
   const openComicDetail = useCallback(
-    (comicId: string, chapterId?: string | null, mode?: ComicDetailMode) => {
-      const nextMode = mode ?? readComicDetailMode(userId);
-      saveComicDetailMode(userId, nextMode);
+    (comicId: string, chapterId?: string | null) => {
+      const nextMode = readComicDetailMode(userId);
       setSearchParams(comicId, chapterId ?? null, nextMode);
     },
     [setSearchParams, userId],

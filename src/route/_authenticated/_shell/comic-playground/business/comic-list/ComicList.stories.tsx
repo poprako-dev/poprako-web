@@ -244,7 +244,7 @@ export const ReviewerMode: Story = {
   render: (args) => <ReviewerComicList onComicClick={args.onComicClick} />,
   play: async ({ args, canvasElement }) => {
     await userEvent.click(await within(canvasElement).findByText("测试漫画 1"));
-    await expect(args.onComicClick).toHaveBeenLastCalledWith("comic-0", undefined, "reviewer");
+    await expect(args.onComicClick).toHaveBeenLastCalledWith("comic-0", undefined);
   },
 };
 

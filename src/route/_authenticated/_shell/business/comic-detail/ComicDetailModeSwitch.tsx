@@ -26,10 +26,12 @@ export function ComicDetailModeSwitch({ mode, onChange }: Props): JSX.Element {
             }}
             className={clsx(
               "flex flex-1 items-center justify-center py-0.5",
-              "text-[11px] font-semibold transition-colors duration-150",
+              "text-[11px] transition-colors duration-150",
               "first:rounded-l-[2px] last:rounded-r-[2px]",
               "focus-visible:outline-2 focus-visible:outline-primary/60",
-              mode === value ? "bg-role-active text-ink-stone-700" : "text-text-muted-warm",
+              mode === value
+                ? "bg-role-active-emphasis text-ink-stone-700 font-semibold"
+                : "text-text-muted-warm font-normal",
             )}
           >
             {label}

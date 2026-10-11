@@ -42,7 +42,7 @@ function RoleTag({ label, isActive, isFirst, isLast }: RoleTagProps): JSX.Elemen
         isFirst && "rounded-l-[2px]",
         isLast && "rounded-r-[2px]",
         isActive
-          ? "bg-primary-muted text-primary-text font-bold ring-1 ring-inset ring-primary-border"
+          ? "bg-role-active-emphasis text-ink-stone-700 font-semibold"
           : "text-ink-stone-400 font-normal",
       )}
     >
