@@ -8,6 +8,7 @@ import type { ResultFailure } from "@/shared/utility/result";
 import { usePaginatedList } from "@/route/_authenticated/translator/business/terminology/use-paginated-list";
 import { useLongPress } from "@/shared/hook/use-long-press";
 import { InfiniteTerminologyList } from "@/route/_authenticated/translator/business/terminology/InfiniteTerminologyList";
+import { TermCopyButton } from "./TermCopyButton";
 
 const PAGE_SIZE = 30;
 
@@ -61,6 +62,7 @@ function TermRow({ term, onEdit }: RowProps): React.ReactElement {
           <span className="text-[11px] text-text-muted-warm">暂无译名</span>
         )}
       </div>
+      <TermCopyButton target={term.targets[0]} />
     </div>
   );
 }
