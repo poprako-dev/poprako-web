@@ -1,5 +1,18 @@
 import { describe, expect, test } from "vitest";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
+import { defaultUndoKeys, isShortcutMatch } from "./shortcut";
+
+test.each(["Macintosh", "Windows NT", "Linux"])("undo default matches %s", (platform) => {
+  const mac = platform === "Macintosh";
+  const keys = defaultUndoKeys(platform);
+  expect(keys).toEqual([mac ? "Meta" : "Control", "."]);
+  expect(
+    isShortcutMatch(
+      { key: ".", metaKey: mac, ctrlKey: !mac, altKey: false, shiftKey: false } as KeyboardEvent,
+      keys,
+    ),
+  ).toBe(true);
+});
 
 describe("keyboard composition", () => {
   test("recognizes active composition and the IME confirmation fallback", () => {

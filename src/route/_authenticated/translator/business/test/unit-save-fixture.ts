@@ -13,6 +13,7 @@ import type {
 } from "@/route/_authenticated/translator/business/contract/type";
 
 type ResolveUnitId = (id: string) => string;
+type FixturePage = { units: UnitInfo[]; hidden: Set<string>; visible: UnitInfo[] };
 
 function createdUnitFromOp(op: UnitCreateOp, id: string, index: number): UnitInfo {
   return {
@@ -63,17 +64,22 @@ function patchedUnit(unit: UnitInfo, op: UnitPatchOp): UnitInfo {
   };
 }
 
-function applyUnitOperation(units: UnitInfo[], op: UnitOp, idOf: ResolveUnitId): void {
+function applyUnitOperation(
+  units: UnitInfo[],
+  op: UnitOp,
+  idOf: ResolveUnitId,
+  hidden: Set<string>,
+): void {
   const id = idOf(op.edit === "create" ? op.localId : op.id);
   if (op.edit === "delete") {
-    const remaining = units.filter((unit) => unit.id !== id);
-    units.splice(0, units.length, ...remaining);
+    hidden.add(id);
     return;
   }
 
+  hidden.delete(id);
   const position = units.findIndex((unit) => unit.id === id);
   const unit = units[position];
-  if (!unit) return;
+  if (!unit) throw new Error("保存目标 Unit 不存在");
   if (op.edit === "patch") {
     units[position] = patchedUnit(unit, op);
     if (op.nextId.type === "skip") return;
@@ -95,8 +101,13 @@ function moveUnit(
   units.splice(position === -1 ? units.length : position, 0, moved);
 }
 
-function applyUnitOperations(units: UnitInfo[], ops: UnitOp[], idOf: ResolveUnitId): UnitInfo[] {
-  for (const op of ops) applyUnitOperation(units, op, idOf);
+function applyUnitOperations(
+  units: UnitInfo[],
+  ops: UnitOp[],
+  idOf: ResolveUnitId,
+  hidden: Set<string>,
+): UnitInfo[] {
+  for (const op of ops) applyUnitOperation(units, op, idOf, hidden);
   return units;
 }
 
@@ -108,6 +119,7 @@ function createCreatedUnitIds(diff: UnitDiff): CreatedUnitId[] {
 
 export function createUnitSaveFixture(pages: Map<string, UnitInfo[]>): SaveUnits {
   const receipts = new Map<string, UnitSaveResult>();
+  const states = new Map<string, FixturePage>();
   // eslint-disable-next-line @typescript-eslint/require-await
   return async (pageId, diff, saveId) => {
     const previous = receipts.get(saveId);
@@ -115,11 +127,31 @@ export function createUnitSaveFixture(pages: Map<string, UnitInfo[]>): SaveUnits
     const createdUnitIds = createCreatedUnitIds(diff);
     const identities = new Map(createdUnitIds.map(({ localId, unitId }) => [localId, unitId]));
     const idOf = (id: string): string => identities.get(id) ?? id;
-    const units = appendCreatedUnits([...(pages.get(pageId) ?? [])], diff.ops, idOf);
-    applyUnitOperations(units, diff.ops, idOf);
-    pages.set(pageId, normalizeUnitIndexes(units));
+    const page = fixturePage(states, pageId, pages.get(pageId) ?? []);
+    const units = appendCreatedUnits([...page.units], diff.ops, idOf);
+    applyUnitOperations(units, diff.ops, idOf, page.hidden);
+    page.units = units;
+    page.visible = normalizeUnitIndexes(units.filter((unit) => !page.hidden.has(unit.id)));
+    pages.set(pageId, page.visible);
     const result = { createdUnitIds };
     receipts.set(saveId, result);
     return result;
   };
+}
+
+function fixturePage(
+  states: Map<string, FixturePage>,
+  id: string,
+  visible: UnitInfo[],
+): FixturePage {
+  let page = states.get(id);
+  if (!page) {
+    page = { units: [...visible], hidden: new Set(), visible };
+    states.set(id, page);
+  } else if (page.visible !== visible) {
+    const hidden = page.hidden;
+    page.units = [...visible, ...page.units.filter((unit) => hidden.has(unit.id))];
+    page.visible = visible;
+  }
+  return page;
 }

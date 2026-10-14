@@ -1,5 +1,10 @@
 import { useState } from "react";
-import type { ConfigurableShortcut, FixedShortcut } from "@/shared/utility/shortcut";
+import {
+  defaultUndoKeys,
+  hasConflict,
+  type ConfigurableShortcut,
+  type FixedShortcut,
+} from "@/shared/utility/shortcut";
 
 const STORAGE_KEY = "configurableShortcuts";
 
@@ -27,6 +32,11 @@ const fixedShortcuts: FixedShortcut[] = [
 ];
 
 const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
+  {
+    action: "undo",
+    label: "万能回退",
+    keys: defaultUndoKeys(navigator.userAgent),
+  },
   {
     action: "toggleMode",
     label: "切换模式",
@@ -158,7 +168,8 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
 
   for (const shortcut of defaultConfigurableShortcuts) {
     if (!migratedActions.has(shortcut.action)) {
-      migrated.push(shortcut);
+      const occupied = hasConflict(migrated, -1, shortcut.keys);
+      migrated.push(shortcut.action === "undo" && occupied ? { ...shortcut, keys: [] } : shortcut);
     }
   }
 

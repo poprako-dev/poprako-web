@@ -66,6 +66,7 @@ async function completeEditorStage(
   state.setIsCompletingStage(true);
   try {
     await persistence.runExclusive(() => props.onCompleteStage(completionStage));
+    persistence.clearHistory();
     state.setHasCompletedStage(true);
     state.setIsCompleteConfirmOpen(false);
     state.showToast(completionStage === "proofread" ? "校对已完成" : "翻译已完成", "success");

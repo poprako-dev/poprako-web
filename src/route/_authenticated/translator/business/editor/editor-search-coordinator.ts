@@ -14,6 +14,7 @@ type Options = {
   flush: () => Promise<void>;
   runExclusive: (operation: () => Promise<void>) => Promise<void>;
   refreshCurrentPage: () => Promise<void>;
+  clearHistory?: () => void;
   navigate: (pageId: string, unitId?: string) => Promise<void>;
 };
 
@@ -83,6 +84,7 @@ async function transformWithinExclusive(
     console.error("[EditorSearch] 替换失败", result.error);
     return { status: "failed", failure: result };
   }
+  if (matches.some((match) => match.pageId === options.currentPageId)) options.clearHistory?.();
   return refreshAfterTransform(options, phrase, matches);
 }
 

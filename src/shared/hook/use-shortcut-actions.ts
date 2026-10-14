@@ -27,6 +27,7 @@ export function useShortcutActions(
       for (const shortcut of shortcuts) {
         if (matchesShortcut(e, shortcut.keys)) {
           e.preventDefault();
+          if (shortcut.action === "undo" && e.repeat) return;
           actionsRef.current[shortcut.action]?.();
           return;
         }

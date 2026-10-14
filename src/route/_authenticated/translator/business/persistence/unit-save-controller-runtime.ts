@@ -1,5 +1,4 @@
 import { normalizeUnitIndexes, type UnitInfo } from "../unit/unit";
-import type { SaveUnits } from "../contract/type";
 import { identifyDraft, identifyUnits, unitIdentityResolver } from "./unit-identity";
 import { mergeUnitVersions } from "./merge-unit-versions";
 import { recoverDraft } from "./recover-draft";
@@ -9,22 +8,22 @@ import { createSaveBatches, localizeRemote } from "./draft-reconcile";
 import { replayEdits } from "./draft-sequence";
 import type { DraftRecord, SaveBatch } from "./draft-record";
 import type { DraftStore } from "./draft-store";
-import type { SaveSnapshot, UnitSaveController } from "./save-controller-type";
+import type {
+  SaveSnapshot,
+  UnitSaveController,
+  UnitSaveControllerOptions,
+} from "./save-controller-type";
 import type { UnitDiff } from "../contract/type";
+import { UnitHistory } from "../unit/unit-history";
+import { UnitSaveCatalog } from "./unit-save-catalog";
+import { persistDetachedDraft } from "./unit-save-detached";
 import { LocalDraftSavedError } from "./local-draft-saved-error";
-
-export type UnitSaveControllerOptions = {
-  save: SaveUnits;
-  reload: (pageId: string) => Promise<UnitInfo[]>;
-  changed: (snapshot: SaveSnapshot) => void;
-  failed: (error: unknown, phase: "save" | "refresh" | "local") => void;
-  drafts?: DraftStore | undefined;
-  canWrite?: () => boolean;
-};
 
 export class UnitSaveControllerRuntime implements UnitSaveController {
   private readonly options: UnitSaveControllerOptions;
   private baseline: UnitInfo[] = [];
+  private readonly history = new UnitHistory();
+  private readonly catalog = new UnitSaveCatalog();
   private snapshot: SaveSnapshot = {
     units: [],
     dirty: false,
@@ -49,7 +48,15 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   }
 
   private resolveId(id: string): string {
-    return unitIdentityResolver(this.identities, this.snapshot.units)(id);
+    return unitIdentityResolver(this.identities, this.preferredUnits())(id);
+  }
+
+  private preferredUnits(): UnitInfo[] {
+    return [
+      ...this.snapshot.units,
+      ...this.catalog.preferred(),
+      ...this.pending.flatMap((b) => b.target),
+    ];
   }
 
   private record(): DraftRecord {
@@ -65,7 +72,12 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
 
   private publish(changes: Partial<SaveSnapshot> = {}): void {
     this.snapshot = { ...this.snapshot, ...changes };
-    const tail = buildUnitDiff(this.snapshot.units, this.pending.at(-1)?.target ?? this.baseline);
+    const tail = buildUnitDiff(
+      this.snapshot.units,
+      this.pending.at(-1)?.target ?? this.baseline,
+      this.catalog.project(this.pending),
+    );
+    this.snapshot.canUndo = this.history.canUndo;
     const ops = [...this.pending.flatMap((batch) => batch.diff.ops), ...tail.ops];
     this.snapshot.dirty = ops.length > 0;
     this.snapshot.pendingUnitIds = [
@@ -78,6 +90,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   }
 
   load(id: string, units: UnitInfo[]): void {
+    this.history.clear();
     this.generation += 1;
     this.pageId = id;
     this.pending = [];
@@ -87,6 +100,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
     const cached = this.options.drafts?.getState().drafts[id];
     const restored = cached ? identifyDraft(cached, cached.units) : undefined;
     this.baseline = normalizeUnitIndexes(restored?.baseline ?? units);
+    this.catalog.reset(this.baseline);
     this.revision = restored?.revision ?? 0;
     this.pending = structuredClone(restored?.pending ?? []);
     for (const [local, remote] of restored?.identities ??
@@ -106,15 +120,39 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   }
 
   commit(units: UnitInfo[]): void {
-    if (!this.active || this.suspended || !this.pageId || !(this.options.canWrite?.() ?? true))
-      return;
+    if (!this.canCommit()) return;
+    const next = normalizeUnitIndexes(units);
+    if (!this.history.record(this.snapshot.units, next)) return;
     this.revision += 1;
-    this.publish({ units: normalizeUnitIndexes(units), storageError: null });
+    this.publish({ units: next, storageError: null });
+  }
+
+  undo(): void {
+    if (!this.canCommit()) return;
+    const units = this.history.undo(this.snapshot.units);
+    if (!units) return;
+    this.revision += 1;
+    this.publish({ units, storageError: null });
+  }
+
+  clearHistory(): void {
+    this.history.clear();
+    this.publish();
+  }
+
+  private canCommit(): boolean {
+    return (
+      this.active && !this.suspended && Boolean(this.pageId) && (this.options.canWrite?.() ?? true)
+    );
   }
 
   private seal(): void {
     this.pending.push(
-      ...createSaveBatches(this.snapshot.units, this.pending.at(-1)?.target ?? this.baseline),
+      ...createSaveBatches(
+        this.snapshot.units,
+        this.pending.at(-1)?.target ?? this.baseline,
+        this.catalog.project(this.pending),
+      ),
     );
   }
 
@@ -159,27 +197,11 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
     } while (this.active);
   }
 
-  private async persistDetached(id: string, sent: DraftRecord): Promise<void> {
-    const store = this.options.drafts;
-    if (!store) return;
-    const cached = store.getState().drafts[id];
-    const draft = structuredClone(cached ?? sent);
-    draft.pending.push(
-      ...createSaveBatches(draft.units, draft.pending.at(-1)?.target ?? draft.baseline),
-    );
-    try {
-      const saved = await store.write(id, draft);
-      if (store.getState().drafts[id] === cached) store.update(id, saved);
-    } catch {
-      // The memory buffer survives an unmount when storage is unavailable.
-    }
-  }
-
   private async reloadPage(id: string, epoch: number): Promise<void> {
     const remote = await this.options.reload(id);
     if (!this.active || epoch !== this.generation) return;
     const newer = buildUnitDiff(this.snapshot.units, this.baseline);
-    const localized = localizeRemote(remote, this.identities, this.snapshot.units);
+    const localized = localizeRemote(remote, this.identities, this.preferredUnits());
     const edited = new Set(newer.ops.flatMap((op) => (op.edit === "patch" ? [op.id] : [])));
     const current = mergeUnitVersions(this.baseline, this.snapshot.units, localized);
     this.baseline = [
@@ -188,6 +210,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
         (unit) => edited.has(unit.id) && !localized.some((item) => item.id === unit.id),
       ),
     ];
+    this.catalog.remember(localized);
     this.publish({ units: current, refreshError: false, error: null });
   }
 
@@ -233,6 +256,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
       this.publish();
       const sent = this.record();
       if (!(await this.sendBatch(id, epoch, batch, wire, sent))) return false;
+      this.catalog.acknowledge(batch);
       this.baseline = replayEdits(this.baseline, batch.diff, batch.target, (unitId) =>
         this.resolveId(unitId),
       );
@@ -257,7 +281,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
       return true;
     } catch (error) {
       if (epoch !== this.generation) {
-        await this.persistDetached(id, sent);
+        await persistDetachedDraft(this.options.drafts, id, sent);
         return false;
       }
       await this.persistFailure(id, epoch, error);
@@ -343,6 +367,8 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
     this.pending = merged.pending;
     this.identities.clear();
     for (const pair of merged.identities) this.identities.set(...pair);
+    this.catalog.remember(merged.baseline);
+    this.history.clear();
     this.publish({ units: merged.units });
   }
 

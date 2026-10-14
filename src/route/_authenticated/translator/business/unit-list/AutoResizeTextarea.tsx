@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { cn } from "@/shared/utility/utils";
+import { useComposedText } from "./use-composed-text";
 import { LineBreakOverlay } from "@/route/_authenticated/translator/business/unit-list/LineBreakOverlay";
 
 type Props = {
@@ -38,7 +39,8 @@ export function AutoResizeTextarea({
 }: Props): React.ReactElement {
   const localRef = useRef<HTMLTextAreaElement>(null);
   const mirrorRef = useRef<HTMLDivElement>(null);
-  const displayText = value.replaceAll(/\r\n?/gu, "\n");
+  const text = useComposedText(value, onChange);
+  const displayText = text.value.replaceAll(/\r\n?/gu, "\n");
 
   function combinedRef(node: HTMLTextAreaElement | null): void {
     assignTextareaRef(localRef, ref, node);
@@ -50,7 +52,7 @@ export function AutoResizeTextarea({
     }
 
     resizeTextarea(localRef.current);
-  }, [value, className, placeholder]);
+  }, [text.value, className, placeholder]);
 
   useLayoutEffect(() => {
     const textarea = localRef.current;
@@ -79,9 +81,13 @@ export function AutoResizeTextarea({
     <div className="relative">
       <textarea
         ref={combinedRef}
-        value={value}
+        value={text.value}
         onChange={(e) => {
-          onChange(e.target.value);
+          text.change(e.target.value);
+        }}
+        onCompositionStart={text.start}
+        onCompositionEnd={(e) => {
+          text.end(e.currentTarget.value);
         }}
         onFocus={onFocus}
         placeholder={placeholder}

@@ -23,6 +23,9 @@ export type UnitPersistenceResult = {
   saving: boolean;
   saveState: SaveSnapshot;
   commitUnits: (units: UnitInfo[]) => void;
+  undo: () => void;
+  clearHistory: () => void;
+  canUndo: boolean;
   setLoadedUnits: (pageId: string, units: UnitInfo[]) => void;
   flushIfDirty: (showSuccess?: boolean) => Promise<void>;
   handleNavigate: (index: number, targetUnitId?: string) => Promise<void>;

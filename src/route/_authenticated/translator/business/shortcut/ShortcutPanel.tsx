@@ -153,7 +153,7 @@ export function ShortcutPanel({
       />
       <div
         className={clsx(
-          "w-[calc(100%-2rem)] max-w-3xl overflow-hidden rounded-xl bg-surface-white",
+          "relative w-[calc(100%-2rem)] max-w-3xl overflow-hidden rounded-xl bg-surface-white",
           "border border-(--brand-leaf-border) shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
@@ -226,7 +226,7 @@ export function ShortcutPanel({
                         ),
                   )}
                 >
-                  {recordingIndex === index ? "请按下按键..." : formatKeys(s.keys)}
+                  {recordingIndex === index ? "请按下按键..." : formatKeys(s.keys) || "未设置"}
                 </button>
               </div>
             ))}

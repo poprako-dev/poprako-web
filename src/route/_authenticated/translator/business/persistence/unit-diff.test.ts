@@ -119,20 +119,20 @@ describe("unit diff", () => {
           revision: { type: "skip" },
         },
         {
-          edit: "patch",
-          id: "unit_b",
-          nextId: { type: "assign", value: "local_new" },
-          coord: { xCoord: 0.5, yCoord: 0.2 },
-          translation: { type: "skip" },
-          revision: { type: "skip" },
-        },
-        {
           edit: "create",
           localId: "local_new",
           nextId: "unit_a",
           isBubble: true,
           isFlagged: false,
           coord: { xCoord: 0.1, yCoord: 0.2 },
+        },
+        {
+          edit: "patch",
+          id: "unit_b",
+          nextId: { type: "assign", value: "local_new" },
+          coord: { xCoord: 0.5, yCoord: 0.2 },
+          translation: { type: "skip" },
+          revision: { type: "skip" },
         },
       ],
     });

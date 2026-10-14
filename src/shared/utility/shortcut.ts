@@ -15,13 +15,18 @@ export type ShortcutAction =
   | "quickSpecialChar1"
   | "quickSpecialChar2"
   | "quickSpecialChar3"
-  | "save";
+  | "save"
+  | "undo";
 
 export type ConfigurableShortcut = {
   action: ShortcutAction;
   label: string;
   keys: string[];
 };
+
+export function defaultUndoKeys(userAgent: string): string[] {
+  return [userAgent.includes("Mac") ? "Meta" : "Control", "."];
+}
 
 const MODIFIER_KEYS = new Set(["Control", "Shift", "Alt", "Meta"]);
 
