@@ -202,6 +202,7 @@ function createEditorSearchCoordinatorForSession(
     flush: () => persistence.flushIfDirty(false),
     runExclusive: persistence.runExclusive,
     refreshCurrentPage: persistence.refreshUnits,
+    clearHistory: persistence.clearHistory,
     navigate: actions.handleSearchResultNavigate,
   });
 }

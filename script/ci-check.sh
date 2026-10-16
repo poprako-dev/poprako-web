@@ -41,7 +41,7 @@ check_source() {
     run_pnpm run generate:check
     run_pnpm run test:unit
     run_pnpm run test:integration
-    run_pnpm run test:script
+    run_pnpm run test:script --exclude script/translator-undo-browser.test.ts
 }
 
 check_static() {
@@ -56,6 +56,7 @@ check_static() {
 
 check_browser() {
     run_pnpm exec playwright install --with-deps chromium
+    run_pnpm run test:translator-undo-browser
     run_pnpm run test:storybook
     run_pnpm run test:storybook-start
     run_pnpm run test:compress-browser

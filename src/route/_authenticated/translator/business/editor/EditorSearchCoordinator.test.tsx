@@ -58,10 +58,24 @@ function setup(): Context {
     flush: () => persistence.result.current.flushIfDirty(false),
     runExclusive: (operation) => persistence.result.current.runExclusive(operation),
     refreshCurrentPage: () => persistence.result.current.refreshUnits(),
+    clearHistory: () => {
+      persistence.result.current.clearHistory();
+    },
     navigate: (_pageId, unitId) => persistence.result.current.handleNavigate(1, unitId),
   });
   return { persistence, coordinator, save, reload, loadPage, search, transform, showToast };
 }
+
+it.each(["page-1", "page-2"])("替换 %s 只清空受影响页面的回退历史", async (pageId) => {
+  const context = setup();
+  act(() => {
+    context.persistence.result.current.commitUnits([{ ...unit, isFlagged: true }]);
+  });
+  await act(async () => {
+    await context.coordinator.transform("旧词", "新词", [{ pageId, unit }]);
+  });
+  expect(context.persistence.result.current.canUndo).toBe(pageId !== "page-1");
+});
 
 describe("编辑搜索协调", () => {
   it("保存失败保留草稿并阻止搜索，重试保存后才搜索", async () => {

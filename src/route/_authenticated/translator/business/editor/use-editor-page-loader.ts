@@ -3,6 +3,7 @@ import { showLocalCaughtError } from "@/route/business/request-error";
 import type { EditorProps } from "./editor-props";
 import type { EditorState } from "./use-editor-state";
 import type { useUnitPersistence } from "../persistence/use-unit-persistence";
+import { unitId, unitPosition } from "../unit/unit";
 
 type Persistence = ReturnType<typeof useUnitPersistence>;
 type LoadPage = (index: number, targetUnitId?: string) => Promise<void>;
@@ -54,6 +55,10 @@ async function loadEditorPage(
 ): Promise<void> {
   const page = context.props.project.pages[index];
   if (!page) return;
+  if (!context.state.isLoadingPage && index === context.state.pageIndex) {
+    focusLoadedUnit(context, targetUnitId);
+    return;
+  }
   const generation = ++context.generationRef.current;
   context.state.setIsLoadingPage(true);
   try {
@@ -68,6 +73,15 @@ async function loadEditorPage(
   } finally {
     if (generation === context.generationRef.current) context.state.setIsLoadingPage(false);
   }
+}
+
+function focusLoadedUnit(context: PageLoadContext, targetUnitId?: string): void {
+  context.state.relocationSuppressedUnitIdRef.current = null;
+  context.state.setFocusedUnitId(targetUnitId);
+  const unit = context.persistence.unitBufRef.current.find((item) => unitId(item) === targetUnitId);
+  if (!unit) return;
+  const position = unitPosition(unit);
+  context.state.canvasRef.current?.centerOn(position.xCoord, position.yCoord);
 }
 
 async function loadPageData(

@@ -134,51 +134,35 @@ function isExistingOrderChanged(current: UnitInfo[], baseline: UnitInfo[]): bool
   return baselineSurvivors.some((id, index) => id !== currentExisting[index]);
 }
 
-export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDiff {
+export function buildUnitDiff(
+  current: UnitInfo[],
+  baseline: UnitInfo[],
+  known: ReadonlyMap<string, UnitInfo> = new Map(),
+): UnitDiff {
   current = normalizeUnitIndexes(current);
   baseline = normalizeUnitIndexes(baseline);
-
   const baselineById = new Map(baseline.map((unit) => [unitId(unit), unit]));
-  const currentById = new Map(current.map((unit) => [unitId(unit), unit]));
-  const ops: UnitOp[] = [];
+  const currentById = new Set(current.map(unitId));
+  const ops: UnitOp[] = baseline
+    .filter((unit) => !currentById.has(unitId(unit)))
+    .map((unit) => ({ edit: "delete", id: unitId(unit) }));
+  const reordered = isExistingOrderChanged(current, baseline);
 
-  for (const unit of baseline) {
-    if (currentById.has(unitId(unit))) {
-      continue;
-    }
-
-    ops.push({ edit: "delete", id: unitId(unit) });
-  }
-
-  const isOrderChanged = isExistingOrderChanged(current, baseline);
-
-  if (isOrderChanged) {
-    for (let index = current.length - 1; index >= 0; index--) {
-      const unit = current[index];
-      if (!unit) continue;
-      const previous = baselineById.get(unitId(unit));
-      if (!previous) continue;
-
-      ops.push(buildPatchUnitOp(unit, previous, nextUnitId(current, index)));
-    }
-  } else {
-    for (const unit of current) {
-      const baselineUnit = baselineById.get(unitId(unit));
-      if (!baselineUnit) continue;
-      const edit = buildPatchUnitOp(unit, baselineUnit, undefined);
-      if (!isEmptyPatch(edit)) ops.push(edit);
-    }
-  }
-
-  // The server pre-registers creations, then moves them in request order.
-  // Position successors first so moving a new anchor cannot strand its predecessor.
+  // Place successors first, including creations and restored hidden Units.
   for (let index = current.length - 1; index >= 0; index--) {
     const unit = current[index];
     if (!unit) continue;
-    if (baselineById.has(unitId(unit))) continue;
-
-    ops.push(buildCreateUnitOp(unit, nextUnitId(current, index)));
+    const previous = baselineById.get(unitId(unit));
+    const hidden = previous ? undefined : known.get(unitId(unit));
+    const nextId = nextUnitId(current, index);
+    if (!previous && !hidden) {
+      ops.push(buildCreateUnitOp(unit, nextId));
+      continue;
+    }
+    const before = previous ?? hidden;
+    if (!before) continue;
+    const patch = buildPatchUnitOp(unit, before, reordered || hidden ? nextId : undefined);
+    if (!isEmptyPatch(patch)) ops.push(patch);
   }
-
   return { ops };
 }

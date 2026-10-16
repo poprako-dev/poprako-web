@@ -196,6 +196,9 @@ importers:
       diff:
         specifier: 9.0.0
         version: 9.0.0
+      immer:
+        specifier: 11.1.21
+        version: 11.1.21
       jszip:
         specifier: 3.10.1
         version: 3.10.1
@@ -222,7 +225,7 @@ importers:
         version: 3.7.0
       zustand:
         specifier: 5.0.15
-        version: 5.0.15(@types/react@19.1.8)(react@19.1.0)(use-sync-external-store@1.7.0(react@19.1.0))
+        version: 5.0.15(@types/react@19.1.8)(immer@11.1.21)(react@19.1.0)(use-sync-external-store@1.7.0(react@19.1.0))
     devDependencies:
       '@babel/preset-env':
         specifier: 7.29.7
@@ -3614,6 +3617,9 @@ packages:
 
   immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
+
+  immer@11.1.21:
+    resolution: {integrity: sha512-bZSadeCPGdaY5/qRLgr6mDSH1ra21rD3rqpiWk7+QTr4ayYPTE9qZYdLh/NdPhMe0wSrTvHD/Lk8q5EwhUs0aw==}
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -8607,6 +8613,8 @@ snapshots:
 
   immediate@3.0.6: {}
 
+  immer@11.1.21: {}
+
   import-fresh@3.3.1:
     dependencies:
       parent-module: 1.0.1
@@ -10002,8 +10010,9 @@ snapshots:
 
   zod@4.6.5: {}
 
-  zustand@5.0.15(@types/react@19.1.8)(react@19.1.0)(use-sync-external-store@1.7.0(react@19.1.0)):
+  zustand@5.0.15(@types/react@19.1.8)(immer@11.1.21)(react@19.1.0)(use-sync-external-store@1.7.0(react@19.1.0)):
     optionalDependencies:
       '@types/react': 19.1.8
+      immer: 11.1.21
       react: 19.1.0
       use-sync-external-store: 1.7.0(react@19.1.0)

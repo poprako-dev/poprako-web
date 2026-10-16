@@ -102,7 +102,7 @@ export function EditorDialog({ session }: Props): JSX.Element {
       {deleteConfirmUnitId !== undefined && (
         <ConfirmDialog
           title="确认删除"
-          description="该文本块包含已翻译或已校对内容，删除后不可恢复。确定要删除吗？"
+          description="该文本块包含已翻译或已校对内容。确定要删除吗？"
           confirmLabel="删除"
           cancelLabel="取消"
           onConfirm={() => {

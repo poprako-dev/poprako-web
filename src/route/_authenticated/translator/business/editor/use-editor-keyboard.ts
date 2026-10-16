@@ -17,6 +17,11 @@ type Options = Pick<
   | "setViewState"
   | "setProofreadPreviewVisibility"
   | "isReadOnly"
+  | "canEditView"
+  | "isLoadingPage"
+  | "isCompletingStage"
+  | "deleteConfirmUnitId"
+  | "isCompleteConfirmOpen"
   | "canSwitchView"
   | "toggleRelocation"
   | "isShortcutPanelOpen"
@@ -26,7 +31,10 @@ type Options = Pick<
   | "setIsPageStatsOpen"
   | "activeShortcuts"
 > &
-  Pick<ReturnType<typeof useUnitPersistence>, "handleNavigate"> &
+  Pick<
+    ReturnType<typeof useUnitPersistence>,
+    "handleNavigate" | "undo" | "canUndo" | "unitBufRef"
+  > &
   Pick<
     EditorUnitActions,
     "handleQuickSpecialChar" | "handleQuickSpecialCharAt" | "handleFocusUnit"
@@ -45,52 +53,23 @@ export function useEditorKeyboard(options: Options): { handleSwitchView: () => v
 }
 
 function useKeyboardBindings(options: Options, handleSwitchView: () => void): void {
-  const {
-    unitBuf,
-    focusedUnitId,
-    setFocusedUnitId,
-    setProofreadPreviewVisibility,
-    isReadOnly,
-    isShortcutPanelOpen,
-    isSpecialCharPanelOpen,
-    isUnitSearchTransformOpen,
-    isPageStatsOpen,
-    activeShortcuts,
-    toggleRelocation,
-    pageIndex,
-    project,
-    handleNavigate,
-    handleQuickSpecialChar,
-    handleQuickSpecialCharAt,
-    handleFocusUnit,
-    handleSave,
-  } = options;
   const disabled =
-    isShortcutPanelOpen ||
-    isSpecialCharPanelOpen ||
-    isUnitSearchTransformOpen ||
-    (isReadOnly && isPageStatsOpen);
+    options.isShortcutPanelOpen ||
+    options.isSpecialCharPanelOpen ||
+    options.isUnitSearchTransformOpen ||
+    (options.isReadOnly && options.isPageStatsOpen);
   useShortcutActions(
-    createEditorShortcutActions({
-      handleSwitchView,
-      toggleRelocation,
-      setProofreadPreviewVisibility,
-      unitBuf,
-      focusedUnitId,
-      handleFocusUnit,
-      pageIndex,
-      project,
-      handleNavigate,
-      handleQuickSpecialChar,
-      handleQuickSpecialCharAt,
-      handleSave,
-    }),
-    activeShortcuts,
+    {
+      ...createEditorShortcutActions({ ...options, handleSwitchView }),
+      undo: () => {
+        undoEditor(options);
+      },
+    },
+    options.activeShortcuts,
     disabled,
     "[data-unit-id]",
   );
-
-  useEscapeToClearFocus(disabled, setFocusedUnitId);
+  useEscapeToClearFocus(disabled, options.setFocusedUnitId);
 }
 
 function createSwitchViewHandler(
@@ -208,4 +187,20 @@ function useEscapeToClearFocus(
       globalThis.removeEventListener("keydown", handleKeyDown);
     };
   }, [disabled, setFocusedUnitId]);
+}
+
+function undoEditor(options: Options): void {
+  if (
+    !options.canUndo ||
+    !options.canEditView ||
+    options.isLoadingPage ||
+    options.isCompletingStage ||
+    options.deleteConfirmUnitId ||
+    options.isCompleteConfirmOpen
+  )
+    return;
+  options.undo();
+  if (!options.unitBufRef.current.some((unit) => unitId(unit) === options.focusedUnitId)) {
+    options.setFocusedUnitId(undefined);
+  }
 }
