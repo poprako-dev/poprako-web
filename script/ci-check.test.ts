@@ -16,10 +16,11 @@ const staticChecks = [
   "run generate:check",
   "run test:unit",
   "run test:integration",
-  "run test:script",
+  "run test:script --exclude script/translator-undo-browser.test.ts",
 ];
 const browserChecks = [
   "exec playwright install --with-deps chromium",
+  "run test:translator-undo-browser",
   "run test:storybook",
   "run test:storybook-start",
   "run test:compress-browser",
@@ -114,6 +115,12 @@ for (const [suite, checks] of [
       "run prepare:dependencies",
     ]);
     assert.deepEqual(result.calls.slice(2).sort(), [...checks].sort());
+    if (suite === "browser") {
+      assert.ok(
+        result.calls.indexOf("exec playwright install --with-deps chromium") <
+          result.calls.indexOf("run test:translator-undo-browser"),
+      );
+    }
   });
 }
 
@@ -134,7 +141,15 @@ test("CI fails on an unsuccessful correctness check", async () => {
   const result = await runSuite("static", "run lint");
   assert.equal(result.success, false);
   assert.ok(result.calls.includes("run lint"));
-  assert.ok(result.calls.includes("run test:script"));
+  assert.ok(
+    result.calls.includes("run test:script --exclude script/translator-undo-browser.test.ts"),
+  );
+});
+
+test("CI fails when translator undo browser checks fail", async () => {
+  const result = await runSuite("browser", "run test:translator-undo-browser");
+  assert.equal(result.success, false);
+  assert.ok(!result.calls.includes("run test:storybook"));
 });
 
 test("unknown CI suites fail before dependency installation", async () => {
