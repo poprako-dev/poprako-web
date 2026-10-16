@@ -19,6 +19,13 @@ export async function crossUnitHistory(page: Page): Promise<void> {
 }
 
 export async function selectionAndCut(page: Page, url: string): Promise<void> {
+  // Free Control+X for native cut; the workbench binds it to marker opacity by default.
+  await page.evaluate(() => {
+    localStorage.setItem(
+      "configurableShortcuts",
+      JSON.stringify([{ action: "toggleProofreadPreview", keys: [] }]),
+    );
+  });
   await openFixture(page, `${url}?text=hello`);
   const inputs = page.getByPlaceholder("点击输入翻译...");
   await inputs.nth(0).focus();
