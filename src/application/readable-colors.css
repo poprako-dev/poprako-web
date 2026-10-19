@@ -41,8 +41,8 @@
   --text-indigo: oklch(0.549455583 0.182 276.935);
   --text-sky: oklch(0.532216865 0.115875 237.323);
   --text-blue: oklch(0.545874761 0.214 259.815);
-  --control-border: #8d939a;
-  --control-border-warm: #949291;
+  --control-border: var(--line-slate-200);
+  --control-border-warm: var(--line-stone-200);
   --control-error: oklch(0.65 0.062 18.334);
   --icon-muted-cool: oklch(0.63 0.04 256.788);
   --icon-muted-warm: oklch(0.63 0.01 56.259);
