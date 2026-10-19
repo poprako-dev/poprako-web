@@ -26,7 +26,7 @@ export function TermbaseShareButton({ isExporting, onExport }: Props): React.Rea
         onExport();
       }}
       className={clsx(
-        "flex size-6 shrink-0 items-center justify-center rounded-md border",
+        "flex size-5 shrink-0 items-center justify-center rounded-sm border",
         "border-line-stone-200 bg-surface-white text-text-muted-warm transition-colors",
         "enabled:hover:border-line-green-100 enabled:hover:bg-surface-green-50",
         "enabled:hover:text-ink-stone-700 disabled:cursor-not-allowed disabled:opacity-40",
@@ -34,9 +34,9 @@ export function TermbaseShareButton({ isExporting, onExport }: Props): React.Rea
       )}
     >
       {isExporting ? (
-        <LoadingCircle size={13} aria-label="正在导出术语库" />
+        <LoadingCircle size={12} aria-label="正在导出术语库" />
       ) : (
-        <Share size={13} aria-hidden="true" />
+        <Share size={12} aria-hidden="true" />
       )}
     </button>
   );

@@ -37,14 +37,14 @@ export function TermCopyButton({ target }: Props): React.ReactElement {
         void copyTarget();
       }}
       className={clsx(
-        "flex size-6 shrink-0 items-center justify-center rounded-md border",
+        "flex size-5 shrink-0 items-center justify-center rounded-sm border",
         "border-line-stone-200 bg-surface-white text-text-muted-warm transition-colors",
         "enabled:hover:border-line-green-100 enabled:hover:bg-surface-green-50",
         "enabled:hover:text-ink-stone-700 disabled:cursor-not-allowed disabled:opacity-40",
         "focus-visible:outline-2 focus-visible:outline-primary-border",
       )}
     >
-      <Copy size={13} aria-hidden="true" />
+      <Copy size={12} aria-hidden="true" />
     </button>
   );
 }
