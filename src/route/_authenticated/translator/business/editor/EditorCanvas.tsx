@@ -8,6 +8,8 @@ import { TerminologyLookupBar } from "@/route/_authenticated/translator/business
 import { ReadOnlyPageActions } from "@/route/_authenticated/translator/business/page-statistic/ReadOnlyPageActions";
 import type { ToolboxOption } from "@/shared/component/toolbox-dropdown/toolbox-option";
 import type { EditorSession } from "./use-editor-session";
+import { useTermbaseExport } from "@/route/_authenticated/business/terminology/use-termbase-export";
+
 type Props = {
   session: Pick<
     EditorSession,
@@ -110,6 +112,7 @@ export function EditorCanvas({ session }: Props): JSX.Element {
     completionStage,
   } = session;
   const options = toolboxOptions(session);
+  const termbaseExport = useTermbaseExport(terminology, project.id);
 
   return (
     <div className="@container relative w-full h-full bg-surface-stone-700">
@@ -130,7 +133,9 @@ export function EditorCanvas({ session }: Props): JSX.Element {
         enableReadOnly={!canEditView || isLoadingPage || isCompletingStage}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
-      {!isReadOnly && <TerminologyLookupBar dataSource={terminology} />}
+      {!isReadOnly && (
+        <TerminologyLookupBar dataSource={terminology} termbaseExport={termbaseExport} />
+      )}
       <div className="absolute top-2 left-2 flex items-center gap-2">
         {!isReadOnly && <ToolboxDropdown options={options} direction="down" />}
         <button

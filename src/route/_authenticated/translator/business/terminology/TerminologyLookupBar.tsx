@@ -4,19 +4,21 @@ import clsx from "clsx";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { showLocalApiFailure } from "@/route/business/request-error";
 import type { ResultFailure } from "@/shared/utility/result";
-import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
-import type { TerminologyDataSource } from "@/route/_authenticated/translator/business/contract/terminology";
-import { useDebouncedValue } from "@/route/_authenticated/translator/business/terminology/use-debounced-value";
-import { TermbasePanel } from "@/route/_authenticated/translator/business/terminology/TermbasePanel";
-import { TermPanel } from "@/route/_authenticated/translator/business/terminology/TermPanel";
+import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
+import { useDebouncedValue } from "@/route/_authenticated/business/terminology/use-debounced-value";
+import { TermbasePanel } from "@/route/_authenticated/business/terminology/TermbasePanel";
+import { TermPanel } from "@/route/_authenticated/business/terminology/TermPanel";
 import { TerminologyLookupEditors } from "./TerminologyLookupEditors";
 import { useTerminologyLookupState } from "./use-terminology-lookup-state";
 import { createTerminologyLookupMutations } from "./use-terminology-lookup-mutations";
 import type { TerminologyLookupState } from "./use-terminology-lookup-state";
+import type { TermbaseExportActions } from "@/route/_authenticated/business/terminology/use-termbase-export";
 
 const DEBOUNCE_MS = 300;
 type Props = {
   dataSource: TerminologyDataSource;
+  termbaseExport: TermbaseExportActions;
 };
 type Toast = ReturnType<typeof useToastStore.getState>["showToast"];
 
@@ -59,7 +61,7 @@ function openTermPanel(state: TerminologyLookupState): void {
   state.setPanel("terms");
 }
 
-export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement {
+export function TerminologyLookupBar({ dataSource, termbaseExport }: Props): React.ReactElement {
   const state = useTerminologyLookupState();
   const {
     panel,
@@ -100,6 +102,7 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
             id={popoverId}
             role="dialog"
             aria-hidden={!isExpanded}
+            inert={!isExpanded}
             aria-label={renderedPanel === "termbases" ? "选择术语库" : "查询术语"}
             className={clsx(
               "absolute bottom-[calc(100%+0.25rem)] left-0 flex w-full flex-col",
@@ -115,6 +118,9 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
           >
             {renderedPanel === "termbases" ? (
               <TermbasePanel
+                canCreate
+                canEdit={(termbase) => Boolean(termbase.comicId)}
+                termbaseExport={termbaseExport}
                 dataSource={dataSource}
                 query={termbaseQuery}
                 searchQuery={debouncedTermbaseQuery}
@@ -136,6 +142,7 @@ export function TerminologyLookupBar({ dataSource }: Props): React.ReactElement 
               />
             ) : selectedTermbase ? (
               <TermPanel
+                canEdit={Boolean(selectedTermbase.comicId)}
                 dataSource={dataSource}
                 termbase={selectedTermbase}
                 query={debouncedSourceQuery}

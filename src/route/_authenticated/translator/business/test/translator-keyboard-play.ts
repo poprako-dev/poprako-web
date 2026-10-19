@@ -23,7 +23,7 @@ async function verifySearchAndDialogFocus(
   const canvas = within(canvasElement);
   const page = within(canvasElement.ownerDocument.body);
   await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-  await userEvent.click(await canvas.findByRole("option", { name: /角色称谓/ }));
+  await userEvent.click(await canvas.findByRole("button", { name: /角色称谓/ }));
   const search = canvas.getByRole("combobox", { name: "搜索术语原文" });
   await userEvent.type(search, "j");
   await expect(search).toHaveFocus();

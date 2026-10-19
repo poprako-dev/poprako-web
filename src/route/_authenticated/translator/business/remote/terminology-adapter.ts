@@ -1,18 +1,20 @@
 import { useMemo } from "react";
 import { useApiClient } from "@/route/business/api-context";
-import type { TerminologyDataSource } from "@/route/_authenticated/translator/business/contract/terminology";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
 import {
   createTerm,
   deleteTerm,
   listTerms,
   updateTerm,
-} from "@/route/_authenticated/translator/business/terminology/term-request";
+} from "@/route/_authenticated/business/terminology/term-request";
 import {
   createComicTermbase,
   deleteTermbase,
+  exportTermbase,
+  importComicTermbase,
   listComicTermbases,
   updateTermbase,
-} from "@/route/_authenticated/translator/business/terminology/termbase-request";
+} from "@/route/_authenticated/business/terminology/termbase-request";
 
 export function useTranslatorTerminology(
   comicId: string | undefined,
@@ -21,6 +23,8 @@ export function useTranslatorTerminology(
   return useMemo<TerminologyDataSource | undefined>(() => {
     if (!comicId) return undefined;
     return {
+      importTermbase: (content) => importComicTermbase(client, comicId, content),
+      exportTermbase: (id, signal) => exportTermbase(client, id, signal),
       listTermbases: (args) => listComicTermbases(client, { comicId, ...args }),
       listTerms: (args) => listTerms(client, args),
       createTermbase: (args) => createComicTermbase(client, { comicId, ...args }),

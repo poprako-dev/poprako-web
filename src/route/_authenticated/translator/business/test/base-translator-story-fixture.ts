@@ -8,7 +8,7 @@ import {
 } from "@/route/_authenticated/translator/business/unit/unit";
 import type { PageImageQuality } from "@/route/_authenticated/business/page/page";
 import { createUnitSaveFixture } from "@/route/_authenticated/translator/business/test/unit-save-fixture";
-import type { TerminologyDataSource } from "@/route/_authenticated/translator/business/contract/terminology";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
 import type { UnitSearchTransformDataSource } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import {
   DEMO_IMAGE,
@@ -63,6 +63,20 @@ async function mockResolveUser(userId: string): Promise<
 }
 
 export const mockTerminology: TerminologyDataSource = {
+  importTermbase: () =>
+    Promise.resolve({
+      success: true,
+      data: { id: "termbase-new", created: true, createdTermCount: 1, mergedTermCount: 0 },
+    }),
+  exportTermbase: () =>
+    Promise.resolve({
+      success: true,
+      data: JSON.stringify({
+        name: "角色称谓",
+        description: null,
+        terms: [{ source: "団長", targets: ["团长"], comment: null }],
+      }),
+    }),
   // eslint-disable-next-line @typescript-eslint/require-await
   listTermbases: async () => ({
     success: true,

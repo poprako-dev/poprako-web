@@ -1,6 +1,6 @@
 import type { ReactElement, Dispatch, SetStateAction } from "react";
-import { TermbaseEditorDialog } from "./TermbaseEditorDialog";
-import { TermEditorDialog } from "./TermEditorDialog";
+import { TermbaseEditorDialog } from "@/route/_authenticated/business/terminology/TermbaseEditorDialog";
+import { TermEditorDialog } from "@/route/_authenticated/business/terminology/TermEditorDialog";
 import type { TerminologyMutationActions } from "./use-terminology-lookup-mutations";
 import type { LookupEditorState } from "./use-terminology-lookup-state";
 
@@ -16,6 +16,7 @@ export function TerminologyLookupEditors({ editor, setEditor, mutations }: Props
       {editor?.kind === "termbase" && (
         <TermbaseEditorDialog
           termbase={editor.termbase}
+          onImport={mutations.handleImportTermbase}
           onSave={(args) => mutations.handleSaveTermbase(editor.termbase, args)}
           onDelete={
             editor.termbase ? mutations.handleDeleteTermbase.bind(null, editor.termbase) : undefined

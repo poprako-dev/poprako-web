@@ -1,0 +1,46 @@
+import type { TermInfo } from "./term";
+import type { TermbaseInfo } from "./termbase";
+import type { Result } from "@/shared/utility/result";
+import type { ImportTermbaseResult } from "./termbase-input";
+
+export type ListTermbasesArgs = {
+  fuzzyName?: string | undefined;
+  offset: number;
+  limit: number;
+};
+
+export type ListTermsArgs = {
+  termbaseId: string;
+  fuzzySource?: string | undefined;
+  offset: number;
+  limit: number;
+};
+
+export type CreateTermbaseArgs = {
+  name: string;
+  description?: string | undefined;
+};
+
+export type UpdateTermbaseArgs = CreateTermbaseArgs;
+
+export type CreateTermArgs = {
+  termbaseId: string;
+  source: string;
+  targets: string[];
+  comment?: string | undefined;
+};
+
+export type UpdateTermArgs = Omit<CreateTermArgs, "termbaseId">;
+
+export interface TerminologyDataSource {
+  importTermbase: (content: string) => Promise<Result<ImportTermbaseResult>>;
+  exportTermbase: (id: string, signal?: AbortSignal) => Promise<Result<string>>;
+  listTermbases: (args: ListTermbasesArgs) => Promise<Result<TermbaseInfo[]>>;
+  listTerms: (args: ListTermsArgs) => Promise<Result<TermInfo[]>>;
+  createTermbase: (args: CreateTermbaseArgs) => Promise<Result<string>>;
+  updateTermbase: (id: string, args: UpdateTermbaseArgs) => Promise<Result<void>>;
+  deleteTermbase: (id: string) => Promise<Result<void>>;
+  createTerm: (args: CreateTermArgs) => Promise<Result<string>>;
+  updateTerm: (id: string, args: UpdateTermArgs) => Promise<Result<void>>;
+  deleteTerm: (id: string) => Promise<Result<void>>;
+}
