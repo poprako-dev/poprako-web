@@ -97,8 +97,8 @@ export const DuplicateName: Story = {
     await userEvent.upload(page.getByLabelText("选择术语库 JSON 文件"), importFile());
     await waitFor(async () => {
       await expect(page.getByRole("button", { name: "导入" })).toBeEnabled();
+      await expect(page.getByRole("dialog", { name: "新建术语库" })).toBeVisible();
     });
-    await expect(page.getByRole("dialog", { name: "新建术语库" })).toBeVisible();
     await expect(page.getByRole("textbox", { name: "名称" })).toHaveValue("未保存的名称");
   },
 };
