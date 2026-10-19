@@ -4,11 +4,11 @@ import type { Result, ResultFailure } from "@/shared/utility/result";
 import {
   initialPaginationState,
   paginationReducer,
-} from "@/route/_authenticated/translator/business/terminology/pagination";
+} from "@/route/_authenticated/business/terminology/pagination";
 import type {
   PaginationAction,
   PaginationState,
-} from "@/route/_authenticated/translator/business/terminology/pagination";
+} from "@/route/_authenticated/business/terminology/pagination";
 
 type Options<T extends { id: string }> = {
   enabled: boolean;

@@ -3,18 +3,23 @@ import type { RenderResult } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
-import type { TerminologyDataSource } from "../contract/terminology";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
 import { TerminologyLookupBar } from "./TerminologyLookupBar";
-import { useTermbaseExport } from "./use-termbase-export";
-import { downloadTermbase } from "./termbase-download";
-import type { DeferredExport, ExportDataSource } from "./termbase-export-test-fixture";
+import { useTermbaseExport } from "@/route/_authenticated/business/terminology/use-termbase-export";
+import { downloadTermbase } from "@/route/_authenticated/business/terminology/termbase-download";
+import type {
+  DeferredExport,
+  ExportDataSource,
+} from "@/route/_authenticated/business/terminology/termbase-export-test-fixture";
 import {
   createExportDataSource,
   deferredExport,
   exportContent,
-} from "./termbase-export-test-fixture";
+} from "@/route/_authenticated/business/terminology/termbase-export-test-fixture";
 
-vi.mock("./termbase-download", () => ({ downloadTermbase: vi.fn() }));
+vi.mock("@/route/_authenticated/business/terminology/termbase-download", () => ({
+  downloadTermbase: vi.fn(),
+}));
 
 beforeEach(() => {
   vi.stubGlobal(

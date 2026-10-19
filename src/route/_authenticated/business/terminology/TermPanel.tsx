@@ -1,13 +1,13 @@
 import { useCallback } from "react";
 import { Plus } from "lucide-react";
 import clsx from "clsx";
-import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
-import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
-import type { TerminologyDataSource } from "@/route/_authenticated/translator/business/contract/terminology";
+import type { TermInfo } from "@/route/_authenticated/business/terminology/term";
+import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
 import type { ResultFailure } from "@/shared/utility/result";
-import { usePaginatedList } from "@/route/_authenticated/translator/business/terminology/use-paginated-list";
+import { usePaginatedList } from "@/route/_authenticated/business/terminology/use-paginated-list";
 import { useLongPress } from "@/shared/hook/use-long-press";
-import { InfiniteTerminologyList } from "@/route/_authenticated/translator/business/terminology/InfiniteTerminologyList";
+import { InfiniteTerminologyList } from "@/route/_authenticated/business/terminology/InfiniteTerminologyList";
 import { TermCopyButton } from "./TermCopyButton";
 
 const PAGE_SIZE = 30;

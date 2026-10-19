@@ -1,8 +1,5 @@
 import { describe, expect, test } from "vitest";
-import {
-  initialPaginationState,
-  paginationReducer,
-} from "@/route/_authenticated/translator/business/terminology/pagination";
+import { initialPaginationState, paginationReducer } from "./pagination";
 
 type Item = {
   id: string;

@@ -1,6 +1,6 @@
 import type { ReactElement, Dispatch, SetStateAction } from "react";
-import { TermbaseEditorDialog } from "./TermbaseEditorDialog";
-import { TermEditorDialog } from "./TermEditorDialog";
+import { TermbaseEditorDialog } from "@/route/_authenticated/business/terminology/TermbaseEditorDialog";
+import { TermEditorDialog } from "@/route/_authenticated/business/terminology/TermEditorDialog";
 import type { TerminologyMutationActions } from "./use-terminology-lookup-mutations";
 import type { LookupEditorState } from "./use-terminology-lookup-state";
 

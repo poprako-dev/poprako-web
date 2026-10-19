@@ -8,7 +8,7 @@ import {
 } from "@/route/_authenticated/translator/business/unit/unit";
 import type { PageImageQuality } from "@/route/_authenticated/business/page/page";
 import { createUnitSaveFixture } from "@/route/_authenticated/translator/business/test/unit-save-fixture";
-import type { TerminologyDataSource } from "@/route/_authenticated/translator/business/contract/terminology";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
 import type { UnitSearchTransformDataSource } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import {
   DEMO_IMAGE,

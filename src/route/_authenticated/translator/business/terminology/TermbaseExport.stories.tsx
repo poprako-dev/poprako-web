@@ -4,7 +4,7 @@ import { createDataSource, renderAtWidth } from "../test/TerminologyLookupStoryF
 
 import { TerminologyLookupPreview } from "../test/TerminologyLookupPreview";
 
-import type { TerminologyDataSource } from "../contract/terminology";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
 
 const meta: Meta<typeof TerminologyLookupPreview> = {
   title: "Features/BaseTranslator/TermbaseExport",

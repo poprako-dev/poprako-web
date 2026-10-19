@@ -2,10 +2,10 @@ import type { JSX } from "react/jsx-runtime";
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import clsx from "clsx";
-import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
-import type { UpdateTermbaseArgs } from "@/route/_authenticated/translator/business/contract/terminology";
+import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
+import type { UpdateTermbaseArgs } from "@/route/_authenticated/business/terminology/terminology-contract";
 import { AppDialogAction } from "@/shared/component/AppDialog";
-import { TerminologyDialogFrame } from "@/route/_authenticated/translator/business/terminology/TerminologyDialogFrame";
+import { TerminologyDialogFrame } from "@/route/_authenticated/business/terminology/TerminologyDialogFrame";
 import { TermbaseImportButton } from "./TermbaseImportButton";
 import { useTermbaseSubmission } from "./use-termbase-submission";
 

@@ -9,14 +9,10 @@ import {
   type ListTermsQuery,
   type TermApiInfo,
   type UpdateTermBody,
-} from "@/api/translator/term";
+} from "@/api/terminology/term";
 import type { Result } from "@/shared/utility/result";
-import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
-import type {
-  CreateTermArgs,
-  ListTermsArgs,
-  UpdateTermArgs,
-} from "@/route/_authenticated/translator/business/terminology/term-input";
+import type { TermInfo } from "./term";
+import type { CreateTermArgs, ListTermsArgs, UpdateTermArgs } from "./term-input";
 
 function toTermInfo(term: TermApiInfo): TermInfo {
   return {

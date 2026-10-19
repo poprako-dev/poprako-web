@@ -3,9 +3,16 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { TerminologyLookupBar } from "./TerminologyLookupBar";
-import { comicTermbase, createExportDataSource } from "./termbase-export-test-fixture";
-import type { ExportDataSource } from "./termbase-export-test-fixture";
-import { createImportFile, importContent, importedTermbase } from "./termbase-import-test-fixture";
+import {
+  comicTermbase,
+  createExportDataSource,
+} from "@/route/_authenticated/business/terminology/termbase-export-test-fixture";
+import type { ExportDataSource } from "@/route/_authenticated/business/terminology/termbase-export-test-fixture";
+import {
+  createImportFile,
+  importContent,
+  importedTermbase,
+} from "@/route/_authenticated/business/terminology/termbase-import-test-fixture";
 
 beforeEach(() => {
   vi.stubGlobal(

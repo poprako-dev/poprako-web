@@ -11,15 +11,15 @@ import {
   type ListComicTermbasesQuery,
   type TermbaseApiInfo,
   type UpdateTermbaseBody,
-} from "@/api/translator/termbase";
+} from "@/api/terminology/termbase";
 import type { Result } from "@/shared/utility/result";
-import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
+import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
 import type {
   CreateComicTermbaseArgs,
   ImportTermbaseResult,
   ListComicTermbasesArgs,
   UpdateTermbaseArgs,
-} from "@/route/_authenticated/translator/business/terminology/termbase-input";
+} from "@/route/_authenticated/business/terminology/termbase-input";
 
 export function importComicTermbase(
   client: ApiClient,

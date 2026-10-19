@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Dispatch, RefObject, SetStateAction } from "react";
-import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
-import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
+import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
+import type { TermInfo } from "@/route/_authenticated/business/terminology/term";
 
 export type LookupPanel = "closed" | "termbases" | "terms";
 export type OpenLookupPanel = Exclude<LookupPanel, "closed">;

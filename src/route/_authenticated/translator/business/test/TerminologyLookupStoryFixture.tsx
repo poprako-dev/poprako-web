@@ -1,9 +1,9 @@
 import type { ReactElement } from "react";
 import { userEvent, within } from "storybook/test";
 import { TerminologyLookupPreview } from "./TerminologyLookupPreview";
-import type { TerminologyDataSource } from "@/route/_authenticated/translator/business/contract/terminology";
-import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
-import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
+import type { TermInfo } from "@/route/_authenticated/business/terminology/term";
+import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
 
 const termbases: TermbaseInfo[] = [
   {

@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 import type { Mock } from "vitest";
 import type { Result } from "@/shared/utility/result";
-import type { TerminologyDataSource } from "../contract/terminology";
+import type { TerminologyDataSource } from "./terminology-contract";
 import type { TermbaseInfo } from "./termbase";
 
 export const comicTermbase: TermbaseInfo = {

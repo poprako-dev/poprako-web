@@ -9,14 +9,8 @@ import {
   getTermbase,
   listComicTermbases,
   updateTermbase,
-} from "@/route/_authenticated/translator/business/terminology/termbase-request";
-import {
-  createTerm,
-  deleteTerm,
-  getTerm,
-  listTerms,
-  updateTerm,
-} from "@/route/_authenticated/translator/business/terminology/term-request";
+} from "./termbase-request";
+import { createTerm, deleteTerm, getTerm, listTerms, updateTerm } from "./term-request";
 
 type FetchCall = {
   url: string;

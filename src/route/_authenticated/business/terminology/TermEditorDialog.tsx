@@ -3,14 +3,11 @@ import type { Dispatch, SetStateAction } from "react";
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, LoaderCircle, Plus, X } from "lucide-react";
 import clsx from "clsx";
-import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
-import type { UpdateTermArgs } from "@/route/_authenticated/translator/business/contract/terminology";
+import type { TermInfo } from "./term";
+import type { UpdateTermArgs } from "./terminology-contract";
 import { AppDialogAction } from "@/shared/component/AppDialog";
-import {
-  moveTermTarget,
-  validateTermTargets,
-} from "@/route/_authenticated/translator/business/terminology/term-form";
-import { TerminologyDialogFrame } from "@/route/_authenticated/translator/business/terminology/TerminologyDialogFrame";
+import { moveTermTarget, validateTermTargets } from "./term-form";
+import { TerminologyDialogFrame } from "./TerminologyDialogFrame";
 
 type Props = {
   term?: TermInfo | undefined;

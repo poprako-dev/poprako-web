@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
-import { TermEditorDialog } from "@/route/_authenticated/translator/business/terminology/TermEditorDialog";
+import { TermEditorDialog } from "./TermEditorDialog";
 
 const meta = {
   title: "Features/BaseTranslator/TermEditorDialog",

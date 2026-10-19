@@ -1,8 +1,5 @@
 import { describe, expect, test } from "vitest";
-import {
-  moveTermTarget,
-  validateTermTargets,
-} from "@/route/_authenticated/translator/business/terminology/term-form";
+import { moveTermTarget, validateTermTargets } from "./term-form";
 
 describe("term editor form", () => {
   test("requires at least one non-empty translation", () => {

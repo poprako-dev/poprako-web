@@ -2,13 +2,13 @@ import type { Dispatch, SetStateAction } from "react";
 import type { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { ResultFailure } from "@/shared/utility/result";
-import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
-import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
+import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
+import type { TermInfo } from "@/route/_authenticated/business/terminology/term";
 import type {
   TerminologyDataSource,
   UpdateTermArgs,
   UpdateTermbaseArgs,
-} from "@/route/_authenticated/translator/business/contract/terminology";
+} from "@/route/_authenticated/business/terminology/terminology-contract";
 import type { TerminologyLookupState } from "./use-terminology-lookup-state";
 
 type Toast = ReturnType<typeof useToastStore.getState>["showToast"];

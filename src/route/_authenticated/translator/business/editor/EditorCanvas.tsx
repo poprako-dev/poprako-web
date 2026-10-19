@@ -8,7 +8,7 @@ import { TerminologyLookupBar } from "@/route/_authenticated/translator/business
 import { ReadOnlyPageActions } from "@/route/_authenticated/translator/business/page-statistic/ReadOnlyPageActions";
 import type { ToolboxOption } from "@/shared/component/toolbox-dropdown/toolbox-option";
 import type { EditorSession } from "./use-editor-session";
-import { useTermbaseExport } from "../terminology/use-termbase-export";
+import { useTermbaseExport } from "@/route/_authenticated/business/terminology/use-termbase-export";
 
 type Props = {
   session: Pick<

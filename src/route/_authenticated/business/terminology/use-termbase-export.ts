@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { showLocalCaughtError, toApiRequestError } from "@/route/business/request-error";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
-import type { TerminologyDataSource } from "../contract/terminology";
+import type { TerminologyDataSource } from "./terminology-contract";
 import { downloadTermbase } from "./termbase-download";
 
 export type TermbaseExportActions = {

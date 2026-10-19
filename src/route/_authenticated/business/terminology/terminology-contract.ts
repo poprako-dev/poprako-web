@@ -1,7 +1,7 @@
-import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
-import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
+import type { TermInfo } from "./term";
+import type { TermbaseInfo } from "./termbase";
 import type { Result } from "@/shared/utility/result";
-import type { ImportTermbaseResult } from "../terminology/termbase-input";
+import type { ImportTermbaseResult } from "./termbase-input";
 
 export type ListTermbasesArgs = {
   fuzzyName?: string | undefined;

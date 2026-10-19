@@ -7,7 +7,7 @@ import type {
   PageUnitFlaggedStats,
 } from "@/route/_authenticated/business/page/page";
 import type { SaveUnits } from "@/route/_authenticated/translator/business/contract/type";
-import type { TerminologyDataSource } from "@/route/_authenticated/translator/business/contract/terminology";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
 import type { UnitSearchTransformDataSource } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import type { UnitUserResolver } from "@/route/_authenticated/translator/business/unit-list/unit-contributor-cache";
 import type { TranslatorCompletionStage } from "@/route/_authenticated/translator/business/contract/access";

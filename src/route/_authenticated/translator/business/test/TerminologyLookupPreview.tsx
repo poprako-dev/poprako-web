@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
-import type { TerminologyDataSource } from "../contract/terminology";
+import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
 import { TerminologyLookupBar } from "../terminology/TerminologyLookupBar";
-import { useTermbaseExport } from "../terminology/use-termbase-export";
+import { useTermbaseExport } from "@/route/_authenticated/business/terminology/use-termbase-export";
 
 type Props = { dataSource: TerminologyDataSource };
 

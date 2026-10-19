@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import type { TerminologyDataSource } from "../contract/terminology";
+import type { TerminologyDataSource } from "./terminology-contract";
 import { TermPanel } from "./TermPanel";
 
 function createDataSource(listTerms: TerminologyDataSource["listTerms"]): TerminologyDataSource {
