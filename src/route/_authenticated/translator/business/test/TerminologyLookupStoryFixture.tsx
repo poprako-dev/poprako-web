@@ -92,11 +92,12 @@ function createTermbaseReaders(
 function createTermReaders(currentTerms: TermInfo[]): Pick<TerminologyDataSource, "listTerms"> {
   return {
     // eslint-disable-next-line @typescript-eslint/require-await
-    listTerms: async ({ fuzzySource, offset, limit }) => {
+    listTerms: async ({ termbaseId, fuzzySource, offset, limit }) => {
       const query = fuzzySource?.toLocaleLowerCase();
+      const matching = currentTerms.filter((item) => item.termbaseId === termbaseId);
       const filtered = query
-        ? currentTerms.filter((item) => item.source.toLocaleLowerCase().includes(query))
-        : currentTerms;
+        ? matching.filter((item) => item.source.toLocaleLowerCase().includes(query))
+        : matching;
       return { success: true, data: filterPage(filtered, offset, limit) };
     },
   };
@@ -170,6 +171,46 @@ function createTermWriters(
   };
 }
 
+type ImportDocument = {
+  name: string;
+  description?: string | null;
+  terms: { source: string; targets: string[]; comment?: string | null }[];
+};
+
+function createTermbaseImporter(
+  currentTermbases: TermbaseInfo[],
+  currentTerms: TermInfo[],
+): TerminologyDataSource["importTermbase"] {
+  return async (content) => {
+    const document = JSON.parse(content) as ImportDocument;
+    const writers = createTermbaseWriters(currentTermbases);
+    const result = await writers.createTermbase({
+      name: document.name,
+      description: document.description ?? undefined,
+    });
+    if (!result.success) return result;
+    const termWriter = createTermWriters(currentTerms);
+    for (const term of document.terms) {
+      await termWriter.createTerm({
+        ...term,
+        termbaseId: result.data,
+        comment: term.comment ?? undefined,
+      });
+    }
+    const termbase = currentTermbases.find((item) => item.id === result.data);
+    if (termbase) termbase.termCount = document.terms.length;
+    return {
+      success: true,
+      data: {
+        id: result.data,
+        created: true,
+        createdTermCount: document.terms.length,
+        mergedTermCount: 0,
+      },
+    };
+  };
+}
+
 export function createDataSource({
   termbaseItems = termbases,
   termItems = terms,
@@ -181,6 +222,7 @@ export function createDataSource({
   const currentTerms = [...termItems];
 
   return {
+    importTermbase: createTermbaseImporter(currentTermbases, currentTerms),
     exportTermbase: (id) => {
       const termbase = currentTermbases.find((item) => item.id === id);
       return Promise.resolve({

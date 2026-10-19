@@ -43,6 +43,7 @@ export function deferredExport(): DeferredExport {
 
 export function createExportDataSource(): ExportDataSource {
   return {
+    importTermbase: vi.fn<TerminologyDataSource["importTermbase"]>(),
     exportTermbase: vi.fn<TerminologyDataSource["exportTermbase"]>(),
     listTermbases: vi.fn<TerminologyDataSource["listTermbases"]>(({ fuzzyName }) =>
       Promise.resolve({

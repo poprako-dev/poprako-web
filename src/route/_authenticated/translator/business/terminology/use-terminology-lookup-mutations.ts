@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { useToastStore } from "@/shared/component/notification-toast/toast-store";
-import { showLocalApiFailure } from "@/route/business/request-error";
+import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { ResultFailure } from "@/shared/utility/result";
 import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
 import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
@@ -16,6 +16,7 @@ type ErrorHandler = (action: string, failure: ResultFailure) => false;
 type StateSetter<T> = Dispatch<SetStateAction<T>>;
 
 export interface TerminologyMutationActions {
+  handleImportTermbase: (file: File) => Promise<boolean>;
   handleSaveTermbase: (
     termbase: TermbaseInfo | undefined,
     args: UpdateTermbaseArgs,
@@ -41,6 +42,30 @@ type TermbaseSaveDeps = {
   onError: ErrorHandler;
   showToast: Toast;
 };
+
+function createImportTermbase(
+  deps: TermbaseSaveDeps,
+): TerminologyMutationActions["handleImportTermbase"] {
+  return async (file) => {
+    if (!file.name.toLowerCase().endsWith(".json")) {
+      deps.showToast("仅支持 .json 文件", "error");
+      return false;
+    }
+    try {
+      const content = await file.text();
+      const result = await deps.dataSource.importTermbase(content);
+      if (!result.success) return deps.onError("导入术语库", result);
+      deps.setTermbaseQuery("");
+      deps.setTermbaseRevision((revision) => revision + 1);
+      deps.showToast("术语库已导入", "success");
+      return true;
+    } catch (error) {
+      console.error("[TerminologyLookup] 导入术语库异常", error);
+      showLocalCaughtError(error, deps.showToast, "导入术语库失败");
+      return false;
+    }
+  };
+}
 
 function createSaveTermbase(
   deps: TermbaseSaveDeps,
@@ -172,6 +197,7 @@ export function createTerminologyLookupMutations(
     showToast,
   };
   return {
+    handleImportTermbase: createImportTermbase(termbaseDeps),
     handleSaveTermbase: createSaveTermbase(termbaseDeps),
     handleDeleteTermbase: createDeleteTermbase({
       ...termbaseDeps,

@@ -16,6 +16,7 @@ export function TerminologyLookupEditors({ editor, setEditor, mutations }: Props
       {editor?.kind === "termbase" && (
         <TermbaseEditorDialog
           termbase={editor.termbase}
+          onImport={mutations.handleImportTermbase}
           onSave={(args) => mutations.handleSaveTermbase(editor.termbase, args)}
           onDelete={
             editor.termbase ? mutations.handleDeleteTermbase.bind(null, editor.termbase) : undefined

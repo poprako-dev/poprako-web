@@ -63,6 +63,11 @@ async function mockResolveUser(userId: string): Promise<
 }
 
 export const mockTerminology: TerminologyDataSource = {
+  importTermbase: () =>
+    Promise.resolve({
+      success: true,
+      data: { id: "termbase-new", created: true, createdTermCount: 1, mergedTermCount: 0 },
+    }),
   exportTermbase: () =>
     Promise.resolve({
       success: true,

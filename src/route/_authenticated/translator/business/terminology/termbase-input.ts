@@ -15,3 +15,10 @@ export type UpdateTermbaseArgs = {
   name: string;
   description?: string | undefined;
 };
+
+export type ImportTermbaseResult = {
+  id: string;
+  created: boolean;
+  createdTermCount: number;
+  mergedTermCount: number;
+};

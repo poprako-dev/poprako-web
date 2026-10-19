@@ -4,6 +4,7 @@ import {
   deleteTermbase as deleteTermbaseApi,
   exportTermbase as exportTermbaseApi,
   getTermbase as getTermbaseApi,
+  importComicTermbase as importComicTermbaseApi,
   listComicTermbases as listComicTermbasesApi,
   updateTermbase as updateTermbaseApi,
   type CreateComicTermbaseBody,
@@ -15,9 +16,25 @@ import type { Result } from "@/shared/utility/result";
 import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
 import type {
   CreateComicTermbaseArgs,
+  ImportTermbaseResult,
   ListComicTermbasesArgs,
   UpdateTermbaseArgs,
 } from "@/route/_authenticated/translator/business/terminology/termbase-input";
+
+export function importComicTermbase(
+  client: ApiClient,
+  comicId: string,
+  content: string,
+): Promise<Result<ImportTermbaseResult>> {
+  let document: unknown;
+  try {
+    document = JSON.parse(content);
+  } catch (error) {
+    console.error("[TerminologyLookup] 解析术语库 JSON 失败", error);
+    return Promise.resolve({ success: false, error: "术语库文件不是有效的 JSON" });
+  }
+  return importComicTermbaseApi(client, comicId, document);
+}
 
 function toTermbaseInfo(termbase: TermbaseApiInfo): TermbaseInfo {
   return {

@@ -1,6 +1,7 @@
 import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
 import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
 import type { Result } from "@/shared/utility/result";
+import type { ImportTermbaseResult } from "../terminology/termbase-input";
 
 export type ListTermbasesArgs = {
   fuzzyName?: string | undefined;
@@ -32,6 +33,7 @@ export type CreateTermArgs = {
 export type UpdateTermArgs = Omit<CreateTermArgs, "termbaseId">;
 
 export interface TerminologyDataSource {
+  importTermbase: (content: string) => Promise<Result<ImportTermbaseResult>>;
   exportTermbase: (id: string, signal?: AbortSignal) => Promise<Result<string>>;
   listTermbases: (args: ListTermbasesArgs) => Promise<Result<TermbaseInfo[]>>;
   listTerms: (args: ListTermsArgs) => Promise<Result<TermInfo[]>>;

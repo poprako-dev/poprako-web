@@ -1,4 +1,11 @@
-import { decodeArray, decodeNumber, decodeObject, decodeString, decodeVoid } from "@/api/contract";
+import {
+  decodeArray,
+  decodeBoolean,
+  decodeNumber,
+  decodeObject,
+  decodeString,
+  decodeVoid,
+} from "@/api/contract";
 import type { ApiClient } from "@/api/client";
 import type { Result } from "@/shared/utility/result";
 
@@ -25,6 +32,33 @@ export type CreateComicTermbaseBody = {
   description?: string | undefined;
 };
 export type UpdateTermbaseBody = { name: string; description?: string | undefined };
+
+export type ImportTermbaseApiResult = {
+  id: string;
+  created: boolean;
+  createdTermCount: number;
+  mergedTermCount: number;
+};
+
+export function importComicTermbase(
+  client: ApiClient,
+  comicId: string,
+  document: unknown,
+): Promise<Result<ImportTermbaseApiResult>> {
+  return client.post(`/comics/${comicId}/termbases/import`, document, {
+    // TODO: 设计强制合并的 UI/UX 后再开放 forceMerge；当前同名导入保持报错。
+    query: { forceMerge: false },
+    decode: (value) => {
+      const record = decodeObject(value, "imported termbase");
+      return {
+        id: decodeString(record["id"], "id"),
+        created: decodeBoolean(record["created"], "created"),
+        createdTermCount: decodeNumber(record["createdTermCount"], "createdTermCount"),
+        mergedTermCount: decodeNumber(record["mergedTermCount"], "mergedTermCount"),
+      };
+    },
+  });
+}
 
 function optionalNullableString(
   record: Record<string, unknown>,

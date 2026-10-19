@@ -6,39 +6,42 @@ import type { TermbaseInfo } from "@/route/_authenticated/translator/business/te
 import type { UpdateTermbaseArgs } from "@/route/_authenticated/translator/business/contract/terminology";
 import { AppDialogAction } from "@/shared/component/AppDialog";
 import { TerminologyDialogFrame } from "@/route/_authenticated/translator/business/terminology/TerminologyDialogFrame";
+import { TermbaseImportButton } from "./TermbaseImportButton";
+import { useTermbaseSubmission } from "./use-termbase-submission";
 
 type Props = {
   termbase?: TermbaseInfo | undefined;
   onSave: (args: UpdateTermbaseArgs) => Promise<boolean>;
+  onImport: (file: File) => Promise<boolean>;
   onDelete?: (() => Promise<boolean>) | undefined;
   onClose: () => void;
 };
 
-export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Props): JSX.Element {
+export function TermbaseEditorDialog({
+  termbase,
+  onSave,
+  onImport,
+  onDelete,
+  onClose,
+}: Props): JSX.Element {
   const [name, setName] = useState(termbase?.name ?? "");
   const [description, setDescription] = useState(termbase?.description ?? "");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { pending, submit } = useTermbaseSubmission(onClose);
+  const isSubmitting = pending !== undefined;
   const isEditing = termbase !== undefined;
   const isValid = name.trim().length > 0;
 
   const handleSave = async (): Promise<void> => {
     if (!isValid || isSubmitting) return;
-    setIsSubmitting(true);
-    const isSuccess = await onSave({
-      name: name.trim(),
-      description: description.trim() || undefined,
-    });
-    setIsSubmitting(false);
-    if (isSuccess) onClose();
+    await submit("save", () =>
+      onSave({ name: name.trim(), description: description.trim() || undefined }),
+    );
   };
 
   const handleDelete = async (): Promise<void> => {
     if (!onDelete || isSubmitting) return;
-    setIsSubmitting(true);
-    const isSuccess = await onDelete();
-    setIsSubmitting(false);
-    if (isSuccess) onClose();
+    await submit("delete", onDelete);
   };
 
   if (isConfirmingDelete && termbase && onDelete) {
@@ -89,6 +92,15 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
       onClose={onClose}
       footer={
         <div className="flex items-center gap-2">
+          {!isEditing && (
+            <TermbaseImportButton
+              disabled={isSubmitting}
+              isImporting={pending === "import"}
+              onImport={(file) => {
+                void submit("import", () => onImport(file));
+              }}
+            />
+          )}
           {isEditing && onDelete && (
             <AppDialogAction
               type="button"
@@ -109,7 +121,7 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
               void handleSave();
             }}
           >
-            {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
+            {pending === "save" && <LoaderCircle size={13} className="animate-spin" />}
             保存
           </AppDialogAction>
         </div>
