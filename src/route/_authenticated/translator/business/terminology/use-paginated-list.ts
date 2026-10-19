@@ -257,8 +257,9 @@ function usePaginationEffects(options: {
     () => () => {
       requestVersionRef.current += 1;
       activeRequestRef.current = null;
+      loadedQueryKeyRef.current = null;
     },
-    [requestVersionRef, activeRequestRef],
+    [requestVersionRef, activeRequestRef, loadedQueryKeyRef],
   );
 }
 
