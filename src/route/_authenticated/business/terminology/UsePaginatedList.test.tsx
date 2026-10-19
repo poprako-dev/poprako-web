@@ -99,3 +99,34 @@ test("ignores a failed response after unmount", async () => {
   });
   expect(onError).not.toHaveBeenCalled();
 });
+
+test("retries a failed next page at the same offset and keeps existing rows", async () => {
+  const loadPage = vi
+    .fn<PageLoader>()
+    .mockResolvedValueOnce({ success: true, data: [{ id: "first" }] })
+    .mockResolvedValueOnce({ success: false, error: "offline" })
+    .mockResolvedValueOnce({ success: true, data: [{ id: "second" }] });
+  const { result } = renderHook(() =>
+    usePaginatedList({ enabled: true, queryKey: "retry", pageSize: 1, loadPage, onError: vi.fn() }),
+  );
+  await act(async () => {
+    await Promise.resolve();
+  });
+  await act(async () => {
+    result.current.loadMore();
+    await Promise.resolve();
+  });
+  expect(result.current.items).toEqual([{ id: "first" }]);
+  expect(result.current.error).toBe("offline");
+  await act(async () => {
+    result.current.retry();
+    await Promise.resolve();
+  });
+  expect(loadPage.mock.calls).toEqual([
+    [0, 1],
+    [1, 1],
+    [1, 1],
+  ]);
+  expect(result.current.items).toEqual([{ id: "first" }, { id: "second" }]);
+  expect(result.current.error).toBeUndefined();
+});

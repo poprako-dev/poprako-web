@@ -1,14 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from "react";
 import type { Dispatch, RefObject } from "react";
 import type { Result, ResultFailure } from "@/shared/utility/result";
-import {
-  initialPaginationState,
-  paginationReducer,
-} from "@/route/_authenticated/business/terminology/pagination";
-import type {
-  PaginationAction,
-  PaginationState,
-} from "@/route/_authenticated/business/terminology/pagination";
+import { initialPaginationState, paginationReducer } from "./pagination";
+import type { PaginationAction, PaginationState } from "./pagination";
 
 type Options<T extends { id: string }> = {
   enabled: boolean;
@@ -82,6 +76,7 @@ function requestReload<T extends { id: string }>(options: {
 }
 
 function requestLoadMore<T extends { id: string }>(options: {
+  retrying?: boolean;
   enabled: boolean;
   stateRef: RefObject<PaginationState<T>>;
   requestVersionRef: RefObject<number>;
@@ -91,7 +86,12 @@ function requestLoadMore<T extends { id: string }>(options: {
 }): void {
   if (!options.enabled || options.activeRequestRef.current !== null) return;
   const snapshot = options.stateRef.current;
-  if (!snapshot.hasMore || snapshot.error || snapshot.phase === "initial-loading") return;
+  if (
+    !snapshot.hasMore ||
+    (snapshot.error && !options.retrying) ||
+    snapshot.phase === "initial-loading"
+  )
+    return;
   const requestVersion = options.requestVersionRef.current;
   options.dispatch({ type: "load-more", requestVersion });
   void options.execute(requestVersion, snapshot.offset, true);
@@ -111,7 +111,7 @@ function requestRetry<T extends { id: string }>(options: {
     options.reload();
     return;
   }
-  requestLoadMore(options);
+  requestLoadMore({ ...options, retrying: true });
 }
 
 function usePageRequestExecutor<T extends { id: string }>(
