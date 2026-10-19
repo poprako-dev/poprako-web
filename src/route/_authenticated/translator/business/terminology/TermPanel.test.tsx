@@ -6,6 +6,7 @@ import { TermPanel } from "./TermPanel";
 function createDataSource(listTerms: TerminologyDataSource["listTerms"]): TerminologyDataSource {
   return {
     listTerms,
+    exportTermbase: vi.fn(),
     listTermbases: vi.fn(),
     createTermbase: vi.fn(),
     updateTermbase: vi.fn(),

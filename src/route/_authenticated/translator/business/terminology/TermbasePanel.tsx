@@ -5,13 +5,15 @@ import type { TermbaseInfo } from "@/route/_authenticated/translator/business/te
 import type { TerminologyDataSource } from "@/route/_authenticated/translator/business/contract/terminology";
 import type { ResultFailure } from "@/shared/utility/result";
 import { usePaginatedList } from "@/route/_authenticated/translator/business/terminology/use-paginated-list";
-import { useLongPress } from "@/shared/hook/use-long-press";
+import { TermbaseRow } from "./TermbaseRow";
+import type { TermbaseExportActions } from "./use-termbase-export";
 import { InfiniteTerminologyList } from "@/route/_authenticated/translator/business/terminology/InfiniteTerminologyList";
 
 const PAGE_SIZE = 30;
 
 type Props = {
   dataSource: TerminologyDataSource;
+  termbaseExport: TermbaseExportActions;
   query: string;
   searchQuery: string;
   selectedTermbase?: TermbaseInfo;
@@ -23,68 +25,6 @@ type Props = {
   onError: (error: ResultFailure) => void;
 };
 
-type RowProps = {
-  termbase: TermbaseInfo;
-  isSelected: boolean;
-  onSelect: () => void;
-  onEdit?: () => void;
-};
-
-function TermbaseRow({ termbase, isSelected, onSelect, onEdit }: RowProps): React.ReactElement {
-  const scope = termbase.comicId ? "本作" : "团队";
-  const longPress = useLongPress({
-    onLongPress: () => onEdit?.(),
-    onClick: onSelect,
-  });
-
-  return (
-    <button
-      type="button"
-      role="option"
-      aria-selected={isSelected}
-      onClick={onEdit ? undefined : onSelect}
-      {...(onEdit ? longPress : {})}
-      onPointerLeave={onEdit ? longPress.onPointerCancel : undefined}
-      title={onEdit ? "长按编辑术语库" : undefined}
-      className={clsx(
-        "flex min-h-7 w-full items-center gap-3 px-2.5 py-1 text-left",
-        "border-b border-line-stone-200/55 last:border-b-0",
-        "transition-colors hover:bg-surface-stone-50",
-        onEdit && "touch-none select-none",
-        isSelected && "bg-surface-green-50",
-      )}
-    >
-      <span className="flex min-w-0 max-w-[68%] items-center gap-1.5">
-        <span className="min-w-0 truncate text-xs font-medium text-ink-stone-700">
-          {termbase.name}
-        </span>
-        <span
-          className={clsx(
-            "shrink-0 border-l border-line-stone-200 pl-1.5",
-            "text-[10px] tabular-nums text-text-muted-warm",
-          )}
-        >
-          {termbase.termCount} 条
-        </span>
-        <span
-          className={clsx(
-            "shrink-0 rounded-md border px-1 py-px",
-            "text-[9px] font-medium leading-none",
-            termbase.comicId
-              ? "border-line-green-100 bg-surface-green-50 text-ink-stone-600"
-              : "border-line-stone-200 bg-surface-stone-50 text-text-muted-warm",
-          )}
-        >
-          {scope}
-        </span>
-      </span>
-      <span className="min-w-0 flex-1 truncate text-right text-[10px] text-text-muted-warm">
-        {termbase.description ?? "暂无描述"}
-      </span>
-    </button>
-  );
-}
-
 function normalizedQuery(value: string): string | undefined {
   const query = value.trim();
   return query.length > 0 ? query : undefined;
@@ -92,6 +32,7 @@ function normalizedQuery(value: string): string | undefined {
 
 export function TermbasePanel({
   dataSource,
+  termbaseExport,
   query,
   searchQuery,
   selectedTermbase,
@@ -167,7 +108,7 @@ export function TermbasePanel({
         isLoadingMore={list.isLoadingMore}
         error={list.error}
         emptyMessage="没有找到术语库"
-        role="listbox"
+        role="list"
         ariaLabel="术语库列表"
         onLoadMore={list.loadMore}
         onRetry={list.retry}
@@ -177,6 +118,10 @@ export function TermbasePanel({
             key={termbase.id}
             termbase={termbase}
             isSelected={termbase.id === selectedTermbase?.id}
+            isExporting={termbaseExport.exportingIds.has(termbase.id)}
+            onExport={() => {
+              void termbaseExport.exportTermbase(termbase.id);
+            }}
             onSelect={() => {
               onSelect(termbase);
             }}

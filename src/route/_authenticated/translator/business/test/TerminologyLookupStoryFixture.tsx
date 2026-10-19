@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { userEvent, within } from "storybook/test";
-import { TerminologyLookupBar } from "@/route/_authenticated/translator/business/terminology/TerminologyLookupBar";
+import { TerminologyLookupPreview } from "./TerminologyLookupPreview";
 import type { TerminologyDataSource } from "@/route/_authenticated/translator/business/contract/terminology";
 import type { TermInfo } from "@/route/_authenticated/translator/business/terminology/term";
 import type { TermbaseInfo } from "@/route/_authenticated/translator/business/terminology/termbase";
@@ -181,6 +181,19 @@ export function createDataSource({
   const currentTerms = [...termItems];
 
   return {
+    exportTermbase: (id) => {
+      const termbase = currentTermbases.find((item) => item.id === id);
+      return Promise.resolve({
+        success: true,
+        data: JSON.stringify({
+          name: termbase?.name ?? "术语库",
+          description: termbase?.description ?? null,
+          terms: currentTerms
+            .filter((term) => term.termbaseId === id)
+            .map(({ source, targets, comment }) => ({ source, targets, comment: comment ?? null })),
+        }),
+      });
+    },
     ...createTermbaseReaders(currentTermbases),
     ...createTermReaders(currentTerms),
     ...createTermbaseWriters(currentTermbases),
@@ -197,7 +210,7 @@ export function renderAtWidth(
       className="@container relative h-112 overflow-hidden bg-surface-stone-600"
       style={{ width }}
     >
-      <TerminologyLookupBar {...args} />
+      <TerminologyLookupPreview {...args} />
     </div>
   );
 }

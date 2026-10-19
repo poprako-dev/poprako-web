@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
-import { TerminologyLookupBar } from "@/route/_authenticated/translator/business/terminology/TerminologyLookupBar";
 import {
   createDataSource,
   longPress,
@@ -8,9 +7,11 @@ import {
   renderAtWidth,
 } from "@/route/_authenticated/translator/business/test/TerminologyLookupStoryFixture";
 
-const meta: Meta<typeof TerminologyLookupBar> = {
+import { TerminologyLookupPreview } from "../test/TerminologyLookupPreview";
+
+const meta: Meta<typeof TerminologyLookupPreview> = {
   title: "Features/BaseTranslator/TerminologyLookupBar",
-  component: TerminologyLookupBar,
+  component: TerminologyLookupPreview,
   parameters: {
     layout: "centered",
   },
@@ -19,7 +20,7 @@ const meta: Meta<typeof TerminologyLookupBar> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof TerminologyLookupBar>;
+type Story = StoryObj<typeof TerminologyLookupPreview>;
 
 export const Unselected: Story = {
   args: { dataSource: createDataSource() },
@@ -55,7 +56,7 @@ export const TermList: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-    const option = await canvas.findByRole("option", { name: /角色称谓/ });
+    const option = await canvas.findByRole("button", { name: /角色称谓/ });
     await waitFor(
       async () => {
         await expect(option).toBeVisible();
@@ -82,8 +83,8 @@ export const DebouncedSearch: Story = {
     await userEvent.type(search, "地名");
     await waitFor(
       async () => {
-        await expect(canvas.getByRole("option", { name: /地名/ })).toBeVisible();
-        await expect(canvas.queryByRole("option", { name: /角色称谓/ })).toBeNull();
+        await expect(canvas.getByRole("button", { name: /地名/ })).toBeVisible();
+        await expect(canvas.queryByRole("button", { name: /角色称谓/ })).toBeNull();
       },
       { timeout: 3000 },
     );
@@ -101,7 +102,7 @@ export const CreateTermbase: Story = {
     await userEvent.click(page.getByRole("button", { name: "保存" }));
     await waitFor(
       async () => {
-        await expect(canvas.getByRole("option", { name: /战斗用语/ })).toBeVisible();
+        await expect(canvas.getByRole("button", { name: /战斗用语/ })).toBeVisible();
       },
       { timeout: 3000 },
     );
@@ -114,7 +115,7 @@ export const EditTermbaseByLongPress: Story = {
     const canvas = within(canvasElement);
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-    const option = await canvas.findByRole("option", { name: /角色称谓/ });
+    const option = await canvas.findByRole("button", { name: /角色称谓/ });
     await longPress(option);
     await waitFor(async () => {
       await expect(page.getByRole("dialog", { name: "编辑术语库" })).toBeVisible();
@@ -131,7 +132,7 @@ export const CreateTerm: Story = {
     const canvas = within(canvasElement);
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-    await userEvent.click(await canvas.findByRole("option", { name: /角色称谓/ }));
+    await userEvent.click(await canvas.findByRole("button", { name: /角色称谓/ }));
     await userEvent.click(canvas.getByRole("combobox", { name: "搜索术语原文" }));
     await userEvent.click(await canvas.findByRole("button", { name: "新建术语" }));
     await userEvent.type(page.getByRole("textbox", { name: "原文" }), "副団長");
@@ -157,7 +158,7 @@ export const TeamTermbaseReadOnly: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-    await userEvent.click(await canvas.findByRole("option", { name: /奇幻世界共用词/ }));
+    await userEvent.click(await canvas.findByRole("button", { name: /奇幻世界共用词/ }));
     await userEvent.click(canvas.getByRole("combobox", { name: "搜索术语原文" }));
     await waitFor(
       async () => {

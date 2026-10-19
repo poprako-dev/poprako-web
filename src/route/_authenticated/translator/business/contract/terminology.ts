@@ -32,6 +32,7 @@ export type CreateTermArgs = {
 export type UpdateTermArgs = Omit<CreateTermArgs, "termbaseId">;
 
 export interface TerminologyDataSource {
+  exportTermbase: (id: string, signal?: AbortSignal) => Promise<Result<string>>;
   listTermbases: (args: ListTermbasesArgs) => Promise<Result<TermbaseInfo[]>>;
   listTerms: (args: ListTermsArgs) => Promise<Result<TermInfo[]>>;
   createTermbase: (args: CreateTermbaseArgs) => Promise<Result<string>>;

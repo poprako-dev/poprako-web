@@ -10,6 +10,7 @@ import {
 import {
   createComicTermbase,
   deleteTermbase,
+  exportTermbase,
   listComicTermbases,
   updateTermbase,
 } from "@/route/_authenticated/translator/business/terminology/termbase-request";
@@ -21,6 +22,7 @@ export function useTranslatorTerminology(
   return useMemo<TerminologyDataSource | undefined>(() => {
     if (!comicId) return undefined;
     return {
+      exportTermbase: (id, signal) => exportTermbase(client, id, signal),
       listTermbases: (args) => listComicTermbases(client, { comicId, ...args }),
       listTerms: (args) => listTerms(client, args),
       createTermbase: (args) => createComicTermbase(client, { comicId, ...args }),

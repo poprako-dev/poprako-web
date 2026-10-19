@@ -64,6 +64,14 @@ export function getTermbase(client: ApiClient, id: string): Promise<Result<Termb
   return client.get(`/termbases/${id}`, { decode: decodeTermbase });
 }
 
+export function exportTermbase(
+  client: ApiClient,
+  id: string,
+  signal?: AbortSignal,
+): Promise<Result<string>> {
+  return client.getText(`/termbases/${id}/export/download`, { signal });
+}
+
 export function createComicTermbase(
   client: ApiClient,
   body: CreateComicTermbaseBody,

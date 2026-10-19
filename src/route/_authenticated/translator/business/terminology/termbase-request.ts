@@ -2,6 +2,7 @@ import type { ApiClient } from "@/api/client";
 import {
   createComicTermbase as createComicTermbaseApi,
   deleteTermbase as deleteTermbaseApi,
+  exportTermbase as exportTermbaseApi,
   getTermbase as getTermbaseApi,
   listComicTermbases as listComicTermbasesApi,
   updateTermbase as updateTermbaseApi,
@@ -50,6 +51,14 @@ export async function getTermbase(client: ApiClient, id: string): Promise<Result
   const result = await getTermbaseApi(client, id);
   if (!result.success) return result;
   return { success: true, data: toTermbaseInfo(result.data) };
+}
+
+export function exportTermbase(
+  client: ApiClient,
+  id: string,
+  signal?: AbortSignal,
+): Promise<Result<string>> {
+  return exportTermbaseApi(client, id, signal);
 }
 
 export async function createComicTermbase(

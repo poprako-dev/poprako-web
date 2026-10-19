@@ -63,6 +63,15 @@ async function mockResolveUser(userId: string): Promise<
 }
 
 export const mockTerminology: TerminologyDataSource = {
+  exportTermbase: () =>
+    Promise.resolve({
+      success: true,
+      data: JSON.stringify({
+        name: "角色称谓",
+        description: null,
+        terms: [{ source: "団長", targets: ["团长"], comment: null }],
+      }),
+    }),
   // eslint-disable-next-line @typescript-eslint/require-await
   listTermbases: async () => ({
     success: true,
