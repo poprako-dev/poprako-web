@@ -2,17 +2,17 @@ import type { JSX } from "react/jsx-runtime";
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import clsx from "clsx";
-import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
-import type { UpdateTermbaseArgs } from "@/route/_authenticated/business/terminology/terminology-contract";
+import type { TermbaseInfo } from "./termbase";
+import type { UpdateTermbaseArgs } from "./terminology-contract";
 import { AppDialogAction } from "@/shared/component/AppDialog";
-import { TerminologyDialogFrame } from "@/route/_authenticated/business/terminology/TerminologyDialogFrame";
+import { TerminologyDialogFrame } from "./TerminologyDialogFrame";
 import { TermbaseImportButton } from "./TermbaseImportButton";
 import { useTermbaseSubmission } from "./use-termbase-submission";
 
 type Props = {
   termbase?: TermbaseInfo | undefined;
   onSave: (args: UpdateTermbaseArgs) => Promise<boolean>;
-  onImport: (file: File) => Promise<boolean>;
+  onImport?: ((file: File) => Promise<boolean>) | undefined;
   onDelete?: (() => Promise<boolean>) | undefined;
   onClose: () => void;
 };
@@ -92,7 +92,7 @@ export function TermbaseEditorDialog({
       onClose={onClose}
       footer={
         <div className="flex items-center gap-2">
-          {!isEditing && (
+          {!isEditing && onImport && (
             <TermbaseImportButton
               disabled={isSubmitting}
               isImporting={pending === "import"}

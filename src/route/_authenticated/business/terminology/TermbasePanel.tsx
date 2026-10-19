@@ -1,13 +1,13 @@
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
 import { Plus, Search } from "lucide-react";
 import clsx from "clsx";
-import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
-import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
+import type { TermbaseInfo } from "./termbase";
+import type { TerminologyDataSource } from "./terminology-contract";
 import type { ResultFailure } from "@/shared/utility/result";
-import { usePaginatedList } from "@/route/_authenticated/business/terminology/use-paginated-list";
+import { usePaginatedList } from "./use-paginated-list";
 import { TermbaseRow } from "./TermbaseRow";
 import type { TermbaseExportActions } from "./use-termbase-export";
-import { InfiniteTerminologyList } from "@/route/_authenticated/business/terminology/InfiniteTerminologyList";
+import { InfiniteTerminologyList } from "./InfiniteTerminologyList";
 
 const PAGE_SIZE = 30;
 
@@ -18,6 +18,11 @@ type Props = {
   searchQuery: string;
   selectedTermbase?: TermbaseInfo;
   revision: number;
+  canCreate: boolean;
+  canEdit: (termbase: TermbaseInfo) => boolean;
+  enabled?: boolean;
+  directory?: boolean;
+  header?: ReactNode;
   onQueryChange: (value: string) => void;
   onSelect: (termbase: TermbaseInfo) => void;
   onCreate: () => void;
@@ -37,6 +42,11 @@ export function TermbasePanel({
   searchQuery,
   selectedTermbase,
   revision,
+  canCreate,
+  canEdit,
+  enabled = true,
+  directory = false,
+  header,
   onQueryChange,
   onSelect,
   onCreate,
@@ -53,7 +63,7 @@ export function TermbasePanel({
     [dataSource, searchQuery],
   );
   const list = usePaginatedList({
-    enabled: true,
+    enabled,
     queryKey: `termbases:${searchQuery.trim()}:${String(revision)}`,
     pageSize: PAGE_SIZE,
     loadPage,
@@ -62,45 +72,49 @@ export function TermbasePanel({
 
   return (
     <>
-      <div className="flex gap-1.5 border-b border-line-stone-200/80 p-1.5">
-        <label className="relative min-w-0 flex-1">
-          <Search
-            size={14}
-            strokeWidth={1.8}
-            className={clsx(
-              "pointer-events-none absolute left-2 top-1/2 -translate-y-1/2",
-              "text-icon-muted-warm",
-            )}
-          />
-          <span className="sr-only">搜索术语库名称</span>
-          <input
-            value={query}
-            onChange={(event) => {
-              onQueryChange(event.target.value);
-            }}
-            placeholder="搜索术语库名称"
-            className={clsx(
-              "h-7 w-full rounded-md border border-control-border bg-surface-white",
-              "pl-7 pr-2.5 text-[11px] text-ink-stone-700 outline-none",
-              "shadow-sm shadow-shadow-slate-100 placeholder:text-text-muted-warm",
-              "focus:border-line-slate-300",
-            )}
-          />
-        </label>
-        <button
-          type="button"
-          aria-label="新建术语库"
-          title="新建术语库"
-          onClick={onCreate}
-          className={clsx(
-            "flex size-7 shrink-0 items-center justify-center rounded-md border",
-            "border-line-stone-200 bg-surface-white text-text-muted-warm transition-colors",
-            "hover:border-line-green-100 hover:bg-surface-green-50 hover:text-ink-stone-700",
+      {header ?? (
+        <div className="flex gap-1.5 border-b border-line-stone-200/80 p-1.5">
+          <label className="relative min-w-0 flex-1">
+            <Search
+              size={14}
+              strokeWidth={1.8}
+              className={clsx(
+                "pointer-events-none absolute left-2 top-1/2 -translate-y-1/2",
+                "text-icon-muted-warm",
+              )}
+            />
+            <span className="sr-only">搜索术语库名称</span>
+            <input
+              value={query}
+              onChange={(event) => {
+                onQueryChange(event.target.value);
+              }}
+              placeholder="搜索术语库名称"
+              className={clsx(
+                "h-7 w-full rounded-md border border-control-border bg-surface-white",
+                "pl-7 pr-2.5 text-[11px] text-ink-stone-700 outline-none",
+                "shadow-sm shadow-shadow-slate-100 placeholder:text-text-muted-warm",
+                "focus:border-line-slate-300",
+              )}
+            />
+          </label>
+          {canCreate && (
+            <button
+              type="button"
+              aria-label="新建术语库"
+              title="新建术语库"
+              onClick={onCreate}
+              className={clsx(
+                "flex size-7 shrink-0 items-center justify-center rounded-md border",
+                "border-line-stone-200 bg-surface-white text-text-muted-warm transition-colors",
+                "hover:border-line-green-100 hover:bg-surface-green-50 hover:text-ink-stone-700",
+              )}
+            >
+              <Plus size={13} />
+            </button>
           )}
-        >
-          <Plus size={13} />
-        </button>
-      </div>
+        </div>
+      )}
       <InfiniteTerminologyList
         itemCount={list.items.length}
         hasMore={list.hasMore}
@@ -117,6 +131,7 @@ export function TermbasePanel({
           <TermbaseRow
             key={termbase.id}
             termbase={termbase}
+            directory={directory}
             isSelected={termbase.id === selectedTermbase?.id}
             isExporting={termbaseExport.exportingIds.has(termbase.id)}
             onExport={() => {
@@ -125,7 +140,7 @@ export function TermbasePanel({
             onSelect={() => {
               onSelect(termbase);
             }}
-            {...(termbase.comicId
+            {...(canEdit(termbase)
               ? {
                   onEdit: () => {
                     onEdit(termbase);

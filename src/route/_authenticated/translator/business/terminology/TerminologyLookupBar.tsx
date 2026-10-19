@@ -118,6 +118,8 @@ export function TerminologyLookupBar({ dataSource, termbaseExport }: Props): Rea
           >
             {renderedPanel === "termbases" ? (
               <TermbasePanel
+                canCreate
+                canEdit={(termbase) => Boolean(termbase.comicId)}
                 termbaseExport={termbaseExport}
                 dataSource={dataSource}
                 query={termbaseQuery}
@@ -140,6 +142,7 @@ export function TerminologyLookupBar({ dataSource, termbaseExport }: Props): Rea
               />
             ) : selectedTermbase ? (
               <TermPanel
+                canEdit={Boolean(selectedTermbase.comicId)}
                 dataSource={dataSource}
                 termbase={selectedTermbase}
                 query={debouncedSourceQuery}

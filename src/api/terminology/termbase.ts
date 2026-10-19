@@ -31,6 +31,9 @@ export type CreateComicTermbaseBody = {
   name: string;
   description?: string | undefined;
 };
+export type CreateTeamTermbaseBody = Omit<CreateComicTermbaseBody, "comicId"> & {
+  teamId: string;
+};
 export type UpdateTermbaseBody = { name: string; description?: string | undefined };
 
 export type ImportTermbaseApiResult = {
@@ -45,7 +48,23 @@ export function importComicTermbase(
   comicId: string,
   document: unknown,
 ): Promise<Result<ImportTermbaseApiResult>> {
-  return client.post(`/comics/${comicId}/termbases/import`, document, {
+  return importTermbaseDocument(client, `/comics/${comicId}/termbases/import`, document);
+}
+
+export function importTeamTermbase(
+  client: ApiClient,
+  teamId: string,
+  document: unknown,
+): Promise<Result<ImportTermbaseApiResult>> {
+  return importTermbaseDocument(client, `/teams/${teamId}/termbases/import`, document);
+}
+
+function importTermbaseDocument(
+  client: ApiClient,
+  path: string,
+  document: unknown,
+): Promise<Result<ImportTermbaseApiResult>> {
+  return client.post(path, document, {
     // TODO: 设计强制合并的 UI/UX 后再开放 forceMerge；当前同名导入保持报错。
     query: { forceMerge: false },
     decode: (value) => {
@@ -96,6 +115,28 @@ export function listComicTermbases(
 
 export function getTermbase(client: ApiClient, id: string): Promise<Result<TermbaseApiInfo>> {
   return client.get(`/termbases/${id}`, { decode: decodeTermbase });
+}
+
+export function listTeamTermbases(
+  client: ApiClient,
+  teamId: string,
+  query: ListComicTermbasesQuery,
+): Promise<Result<TermbaseApiInfo[]>> {
+  return client.get(`/teams/${teamId}/termbases`, {
+    query,
+    decode: (value) => decodeArray(value, decodeTermbase, "termbases"),
+  });
+}
+
+export function createTeamTermbase(
+  client: ApiClient,
+  body: CreateTeamTermbaseBody,
+): Promise<Result<{ id: string }>> {
+  return client.post("/termbases", body, {
+    decode: (value) => ({
+      id: decodeString(decodeObject(value, "created termbase")["id"], "id"),
+    }),
+  });
 }
 
 export function exportTermbase(

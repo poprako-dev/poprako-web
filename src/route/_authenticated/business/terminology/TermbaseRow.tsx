@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { Folder } from "lucide-react";
 import { useLongPress } from "@/shared/hook/use-long-press";
 import type { TermbaseInfo } from "./termbase";
 import { TermbaseShareButton } from "./TermbaseShareButton";
@@ -10,6 +11,7 @@ type Props = {
   onSelect: () => void;
   onExport: () => void;
   onEdit?: () => void;
+  directory?: boolean;
 };
 
 export function TermbaseRow({
@@ -19,6 +21,7 @@ export function TermbaseRow({
   onSelect,
   onExport,
   onEdit,
+  directory = false,
 }: Props): React.ReactElement {
   const scope = termbase.comicId ? "本作" : "团队";
   const longPress = useLongPress({ onLongPress: () => onEdit?.(), onClick: onSelect });
@@ -43,13 +46,23 @@ export function TermbaseRow({
         }}
         title={onEdit ? "长按编辑术语库" : undefined}
         className={clsx(
-          "flex min-h-7 min-w-0 flex-1 items-center gap-3 py-1 pl-2.5 text-left",
+          "flex min-w-0 flex-1 items-center gap-3 pl-2.5 text-left",
+          directory ? "min-h-12 py-2" : "min-h-7 py-1",
           "focus-visible:outline-2 focus-visible:outline-primary-border",
-          onEdit && "touch-none select-none",
+          onEdit && "select-none",
+          onEdit && (directory ? "touch-pan-y" : "touch-none"),
         )}
       >
+        {directory && (
+          <Folder size={18} className="shrink-0 text-icon-muted-warm" aria-hidden="true" />
+        )}
         <span className="flex min-w-0 max-w-[68%] items-center gap-1.5">
-          <span className="min-w-0 truncate text-xs font-medium text-ink-stone-700">
+          <span
+            className={clsx(
+              "min-w-0 truncate font-medium text-ink-stone-700",
+              directory ? "text-sm" : "text-xs",
+            )}
+          >
             {termbase.name}
           </span>
           <span

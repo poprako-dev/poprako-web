@@ -27,6 +27,7 @@ test.each([false, true])("stops loading after the response (StrictMode: %s)", as
   listTerms.mockReturnValue(response);
   render(
     <TermPanel
+      canEdit
       dataSource={createDataSource(listTerms)}
       termbase={{
         id: "base-1",

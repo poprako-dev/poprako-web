@@ -1,14 +1,13 @@
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
 import { Plus } from "lucide-react";
 import clsx from "clsx";
-import type { TermInfo } from "@/route/_authenticated/business/terminology/term";
-import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
-import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
+import type { TermInfo } from "./term";
+import type { TermbaseInfo } from "./termbase";
+import type { TerminologyDataSource } from "./terminology-contract";
 import type { ResultFailure } from "@/shared/utility/result";
-import { usePaginatedList } from "@/route/_authenticated/business/terminology/use-paginated-list";
-import { useLongPress } from "@/shared/hook/use-long-press";
-import { InfiniteTerminologyList } from "@/route/_authenticated/business/terminology/InfiniteTerminologyList";
-import { TermCopyButton } from "./TermCopyButton";
+import { usePaginatedList } from "./use-paginated-list";
+import { InfiniteTerminologyList } from "./InfiniteTerminologyList";
+import { TermRow } from "./TermRow";
 
 const PAGE_SIZE = 30;
 
@@ -17,55 +16,14 @@ type Props = {
   termbase: TermbaseInfo;
   query: string;
   revision: number;
+  canEdit: boolean;
+  enabled?: boolean;
+  directory?: boolean;
+  header?: ReactNode;
   onCreate: () => void;
   onEdit: (term: TermInfo) => void;
   onError: (error: ResultFailure) => void;
 };
-
-type RowProps = {
-  term: TermInfo;
-  onEdit?: () => void;
-};
-
-function TermRow({ term, onEdit }: RowProps): React.ReactElement {
-  const longPress = useLongPress({ onLongPress: () => onEdit?.() });
-
-  return (
-    <div
-      role="listitem"
-      {...(onEdit ? longPress : {})}
-      onPointerLeave={onEdit ? longPress.onPointerCancel : undefined}
-      title={onEdit ? "长按编辑术语" : term.comment}
-      className={clsx(
-        "flex min-h-8 items-center gap-3 border-b border-line-stone-200/55",
-        "px-2.5 py-1 last:border-b-0 transition-colors hover:bg-surface-stone-50",
-        onEdit ? "touch-none select-none cursor-pointer" : "select-text",
-      )}
-    >
-      <p className="min-w-0 flex-1 truncate text-xs font-semibold text-ink-stone-700">
-        {term.source}
-      </p>
-      <div className="flex max-w-[68%] flex-wrap justify-end gap-1">
-        {term.targets.length > 0 ? (
-          term.targets.map((target, index) => (
-            <div
-              key={`${term.id}:${target}:${String(index)}`}
-              className={clsx(
-                "rounded-md border border-line-green-100 bg-surface-green-50/60 px-1.5 py-px",
-                "text-[10px] leading-4 text-primary-text",
-              )}
-            >
-              {target}
-            </div>
-          ))
-        ) : (
-          <span className="text-[11px] text-text-muted-warm">暂无译名</span>
-        )}
-      </div>
-      <TermCopyButton target={term.targets[0]} />
-    </div>
-  );
-}
 
 function normalizedQuery(value: string): string | undefined {
   const query = value.trim();
@@ -77,6 +35,10 @@ export function TermPanel({
   termbase,
   query,
   revision,
+  canEdit,
+  enabled = true,
+  directory = false,
+  header,
   onCreate,
   onEdit,
   onError,
@@ -92,7 +54,7 @@ export function TermPanel({
     [dataSource, query, termbase.id],
   );
   const list = usePaginatedList({
-    enabled: true,
+    enabled,
     queryKey: `terms:${termbase.id}:${query.trim()}:${String(revision)}`,
     pageSize: PAGE_SIZE,
     loadPage,
@@ -101,41 +63,43 @@ export function TermPanel({
 
   return (
     <>
-      <div className="flex items-center gap-2 border-b border-line-stone-200/80 px-2.5 py-2">
-        <span
-          className={clsx(
-            "min-w-0 flex-1 truncate",
-            "text-sm font-semibold leading-4 text-ink-stone-800",
-          )}
-        >
-          {termbase.name}
-        </span>
-        <span
-          className={clsx(
-            "shrink-0 rounded-md border px-1 py-px text-[9px] font-medium",
-            termbase.comicId
-              ? "border-line-green-100 bg-surface-green-50 text-ink-stone-600"
-              : "border-line-stone-200 bg-surface-stone-50 text-text-muted-warm",
-          )}
-        >
-          {termbase.comicId ? "本作" : "团队"}
-        </span>
-        {termbase.comicId && (
-          <button
-            type="button"
-            aria-label="新建术语"
-            title="新建术语"
-            onClick={onCreate}
+      {header ?? (
+        <div className="flex items-center gap-2 border-b border-line-stone-200/80 px-2.5 py-2">
+          <span
             className={clsx(
-              "flex size-7 shrink-0 items-center justify-center rounded-md border",
-              "border-line-stone-200 bg-surface-white text-text-muted-warm transition-colors",
-              "hover:border-line-green-100 hover:bg-surface-green-50 hover:text-ink-stone-700",
+              "min-w-0 flex-1 truncate",
+              "text-sm font-semibold leading-4 text-ink-stone-800",
             )}
           >
-            <Plus size={13} />
-          </button>
-        )}
-      </div>
+            {termbase.name}
+          </span>
+          <span
+            className={clsx(
+              "shrink-0 rounded-md border px-1 py-px text-[9px] font-medium",
+              termbase.comicId
+                ? "border-line-green-100 bg-surface-green-50 text-ink-stone-600"
+                : "border-line-stone-200 bg-surface-stone-50 text-text-muted-warm",
+            )}
+          >
+            {termbase.comicId ? "本作" : "团队"}
+          </span>
+          {canEdit && (
+            <button
+              type="button"
+              aria-label="新建术语"
+              title="新建术语"
+              onClick={onCreate}
+              className={clsx(
+                "flex size-7 shrink-0 items-center justify-center rounded-md border",
+                "border-line-stone-200 bg-surface-white text-text-muted-warm transition-colors",
+                "hover:border-line-green-100 hover:bg-surface-green-50 hover:text-ink-stone-700",
+              )}
+            >
+              <Plus size={13} />
+            </button>
+          )}
+        </div>
+      )}
       <InfiniteTerminologyList
         itemCount={list.items.length}
         hasMore={list.hasMore}
@@ -152,7 +116,8 @@ export function TermPanel({
           <TermRow
             key={term.id}
             term={term}
-            {...(termbase.comicId
+            directory={directory}
+            {...(canEdit
               ? {
                   onEdit: () => {
                     onEdit(term);

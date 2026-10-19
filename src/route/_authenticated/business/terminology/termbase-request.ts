@@ -13,13 +13,13 @@ import {
   type UpdateTermbaseBody,
 } from "@/api/terminology/termbase";
 import type { Result } from "@/shared/utility/result";
-import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
+import type { TermbaseInfo } from "./termbase";
 import type {
   CreateComicTermbaseArgs,
   ImportTermbaseResult,
   ListComicTermbasesArgs,
   UpdateTermbaseArgs,
-} from "@/route/_authenticated/business/terminology/termbase-input";
+} from "./termbase-input";
 
 export function importComicTermbase(
   client: ApiClient,
@@ -36,7 +36,7 @@ export function importComicTermbase(
   return importComicTermbaseApi(client, comicId, document);
 }
 
-function toTermbaseInfo(termbase: TermbaseApiInfo): TermbaseInfo {
+export function toTermbaseInfo(termbase: TermbaseApiInfo): TermbaseInfo {
   return {
     id: termbase.id,
     teamId: termbase.teamId ?? undefined,
