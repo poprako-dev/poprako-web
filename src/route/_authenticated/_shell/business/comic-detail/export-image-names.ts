@@ -13,8 +13,9 @@ function isUsableArchiveFileName(name: string): boolean {
     name.trim().length > 0 &&
     name !== "." &&
     name !== ".." &&
-    !name.includes("/") &&
-    !name.includes("\\") &&
+    !/[<>:"/\\|?*]/u.test(name) &&
+    !/[. ]$/u.test(name) &&
+    !/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/iu.test(name) &&
     !hasControlCharacter(name)
   );
 }

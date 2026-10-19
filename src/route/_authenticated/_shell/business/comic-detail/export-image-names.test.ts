@@ -37,4 +37,12 @@ describe("export image names", () => {
     const rawIdentByPageId = new Map([["page-0", "000.png"]]);
     expect(resolveArchiveImageNames(PAGES, rawIdentByPageId).size).toBe(0);
   });
+
+  test.each(["scan:01.png", "CON.png", "aux", "scan.png.", "scan.png "])(
+    "falls back for names that cannot be written to a local directory: %s",
+    (name) => {
+      const rawIdentByPageId = new Map([["page-0", name]]);
+      expect(resolveArchiveImageNames(PAGES, rawIdentByPageId).size).toBe(0);
+    },
+  );
 });
