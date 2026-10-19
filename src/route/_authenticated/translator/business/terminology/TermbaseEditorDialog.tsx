@@ -101,9 +101,6 @@ export function TermbaseEditorDialog({ termbase, onSave, onDelete, onClose }: Pr
               删除
             </AppDialogAction>
           )}
-          <AppDialogAction type="button" disabled={isSubmitting} onClick={onClose}>
-            取消
-          </AppDialogAction>
           <AppDialogAction
             type="button"
             tone="brand"

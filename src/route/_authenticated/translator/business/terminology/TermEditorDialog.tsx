@@ -317,9 +317,6 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
               删除
             </AppDialogAction>
           )}
-          <AppDialogAction type="button" disabled={isSubmitting} onClick={onClose}>
-            取消
-          </AppDialogAction>
           <AppDialogAction
             type="button"
             tone="brand"
