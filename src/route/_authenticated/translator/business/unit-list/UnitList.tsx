@@ -23,6 +23,9 @@ import { TranslateModeUnitItem } from "@/route/_authenticated/translator/busines
 import { ProofreadModeUnitItem } from "@/route/_authenticated/translator/business/unit-list/ProofreadModeUnitItem";
 import { ReadOnlyDiffUnitItem } from "@/route/_authenticated/translator/business/unit-list/ReadOnlyDiffUnitItem";
 import type { SpecialCharsBarController } from "@/route/_authenticated/translator/business/preference/use-detachable-special-chars-bar";
+import type { UnitAnnotationSource } from "../contract/unit-annotations";
+import { useUnitAnnotationControls } from "./use-unit-annotation-controls";
+import { UnitAnnotationEditor } from "./UnitAnnotationEditor";
 
 export type SpecialCharInsertRequest = {
   id: number;
@@ -31,6 +34,8 @@ export type SpecialCharInsertRequest = {
 };
 
 type Props = {
+  annotations?: UnitAnnotationSource | undefined;
+  isAnnotationsVisible?: boolean | undefined;
   units: UnitInfo[];
   pendingUnitIds?: string[] | undefined;
   focusedUnitId?: string | undefined;
@@ -49,6 +54,8 @@ type Props = {
 };
 
 type UnitListItemProps = {
+  annotations: Props["annotations"];
+  isAnnotationsVisible: boolean;
   unit: UnitInfo;
   pendingUnitIds: string[] | undefined;
   focusedUnitId: string | undefined;
@@ -113,7 +120,14 @@ function useFocusedUnitScroll(
 
 function UnitListItem(props: UnitListItemProps): JSX.Element {
   const { unit } = props;
+  const annotation = useUnitAnnotationControls(
+    props.annotations,
+    unitId(unit),
+    props.readOnly,
+    props.isAnnotationsVisible && props.focusedUnitId === unitId(unit),
+  );
   const commonProps = {
+    annotationEditor: props.annotations && <UnitAnnotationEditor {...annotation} />,
     unit,
     hasLocalDraft: props.pendingUnitIds?.includes(unitId(unit)),
     isFocused: props.focusedUnitId === unitId(unit),
@@ -146,6 +160,8 @@ function UnitListItem(props: UnitListItemProps): JSX.Element {
 }
 
 export function UnitList({
+  annotations,
+  isAnnotationsVisible = false,
   units,
   pendingUnitIds,
   focusedUnitId,
@@ -195,6 +211,8 @@ export function UnitList({
           {orderedUnits.map((unit) => (
             <UnitListItem
               key={unitId(unit)}
+              annotations={annotations}
+              isAnnotationsVisible={isAnnotationsVisible}
               unit={unit}
               pendingUnitIds={pendingUnitIds}
               focusedUnitId={focusedUnitId}

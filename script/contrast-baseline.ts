@@ -24,7 +24,9 @@ type ContrastCheck = { id: string; data: Record<string, unknown> };
 function fingerprintTarget(target: unknown): string | undefined {
   try {
     const serialized = JSON.stringify(target);
-    return serialized.replace(/#radix-[^ .>+,"\\]+/gu, "#radix-generated");
+    return serialized
+      .replace(/#radix-[^ .>+,"\\]+/gu, "#radix-generated")
+      .replace(/#unit-comment-«[^»]+»-/gu, "#unit-comment-generated-");
   } catch {
     return undefined;
   }

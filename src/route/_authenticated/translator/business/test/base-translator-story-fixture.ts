@@ -1,5 +1,6 @@
 import type { UserInfo } from "../../../../business/identity/user";
 import type { ComponentProps } from "react";
+import { createUnitAnnotationFixture } from "./unit-annotation-fixture";
 import type { BaseTranslator } from "@/route/_authenticated/translator/business/BaseTranslator";
 import {
   type UnitInfo,
@@ -184,6 +185,7 @@ export function createStoryArgs({
 
   return {
     project: mockProject,
+    annotations: createUnitAnnotationFixture(),
     canTranslate,
     canProofread,
     // eslint-disable-next-line @typescript-eslint/require-await

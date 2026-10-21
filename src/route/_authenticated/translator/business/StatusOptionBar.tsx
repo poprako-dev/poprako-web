@@ -8,6 +8,7 @@ import {
   Loader2,
   Lock,
   MapPin,
+  MessageSquareMore,
   Save,
 } from "lucide-react";
 import clsx from "clsx";
@@ -15,6 +16,8 @@ import type { TranslatorMode } from "@/route/_authenticated/translator/business/
 import type { ProofreadPreviewVisibility } from "@/route/_authenticated/translator/business/contract/preview";
 
 type Props = {
+  isAnnotationsVisible?: boolean | undefined;
+  onToggleAnnotations?: (() => void) | undefined;
   currMode: TranslatorMode;
   view: TranslatorMode;
   nextView: TranslatorMode;
@@ -47,6 +50,8 @@ const modeLabel: Record<TranslatorMode, string> = {
 };
 
 export function StatusOptionBar({
+  isAnnotationsVisible = false,
+  onToggleAnnotations,
   currMode,
   view,
   nextView,
@@ -162,6 +167,23 @@ export function StatusOptionBar({
       >
         <Eye size={18} />
       </button>
+      {onToggleAnnotations && (
+        <button
+          type="button"
+          title={isAnnotationsVisible ? "隐藏注释" : "显示注释"}
+          aria-label="显示注释"
+          aria-pressed={isAnnotationsVisible}
+          onClick={onToggleAnnotations}
+          className={clsx(
+            btnBase,
+            isAnnotationsVisible
+              ? "bg-surface-green-50 hover:bg-surface-green-100"
+              : "bg-surface-white hover:bg-surface-stone-100",
+          )}
+        >
+          <MessageSquareMore size={18} />
+        </button>
+      )}
     </div>
   );
 }

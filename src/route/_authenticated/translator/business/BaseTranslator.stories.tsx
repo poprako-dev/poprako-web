@@ -16,6 +16,7 @@ import {
   verifyTranslatorKeyboard,
 } from "@/route/_authenticated/translator/business/test/translator-keyboard-play";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import { verifyTranslatorAnnotations } from "./test/translator-annotations-play";
 
 const meta: Meta<typeof BaseTranslator> = {
   title: "Features/BaseTranslator",
@@ -67,6 +68,10 @@ export const TranslatorOnly: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    await expect(canvas.getByRole("button", { name: "显示注释" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
     await userEvent.click(
       canvas.getByRole("button", {
         name: "切换到只读模式",
@@ -94,6 +99,7 @@ export const TranslatorOnly: Story = {
       }),
     ).toBeVisible();
     await waitForCanvasImage(canvasElement);
+    await verifyTranslatorAnnotations(canvasElement);
   },
 };
 

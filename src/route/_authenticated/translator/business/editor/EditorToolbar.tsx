@@ -4,6 +4,8 @@ import type { EditorSession } from "./use-editor-session";
 
 type Props = {
   session: EditorSession;
+  isAnnotationsVisible: boolean;
+  onToggleAnnotations: (() => void) | undefined;
 };
 
 function saveStatusLabel(session: EditorSession): string {
@@ -14,10 +16,16 @@ function saveStatusLabel(session: EditorSession): string {
   return saveState.dirty ? "待保存" : "已保存";
 }
 
-export function EditorToolbar({ session }: Props): JSX.Element {
+export function EditorToolbar({
+  session,
+  isAnnotationsVisible,
+  onToggleAnnotations,
+}: Props): JSX.Element {
   return (
     <div className="relative z-30 shrink-0 border-b-2 border-line-stone-200 bg-surface-stone-50">
       <StatusOptionBar
+        isAnnotationsVisible={isAnnotationsVisible}
+        onToggleAnnotations={onToggleAnnotations}
         currMode={session.view}
         view={session.view}
         nextView={session.nextView ?? session.view}

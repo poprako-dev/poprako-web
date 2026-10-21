@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
+import { stories as designExceptions } from "../.storybook/contrast-exceptions.json";
 import {
   type AccessibilityViolation,
   compareContrastBaseline,
@@ -161,4 +162,56 @@ test("removed baseline issues do not fail", () => {
     story: [{ target: '[".label"]', checks: "[]", count: 1 }],
   });
   assert.deepEqual(result, { known: 0, unexpected: [] });
+});
+
+function annotationViolation(field: string, generatedId = "r8"): AccessibilityViolation {
+  return violation([`#unit-comment-«${generatedId}»-${field}-label`], {
+    fgColor: "#808690",
+    bgColor: "#e8e7e5",
+    data: { contrastRatio: 2.96, fontSize: "9.0pt (12px)" },
+  });
+}
+
+test("approved comment labels match across generated React IDs only in registered stories", () => {
+  for (const story of Object.keys(designExceptions)) {
+    assert.deepEqual(
+      compareContrastBaseline(
+        story,
+        [
+          annotationViolation("translationComment", "r1"),
+          annotationViolation("supplementComment", "r99"),
+        ],
+        designExceptions,
+      ),
+      { known: 2, unexpected: [] },
+    );
+  }
+  const result = compareContrastBaseline(
+    "unregistered-story",
+    [annotationViolation("translationComment")],
+    designExceptions,
+  );
+  assert.equal(result.known, 0);
+  assert.equal(result.unexpected.length, 1);
+});
+
+test("comment exception rejects changed colors, extra labels and non-contrast rules", () => {
+  const changedColor = annotationViolation("translationComment");
+  const check = changedColor.nodes[0]?.any[0];
+  if (!check) throw new Error("Expected contrast check");
+  check.data = { ...(check.data as Record<string, unknown>), fgColor: "#999999" };
+  const result = compareContrastBaseline(
+    "features-unitannotations--proofread",
+    [
+      annotationViolation("translationComment"),
+      annotationViolation("supplementComment"),
+      annotationViolation("translationComment", "r99"),
+      annotationViolation("otherField"),
+      changedColor,
+      violation(["#unit-comment-«r8»-translationComment-label"], { id: "aria-label" }),
+    ],
+    designExceptions,
+  );
+  assert.equal(result.known, 2);
+  assert.equal(result.unexpected.length, 4);
 });

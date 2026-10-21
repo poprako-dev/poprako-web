@@ -12,8 +12,10 @@ import type { UnitSearchTransformDataSource } from "@/route/_authenticated/trans
 import type { UnitUserResolver } from "@/route/_authenticated/translator/business/unit-list/unit-contributor-cache";
 import type { TranslatorCompletionStage } from "@/route/_authenticated/translator/business/contract/access";
 import type { DraftStore } from "../persistence/draft-store";
+import type { UnitAnnotationSource } from "../contract/unit-annotations";
 
 export type EditorProps = {
+  annotations?: UnitAnnotationSource | undefined;
   drafts?: DraftStore | undefined;
   canWrite?: boolean | undefined;
   registerLeaveGuard?: ((guard: (() => Promise<boolean>) | null) => void) | undefined;
