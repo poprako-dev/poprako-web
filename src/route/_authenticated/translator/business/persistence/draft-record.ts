@@ -40,14 +40,12 @@ function units(value: unknown): value is UnitInfo[] {
         typeof u["isBubble"] === "boolean" &&
         typeof u["isFlagged"] === "boolean" &&
         typeof u["isProofread"] === "boolean" &&
-        [
-          u["translatedText"],
-          u["proofreadText"],
-          u["translatorId"],
-          u["proofreaderId"],
-          u["translatorCommnet"],
-          u["proofreaderComment"],
-        ].every(text),
+        [u["translatedText"], u["proofreadText"], u["translatorId"], u["proofreaderId"]].every(
+          text,
+        ) &&
+        [u["translationComment"], u["supplementComment"]].every(
+          (value) => value === null || text(value),
+        ),
     ) &&
     new Set(value.map((u: UnitInfo) => u.id)).size === value.length
   );

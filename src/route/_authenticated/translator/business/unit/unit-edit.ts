@@ -2,10 +2,10 @@ import {
   modifyUnitIsBubble,
   modifyUnitIsProofread,
   modifyUnitPosition,
-  modifyUnitProofreaderComment,
+  modifyUnitSupplementComment,
   modifyUnitProofreadText,
   modifyUnitTranslatedText,
-  modifyUnitTranslatorComment,
+  modifyUnitTranslationComment,
   type UnitInfo,
   unitIsBubble,
   unitIsProofread,
@@ -21,12 +21,12 @@ export type UnitEdit = {
   isFlagged?: boolean | undefined;
   translatedText?: string | undefined;
   translatorId?: string | undefined;
-  translatorCommnet?: string | undefined;
+  translationComment?: string | null | undefined;
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread?: boolean | undefined;
   proofreadText?: string | undefined;
   proofreaderId?: string | undefined;
-  proofreaderComment?: string | undefined;
+  supplementComment?: string | null | undefined;
 };
 
 export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
@@ -37,6 +37,12 @@ export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
   }
   nextUnit = applyTranslationUpdates(nextUnit, updates);
   nextUnit = applyProofreadUpdates(nextUnit, updates);
+  if ("translationComment" in updates) {
+    nextUnit = modifyUnitTranslationComment(nextUnit, updates.translationComment ?? null);
+  }
+  if ("supplementComment" in updates) {
+    nextUnit = modifyUnitSupplementComment(nextUnit, updates.supplementComment ?? null);
+  }
   return nextUnit;
 }
 
@@ -62,9 +68,6 @@ function applyTranslationUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
       "translatorId" in updates ? (updates.translatorId ?? null) : (next.translatorId ?? null),
     );
   }
-  if ("translatorCommnet" in updates) {
-    next = modifyUnitTranslatorComment(next, updates.translatorCommnet ?? null);
-  }
   return next;
 }
 
@@ -82,9 +85,6 @@ function applyProofreadUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
   if (!hasContentUpdate && "isProofread" in updates) {
     // 校对状态更新不得影响 proofreadText。
     next = modifyUnitIsProofread(next, updates.isProofread ?? unitIsProofread(next));
-  }
-  if ("proofreaderComment" in updates) {
-    next = modifyUnitProofreaderComment(next, updates.proofreaderComment ?? null);
   }
   return next;
 }

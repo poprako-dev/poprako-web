@@ -13,10 +13,16 @@ function mergeFields(base: UnitInfo, local: UnitInfo, remote: UnitInfo): UnitInf
     isProofread: local.isProofread === base.isProofread ? remote.isProofread : local.isProofread,
     translatedText: translationChanged ? local.translatedText : remote.translatedText,
     translatorId: translationChanged ? local.translatorId : remote.translatorId,
-    translatorCommnet: translationChanged ? local.translatorCommnet : remote.translatorCommnet,
+    translationComment:
+      local.translationComment === base.translationComment
+        ? remote.translationComment
+        : local.translationComment,
     proofreadText: revisionChanged ? local.proofreadText : remote.proofreadText,
     proofreaderId: revisionChanged ? local.proofreaderId : remote.proofreaderId,
-    proofreaderComment: revisionChanged ? local.proofreaderComment : remote.proofreaderComment,
+    supplementComment:
+      local.supplementComment === base.supplementComment
+        ? remote.supplementComment
+        : local.supplementComment,
   };
 }
 /** Preserve input made during asynchronous work without replaying bundled HTTP fields. */

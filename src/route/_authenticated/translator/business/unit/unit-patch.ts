@@ -5,10 +5,10 @@ import {
   unitIsBubble,
   unitIsProofread,
   unitPosition,
-  unitProofreaderComment,
+  unitSupplementComment,
   unitProofreadText,
   unitTranslatedText,
-  unitTranslatorComment,
+  unitTranslationComment,
 } from "@/route/_authenticated/translator/business/unit/unit";
 
 export function createUnitPatch(current: UnitInfo, baseline: UnitInfo): UnitPatch {
@@ -34,8 +34,8 @@ export function createUnitPatch(current: UnitInfo, baseline: UnitInfo): UnitPatc
   if (current.translatorId !== baseline.translatorId) {
     patch.translatorId = current.translatorId ?? null;
   }
-  if (unitTranslatorComment(current) !== unitTranslatorComment(baseline)) {
-    patch.translatorCommnet = unitTranslatorComment(current);
+  if (unitTranslationComment(current) !== unitTranslationComment(baseline)) {
+    patch.translationComment = unitTranslationComment(current);
   }
   if (unitIsProofread(current) !== unitIsProofread(baseline)) {
     // 校对状态与文本独立，分别生成 patch。
@@ -48,8 +48,8 @@ export function createUnitPatch(current: UnitInfo, baseline: UnitInfo): UnitPatc
   if (current.proofreaderId !== baseline.proofreaderId) {
     patch.proofreaderId = current.proofreaderId ?? null;
   }
-  if (unitProofreaderComment(current) !== unitProofreaderComment(baseline)) {
-    patch.proofreaderComment = unitProofreaderComment(current);
+  if (unitSupplementComment(current) !== unitSupplementComment(baseline)) {
+    patch.supplementComment = unitSupplementComment(current);
   }
 
   return patch;
@@ -66,13 +66,13 @@ export type UnitPatch = {
 
   translatedText?: string | null | undefined;
   translatorId?: string | null | undefined;
-  translatorCommnet?: string | null | undefined;
+  translationComment?: string | null | undefined;
 
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread?: boolean | undefined;
   proofreadText?: string | null | undefined;
   proofreaderId?: string | null | undefined;
-  proofreaderComment?: string | null | undefined;
+  supplementComment?: string | null | undefined;
 };
 
 export type UnitCreation = UnitInfo;
@@ -101,8 +101,8 @@ export function unitPatchTranslatorId(patch: UnitPatch): string | null | undefin
   return patch.translatorId;
 }
 
-export function unitPatchTranslatorComment(patch: UnitPatch): string | null | undefined {
-  return patch.translatorCommnet;
+export function unitPatchTranslationComment(patch: UnitPatch): string | null | undefined {
+  return patch.translationComment;
 }
 
 export function unitPatchIsProofread(patch: UnitPatch): boolean | undefined {
@@ -117,6 +117,6 @@ export function unitPatchProofreaderId(patch: UnitPatch): string | null | undefi
   return patch.proofreaderId;
 }
 
-export function unitPatchProofreaderComment(patch: UnitPatch): string | null | undefined {
-  return patch.proofreaderComment;
+export function unitPatchSupplementComment(patch: UnitPatch): string | null | undefined {
+  return patch.supplementComment;
 }

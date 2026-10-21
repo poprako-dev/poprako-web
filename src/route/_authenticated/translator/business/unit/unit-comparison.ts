@@ -1,10 +1,10 @@
 import {
   isUnitFlagged,
   type UnitInfo,
-  unitProofreaderComment,
+  unitSupplementComment,
   unitProofreadText,
   unitTranslatedText,
-  unitTranslatorComment,
+  unitTranslationComment,
 } from "./unit.ts";
 
 export function isUnitSame(rhs: UnitInfo, lhs: UnitInfo): boolean {
@@ -17,7 +17,7 @@ export function isUnitSame(rhs: UnitInfo, lhs: UnitInfo): boolean {
   if (rhs.proofreaderId !== lhs.proofreaderId) return false;
   if (unitTranslatedText(rhs) !== unitTranslatedText(lhs)) return false;
   if (unitProofreadText(rhs) !== unitProofreadText(lhs)) return false;
-  if (unitTranslatorComment(rhs) !== unitTranslatorComment(lhs)) return false;
-  if (unitProofreaderComment(rhs) !== unitProofreaderComment(lhs)) return false;
+  if (unitTranslationComment(rhs) !== unitTranslationComment(lhs)) return false;
+  if (unitSupplementComment(rhs) !== unitSupplementComment(lhs)) return false;
   return true;
 }
