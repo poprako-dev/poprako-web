@@ -1,7 +1,7 @@
 import { type JSX, useRef, useState } from "react";
 import { Upload, User as UserIcon } from "lucide-react";
 import clsx from "clsx";
-import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
+import { AppDialog } from "@/shared/component/AppDialog";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
 import type { UserInfo } from "@/route/business/identity/user";
 import { useUserAvatarUpload } from "@/route/_authenticated/_shell/settings/business/use-user-avatar-upload";
@@ -40,11 +40,6 @@ export function UserAvatarUploadModal({ user, onClose }: Props): JSX.Element {
         size="default"
         onClose={handleRequestClose}
         closeOnEscape={false}
-        footer={
-          <div className="flex">
-            <AppDialogAction onClick={handleRequestClose}>关闭</AppDialogAction>
-          </div>
-        }
       >
         <div className="flex items-center justify-center py-2">
           <input
@@ -120,7 +115,6 @@ export function UserAvatarUploadModal({ user, onClose }: Props): JSX.Element {
           title="头像上传尚未完成"
           description={"当前正在上传并记录头像。现在退出可能导致未完成确认，请继续等待或确认退出。"}
           confirmLabel="确认退出"
-          cancelLabel="继续等待"
           onConfirm={() => {
             setShowExitWarning(false);
             onClose();

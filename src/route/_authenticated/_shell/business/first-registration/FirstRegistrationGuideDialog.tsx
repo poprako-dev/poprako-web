@@ -29,7 +29,6 @@ export function FirstRegistrationGuideDialog({ onClose, onOpenSettings }: Props)
       onClose={onClose}
       footer={
         <div className="flex gap-2">
-          <AppDialogAction onClick={onClose}>稍后再说</AppDialogAction>
           <AppDialogAction tone="brand" onClick={onOpenSettings}>
             前往设置
           </AppDialogAction>

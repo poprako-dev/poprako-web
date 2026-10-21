@@ -35,7 +35,6 @@ const meta: Meta<typeof AppDialog> = {
     ),
     footer: (
       <div className="flex gap-2">
-        <AppDialogAction>取消</AppDialogAction>
         <AppDialogAction tone="brand">保存</AppDialogAction>
       </div>
     ),

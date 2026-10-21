@@ -15,7 +15,6 @@ type Props = CommonProps &
         children?: ReactNode;
         onConfirm: () => void;
         confirmLabel?: string;
-        cancelLabel?: string;
         loading?: boolean;
         confirmDisabled?: boolean;
         confirmTone?: "danger" | "success";
@@ -35,9 +34,6 @@ export function ConfirmDialog(props: Props): ReactElement {
       footer={
         props.mode === "content" ? null : (
           <div className="flex items-center gap-2">
-            <AppDialogAction onClick={props.onCancel}>
-              {props.cancelLabel ?? "取消"}
-            </AppDialogAction>
             <AppDialogAction
               tone={props.confirmTone === "success" ? "brand" : "danger"}
               onClick={props.onConfirm}

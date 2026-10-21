@@ -104,7 +104,6 @@ export function EditorDialog({ session }: Props): JSX.Element {
           title="确认删除"
           description="该文本块包含已翻译或已校对内容。确定要删除吗？"
           confirmLabel="删除"
-          cancelLabel="取消"
           onConfirm={() => {
             doDeleteUnit(deleteConfirmUnitId);
             setDeleteConfirmUnitId(undefined);
@@ -123,7 +122,6 @@ export function EditorDialog({ session }: Props): JSX.Element {
               : "确认将当前章节的翻译阶段标记为已完成吗？" + "未保存内容会先自动保存。"
           }
           confirmLabel="确认完成"
-          cancelLabel="取消"
           confirmTone="success"
           loading={isCompletingStage}
           onConfirm={() => {
