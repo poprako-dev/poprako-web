@@ -59,7 +59,6 @@ async function saveWorkset(
   client: ApiClient,
   id: string,
   args: { name: string; description?: string | undefined },
-  loadWorksets: () => Promise<void>,
   showToast: ReturnType<typeof useToastStore.getState>["showToast"],
 ): Promise<Result<void>> {
   const result = await updateWorkset(client, id, args);
@@ -69,7 +68,6 @@ async function saveWorkset(
     return result;
   }
   showToast("作品集信息已更新", "success");
-  await loadWorksets();
   return result;
 }
 
@@ -126,8 +124,8 @@ export function useComicPlaygroundActions(args: {
   );
   const handleUpdateWorkset = useCallback(
     (id: string, update: { name: string; description?: string | undefined }) =>
-      saveWorkset(client, id, update, loadWorksets, showToast),
-    [client, loadWorksets, showToast],
+      saveWorkset(client, id, update, showToast),
+    [client, showToast],
   );
   const handleCreateComic = (comicArgs: CreateComicArgs): Promise<Result<string>> =>
     submitComic(client, comicArgs, loadWorksets, setRefreshKey, showToast);
