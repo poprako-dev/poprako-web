@@ -1,10 +1,9 @@
 import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
-import { ComicDetailLoadState } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailLoadState";
 import type { JSX } from "react";
 import { ComicList } from "@/route/_authenticated/_shell/comic-playground/business/comic-list/ComicList";
 import { ComicCreatorModal } from "@/route/_authenticated/_shell/comic-playground/business/ComicCreatorModal";
 import { WorksetCreatorModal } from "@/route/_authenticated/_shell/comic-playground/business/WorksetCreatorModal";
-import { ComicDetailModal } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailModal";
+import { AsyncComicDetail } from "@/route/_authenticated/_shell/business/comic-detail/AsyncComicDetail";
 import {
   type ComicDetailSearch,
   type WorkbenchDestination,
@@ -21,12 +20,14 @@ type Props = {
     mode?: ComicDetailMode,
   ) => void;
   onNavigateToWorkbench: (destination: WorkbenchDestination) => void;
+  onWorkbenchIntent?: ((mode: ComicDetailMode) => void) | undefined;
 };
 
 export function ComicPlayground({
   search,
   onChangeSearch,
   onNavigateToWorkbench,
+  onWorkbenchIntent,
 }: Props): JSX.Element {
   const {
     client,
@@ -105,28 +106,20 @@ export function ComicPlayground({
         onChangeReviewStatus={filters.setActiveReviewStatus}
         onChangePublishStatus={filters.setActivePublishStatus}
       />
-      {detail.isDetailOpen && !detail.selectedComic && (
-        <ComicDetailLoadState
-          error={detail.detailError}
-          onRetry={detail.retryComicDetail}
-          onClose={detail.clearComicDetail}
-        />
-      )}
-      {detail.selectedComic && (
-        <ComicDetailModal
-          key={detail.selectedComic.id}
-          comicInfo={detail.selectedComic}
-          pinnedChapter={detail.selectedComicPinnedChapter}
-          mode={detail.detailMode}
-          onModeChange={detail.changeDetailMode}
-          initialChapterId={detail.urlChapterId}
-          onNavigateToWorkbench={detail.navigateToWorkbench}
-          onChanged={actions.handleDetailChanged}
-          onClose={() => {
-            detail.clearComicDetail();
-          }}
-        />
-      )}
+      <AsyncComicDetail
+        isOpen={detail.isDetailOpen}
+        error={detail.detailError}
+        onRetry={detail.retryComicDetail}
+        comicInfo={detail.selectedComic}
+        pinnedChapter={detail.selectedComicPinnedChapter}
+        mode={detail.detailMode}
+        onModeChange={detail.changeDetailMode}
+        initialChapterId={detail.urlChapterId}
+        onNavigateToWorkbench={detail.navigateToWorkbench}
+        onWorkbenchIntent={onWorkbenchIntent}
+        onChanged={actions.handleDetailChanged}
+        onClose={detail.clearComicDetail}
+      />
       {comicCreatorTeamId === teamId && isAdmin && activeWorkset && (
         <ComicCreatorModal
           currWorkset={activeWorkset}

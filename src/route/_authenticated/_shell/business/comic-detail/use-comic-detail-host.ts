@@ -3,6 +3,7 @@ import { useApiClient } from "@/route/business/api-context";
 import { useReadySession } from "@/route/business/session/ready-session";
 import { useAppStore } from "@/route/business/session/session-store";
 import { useComicDetailData } from "./use-comic-detail-data";
+import { preloadComicDetail } from "./comic-detail-module";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import type { MemberInfo } from "@/route/business/identity/member";
 import type { Result } from "@/shared/utility/result";
@@ -160,6 +161,7 @@ function useComicDetailSearchActions(
 ): Pick<ComicDetailHostState, "openComicDetail" | "clearComicDetail"> {
   const openComicDetail = useCallback(
     (comicId: string, chapterId?: string | null) => {
+      void preloadComicDetail().catch(() => undefined);
       const nextMode = readComicDetailMode(userId);
       setSearchParams(comicId, chapterId ?? null, nextMode);
     },

@@ -9,6 +9,7 @@ import { PageCard } from "@/route/_authenticated/_shell/business/comic-detail/pa
 type Props = {
   mode?: ComicDetailMode;
   pages: PageInfo[];
+  onPageIntent?: (() => void) | undefined;
   onClickPage?: ((pageId: string) => void) | undefined;
   onDeletePage?: ((pageId: string) => void) | undefined;
   onReuploadPage?: ((pageId: string, file: File) => void) | undefined;
@@ -42,6 +43,7 @@ export function PageList({
   mode = "translator",
   pages,
   onClickPage,
+  onPageIntent,
   onDeletePage,
   onReuploadPage,
   canReuploadPage,
@@ -119,6 +121,7 @@ export function PageList({
           <PageCard
             key={page.id}
             page={page}
+            onIntent={onPageIntent}
             showTranslationProgress={mode === "translator"}
             onClick={
               onClickPage

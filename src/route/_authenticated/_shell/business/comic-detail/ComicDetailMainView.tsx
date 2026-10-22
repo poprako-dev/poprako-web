@@ -50,6 +50,7 @@ export type ComicDetailMainViewProps = {
     | "onArchiveComic"
     | "onDeleteComic"
     | "onNavigateToWorkbench"
+    | "onWorkbenchIntent"
     | "onDeleteChapterPages"
     | "onExportChapter"
   >;

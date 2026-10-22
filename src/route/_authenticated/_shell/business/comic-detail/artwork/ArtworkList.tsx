@@ -9,6 +9,7 @@ type Props = {
   issueCounts?: Record<string, number> | null;
   canUpload: boolean;
   onOpen: (id: string) => void;
+  onOpenIntent?: (() => void) | undefined;
   onUpload: (files: File[]) => void;
   onChanged: () => void;
 };
@@ -17,6 +18,7 @@ export function ArtworkList({
   issueCounts,
   canUpload,
   onOpen,
+  onOpenIntent,
   onUpload,
   onChanged,
 }: Props): JSX.Element {
@@ -53,6 +55,7 @@ export function ArtworkList({
             issueCount={issueCounts ? (issueCounts[page.id] ?? 0) : undefined}
             canUpload={canUpload}
             onOpen={onOpen}
+            onOpenIntent={onOpenIntent}
             onChanged={onChanged}
           />
         ))}

@@ -1,4 +1,5 @@
 import { type JSX, useState } from "react";
+import { warmComicDetail } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-module";
 import clsx from "clsx";
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
@@ -39,6 +40,9 @@ export function ComicProgressItem({ comicInfo, mode: _mode, onClick }: Props): J
       role="button"
       tabIndex={0}
       onClick={onClick}
+      onPointerEnter={warmComicDetail}
+      onFocus={warmComicDetail}
+      onPointerDown={warmComicDetail}
       onKeyDown={(event) => {
         if (!(event.key === "Enter" || event.key === " ")) return;
         event.preventDefault();

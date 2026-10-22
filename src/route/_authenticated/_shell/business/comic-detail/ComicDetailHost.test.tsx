@@ -11,6 +11,9 @@ import { useComicDetailHost } from "./use-comic-detail-host";
 import type { ComicDetailSearch } from "./use-comic-detail-host";
 import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 
+const preloadComicDetail = vi.hoisted(() => vi.fn(() => Promise.resolve()));
+vi.mock("./comic-detail-module", () => ({ preloadComicDetail }));
+
 const showToast = vi.fn();
 const onNavigateToWorkbench = vi.fn();
 const storageKey = "comic-detail:mode:mode-preference-user";
@@ -107,4 +110,5 @@ test("opening a comic defaults to translation when no preference exists", () => 
   });
   expect(result.current.detailMode).toBe("translator");
   expect(localStorage.getItem(storageKey)).toBe("translator");
+  expect(preloadComicDetail).toHaveBeenCalledOnce();
 });

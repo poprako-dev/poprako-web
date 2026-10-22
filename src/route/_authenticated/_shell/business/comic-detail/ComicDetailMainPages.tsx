@@ -60,6 +60,9 @@ export function ComicDetailMainPages({
           onUpload={(files) => {
             if (selectedChapterId) setUploadFiles({ chapterId: selectedChapterId, files });
           }}
+          onOpenIntent={() => {
+            if (selectedChapterId) callbacks.onWorkbenchIntent?.("reviewer");
+          }}
           onOpen={(id) => {
             if (selectedChapterId) navigateToWorkbench(selectedChapterId, id, true, "reviewer");
           }}
@@ -75,6 +78,9 @@ export function ComicDetailMainPages({
       mode={mode}
       pages={pages.pages}
       enableClick={canClickPage}
+      onPageIntent={() => {
+        if (selectedChapterId) callbacks.onWorkbenchIntent?.(mode);
+      }}
       onClickPage={
         canClickPage
           ? (pageId) => {

@@ -17,6 +17,7 @@ export type ComicDetailModalProps = {
   comicInfo: DetailComicInfo;
   pinnedChapter: ChapterInfo | null;
   initialChapterId: string | null;
+  onWorkbenchIntent?: ((mode: ComicDetailMode) => void) | undefined;
   onNavigateToWorkbench: (
     chapterId: string,
     pageId: string,
@@ -70,6 +71,7 @@ export function ComicDetailModal(props: Props): ReactElement {
           onArchiveComic: resource.onArchiveComic,
           onDeleteComic: resource.onDeleteComic,
           onNavigateToWorkbench,
+          onWorkbenchIntent: props.onWorkbenchIntent,
           onDeleteChapterPages: resource.onDeleteChapterPages,
           onExportChapter: resource.onExportChapter,
         }}

@@ -4,8 +4,7 @@ import type {
   ComicDetailSearch,
   WorkbenchDestination,
 } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
-import { ComicDetailLoadState } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailLoadState";
-import { ComicDetailModal } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailModal";
+import { AsyncComicDetail } from "@/route/_authenticated/_shell/business/comic-detail/AsyncComicDetail";
 import { WorkspaceLayout } from "./WorkspaceLayout";
 import { WorkspacePanel } from "./WorkspacePanel";
 import { useWorkspaceController } from "./use-workspace-controller";
@@ -18,11 +17,17 @@ type Props = {
     mode?: ComicDetailMode,
   ) => void;
   onNavigateToWorkbench: (destination: WorkbenchDestination) => void;
+  onWorkbenchIntent?: ((mode: ComicDetailMode) => void) | undefined;
 };
 
 // 个人工作区组件，会直接放置在 WorkspacePage 中，展示个人工作区的相关内容
 // 所以自身不设定高度，而是适应父组件
-export function Workspace({ search, onChangeSearch, onNavigateToWorkbench }: Props): JSX.Element {
+export function Workspace({
+  search,
+  onChangeSearch,
+  onNavigateToWorkbench,
+  onWorkbenchIntent,
+}: Props): JSX.Element {
   const workspace = useWorkspaceController({ search, onChangeSearch, onNavigateToWorkbench });
   return (
     <>
@@ -48,26 +53,20 @@ export function Workspace({ search, onChangeSearch, onNavigateToWorkbench }: Pro
           onComicClick={workspace.openComicDetail}
         />
       </WorkspaceLayout>
-      {workspace.isDetailOpen && !workspace.selectedComic && (
-        <ComicDetailLoadState
-          error={workspace.detailError}
-          onRetry={workspace.retryComicDetail}
-          onClose={workspace.clearComicDetail}
-        />
-      )}
-      {workspace.selectedComic && (
-        <ComicDetailModal
-          key={workspace.selectedComic.id}
-          comicInfo={workspace.selectedComic}
-          pinnedChapter={workspace.selectedComicPinnedChapter}
-          mode={workspace.detailMode}
-          onModeChange={workspace.changeDetailMode}
-          initialChapterId={workspace.urlChapterId}
-          onNavigateToWorkbench={workspace.navigateToWorkbench}
-          onChanged={workspace.handleDetailChanged}
-          onClose={workspace.clearComicDetail}
-        />
-      )}
+      <AsyncComicDetail
+        isOpen={workspace.isDetailOpen}
+        error={workspace.detailError}
+        onRetry={workspace.retryComicDetail}
+        comicInfo={workspace.selectedComic}
+        pinnedChapter={workspace.selectedComicPinnedChapter}
+        mode={workspace.detailMode}
+        onModeChange={workspace.changeDetailMode}
+        initialChapterId={workspace.urlChapterId}
+        onNavigateToWorkbench={workspace.navigateToWorkbench}
+        onWorkbenchIntent={onWorkbenchIntent}
+        onChanged={workspace.handleDetailChanged}
+        onClose={workspace.clearComicDetail}
+      />
     </>
   );
 }

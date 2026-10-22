@@ -1,4 +1,5 @@
 import type React from "react";
+import { warmComicDetail } from "../comic-detail/comic-detail-module";
 import clsx from "clsx";
 import { FileText, Languages, CheckSquare, Clock, Tag, Hash } from "lucide-react";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
@@ -64,6 +65,9 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
       role="button"
       tabIndex={0}
       onClick={onClick}
+      onPointerEnter={warmComicDetail}
+      onFocus={warmComicDetail}
+      onPointerDown={warmComicDetail}
       onKeyDown={(e) => {
         if (!(e.key === "Enter" || e.key === " ")) {
           return;

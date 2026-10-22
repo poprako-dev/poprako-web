@@ -1,3 +1,4 @@
+import { useRouteIntent } from "@/route/_authenticated/business/navigation/use-route-intent";
 import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import { Workspace } from "@/route/_authenticated/_shell/workspace/business/Workspace";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -21,6 +22,7 @@ function parseDetailSearch(
 }
 
 function WorkspacePage(): ReactElement {
+  const warmRoute = useRouteIntent();
   const search = Route.useSearch();
   const navigate = useNavigate();
   const onChangeSearch = (
@@ -69,6 +71,13 @@ function WorkspacePage(): ReactElement {
         search={search}
         onChangeSearch={onChangeSearch}
         onNavigateToWorkbench={onNavigateToWorkbench}
+        onWorkbenchIntent={(mode) => {
+          warmRoute(
+            mode === "reviewer"
+              ? "/_authenticated/reviewer/$chapterId/$pageId/"
+              : "/_authenticated/translator/$chapterId/$pageId/",
+          );
+        }}
       />
     </div>
   );

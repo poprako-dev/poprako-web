@@ -72,6 +72,7 @@ export type DetailContract = {
     presetAssignmentRoles?: number | undefined;
   }) => Promise<Result<string>>;
   onDeleteChapter: (chapterId: string) => Promise<Result<void>>;
+  onWorkbenchIntent?: ((mode: ComicDetailMode) => void) | undefined;
   onNavigateToWorkbench: (
     chapterId: string,
     pageId: string,

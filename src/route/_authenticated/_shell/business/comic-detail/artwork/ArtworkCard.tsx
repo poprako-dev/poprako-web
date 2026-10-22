@@ -12,6 +12,7 @@ type Props = {
   issueCount?: number | undefined;
   canUpload: boolean;
   onOpen: (id: string) => void;
+  onOpenIntent?: (() => void) | undefined;
   onChanged: () => void;
 };
 export function ArtworkCard({
@@ -19,6 +20,7 @@ export function ArtworkCard({
   issueCount,
   canUpload,
   onOpen,
+  onOpenIntent,
   onChanged,
 }: Props): JSX.Element {
   const client = useApiClient();
@@ -40,6 +42,9 @@ export function ArtworkCard({
         onClick={() => {
           onOpen(page.id);
         }}
+        onPointerEnter={page.imageUploaded && page.imageUrl && !active ? onOpenIntent : undefined}
+        onFocus={page.imageUploaded && page.imageUrl && !active ? onOpenIntent : undefined}
+        onPointerDown={page.imageUploaded && page.imageUrl && !active ? onOpenIntent : undefined}
         aria-label={"查看第 " + String(page.index + 1) + " 页嵌稿"}
         className="relative h-full w-full disabled:cursor-default"
       >
