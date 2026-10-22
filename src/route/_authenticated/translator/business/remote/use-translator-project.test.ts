@@ -65,3 +65,57 @@ describe("loadTranslatorAccess", () => {
     });
   });
 });
+
+test("loads later chapter assignment pages until the current user is found", async () => {
+  const loadAssignments = vi
+    .fn()
+    .mockResolvedValueOnce({
+      success: true,
+      data: Array.from({ length: 100 }, (_, index) =>
+        assignment({ userId: `other-${String(index)}` }),
+      ),
+    })
+    .mockResolvedValueOnce({ success: true, data: [assignment({ roles: 6 })] });
+  const client = createTestApi();
+
+  const result = await loadTranslatorAccess(client, "chapter", "user", loadAssignments);
+
+  expect(loadAssignments).toHaveBeenNthCalledWith(
+    1,
+    client,
+    { chapterId: "chapter", offset: 0, limit: 100 },
+    undefined,
+  );
+  expect(loadAssignments).toHaveBeenNthCalledWith(
+    2,
+    client,
+    { chapterId: "chapter", offset: 100, limit: 100 },
+    undefined,
+  );
+  expect(result).toEqual({
+    success: true,
+    data: { canTranslate: true, canProofread: true },
+  });
+});
+
+test("cancelled assignment pagination forwards the signal and cannot load the next page", async () => {
+  const request = new AbortController();
+  let finish!: (result: Result<AssignmentInfo[]>) => void;
+  const response = new Promise<Result<AssignmentInfo[]>>((resolve) => {
+    finish = resolve;
+  });
+  const load = vi.fn(() => response);
+  const client = createTestApi();
+  const pending = loadTranslatorAccess(client, "chapter", "user", load, () => true, request.signal);
+  request.abort();
+  finish({
+    success: true,
+    data: Array.from({ length: 100 }, () => assignment({ userId: "other" })),
+  });
+  expect(await pending).toEqual({ success: false, error: "会话已失效", failureKind: "aborted" });
+  expect(load).toHaveBeenCalledExactlyOnceWith(
+    client,
+    { chapterId: "chapter", offset: 0, limit: 100 },
+    request.signal,
+  );
+});

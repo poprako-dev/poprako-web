@@ -7,8 +7,10 @@ import { listPages } from "@/route/_authenticated/business/page/page-request";
 import { listAssignmentsByChapter } from "@/route/_authenticated/business/assignment/assignment-request";
 import { getChapter } from "@/route/_authenticated/business/chapter/chapter-request";
 import { useReadySession } from "@/route/business/session/ready-session";
+import { useSessionOperation } from "@/route/business/session/use-session-operation";
 import { useApiClient } from "@/route/business/api-context";
 import type { Result } from "@/shared/utility/result";
+import { toApiRequestError } from "@/route/business/request-error";
 
 export type TranslatorProjectState =
   | { status: "loading" }
@@ -41,13 +43,17 @@ export async function loadTranslatorAccess(
   chapterId: string,
   userId: string,
   loadAssignments: typeof listAssignmentsByChapter = listAssignmentsByChapter,
+  isCurrent: () => boolean = () => true,
+  signal?: AbortSignal,
 ): Promise<Result<TranslatorAccess>> {
   for (let offset = 0; ; offset += ASSIGNMENT_PAGE_SIZE) {
-    const result = await loadAssignments(client, {
-      chapterId,
-      offset,
-      limit: ASSIGNMENT_PAGE_SIZE,
-    });
+    if (signal?.aborted || !isCurrent()) return cancelledAccess();
+    const result = await loadAssignments(
+      client,
+      { chapterId, offset, limit: ASSIGNMENT_PAGE_SIZE },
+      signal,
+    );
+    if (signal?.aborted || !isCurrent()) return cancelledAccess();
     if (!result.success) return result;
 
     const assignment = result.data.find((item) => item.userId === userId);
@@ -67,6 +73,10 @@ export async function loadTranslatorAccess(
       };
     }
   }
+}
+
+function cancelledAccess(): Result<TranslatorAccess> {
+  return { success: false, error: "会话已失效", failureKind: "aborted" };
 }
 
 export function aggregateProjectCounters(pages: Page[]): ProjectCounters {
@@ -93,61 +103,86 @@ export function useTranslatorProject(chapterId: string): UseTranslatorProjectRes
   const {
     userInfo: { id: userId },
   } = useReadySession();
+  const startOperation = useSessionOperation();
   const [state, setState] = useState<TranslatorProjectState>({
     status: "loading",
   });
 
   useEffect(() => {
-    let isCancelled = false;
-    void loadTranslatorProject(client, chapterId, userId, setState, () => !isCancelled);
-    return () => {
-      isCancelled = true;
+    const operation = startOperation();
+    if (!operation.isCurrent()) return;
+    const request = new AbortController();
+    const abort = (): void => {
+      request.abort();
     };
-  }, [chapterId, client, userId]);
+    operation.signal.addEventListener("abort", abort, { once: true });
+    void loadTranslatorProject({
+      client,
+      chapterId,
+      userId,
+      setState,
+      request,
+      isCurrent: () => !request.signal.aborted && operation.isCurrent(),
+    });
+    return () => {
+      operation.signal.removeEventListener("abort", abort);
+      request.abort();
+    };
+  }, [chapterId, client, userId, startOperation]);
 
   return { state, setState };
 }
 
-async function loadTranslatorProject(
-  client: ApiClient,
-  chapterId: string,
-  userId: string,
-  setState: ProjectStateSetter,
-  isCurrent: () => boolean,
-): Promise<void> {
+type ProjectLoad = {
+  client: ApiClient;
+  chapterId: string;
+  userId: string;
+  setState: ProjectStateSetter;
+  isCurrent: () => boolean;
+  request: AbortController;
+};
+
+async function loadTranslatorProject(options: ProjectLoad): Promise<void> {
+  const { client, chapterId, userId, setState, isCurrent, request } = options;
   setState({ status: "loading" });
-  const [chapterResult, pagesResult] = await Promise.all([
-    getChapter(client, chapterId),
-    listPages(client, { chapterId }),
-  ]);
-  if (!chapterResult.success) {
-    setProjectError(setState, isCurrent, chapterResult.error);
-    return;
+  try {
+    const [chapter, pages, access] = await Promise.all([
+      getChapter(client, chapterId, request.signal).then(requireProjectResult),
+      loadProjectPages(client, chapterId, request.signal),
+      loadTranslatorAccess(
+        client,
+        chapterId,
+        userId,
+        listAssignmentsByChapter,
+        isCurrent,
+        request.signal,
+      ).then(requireProjectResult),
+    ]);
+    if (isCurrent()) setReadyProject(setState, chapterId, chapter.comicId, pages, access);
+  } catch (error) {
+    if (!isCurrent()) return;
+    console.error("[WebTranslator] 加载翻译项目失败:", chapterId, error);
+    setState({
+      status: "error",
+      message: error instanceof Error ? error.message : "加载翻译项目失败",
+    });
+    request.abort();
   }
-  if (!pagesResult.success) {
-    setProjectError(setState, isCurrent, pagesResult.error);
-    return;
-  }
-  const pages = pagesResult.data.sort((left, right) => left.index - right.index);
-  if (pages.length === 0) {
-    setProjectError(setState, isCurrent, "当前章节暂无页面");
-    return;
-  }
-  const accessResult = await loadTranslatorAccess(client, chapterId, userId);
-  if (!isCurrent()) return;
-  if (!accessResult.success) {
-    setState({ status: "error", message: accessResult.error });
-    return;
-  }
-  setReadyProject(setState, chapterId, chapterResult.data.comicId, pages, accessResult.data);
 }
 
-function setProjectError(
-  setState: ProjectStateSetter,
-  isCurrent: () => boolean,
-  message: string,
-): void {
-  if (isCurrent()) setState({ status: "error", message });
+function requireProjectResult<Value>(result: Result<Value>): Value {
+  if (!result.success) throw toApiRequestError(result);
+  return result.data;
+}
+
+async function loadProjectPages(
+  client: ApiClient,
+  chapterId: string,
+  signal: AbortSignal,
+): Promise<Page[]> {
+  const pages = requireProjectResult(await listPages(client, { chapterId }, signal));
+  if (pages.length === 0) throw new Error("当前章节暂无页面");
+  return [...pages].sort((left, right) => left.index - right.index);
 }
 
 function setReadyProject(
