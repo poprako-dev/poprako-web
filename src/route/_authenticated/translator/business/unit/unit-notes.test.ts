@@ -1,8 +1,35 @@
 import { expect, test } from "vitest";
-import { createUnit, unitTypographyNote, unitTranslationNote } from "./unit";
+import { createUnit, unitIsTranslated, unitTypographyNote, unitTranslationNote } from "./unit";
 import { applyUnitUpdates } from "./unit-edit";
 import { createUnitPatch } from "./unit-patch";
 import { mergeUnitVersions } from "../persistence/merge-unit-versions";
+
+test("translation progress includes typography notes but excludes discussion and blank content", () => {
+  const unit = createUnit(0, 0, true);
+  expect(unitIsTranslated({ ...unit, typographyNote: " 小字\n " })).toBe(true);
+  expect(unitIsTranslated({ ...unit, translationNote: "待确认" })).toBe(false);
+  expect(unitIsTranslated({ ...unit, translatedText: " \t\u3000" })).toBe(false);
+  expect(unitIsTranslated({ ...unit, typographyNote: " \t\u3000" })).toBe(false);
+  expect(unitIsTranslated({ ...unit, translatedText: "译文" })).toBe(true);
+});
+
+test("blank note saves clear existing content and preserve spacing in nonblank notes", () => {
+  const original = { ...createUnit(0, 0, true), typographyNote: "小字", translationNote: "存疑" };
+  const blank = applyUnitUpdates(original, {
+    typographyNote: " \t\u3000",
+    translationNote: "\n\t",
+  });
+  expect(unitTypographyNote(blank)).toBeNull();
+  expect(unitTranslationNote(blank)).toBeNull();
+  expect(createUnitPatch(blank, original)).toEqual({
+    id: original.id,
+    typographyNote: null,
+    translationNote: null,
+  });
+  const content = " 小字\n\n保留括号 ";
+  expect(unitTypographyNote({ ...original, typographyNote: content })).toBe(content);
+  expect(unitTranslationNote({ ...original, translationNote: content })).toBe(content);
+});
 
 test("notes are independently nullable and do not change translation or proofreading", () => {
   const original = createUnit(0, 0, true);

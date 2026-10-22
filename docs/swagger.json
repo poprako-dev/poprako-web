@@ -9661,13 +9661,6 @@
                     }
                   ]
                 },
-                "image_optimized_url": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "description": "Download URL for the optimized image, if available."
-                },
                 "image_thumbnail_url": {
                   "type": [
                     "string",
@@ -9883,7 +9876,7 @@
                 },
                 "translated_unit_count": {
                   "type": "integer",
-                  "description": "Units with non-whitespace translation text; revision-only Units are excluded.",
+                  "description": "Units with translation text or typesetting annotations; revision-only Units are excluded.",
                   "minimum": 0
                 }
               }
@@ -10324,6 +10317,20 @@
                   ],
                   "description": "Current translated text."
                 },
+                "translation_note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Communication between translators and proofreaders."
+                },
+                "typography_note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Translation text annotation delivered to typesetters."
+                },
                 "updated_at": {
                   "type": "integer",
                   "format": "int64",
@@ -10338,20 +10345,6 @@
                   "type": "number",
                   "format": "double",
                   "description": "Vertical page-relative coordinate."
-                },
-                "translation_note": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "description": "Annotation visible to translators and proofreaders only; excluded from typography text exports."
-                },
-                "typography_note": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "description": "Annotation delivered to typographers with the final text."
                 }
               }
             }
@@ -11457,13 +11450,6 @@
               }
             ]
           },
-          "image_optimized_url": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Download URL for the optimized image, if available."
-          },
           "image_thumbnail_url": {
             "type": [
               "string",
@@ -11728,7 +11714,7 @@
           },
           "translated_unit_count": {
             "type": "integer",
-            "description": "Units with non-whitespace translation text; revision-only Units are excluded.",
+            "description": "Units with translation text or typesetting annotations; revision-only Units are excluded.",
             "minimum": 0
           }
         }
@@ -12370,14 +12356,14 @@
                   "string",
                   "null"
                 ],
-                "description": "Annotation visible to translators and proofreaders only; excluded from typography text exports."
+                "description": "Initial communication between translators and proofreaders."
               },
               "typography_note": {
                 "type": [
                   "string",
                   "null"
                 ],
-                "description": "Annotation delivered to typographers with the final text."
+                "description": "Initial text annotation delivered to typesetters."
               }
             }
           },
@@ -12464,7 +12450,7 @@
                   },
                   {
                     "$ref": "#/components/schemas/PatchInput_String",
-                    "description": "Three-state note patch. Annotation visible to translators and proofreaders only; excluded from typography text exports."
+                    "description": "Three-state translator and proofreader communication patch."
                   }
                 ]
               },
@@ -12475,7 +12461,7 @@
                   },
                   {
                     "$ref": "#/components/schemas/PatchInput_String",
-                    "description": "Three-state note patch. Annotation delivered to typographers with the final text."
+                    "description": "Three-state typesetting annotation patch."
                   }
                 ]
               }
@@ -12572,6 +12558,20 @@
             ],
             "description": "Current translated text."
           },
+          "translation_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Communication between translators and proofreaders."
+          },
+          "typography_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Translation text annotation delivered to typesetters."
+          },
           "updated_at": {
             "type": "integer",
             "format": "int64",
@@ -12586,20 +12586,6 @@
             "type": "number",
             "format": "double",
             "description": "Vertical page-relative coordinate."
-          },
-          "translation_note": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Annotation visible to translators and proofreaders only; excluded from typography text exports."
-          },
-          "typography_note": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Annotation delivered to typographers with the final text."
           }
         }
       },
@@ -12743,12 +12729,26 @@
             ],
             "description": "Translated text content, or [`None`] if not translated."
           },
+          "translation_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Communication between translators and proofreaders."
+          },
           "translator_id": {
             "type": [
               "string",
               "null"
             ],
             "description": "Identifier of the translator user, or [`None`]. This is export metadata."
+          },
+          "typography_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Translation text annotation delivered to typesetters."
           },
           "unit_id": {
             "type": "string",
@@ -12768,20 +12768,6 @@
             "type": "number",
             "format": "double",
             "description": "Vertical coordinate of the unit bounding box on the page."
-          },
-          "translation_note": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Annotation visible to translators and proofreaders only; excluded from typography text exports."
-          },
-          "typography_note": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Annotation delivered to typographers with the final text."
           }
         }
       },

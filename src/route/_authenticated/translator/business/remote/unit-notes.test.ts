@@ -67,3 +67,22 @@ test("serializes note assignments and explicit clears while omitting unchanged f
   );
   expect(bodies[2]).toEqual([{ edit: "patch", id: original.id, is_flagged: true }]);
 });
+
+test("serializes whitespace-only notes as clears and omits them on creation", async () => {
+  const { client, bodies } = setup();
+  const original = { ...createUnit(0, 0, true), translationNote: "翻校", typographyNote: "嵌字" };
+  const blank = { ...original, translationNote: " \t\u3000", typographyNote: "\n\t" };
+  await saveUnits(client, "page", buildUnitDiff([blank], [original]), "clear-blank");
+  expect(bodies[0]).toEqual([
+    {
+      edit: "patch",
+      id: original.id,
+      translation_note: { type: "clear" },
+      typography_note: { type: "clear" },
+    },
+  ]);
+  await saveUnits(client, "page", buildUnitDiff([blank], []), "create-blank");
+  const [created] = bodies[1] as Record<string, unknown>[];
+  expect(created).not.toHaveProperty("translation_note");
+  expect(created).not.toHaveProperty("typography_note");
+});

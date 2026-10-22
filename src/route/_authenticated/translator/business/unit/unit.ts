@@ -41,7 +41,7 @@ export function unitIndex(unit: UnitInfo): number {
 }
 
 export function unitIsTranslated(unit: UnitInfo): boolean {
-  return Boolean(unit.translatedText);
+  return Boolean(unit.translatedText?.trim()) || unitTypographyNote(unit) !== null;
 }
 
 export function unitIsProofread(unit: UnitInfo): boolean {
@@ -84,7 +84,7 @@ export function unitProofreaderId(unit: UnitInfo): string | null {
 }
 
 export function unitTypographyNote(unit: UnitInfo): string | null {
-  if (unit.typographyNote && unit.typographyNote !== "") {
+  if (unit.typographyNote?.trim()) {
     return unit.typographyNote;
   }
 
@@ -92,7 +92,7 @@ export function unitTypographyNote(unit: UnitInfo): string | null {
 }
 
 export function unitTranslationNote(unit: UnitInfo): string | null {
-  if (unit.translationNote && unit.translationNote !== "") {
+  if (unit.translationNote?.trim()) {
     return unit.translationNote;
   }
 
