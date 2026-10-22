@@ -46,9 +46,7 @@ function selectInitialChapter(
   initialChapterId: string | null | undefined,
   pinnedChapterId: string | undefined,
 ): string | null {
-  if (initialChapterId && loaded.some((chapter) => chapter.id === initialChapterId)) {
-    return initialChapterId;
-  }
+  if (initialChapterId) return initialChapterId;
   if (pinnedChapterId && loaded.some((chapter) => chapter.id === pinnedChapterId)) {
     return pinnedChapterId;
   }
@@ -56,32 +54,20 @@ function selectInitialChapter(
 }
 
 async function loadInitialChapters(args: InitialArgs, isCancelled: () => boolean): Promise<void> {
-  const loaded: ChapterInfo[] = [];
-  let offset = 0;
-  let hasMore = true;
   args.setIsChaptersLoading(true);
 
   try {
-    do {
-      const res = await loadChapterPage(args.comicId, offset, args.onLoadChapters);
-      if (isCancelled()) return;
-      if (!res.success) {
-        console.error("[ComicDetailModal] 加载章节失败:", res);
-        showLocalApiFailure(res, args.showToast, "加载章节失败");
-        return;
-      }
-      loaded.push(...res.data);
-      hasMore = res.data.length === CHAPTERS_LIMIT;
-      offset += res.data.length;
-    } while (
-      hasMore &&
-      Boolean(args.initialChapterId) &&
-      !loaded.some((item) => item.id === args.initialChapterId)
-    );
-    args.setChapters(loaded);
-    args.setChaptersHasMore(hasMore);
+    const res = await loadChapterPage(args.comicId, 0, args.onLoadChapters);
+    if (isCancelled()) return;
+    if (!res.success) {
+      console.error("[ComicDetailModal] 加载章节失败:", res);
+      showLocalApiFailure(res, args.showToast, "加载章节失败");
+      return;
+    }
+    args.setChapters(res.data);
+    args.setChaptersHasMore(res.data.length === CHAPTERS_LIMIT);
     args.setSelectedChapterId(
-      selectInitialChapter(loaded, args.initialChapterId, args.pinnedChapterId),
+      selectInitialChapter(res.data, args.initialChapterId, args.pinnedChapterId),
     );
   } catch (error) {
     if (!isCancelled()) {

@@ -216,6 +216,12 @@ function readResponse(
   const offset = Number(searchParams.get("offset") ?? 0);
   const limit = Number(searchParams.get("limit") ?? 1000);
   if (path.endsWith("/chapters")) return chaptersResponse(scenario, offset, limit);
+  if (/\/chapters\/[^/]+$/.test(path)) {
+    const chapter = ALL_CHAPTERS.find((value) => value.id === path.split("/").at(-1));
+    return chapter
+      ? ok(chapter)
+      : Response.json({ code: 1, message: "章节不存在" }, { status: 404 });
+  }
   if (path.endsWith("/assignments")) return assignmentsResponse(scenario, assignments, url);
   const chapterId = path.split("/")[4] ?? "chapter-42";
   if (path.endsWith("/issues")) return issueResponse(scenario);

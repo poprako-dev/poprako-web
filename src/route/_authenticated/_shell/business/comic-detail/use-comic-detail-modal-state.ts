@@ -278,6 +278,7 @@ export function useComicDetailModalState(props: Props): ComicDetailModalState {
     comicId: props.comicInfo.id,
     pinnedChapter: props.pinnedChapter,
     initialChapterId: props.initialChapterId,
+    onLoadChapter: resource.onLoadChapter,
     onLoadChapters: resource.onLoadChapters,
     showToast,
   });

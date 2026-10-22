@@ -8,6 +8,7 @@ import {
   createChapter,
   deleteChapter,
   exportChapter,
+  getChapter,
   importChapter,
   joinChapter,
   listChapters,
@@ -26,6 +27,7 @@ import type { ApiClient } from "@/api/client";
 
 type Action = Required<DetailContract>;
 export type DetailActions = {
+  onLoadChapter: Action["onLoadChapter"];
   onLoadChapters: Action["onLoadChapters"];
   onLoadAssignments: Action["onLoadAssignments"];
   onLoadPages: Action["onLoadPages"];
@@ -108,6 +110,7 @@ export async function removeDetailAssignment(
 
 export function createDetailActions(client: ApiClient): DetailActions {
   return {
+    onLoadChapter: (chapterId) => getChapter(client, chapterId),
     onLoadChapters: (...args) => listChapters(client, ...args),
     onLoadAssignments: (...args) => loadDetailAssignments(client, ...args),
     onLoadPages: (chapterId) => loadDetailPages(client, chapterId),
