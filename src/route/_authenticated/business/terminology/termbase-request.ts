@@ -10,6 +10,7 @@ import {
   type CreateComicTermbaseBody,
   type ListComicTermbasesQuery,
   type TermbaseApiInfo,
+  type ImportTermbaseBody,
   type UpdateTermbaseBody,
 } from "@/api/terminology/termbase";
 import type { Result } from "@/shared/utility/result";
@@ -26,9 +27,9 @@ export function importComicTermbase(
   comicId: string,
   content: string,
 ): Promise<Result<ImportTermbaseResult>> {
-  let document: unknown;
+  let document: ImportTermbaseBody;
   try {
-    document = JSON.parse(content);
+    document = JSON.parse(content) as ImportTermbaseBody;
   } catch (error) {
     console.error("[TerminologyLookup] 解析术语库 JSON 失败", error);
     return Promise.resolve({ success: false, error: "术语库文件不是有效的 JSON" });

@@ -1,11 +1,3 @@
-import {
-  decodeArray,
-  decodeBoolean,
-  decodeNumber,
-  decodeObject,
-  decodeString,
-  decodeVoid,
-} from "@/api/contract";
 import type { ApiClient } from "@/api/client";
 import type { Result } from "@/shared/utility/result";
 
@@ -35,6 +27,11 @@ export type CreateTeamTermbaseBody = Omit<CreateComicTermbaseBody, "comicId"> & 
   teamId: string;
 };
 export type UpdateTermbaseBody = { name: string; description?: string | undefined };
+export type ImportTermbaseBody = {
+  name: string;
+  description?: string | null | undefined;
+  terms: { source: string; targets: string[]; comment?: string | null | undefined }[];
+};
 
 export type ImportTermbaseApiResult = {
   id: string;
@@ -46,7 +43,7 @@ export type ImportTermbaseApiResult = {
 export function importComicTermbase(
   client: ApiClient,
   comicId: string,
-  document: unknown,
+  document: ImportTermbaseBody,
 ): Promise<Result<ImportTermbaseApiResult>> {
   return importTermbaseDocument(client, `/comics/${comicId}/termbases/import`, document);
 }
@@ -54,7 +51,7 @@ export function importComicTermbase(
 export function importTeamTermbase(
   client: ApiClient,
   teamId: string,
-  document: unknown,
+  document: ImportTermbaseBody,
 ): Promise<Result<ImportTermbaseApiResult>> {
   return importTermbaseDocument(client, `/teams/${teamId}/termbases/import`, document);
 }
@@ -62,44 +59,12 @@ export function importTeamTermbase(
 function importTermbaseDocument(
   client: ApiClient,
   path: string,
-  document: unknown,
+  document: ImportTermbaseBody,
 ): Promise<Result<ImportTermbaseApiResult>> {
-  return client.post(path, document, {
+  return client.post<ImportTermbaseApiResult>(path, document, {
     // TODO: 设计强制合并的 UI/UX 后再开放 forceMerge；当前同名导入保持报错。
     query: { forceMerge: false },
-    decode: (value) => {
-      const record = decodeObject(value, "imported termbase");
-      return {
-        id: decodeString(record["id"], "id"),
-        created: decodeBoolean(record["created"], "created"),
-        createdTermCount: decodeNumber(record["createdTermCount"], "createdTermCount"),
-        mergedTermCount: decodeNumber(record["mergedTermCount"], "mergedTermCount"),
-      };
-    },
   });
-}
-
-function optionalNullableString(
-  record: Record<string, unknown>,
-  key: string,
-): string | null | undefined {
-  const value = record[key];
-  return value === undefined || value === null ? value : decodeString(value, key);
-}
-
-function decodeTermbase(value: unknown): TermbaseApiInfo {
-  const record = decodeObject(value, "termbase");
-  return {
-    id: decodeString(record["id"], "termbase.id"),
-    teamId: optionalNullableString(record, "teamId"),
-    comicId: optionalNullableString(record, "comicId"),
-    name: decodeString(record["name"], "termbase.name"),
-    description: optionalNullableString(record, "description"),
-    termCount: decodeNumber(record["termCount"], "termbase.termCount"),
-    creatorId: decodeString(record["creatorId"], "termbase.creatorId"),
-    createdAt: decodeNumber(record["createdAt"], "termbase.createdAt"),
-    updatedAt: decodeNumber(record["updatedAt"], "termbase.updatedAt"),
-  };
 }
 
 export function listComicTermbases(
@@ -107,14 +72,13 @@ export function listComicTermbases(
   comicId: string,
   query: ListComicTermbasesQuery,
 ): Promise<Result<TermbaseApiInfo[]>> {
-  return client.get(`/comics/${comicId}/termbases`, {
+  return client.get<TermbaseApiInfo[]>(`/comics/${comicId}/termbases`, {
     query,
-    decode: (value) => decodeArray(value, decodeTermbase, "termbases"),
   });
 }
 
 export function getTermbase(client: ApiClient, id: string): Promise<Result<TermbaseApiInfo>> {
-  return client.get(`/termbases/${id}`, { decode: decodeTermbase });
+  return client.get<TermbaseApiInfo>(`/termbases/${id}`);
 }
 
 export function listTeamTermbases(
@@ -122,9 +86,8 @@ export function listTeamTermbases(
   teamId: string,
   query: ListComicTermbasesQuery,
 ): Promise<Result<TermbaseApiInfo[]>> {
-  return client.get(`/teams/${teamId}/termbases`, {
+  return client.get<TermbaseApiInfo[]>(`/teams/${teamId}/termbases`, {
     query,
-    decode: (value) => decodeArray(value, decodeTermbase, "termbases"),
   });
 }
 
@@ -132,11 +95,7 @@ export function createTeamTermbase(
   client: ApiClient,
   body: CreateTeamTermbaseBody,
 ): Promise<Result<{ id: string }>> {
-  return client.post("/termbases", body, {
-    decode: (value) => ({
-      id: decodeString(decodeObject(value, "created termbase")["id"], "id"),
-    }),
-  });
+  return client.post<{ id: string }>("/termbases", body);
 }
 
 export function exportTermbase(
@@ -151,11 +110,7 @@ export function createComicTermbase(
   client: ApiClient,
   body: CreateComicTermbaseBody,
 ): Promise<Result<{ id: string }>> {
-  return client.post("/termbases", body, {
-    decode: (value) => ({
-      id: decodeString(decodeObject(value, "created termbase")["id"], "id"),
-    }),
-  });
+  return client.post<{ id: string }>("/termbases", body);
 }
 
 export function updateTermbase(
@@ -163,9 +118,9 @@ export function updateTermbase(
   id: string,
   body: UpdateTermbaseBody,
 ): Promise<Result<undefined>> {
-  return client.put(`/termbases/${id}`, { id, ...body }, { decode: decodeVoid });
+  return client.put<undefined>(`/termbases/${id}`, { id, ...body });
 }
 
 export function deleteTermbase(client: ApiClient, id: string): Promise<Result<undefined>> {
-  return client.delete(`/termbases/${id}`, { decode: decodeVoid });
+  return client.delete<undefined>(`/termbases/${id}`);
 }

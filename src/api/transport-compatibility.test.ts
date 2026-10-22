@@ -1,6 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
 import { createApiClient } from "./client";
-import { decodeArray, decodeString, decodeVoid } from "./contract";
 
 describe("existing Web HTTP behavior at the injected boundary", () => {
   test("keeps repeated incl and literal ID/query values without cookies", async () => {
@@ -8,7 +7,6 @@ describe("existing Web HTTP behavior at the injected boundary", () => {
     const api = createApiClient({ baseUrl: "/api/v1", getAccessToken: () => "session", fetchImpl });
     await api.get("/members", {
       query: { ownerId: "00123", incl: ["team", "user"], offset: 0, limit: 100, isPending: false },
-      decode: (value) => decodeArray(value, decodeString),
     });
     expect(fetchImpl.mock.calls[0]?.[0]).toBe(
       "/api/v1/members?owner_id=00123&incl=team&incl=user&offset=0&limit=100&is_pending=false",
@@ -24,10 +22,10 @@ describe("existing Web HTTP behavior at the injected boundary", () => {
       .fn<typeof fetch>()
       .mockImplementation(() => Promise.resolve(new Response(null, { status: 204 })));
     const api = createApiClient({ baseUrl: "/api/v1", getAccessToken: () => token, fetchImpl });
-    await api.get("/users/me", { decode: decodeVoid });
+    await api.get("/users/me", {});
     token = "second-session";
-    await api.get("/users/me", { decode: decodeVoid });
-    await api.get("/public", { auth: "none", decode: decodeVoid });
+    await api.get("/users/me", {});
+    await api.get("/public", { auth: "none" });
     await api.download("https://storage.example.test/image?signature=keep_this_value");
     const authorizations = fetchImpl.mock.calls.map((call) =>
       new Headers(call[1]?.headers).get("authorization"),
@@ -49,7 +47,7 @@ describe("existing Web HTTP behavior at the injected boundary", () => {
         .fn<typeof fetch>()
         .mockResolvedValue(Response.json({ code: 3, message: "auth failed" })),
     });
-    expect(await api.get("/users/me", { decode: decodeVoid })).toEqual({
+    expect(await api.get("/users/me", {})).toEqual({
       success: false,
       error: "auth failed",
       failureKind: "business",
@@ -76,7 +74,7 @@ describe("existing Web HTTP behavior at the injected boundary", () => {
           ),
         ),
       });
-      expect(await api.get("/invalid", { decode: decodeVoid })).toEqual({
+      expect(await api.get("/invalid", {})).toEqual({
         success: false,
         error: "Unprocessable Entity",
         httpStatus: 422,

@@ -1,11 +1,3 @@
-import {
-  decodeArray,
-  decodeBoolean,
-  decodeNullable,
-  decodeNumber,
-  decodeObject,
-  decodeString,
-} from "@/api/contract";
 import type { ApiClient } from "@/api/client";
 import type { Result } from "@/shared/utility/result";
 
@@ -65,66 +57,12 @@ export type UnitEditOperation = CreateUnitEdit | PatchUnitEdit | DeleteUnitEdit;
 export type CreatedUnitId = { localId: string; unitId: string };
 export type SavePageUnitsResponse = { createdUnitIds: CreatedUnitId[] };
 
-function optionalString(record: Record<string, unknown>, key: string): string | null | undefined {
-  return key in record
-    ? decodeNullable(record[key], (item) => decodeString(item, key), key)
-    : undefined;
-}
-
-export function decodeUnitApiInfo(value: unknown): UnitApiInfo {
-  const record = decodeObject(value, "unit");
-  return {
-    id: decodeString(record["id"], "unit.id"),
-    pageId: decodeString(record["pageId"], "unit.pageId"),
-    xCoord: decodeNumber(record["xCoord"], "unit.xCoord"),
-    yCoord: decodeNumber(record["yCoord"], "unit.yCoord"),
-    isBubble: decodeBoolean(record["isBubble"], "unit.isBubble"),
-    isFlagged: decodeBoolean(record["isFlagged"], "unit.isFlagged"),
-    translatedText: optionalString(record, "translatedText"),
-    lastTranslatorId: optionalString(record, "lastTranslatorId"),
-    isProofread: decodeBoolean(record["isProofread"], "unit.isProofread"),
-    proofreadText: optionalString(record, "proofreadText"),
-    lastProofreaderId: optionalString(record, "lastProofreaderId"),
-    createdAt: decodeNumber(record["createdAt"], "unit.createdAt"),
-    updatedAt: decodeNumber(record["updatedAt"], "unit.updatedAt"),
-  };
-}
-
-function decodeListPageUnits(value: unknown): ListPageUnitsResponse {
-  const record = decodeObject(value, "page units");
-  return {
-    totalUnitCount: decodeNumber(record["totalUnitCount"], "totalUnitCount"),
-    translatedUnitCount: decodeNumber(record["translatedUnitCount"], "translatedUnitCount"),
-    proofreadUnitCount: decodeNumber(record["proofreadUnitCount"], "proofreadUnitCount"),
-    unitInfos:
-      record["unitInfos"] === undefined
-        ? undefined
-        : decodeArray(record["unitInfos"], decodeUnitApiInfo, "unitInfos"),
-  };
-}
-
-function decodeCreatedUnitId(value: unknown): CreatedUnitId {
-  const record = decodeObject(value, "created unit id");
-  return {
-    localId: decodeString(record["localId"], "createdUnitId.localId"),
-    unitId: decodeString(record["unitId"], "createdUnitId.unitId"),
-  };
-}
-
-function decodeSavePageUnits(value: unknown): SavePageUnitsResponse {
-  const record = decodeObject(value, "save page units");
-  return {
-    createdUnitIds: decodeArray(record["createdUnitIds"], decodeCreatedUnitId, "createdUnitIds"),
-  };
-}
-
 export function listPageUnits(
   client: ApiClient,
   pageId: string,
   options: { signal?: AbortSignal | undefined; timeoutMs?: number | undefined } = {},
 ): Promise<Result<ListPageUnitsResponse>> {
-  return client.get(`/pages/${pageId}/units`, {
-    decode: decodeListPageUnits,
+  return client.get<ListPageUnitsResponse>(`/pages/${pageId}/units`, {
     timeoutMs: options.timeoutMs,
     signal: options.signal,
   });
@@ -137,9 +75,8 @@ export function savePageUnits(
   saveId: string,
   options: { signal?: AbortSignal | undefined; timeoutMs?: number | undefined } = {},
 ): Promise<Result<SavePageUnitsResponse>> {
-  return client.post(`/pages/${pageId}/units/save`, edits, {
+  return client.post<SavePageUnitsResponse>(`/pages/${pageId}/units/save`, edits, {
     query: { saveId },
-    decode: decodeSavePageUnits,
     timeoutMs: options.timeoutMs,
     signal: options.signal,
   });

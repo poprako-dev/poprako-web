@@ -1,7 +1,5 @@
-import { decodeAssignment } from "@/api/content-contract";
 import type { AssignmentResponse } from "@/api/content-contract";
 import type { ApiClient } from "@/api/client";
-import { decodeArray, decodeVoid } from "@/api/contract";
 import type { Result } from "@/shared/utility/result";
 
 export type ListAssignmentsQuery = (
@@ -17,7 +15,7 @@ export function listAssignments(
   client: ApiClient,
   query: ListAssignmentsQuery,
 ): Promise<Result<AssignmentResponse[]>> {
-  return client.get("/assignments", {
+  return client.get<AssignmentResponse[]>("/assignments", {
     query: {
       chapterId: query.chapterId,
       ownerId: query.ownerId,
@@ -25,7 +23,6 @@ export function listAssignments(
       offset: query.offset,
       limit: query.limit,
     },
-    decode: (value) => decodeArray(value, decodeAssignment, "assignments"),
   });
 }
 
@@ -35,20 +32,16 @@ export function upsertAssignment(
   userId: string,
   roles: number,
 ): Promise<Result<undefined>> {
-  return client.put(
-    `/chapters/${chapterId}/assignments/${userId}/roles`,
-    {
-      chapterId,
-      userId,
-      roles,
-    },
-    { decode: decodeVoid },
-  );
+  return client.put<undefined>(`/chapters/${chapterId}/assignments/${userId}/roles`, {
+    chapterId,
+    userId,
+    roles,
+  });
 }
 
 export function deleteAssignment(
   client: ApiClient,
   assignmentId: string,
 ): Promise<Result<undefined>> {
-  return client.delete(`/assignments/${assignmentId}`, { decode: decodeVoid });
+  return client.delete<undefined>(`/assignments/${assignmentId}`);
 }

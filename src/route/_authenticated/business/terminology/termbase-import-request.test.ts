@@ -99,10 +99,8 @@ test("reports network errors without retrying the import", async () => {
   expect(fetchImpl).toHaveBeenCalledOnce();
 });
 
-test("rejects an invalid success response", async () => {
-  const fetchImpl = vi
-    .fn<typeof fetch>()
-    .mockResolvedValue(Response.json({ code: 0, data: { id: "new-base", created: "true" } }));
+test("rejects malformed JSON in a success response", async () => {
+  const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(new Response("{broken"));
   await expect(
     importComicTermbase(createClient(fetchImpl), "comic-1", "{}"),
   ).resolves.toMatchObject({

@@ -1,8 +1,5 @@
-import { ApiDecodeError } from "@/api/api-error";
 import { toCamelCase } from "@/shared/utility/case-convert";
 import type { Result, ResultFailure, ResultFailureKind } from "@/shared/utility/result";
-
-export type Decode<Value> = (value: unknown) => Value;
 
 type RequestConfig = {
   fetchImpl: typeof fetch;
@@ -24,13 +21,10 @@ type RequestScope = {
   dispose(): void;
 };
 
-export function requestJson<Value>(
-  config: RequestConfig,
-  decode: Decode<Value>,
-): Promise<Result<Value>> {
+export function requestJson<Value>(config: RequestConfig): Promise<Result<Value>> {
   return withResponse(config, async (response) => {
     if (response.status === 204) {
-      return decodeResponse(undefined, decode, response.status);
+      return { success: true, data: undefined as Value };
     }
 
     const responseText = await response.text();
@@ -66,11 +60,10 @@ export function requestJson<Value>(
       );
     }
 
-    return decodeResponse(
-      toCamelCase(envelope.data.data, { preserveObjectKeys: ["headers"] }),
-      decode,
-      response.status,
-    );
+    return {
+      success: true,
+      data: toCamelCase(envelope.data.data, { preserveObjectKeys: ["headers"] }) as Value,
+    };
   });
 }
 
@@ -158,31 +151,15 @@ function readEnvelope(value: unknown): { success: true; data: ApiEnvelope } | Re
   };
 }
 
-function decodeResponse<Value>(
-  value: unknown,
-  decode: Decode<Value>,
-  httpStatus?: number,
-): Result<Value> {
-  try {
-    return { success: true, data: decode(value) };
-  } catch (error) {
-    const message = error instanceof ApiDecodeError ? error.message : "响应数据无法解码";
-    return failure(message, "protocol", httpStatus);
-  }
-}
-
 function responseFailure(response: Response, body: string): ResultFailure {
   let message: string | undefined;
   let code: number | undefined;
   try {
     const parsed: unknown = JSON.parse(body);
     if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-      const converted = toCamelCase(parsed);
-      if (typeof converted === "object" && converted !== null && !Array.isArray(converted)) {
-        const record = converted as Record<string, unknown>;
-        if (typeof record["message"] === "string") message = record["message"];
-        if (typeof record["code"] === "number") code = record["code"];
-      }
+      const record = parsed as Record<string, unknown>;
+      if (typeof record["message"] === "string") message = record["message"];
+      if (typeof record["code"] === "number") code = record["code"];
     }
   } catch {
     // Axum extractor rejections are plain text, outside the API envelope.

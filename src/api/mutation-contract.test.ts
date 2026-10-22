@@ -63,13 +63,6 @@ test("updating assignment roles accepts 204 without inventing a returned ID", as
   });
 });
 
-test("a malformed joined assignment remains a protocol error", async () => {
-  expect(await joinChapter(clientReturning({ id: "assignment" }), "chapter", 2)).toMatchObject({
-    success: false,
-    failureKind: "protocol",
-  });
-});
-
 test("member role updates include the body ID required by the server", async () => {
   let body: unknown;
   const client = createApiClient({

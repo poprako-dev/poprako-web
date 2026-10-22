@@ -67,7 +67,9 @@ describe("system mail state and session boundary", () => {
     const client = makeClient(
       vi
         .fn<typeof fetch>()
-        .mockResolvedValueOnce(Response.json({ code: 0, data: null }))
+        .mockResolvedValueOnce(
+          Response.json({ code: 503, message: "邮件服务暂不可用" }, { status: 503 }),
+        )
         .mockResolvedValueOnce(mailResponse([])),
     );
 
@@ -75,7 +77,7 @@ describe("system mail state and session boundary", () => {
     expect(failed.success).toBe(false);
     expect(useMailStore.getState()).toMatchObject({
       loadState: "error",
-      loadError: expect.any(String) as unknown,
+      loadError: "邮件服务暂不可用",
       mails: [],
     });
 

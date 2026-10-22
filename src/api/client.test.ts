@@ -1,7 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import type { ApiClient } from "@/api/client";
 import { createApiClient } from "@/api/client";
-import { decodeObject, decodeString, decodeVoid } from "@/api/contract";
 
 function createClient(fetchImpl: typeof fetch, token = "token-1"): ApiClient {
   return createApiClient({
@@ -25,7 +24,10 @@ describe("ApiClient JSON transport", () => {
     );
     const client = createClient(fetchMock);
 
-    const result = await client.post(
+    const result = await client.post<{
+      userId: string;
+      activeTeam: { teamId: string; isActive: boolean };
+    }>(
       "/users",
       { displayName: "A", nestedValues: [0, false, null] },
       {
@@ -33,13 +35,6 @@ describe("ApiClient JSON transport", () => {
           includeDetails: ["teamInfo", "userInfo"],
           zeroValue: 0,
           disabled: false,
-        },
-        decode: (value) => {
-          const data = decodeObject(value);
-          return {
-            userId: decodeString(data["userId"]),
-            activeTeam: data["activeTeam"],
-          };
         },
       },
     );
@@ -73,18 +68,14 @@ describe("ApiClient JSON transport", () => {
     const client = createClient(fetchMock);
     const callerHeaders = { "X-Custom-Key": "HeaderValue" };
 
-    const result = await client.get("/upload", {
+    const result = await client.get<{ headers: Record<string, string> }>("/upload", {
       headers: callerHeaders,
       auth: "none",
-      decode: (value) => {
-        const data = decodeObject(value);
-        return data["headers"];
-      },
     });
 
     expect(result).toEqual({
       success: true,
-      data: { "x-amz-meta-user_id": "v" },
+      data: { headers: { "x-amz-meta-user_id": "v" } },
     });
     const [, init] = fetchMock.mock.calls[0] ?? [];
     expect(new Headers(init?.headers).get("x-custom-key")).toBe("HeaderValue");
@@ -93,11 +84,11 @@ describe("ApiClient JSON transport", () => {
 });
 
 describe("ApiClient JSON transport", () => {
-  test("accepts 204 through the endpoint's explicit void decoder", async () => {
+  test("accepts 204 without an endpoint decoder", async () => {
     const client = createClient(
       vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 })),
     );
-    await expect(client.delete("/users/u1", { decode: decodeVoid })).resolves.toEqual({
+    await expect(client.delete<undefined>("/users/u1")).resolves.toEqual({
       success: true,
       data: undefined,
     });
@@ -112,14 +103,14 @@ describe("ApiClient JSON transport", () => {
       .mockResolvedValueOnce(Response.json({ code: 1604, message: "阶段不匹配" }));
     const client = createClient(fetchMock);
 
-    await expect(client.get("/validation", { decode: decodeVoid })).resolves.toEqual({
+    await expect(client.get("/validation", {})).resolves.toEqual({
       success: false,
       error: "输入无效",
       httpStatus: 422,
       failureKind: "http",
       code: 0,
     });
-    await expect(client.get("/workflow", { decode: decodeVoid })).resolves.toEqual({
+    await expect(client.get("/workflow", {})).resolves.toEqual({
       success: false,
       error: "阶段不匹配",
       httpStatus: 200,
@@ -130,21 +121,19 @@ describe("ApiClient JSON transport", () => {
 });
 
 describe("ApiClient JSON transport", () => {
-  test("rejects invalid envelopes and invalid endpoint data as protocol failures", async () => {
+  test("rejects invalid envelopes and malformed JSON as protocol failures", async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(Response.json({ data: { name: "A" } }))
-      .mockResolvedValueOnce(okJson({ name: 3 }));
+      .mockResolvedValueOnce(new Response("{broken"));
     const client = createClient(fetchMock);
 
-    await expect(client.get("/missing-code", { decode: decodeVoid })).resolves.toMatchObject({
+    await expect(client.get("/missing-code", {})).resolves.toMatchObject({
       success: false,
       failureKind: "protocol",
       httpStatus: 200,
     });
-    await expect(
-      client.get("/bad-data", { decode: (value) => decodeString(value) }),
-    ).resolves.toMatchObject({
+    await expect(client.get("/bad-data", {})).resolves.toMatchObject({
       success: false,
       failureKind: "protocol",
       httpStatus: 200,
@@ -172,7 +161,6 @@ describe("ApiClient JSON transport", () => {
     const client = createClient(fetchMock);
     const resultPromise = client.get("/slow", {
       signal: controller.signal,
-      decode: decodeVoid,
     });
     await reading;
     controller.abort();

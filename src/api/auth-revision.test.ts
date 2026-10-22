@@ -1,6 +1,5 @@
 import { expect, test, vi } from "vitest";
 import { createApiClient } from "./client";
-import { decodeVoid } from "./contract";
 
 test.each(["json", "text"])(
   "%s 401 carries the request's auth revision, not a later login",
@@ -18,8 +17,7 @@ test.each(["json", "text"])(
           pending.resolve = resolve;
         }),
     });
-    const request =
-      kind === "json" ? client.get("/private", { decode: decodeVoid }) : client.getText("/private");
+    const request = kind === "json" ? client.get("/private", {}) : client.getText("/private");
     revision = 2;
     if (!pending.resolve) throw new Error("request missing");
     pending.resolve(Response.json({ message: "expired" }, { status: 401 }));
@@ -35,7 +33,7 @@ test("public failures do not expire the signed-in session", async () => {
     onUnauthorized: callback,
     fetchImpl: () => Promise.resolve(Response.json({}, { status: 401 })),
   });
-  await client.post("/login", {}, { auth: "none", decode: decodeVoid });
+  await client.post("/login", {}, { auth: "none" });
   expect(callback).not.toHaveBeenCalled();
 });
 
@@ -45,6 +43,6 @@ test("transport does not bind native fetch to its internal configuration object"
     return Promise.resolve(new Response(null, { status: 204 }));
   }
   const client = createApiClient({ baseUrl: "/api/v1", getAccessToken: () => null, fetchImpl });
-  const result = await client.get("/private", { decode: decodeVoid });
+  const result = await client.get("/private", {});
   expect(result.success).toBe(true);
 });

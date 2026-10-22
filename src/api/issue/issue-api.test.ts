@@ -93,26 +93,10 @@ test("sends a complete replacement including empty pages and reads import counts
   expect(result).toEqual({ success: true, data: { importedPageCount: 2, importedIssueCount: 1 } });
 });
 
-test("distinguishes empty success from malformed issues and permission failures", async () => {
+test("distinguishes an empty list from permission failures", async () => {
   const request = vi
     .fn<typeof fetch>()
     .mockResolvedValueOnce(Response.json({ code: 0, data: [] }))
-    .mockResolvedValueOnce(
-      Response.json({
-        code: 0,
-        data: [
-          {
-            id: "id",
-            page_artwork_id: "page",
-            index: -1,
-            variant: "位置",
-            layer_name: null,
-            rect: null,
-            note: "",
-          },
-        ],
-      }),
-    )
     .mockResolvedValueOnce(Response.json({ code: 403, message: "无权访问" }, { status: 403 }));
   const client = createApiClient({
     baseUrl: "/api/v1",
@@ -120,10 +104,6 @@ test("distinguishes empty success from malformed issues and permission failures"
     fetchImpl: request,
   });
   expect(await listChapterIssues(client, "chapter")).toEqual({ success: true, data: [] });
-  expect(await listChapterIssues(client, "chapter")).toMatchObject({
-    success: false,
-    failureKind: "protocol",
-  });
   expect(await listChapterIssues(client, "chapter")).toMatchObject({
     success: false,
     httpStatus: 403,
