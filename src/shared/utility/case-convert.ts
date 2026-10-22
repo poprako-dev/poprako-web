@@ -1,5 +1,7 @@
-export type CaseConversionOptions = {
-  preserveObjectKeys?: readonly string[] | undefined;
+import type { CamelCase, SnakeCase } from "./case-convert-type";
+
+export type CaseConversionOptions<Preserved extends string = string> = {
+  preserveObjectKeys?: readonly Preserved[] | undefined;
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -36,10 +38,22 @@ function transformKeys(
   );
 }
 
-export function toCamelCase(value: unknown, options: CaseConversionOptions = {}): unknown {
-  return transformKeys(value, snakeToCamelKey, new Set(options.preserveObjectKeys));
+export function toCamelCase<Value, Preserved extends string = never>(
+  value: Value,
+  options: CaseConversionOptions<Preserved> = {},
+): CamelCase<Value, Preserved> {
+  return transformKeys(value, snakeToCamelKey, new Set(options.preserveObjectKeys)) as CamelCase<
+    Value,
+    Preserved
+  >;
 }
 
-export function toSnakeCase(value: unknown, options: CaseConversionOptions = {}): unknown {
-  return transformKeys(value, camelToSnakeKey, new Set(options.preserveObjectKeys));
+export function toSnakeCase<Value, Preserved extends string = never>(
+  value: Value,
+  options: CaseConversionOptions<Preserved> = {},
+): SnakeCase<Value, Preserved> {
+  return transformKeys(value, camelToSnakeKey, new Set(options.preserveObjectKeys)) as SnakeCase<
+    Value,
+    Preserved
+  >;
 }
