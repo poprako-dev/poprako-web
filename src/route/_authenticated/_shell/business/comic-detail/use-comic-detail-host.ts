@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
-import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
+import { useCallback, useEffect } from "react";
 import { useApiClient } from "@/route/business/api-context";
 import { useReadySession } from "@/route/business/session/ready-session";
+import { useAppStore } from "@/route/business/session/session-store";
+import { useComicDetailData } from "./use-comic-detail-data";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import type { MemberInfo } from "@/route/business/identity/member";
 import type { Result } from "@/shared/utility/result";
@@ -11,7 +12,6 @@ import {
   type ComicDetailData,
   findComicMember,
   listComicMembers,
-  loadComicDetail,
 } from "@/route/_authenticated/_shell/business/comic-detail/detail-request";
 
 export type ComicDetailSearch = {
@@ -42,8 +42,6 @@ type Args = {
   ) => void;
   onNavigateToWorkbench: (destination: WorkbenchDestination) => void;
 };
-
-type LoadedDetail = { comicId: string; result: Result<ComicDetailData> };
 
 type ComicDetailHostState = {
   selectedComic: ComicDetailData["comicInfo"] | null;
@@ -77,25 +75,20 @@ export function useComicDetailHost({
   onNavigateToWorkbench,
 }: Args): ComicDetailHostState {
   const client = useApiClient();
-  const [loadedDetail, setLoadedDetail] = useState<LoadedDetail | null>(null);
-  const [loadRevision, setLoadRevision] = useState(0);
-  const { memberInfos, userInfo } = useReadySession();
-  const detailMode = usePreferredDetailMode(search, userInfo.id);
   const urlComicId = search.comicId ?? null;
   const urlChapterId = search.chapterId ?? null;
-  const result = loadedDetail?.comicId === urlComicId ? loadedDetail.result : undefined;
-  const detail = result?.success ? result.data : null;
+  const { session, resource } = useHostDetail(client, urlComicId, showToast);
+  const { memberInfos, userInfo } = session;
+  const { detail, error, refresh: retryComicDetail } = resource;
+  const detailMode = usePreferredDetailMode(search, userInfo.id);
   const selectedComic = detail?.comicInfo ?? null;
   const detailActiveMember = selectedComic ? findComicMember(selectedComic, memberInfos) : null;
 
   const setComicDetailSearchParams = useComicDetailSearchParams(onChangeSearch, detailMode);
-  const { openComicDetail, clearComicDetail, retryComicDetail } = useComicDetailSearchActions(
+  const { openComicDetail, clearComicDetail } = useComicDetailSearchActions(
     setComicDetailSearchParams,
-    setLoadedDetail,
-    setLoadRevision,
     userInfo.id,
   );
-  useComicDetailLoader(client, urlComicId, loadRevision, setLoadedDetail, showToast);
   const loadAssignableMembers = useAssignableMemberLoader(client, selectedComic);
   const navigateToWorkbench = useWorkbenchNavigator(onNavigateToWorkbench, returnTo, urlComicId);
 
@@ -105,7 +98,7 @@ export function useComicDetailHost({
     detailActiveMember,
     loadAssignableMembers,
     isDetailOpen: Boolean(urlComicId),
-    detailError: result && !result.success ? result.error : null,
+    detailError: error,
     urlChapterId,
     detailMode,
     changeDetailMode(mode, chapterId) {
@@ -117,6 +110,21 @@ export function useComicDetailHost({
     retryComicDetail,
     navigateToWorkbench,
   };
+}
+
+function useHostDetail(
+  client: ReturnType<typeof useApiClient>,
+  comicId: string | null,
+  showToast: Args["showToast"],
+): {
+  session: ReturnType<typeof useReadySession>;
+  resource: ReturnType<typeof useComicDetailData>;
+} {
+  const session = useReadySession();
+  const teamId = useAppStore((state) => state.selectedTeamId);
+  const scope = { userId: session.userInfo.id, generation: session.generation, teamId };
+  const resource = useComicDetailData(client, scope, comicId, showToast);
+  return { session, resource };
 }
 
 function usePreferredDetailMode(search: ComicDetailSearch, userId: string): ComicDetailMode {
@@ -148,10 +156,8 @@ function useComicDetailSearchParams(
 
 function useComicDetailSearchActions(
   setSearchParams: ReturnType<typeof useComicDetailSearchParams>,
-  setLoadedDetail: (value: LoadedDetail | null) => void,
-  setLoadRevision: (updater: (revision: number) => number) => void,
   userId: string,
-): Pick<ComicDetailHostState, "openComicDetail" | "clearComicDetail" | "retryComicDetail"> {
+): Pick<ComicDetailHostState, "openComicDetail" | "clearComicDetail"> {
   const openComicDetail = useCallback(
     (comicId: string, chapterId?: string | null) => {
       const nextMode = readComicDetailMode(userId);
@@ -160,48 +166,9 @@ function useComicDetailSearchActions(
     [setSearchParams, userId],
   );
   const clearComicDetail = useCallback(() => {
-    setLoadedDetail(null);
     setSearchParams(null, null);
-  }, [setLoadedDetail, setSearchParams]);
-  const retryComicDetail = useCallback(() => {
-    setLoadedDetail(null);
-    setLoadRevision((revision) => revision + 1);
-  }, [setLoadedDetail, setLoadRevision]);
-  return { openComicDetail, clearComicDetail, retryComicDetail };
-}
-
-function useComicDetailLoader(
-  client: ReturnType<typeof useApiClient>,
-  comicId: string | null,
-  revision: number,
-  setLoadedDetail: (detail: LoadedDetail | null) => void,
-  showToast: Args["showToast"],
-): void {
-  useEffect(() => {
-    setLoadedDetail(null);
-    if (!comicId) return;
-    let isCancelled = false;
-    const loadDetail = async (): Promise<void> => {
-      try {
-        const result = await loadComicDetail(client, comicId);
-        if (isCancelled) return;
-        setLoadedDetail({ comicId, result });
-        if (!result.success) {
-          console.error("[ComicDetail] 加载详情失败:", result.error);
-          showLocalApiFailure(result, showToast);
-        }
-      } catch (error) {
-        if (isCancelled) return;
-        console.error("[ComicDetail] 加载详情异常:", error);
-        setLoadedDetail({ comicId, result: { success: false, error: "加载漫画详情失败，请重试" } });
-        showLocalCaughtError(error, showToast, "加载漫画详情失败");
-      }
-    };
-    void loadDetail();
-    return () => {
-      isCancelled = true;
-    };
-  }, [client, revision, showToast, comicId, setLoadedDetail]);
+  }, [setSearchParams]);
+  return { openComicDetail, clearComicDetail };
 }
 
 function useAssignableMemberLoader(

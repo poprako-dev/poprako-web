@@ -291,7 +291,7 @@ export const WorkspaceCardAndReturn: Story = {
     await userEvent.click(await canvas.findByRole("button", { name: "返回详情" }));
     await waitFor(() => expect(canvas.getByLabelText("团队")).toHaveTextContent("team-b"));
     await expect(requests.filter((url) => url.endsWith("comic-b?incl=workset.team"))).toHaveLength(
-      2,
+      1,
     );
     await userEvent.click(canvas.getByRole("button", { name: "校对成员" }));
     await expect(await screen.findByText("team-b-proofreader")).toBeVisible();
