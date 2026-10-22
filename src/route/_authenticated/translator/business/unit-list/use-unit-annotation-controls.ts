@@ -1,9 +1,9 @@
 import { useId, useSyncExternalStore, type ComponentProps } from "react";
 import type { UnitAnnotationEditor } from "./UnitAnnotationEditor";
 import type { UnitAnnotationSource } from "../contract/unit-annotations";
-import type { UnitComments } from "../unit/unit-comments";
+import type { UnitNotes } from "../unit/unit-notes";
 
-const emptyValues: UnitComments = { translationComment: null, supplementComment: null };
+const emptyValues: UnitNotes = { typographyNote: null, translationNote: null };
 
 function subscribeNothing(): () => void {
   return () => undefined;

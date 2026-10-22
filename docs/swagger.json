@@ -10338,6 +10338,20 @@
                   "type": "number",
                   "format": "double",
                   "description": "Vertical page-relative coordinate."
+                },
+                "translation_note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Annotation visible to translators and proofreaders only; excluded from typography text exports."
+                },
+                "typography_note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Annotation delivered to typographers with the final text."
                 }
               }
             }
@@ -12350,6 +12364,20 @@
                     "description": "Optional initial translation assignment."
                   }
                 ]
+              },
+              "translation_note": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Annotation visible to translators and proofreaders only; excluded from typography text exports."
+              },
+              "typography_note": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Annotation delivered to typographers with the final text."
               }
             }
           },
@@ -12426,6 +12454,28 @@
                   {
                     "$ref": "#/components/schemas/PatchInput_UnitTranslationInstr",
                     "description": "Three-state translation patch."
+                  }
+                ]
+              },
+              "translation_note": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PatchInput_String",
+                    "description": "Three-state note patch. Annotation visible to translators and proofreaders only; excluded from typography text exports."
+                  }
+                ]
+              },
+              "typography_note": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PatchInput_String",
+                    "description": "Three-state note patch. Annotation delivered to typographers with the final text."
                   }
                 ]
               }
@@ -12536,6 +12586,20 @@
             "type": "number",
             "format": "double",
             "description": "Vertical page-relative coordinate."
+          },
+          "translation_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Annotation visible to translators and proofreaders only; excluded from typography text exports."
+          },
+          "typography_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Annotation delivered to typographers with the final text."
           }
         }
       },
@@ -12704,6 +12768,20 @@
             "type": "number",
             "format": "double",
             "description": "Vertical coordinate of the unit bounding box on the page."
+          },
+          "translation_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Annotation visible to translators and proofreaders only; excluded from typography text exports."
+          },
+          "typography_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Annotation delivered to typographers with the final text."
           }
         }
       },

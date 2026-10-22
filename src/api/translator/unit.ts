@@ -13,6 +13,8 @@ export type UnitApiInfo = {
   isProofread: boolean;
   proofreadText?: string | null | undefined;
   lastProofreaderId?: string | null | undefined;
+  translationNote?: string | null | undefined;
+  typographyNote?: string | null | undefined;
   createdAt: number;
   updatedAt: number;
 };
@@ -39,6 +41,8 @@ export type CreateUnitEdit = {
   coord: UnitCoord;
   translation?: UnitTranslation | null | undefined;
   revision?: UnitRevision | null | undefined;
+  translationNote?: string | null | undefined;
+  typographyNote?: string | null | undefined;
 };
 
 export type PatchUnitEdit = {
@@ -50,6 +54,8 @@ export type PatchUnitEdit = {
   coord?: UnitCoord | undefined;
   translation?: UnitPatch<UnitTranslation> | undefined;
   revision?: UnitPatch<UnitRevision> | undefined;
+  translationNote?: UnitPatch<string> | undefined;
+  typographyNote?: UnitPatch<string> | undefined;
 };
 
 export type DeleteUnitEdit = { edit: "delete"; id: string };

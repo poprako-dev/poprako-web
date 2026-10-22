@@ -2,10 +2,10 @@ import {
   modifyUnitIsBubble,
   modifyUnitIsProofread,
   modifyUnitPosition,
-  modifyUnitSupplementComment,
+  modifyUnitTranslationNote,
   modifyUnitProofreadText,
   modifyUnitTranslatedText,
-  modifyUnitTranslationComment,
+  modifyUnitTypographyNote,
   type UnitInfo,
   unitIsBubble,
   unitIsProofread,
@@ -21,12 +21,12 @@ export type UnitEdit = {
   isFlagged?: boolean | undefined;
   translatedText?: string | undefined;
   translatorId?: string | undefined;
-  translationComment?: string | null | undefined;
+  typographyNote?: string | null | undefined;
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread?: boolean | undefined;
   proofreadText?: string | undefined;
   proofreaderId?: string | undefined;
-  supplementComment?: string | null | undefined;
+  translationNote?: string | null | undefined;
 };
 
 export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
@@ -37,11 +37,11 @@ export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
   }
   nextUnit = applyTranslationUpdates(nextUnit, updates);
   nextUnit = applyProofreadUpdates(nextUnit, updates);
-  if ("translationComment" in updates) {
-    nextUnit = modifyUnitTranslationComment(nextUnit, updates.translationComment ?? null);
+  if ("typographyNote" in updates) {
+    nextUnit = modifyUnitTypographyNote(nextUnit, updates.typographyNote ?? null);
   }
-  if ("supplementComment" in updates) {
-    nextUnit = modifyUnitSupplementComment(nextUnit, updates.supplementComment ?? null);
+  if ("translationNote" in updates) {
+    nextUnit = modifyUnitTranslationNote(nextUnit, updates.translationNote ?? null);
   }
   return nextUnit;
 }

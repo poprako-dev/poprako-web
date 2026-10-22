@@ -169,22 +169,22 @@ function annotationViolation(
   generatedId = "r8",
   focused = true,
 ): AccessibilityViolation {
-  return violation([`#unit-comment-«${generatedId}»-${field}-label`], {
+  return violation([`#unit-note-«${generatedId}»-${field}-label`], {
     fgColor: focused ? "#808690" : "#848a94",
     bgColor: focused ? "#e8e7e5" : "#fafaf9",
     data: { contrastRatio: focused ? 2.96 : 3.32, fontSize: "9.0pt (12px)" },
   });
 }
 
-test("approved comment labels match across generated React IDs only in registered stories", () => {
+test("approved note labels match across generated React IDs only in registered stories", () => {
   for (const story of Object.keys(designExceptions)) {
     const focused = story !== "features-unitannotations--read-only";
     assert.deepEqual(
       compareContrastBaseline(
         story,
         [
-          annotationViolation("translationComment", "r1", focused),
-          annotationViolation("supplementComment", "r99", focused),
+          annotationViolation("typographyNote", "r1", focused),
+          annotationViolation("translationNote", "r99", focused),
         ],
         designExceptions,
       ),
@@ -193,27 +193,27 @@ test("approved comment labels match across generated React IDs only in registere
   }
   const result = compareContrastBaseline(
     "unregistered-story",
-    [annotationViolation("translationComment")],
+    [annotationViolation("typographyNote")],
     designExceptions,
   );
   assert.equal(result.known, 0);
   assert.equal(result.unexpected.length, 1);
 });
 
-test("comment exception rejects changed colors, extra labels and non-contrast rules", () => {
-  const changedColor = annotationViolation("translationComment");
+test("note exception rejects changed colors, extra labels and non-contrast rules", () => {
+  const changedColor = annotationViolation("typographyNote");
   const check = changedColor.nodes[0]?.any[0];
   if (!check) throw new Error("Expected contrast check");
   check.data = { ...(check.data as Record<string, unknown>), fgColor: "#999999" };
   const result = compareContrastBaseline(
     "features-unitannotations--proofread",
     [
-      annotationViolation("translationComment"),
-      annotationViolation("supplementComment"),
-      annotationViolation("translationComment", "r99"),
+      annotationViolation("typographyNote"),
+      annotationViolation("translationNote"),
+      annotationViolation("typographyNote", "r99"),
       annotationViolation("otherField"),
       changedColor,
-      violation(["#unit-comment-«r8»-translationComment-label"], { id: "aria-label" }),
+      violation(["#unit-note-«r8»-typographyNote-label"], { id: "aria-label" }),
     ],
     designExceptions,
   );

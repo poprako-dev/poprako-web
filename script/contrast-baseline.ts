@@ -26,7 +26,7 @@ function fingerprintTarget(target: unknown): string | undefined {
     const serialized = JSON.stringify(target);
     return serialized
       .replace(/#radix-[^ .>+,"\\]+/gu, "#radix-generated")
-      .replace(/#unit-comment-«[^»]+»-/gu, "#unit-comment-generated-");
+      .replace(/#unit-note-«[^»]+»-/gu, "#unit-note-generated-");
   } catch {
     return undefined;
   }

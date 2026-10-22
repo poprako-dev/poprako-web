@@ -1,5 +1,6 @@
 import type { UnitInfo } from "../unit/unit";
 import type { UnitDiff } from "../contract/type";
+import { migrateDraftUnitNotes } from "./draft-note-migration";
 
 export type SaveBatch = { saveId: string; diff: UnitDiff; target: UnitInfo[]; wire?: UnitDiff };
 export type DraftRecord = {
@@ -43,9 +44,7 @@ function units(value: unknown): value is UnitInfo[] {
         [u["translatedText"], u["proofreadText"], u["translatorId"], u["proofreaderId"]].every(
           text,
         ) &&
-        [u["translationComment"], u["supplementComment"]].every(
-          (value) => value === null || text(value),
-        ),
+        [u["typographyNote"], u["translationNote"]].every((value) => value === null || text(value)),
     ) &&
     new Set(value.map((u: UnitInfo) => u.id)).size === value.length
   );
@@ -80,7 +79,9 @@ function diff(value: unknown): boolean {
           typeof op["isBubble"] === "boolean" &&
           typeof op["isFlagged"] === "boolean" &&
           (op["translation"] === undefined || translation(op["translation"])) &&
-          (op["revision"] === undefined || revision(op["revision"]))
+          (op["revision"] === undefined || revision(op["revision"])) &&
+          text(op["translationNote"]) &&
+          text(op["typographyNote"])
         );
       return (
         op["edit"] === "patch" &&
@@ -88,6 +89,8 @@ function diff(value: unknown): boolean {
         patch(op["nextId"], (v) => typeof v === "string") &&
         patch(op["translation"], translation) &&
         patch(op["revision"], revision) &&
+        validNotePatch(op["translationNote"]) &&
+        validNotePatch(op["typographyNote"]) &&
         (op["coord"] === undefined || coord(op["coord"])) &&
         (op["isBubble"] === undefined || typeof op["isBubble"] === "boolean") &&
         (op["isFlagged"] === undefined || typeof op["isFlagged"] === "boolean")
@@ -95,8 +98,12 @@ function diff(value: unknown): boolean {
     })
   );
 }
+function validNotePatch(value: unknown): boolean {
+  return value === undefined || patch(value, (item) => typeof item === "string");
+}
+
 export function parseDraft(raw: string): DraftRecord {
-  const value: unknown = JSON.parse(raw);
+  const value: unknown = JSON.parse(raw, migrateDraftUnitNotes);
   if (
     !object(value) ||
     value["version"] !== 1 ||

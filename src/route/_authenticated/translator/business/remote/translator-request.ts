@@ -62,6 +62,8 @@ function toApiUnitEdit(operation: UnitOp): UnitEditOperation {
         coord: operation.coord,
         translation: toApiPatch<UnitTranslation>(operation.translation),
         revision: toApiPatch<UnitRevision>(operation.revision),
+        translationNote: operation.translationNote && toApiPatch(operation.translationNote),
+        typographyNote: operation.typographyNote && toApiPatch(operation.typographyNote),
       };
   }
 }
@@ -80,6 +82,8 @@ function toUnitInfo(value: UnitApiInfo, index: number): UnitInfo {
       isProofread: value.isProofread,
       proofreadText: value.proofreadText ?? undefined,
       proofreaderId: value.lastProofreaderId ?? undefined,
+      translationNote: value.translationNote ?? null,
+      typographyNote: value.typographyNote ?? null,
     },
     index,
   );

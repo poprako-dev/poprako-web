@@ -1,7 +1,7 @@
-import type { UnitCommentField, UnitComments } from "../unit/unit-comments";
+import type { UnitNoteField, UnitNotes } from "../unit/unit-notes";
 
 export interface UnitAnnotationSource {
-  get: (unitId: string) => UnitComments;
-  set: (unitId: string, field: UnitCommentField, content: string | null) => void;
+  get: (unitId: string) => UnitNotes;
+  set: (unitId: string, field: UnitNoteField, content: string | null) => void;
   subscribe: (listener: () => void) => () => void;
 }

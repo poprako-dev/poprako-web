@@ -11,6 +11,7 @@ import type {
   UnitPatchOp,
   UnitSaveResult,
 } from "@/route/_authenticated/translator/business/contract/type";
+import { applyUnitNotePatch } from "../persistence/unit-note-patch";
 
 type ResolveUnitId = (id: string) => string;
 type FixturePage = { units: UnitInfo[]; hidden: Set<string>; visible: UnitInfo[] };
@@ -25,6 +26,8 @@ function createdUnitFromOp(op: UnitCreateOp, id: string, index: number): UnitInf
     isProofread: op.revision?.isProofread ?? false,
     translatedText: op.translation?.translatedText,
     proofreadText: op.revision?.proofreadText,
+    translationNote: op.translationNote,
+    typographyNote: op.typographyNote,
   };
 }
 
@@ -38,6 +41,7 @@ function appendCreatedUnits(units: UnitInfo[], ops: UnitOp[], idOf: ResolveUnitI
 }
 
 function patchedUnit(unit: UnitInfo, op: UnitPatchOp): UnitInfo {
+  unit = applyUnitNotePatch(unit, op);
   return {
     ...unit,
     ...op.coord,

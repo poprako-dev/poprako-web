@@ -34,12 +34,12 @@ export function UnitAnnotationsFixture({ mode, width, readOnly }: Props): JSX.El
   const [annotations] = useState(() =>
     createUnitAnnotationFixture({
       "annotation-unit-2": {
-        translationComment: null,
-        supplementComment: "这里是两人约定见面的地方。",
+        typographyNote: null,
+        translationNote: "这里是两人约定见面的地方。",
       },
       "annotation-unit-1": {
-        translationComment: "“他”字加重，保留省略号。",
-        supplementComment: "这里带有确认语气，补上“就”更贴近原意。",
+        typographyNote: "“他”字加重，保留省略号。",
+        translationNote: "这里带有确认语气，补上“就”更贴近原意。",
       },
     }),
   );

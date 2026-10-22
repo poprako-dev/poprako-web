@@ -1,22 +1,22 @@
 import type { JSX } from "react";
 import { AutoResizeTextarea } from "./AutoResizeTextarea";
 
-import type { UnitCommentField, UnitComments } from "../unit/unit-comments";
+import type { UnitNoteField, UnitNotes } from "../unit/unit-notes";
 
 type Props = {
   id: string;
-  values: UnitComments;
+  values: UnitNotes;
   readOnly?: boolean;
-  onChange: (field: UnitCommentField, content: string | null) => void;
+  onChange: (field: UnitNoteField, content: string | null) => void;
 };
 
 const fields = [
   {
-    field: "translationComment",
-    label: "翻译注释",
+    field: "typographyNote",
+    label: "嵌字注释",
     placeholder: "可输入（向嵌字说明的注释）",
   },
-  { field: "supplementComment", label: "补充注释", placeholder: "可输入（仅翻校可见的注释）" },
+  { field: "translationNote", label: "翻校注释", placeholder: "可输入（仅翻校可见的注释）" },
 ] as const;
 
 export function UnitAnnotationEditor({
@@ -34,7 +34,7 @@ export function UnitAnnotationEditor({
         {visibleFields.map(({ field, label, placeholder }) => (
           <label key={field} className="flex items-start gap-2">
             <span
-              id={`unit-comment-${id}-${field}-label`}
+              id={`unit-note-${id}-${field}-label`}
               className="shrink-0 text-xs font-semibold italic leading-5 text-text-muted-neutral/80"
             >
               {label}

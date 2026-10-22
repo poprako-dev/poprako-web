@@ -3,6 +3,7 @@ import { normalizeUnitIndexes } from "../unit/unit";
 import type { UnitDiff } from "../contract/type";
 import { identifyDraft, identifyUnits, unitIdentityResolver } from "./unit-identity";
 import type { DraftRecord, SaveBatch } from "./draft-record";
+import { applyUnitNotePatch } from "./unit-note-patch";
 
 /** Replay uses logical IDs. A repeated creation replaces its local projection. */
 export function replayEdits(
@@ -71,6 +72,8 @@ function applyOperationFields(
       isProofread: op.revision?.isProofread ?? false,
       translatedText: op.translation?.translatedText,
       proofreadText: op.revision?.proofreadText,
+      translationNote: op.translationNote,
+      typographyNote: op.typographyNote,
     };
   }
   if (op.edit !== "patch") return undefined;
@@ -82,6 +85,7 @@ function applyOperationFields(
     isFlagged: op.isFlagged ?? before.isFlagged,
   };
   unit = applyTranslationFields(unit, op);
+  unit = applyUnitNotePatch(unit, op);
   return applyRevisionFields(unit, op);
 }
 

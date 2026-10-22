@@ -1,6 +1,6 @@
 // 该包有关联及其复杂的逻辑，因此绝对不允许直接使用其类型的字段
 // 必须通过关联的函数提供封装性，防止错误逻辑散落到其他文件
-import type { UnitComments } from "./unit-comments";
+import type { UnitNotes } from "./unit-notes";
 
 export type UnitInfo = {
   id: string;
@@ -24,8 +24,8 @@ export type UnitInfo = {
   proofreadText?: string | undefined;
   proofreaderId?: string | undefined;
 
-  translationComment?: UnitComments["translationComment"] | undefined;
-  supplementComment?: UnitComments["supplementComment"] | undefined;
+  typographyNote?: UnitNotes["typographyNote"] | undefined;
+  translationNote?: UnitNotes["translationNote"] | undefined;
 };
 
 export function unitId(unit: Pick<UnitInfo, "id">): string {
@@ -83,17 +83,17 @@ export function unitProofreaderId(unit: UnitInfo): string | null {
   return unit.proofreaderId ?? null;
 }
 
-export function unitTranslationComment(unit: UnitInfo): string | null {
-  if (unit.translationComment && unit.translationComment !== "") {
-    return unit.translationComment;
+export function unitTypographyNote(unit: UnitInfo): string | null {
+  if (unit.typographyNote && unit.typographyNote !== "") {
+    return unit.typographyNote;
   }
 
   return null;
 }
 
-export function unitSupplementComment(unit: UnitInfo): string | null {
-  if (unit.supplementComment && unit.supplementComment !== "") {
-    return unit.supplementComment;
+export function unitTranslationNote(unit: UnitInfo): string | null {
+  if (unit.translationNote && unit.translationNote !== "") {
+    return unit.translationNote;
   }
 
   return null;
@@ -109,8 +109,8 @@ export function createUnit(xCoord: number, yCoord: number, isBubble: boolean): U
     isBubble,
     isFlagged: false,
     isProofread: false,
-    translationComment: null,
-    supplementComment: null,
+    typographyNote: null,
+    translationNote: null,
   };
 }
 
@@ -204,22 +204,19 @@ export function modifyUnitIsProofread(unit: UnitInfo, isProofread: boolean): Uni
   };
 }
 
-export function modifyUnitTranslationComment(
-  unit: UnitInfo,
-  translationComment: string | null,
-): UnitInfo {
+export function modifyUnitTypographyNote(unit: UnitInfo, typographyNote: string | null): UnitInfo {
   return {
     ...unit,
-    translationComment: translationComment === "" ? null : translationComment,
+    typographyNote: typographyNote === "" ? null : typographyNote,
   };
 }
 
-export function modifyUnitSupplementComment(
+export function modifyUnitTranslationNote(
   unit: UnitInfo,
-  supplementComment: string | null,
+  translationNote: string | null,
 ): UnitInfo {
   return {
     ...unit,
-    supplementComment: supplementComment === "" ? null : supplementComment,
+    translationNote: translationNote === "" ? null : translationNote,
   };
 }
