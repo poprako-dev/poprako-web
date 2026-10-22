@@ -2,20 +2,26 @@ import { type JSX, useCallback, useRef, useState } from "react";
 import { Wrench } from "lucide-react";
 import clsx from "clsx";
 import { ArchiveTool } from "./ArchiveTool";
-import { BoundedCompressionTool } from "./BoundedCompressionTool";
+import { AsyncBoundedCompressionTool } from "./AsyncBoundedCompressionTool";
 import { UtilitiesNavigation } from "./UtilitiesNavigation";
 import { archiveTools, type UtilityMode } from "./utility-mode";
-import { TeamTerminologyTool, type TeamTerminologyHandle } from "./TeamTerminologyTool";
+import type { TeamTerminologyHandle } from "./TeamTerminologyTool";
+import { AsyncTeamTerminologyTool } from "./AsyncTeamTerminologyTool";
 import type { TeamTerminology } from "./team-terminology";
 
 type Props = { terminology?: TeamTerminology | undefined };
 
 export function Utilities({ terminology }: Props): JSX.Element {
   const [mode, setMode] = useState<UtilityMode>("compress");
+  const [visited, setVisited] = useState<ReadonlySet<UtilityMode>>(() => new Set(["compress"]));
+  const selectMode = useCallback((next: UtilityMode) => {
+    setVisited((current) => new Set([...current, next]));
+    setMode(next);
+  }, []);
   const toolRef = useRef<TeamTerminologyHandle>(null);
   const activateTerminology = useCallback(() => {
-    setMode("termbases");
-  }, []);
+    selectMode("termbases");
+  }, [selectMode]);
   return (
     <div
       className={clsx(
@@ -30,22 +36,29 @@ export function Utilities({ terminology }: Props): JSX.Element {
       <div className="flex min-h-0 flex-1 flex-col gap-3 md:flex-row md:gap-8 lg:gap-10">
         <UtilitiesNavigation
           mode={mode}
-          onSelect={setMode}
+          onSelect={selectMode}
           teamId={terminology?.teamId}
           canEdit={terminology?.canEdit ?? false}
           toolRef={toolRef}
         />
-        {archiveTools.map((item) => (
-          <div key={item.id} hidden={mode !== item.id} className="min-h-0 min-w-0 flex-1">
-            {item.id === "bounded" ? <BoundedCompressionTool /> : <ArchiveTool mode={item.id} />}
-          </div>
-        ))}
+        {archiveTools
+          .filter((item) => visited.has(item.id))
+          .map((item) => (
+            <div key={item.id} hidden={mode !== item.id} className="min-h-0 min-w-0 flex-1">
+              {item.id === "bounded" ? (
+                <AsyncBoundedCompressionTool />
+              ) : (
+                <ArchiveTool mode={item.id} />
+              )}
+            </div>
+          ))}
         <div hidden={mode !== "termbases"} className="min-h-0 min-w-0 flex-1">
           {terminology ? (
-            <TeamTerminologyTool
+            <AsyncTeamTerminologyTool
               key={terminology.teamId}
               ref={toolRef}
               terminology={terminology}
+              visited={visited.has("termbases")}
               active={mode === "termbases"}
               onActivate={activateTerminology}
             />
