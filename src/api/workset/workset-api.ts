@@ -28,9 +28,11 @@ export function listWorksets(
   teamId: string,
   offset: number,
   limit: number,
+  signal?: AbortSignal,
 ): Promise<Result<WorksetResponse[]>> {
   return client.get<WorksetResponse[]>(`/teams/${teamId}/worksets`, {
     query: { offset, limit },
+    ...(signal ? { signal } : {}),
   });
 }
 

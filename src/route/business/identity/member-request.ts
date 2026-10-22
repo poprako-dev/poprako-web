@@ -18,8 +18,9 @@ type ListMyMembersArgs = {
 export async function listMyMembers(
   client: ApiClient,
   args: ListMyMembersArgs,
+  signal?: AbortSignal,
 ): Promise<Result<MemberInfo[]>> {
-  const result = await listMyMembersApi(client, args);
+  const result = await listMyMembersApi(client, args, signal);
   return result.success ? { success: true, data: result.data.map(toMemberInfo) } : result;
 }
 
@@ -36,8 +37,9 @@ type ListMembersArgs = {
 export async function listMembers(
   client: ApiClient,
   args: ListMembersArgs,
+  signal?: AbortSignal,
 ): Promise<Result<MemberInfo[]>> {
-  const result = await listMembersApi(client, args);
+  const result = await listMembersApi(client, args, signal);
   return result.success ? { success: true, data: result.data.map(toMemberInfo) } : result;
 }
 

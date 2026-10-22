@@ -41,8 +41,10 @@ export function listComics(
     offset: number;
     limit: number;
   },
+  signal?: AbortSignal,
 ): Promise<Result<ComicListResponse>> {
   return client.get<ComicListResponse>(`/worksets/${worksetId}/comics`, {
+    signal,
     query: {
       incl: query.includes,
       with: query.withs,

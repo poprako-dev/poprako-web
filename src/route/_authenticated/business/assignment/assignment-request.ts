@@ -20,16 +20,18 @@ type UpsertAssignmentArgs = { chapterId: string; userId: string; roles: number }
 export async function listAssignmentsByChapter(
   client: ApiClient,
   args: ListAssignmentsByChapterArgs,
+  signal?: AbortSignal,
 ): Promise<Result<AssignmentInfo[]>> {
-  const result = await assignmentApi.listAssignments(client, args);
+  const result = await assignmentApi.listAssignments(client, args, signal);
   return result.success ? { success: true, data: result.data.map(toAssignmentInfo) } : result;
 }
 export async function listMyAssignments(
   client: ApiClient,
   args: ListMyAssignmentsArgs,
+  signal?: AbortSignal,
 ): Promise<Result<AssignmentInfo[]>> {
   const { userId, ...query } = args;
-  const result = await assignmentApi.listAssignments(client, { ...query, ownerId: userId });
+  const result = await assignmentApi.listAssignments(client, { ...query, ownerId: userId }, signal);
   return result.success ? { success: true, data: result.data.map(toAssignmentInfo) } : result;
 }
 export function upsertAssignment(

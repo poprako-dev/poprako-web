@@ -14,8 +14,10 @@ export type ListAssignmentsQuery = (
 export function listAssignments(
   client: ApiClient,
   query: ListAssignmentsQuery,
+  signal?: AbortSignal,
 ): Promise<Result<AssignmentResponse[]>> {
   return client.get<AssignmentResponse[]>("/assignments", {
+    signal,
     query: {
       chapterId: query.chapterId,
       ownerId: query.ownerId,

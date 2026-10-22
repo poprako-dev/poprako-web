@@ -60,8 +60,12 @@ export async function listChapters(
   const result = await chapterApi.listChapters(client, args.comicId, args);
   return result.success ? { success: true, data: result.data.map(toChapterInfo) } : result;
 }
-export async function getChapter(client: ApiClient, id: string): Promise<Result<ChapterInfo>> {
-  const result = await chapterApi.getChapter(client, id);
+export async function getChapter(
+  client: ApiClient,
+  id: string,
+  signal?: AbortSignal,
+): Promise<Result<ChapterInfo>> {
+  const result = await chapterApi.getChapter(client, id, signal);
   return result.success ? { success: true, data: toChapterInfo(result.data) } : result;
 }
 export async function getPinnedChapter(

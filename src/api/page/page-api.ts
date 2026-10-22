@@ -53,9 +53,11 @@ export function listPages(
   chapterId: string,
   offset?: number,
   limit?: number,
+  signal?: AbortSignal,
 ): Promise<Result<PageResponse[]>> {
   return client.get<PageResponse[]>(`/chapters/${chapterId}/pages`, {
     query: { offset, limit },
+    signal,
   });
 }
 export function getPage(client: ApiClient, id: string): Promise<Result<PageResponse>> {
