@@ -42,7 +42,11 @@ export function EditorSidebar({ session, annotations }: Props): JSX.Element {
           onFocusUnit={session.handleFocusUnit}
           editing={
             session.canEditView
-              ? { modifyUnit: session.handleModifyUnit, reorderUnit: session.handleReorderUnit }
+              ? {
+                  modifyUnit: session.handleModifyUnit,
+                  reorderUnit: session.handleReorderUnit,
+                  proofreadAllUnits: session.handleProofreadAllUnits,
+                }
               : null
           }
           onResolveUser={session.onResolveUser}

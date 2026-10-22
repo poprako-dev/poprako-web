@@ -44,6 +44,7 @@ type Props = {
   editing: {
     modifyUnit: (unitId: string, unit: UnitEdit) => void;
     reorderUnit?: (unitId: string, targetIndex: number) => void;
+    proofreadAllUnits?: (isProofread: boolean) => void;
   } | null;
   onResolveUser: UnitUserResolver;
   enableReadOnly?: boolean | undefined;
@@ -93,15 +94,13 @@ function activateUnitIndex(
 function proofreadAllUnits(options: {
   units: UnitInfo[];
   readOnly: boolean;
-  onModifyUnit: ((unitId: string, unit: UnitEdit) => void) | undefined;
+  onProofreadAllUnits: ((isProofread: boolean) => void) | undefined;
   isAllUnitsProofread: boolean;
   showToast: ReturnType<typeof useToastStore.getState>["showToast"];
 }): void {
-  const { units, readOnly, onModifyUnit, isAllUnitsProofread, showToast } = options;
-  if (readOnly || !onModifyUnit || units.length === 0) return;
-  for (const unit of units) {
-    onModifyUnit(unitId(unit), { isProofread: !isAllUnitsProofread });
-  }
+  const { units, readOnly, onProofreadAllUnits, isAllUnitsProofread, showToast } = options;
+  if (readOnly || !onProofreadAllUnits || units.length === 0) return;
+  onProofreadAllUnits(!isAllUnitsProofread);
   showToast(isAllUnitsProofread ? "已取消全部校对" : "全部校对已确认", "success");
 }
 
@@ -198,7 +197,13 @@ export function UnitList({
   const isAllUnitsProofread = units.length > 0 && units.every(unitIsProofread);
 
   const proofreadAll = (): void => {
-    proofreadAllUnits({ units, readOnly, onModifyUnit, isAllUnitsProofread, showToast });
+    proofreadAllUnits({
+      units,
+      readOnly,
+      onProofreadAllUnits: editing?.proofreadAllUnits,
+      isAllUnitsProofread,
+      showToast,
+    });
   };
 
   return (

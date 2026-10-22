@@ -197,6 +197,7 @@ function sessionActions(
   | "handleDeleteUnit"
   | "handleFocusUnit"
   | "handleModifyUnit"
+  | "handleProofreadAllUnits"
   | "handleMoveUnit"
   | "handlePageImageLoad"
   | "handleReorderUnit"
@@ -216,6 +217,7 @@ function sessionActions(
     handleDeleteUnit: actions.handleDeleteUnit,
     handleFocusUnit: actions.handleFocusUnit,
     handleModifyUnit: actions.handleModifyUnit,
+    handleProofreadAllUnits: actions.handleProofreadAllUnits,
     handleMoveUnit: actions.handleMoveUnit,
     handlePageImageLoad: actions.handlePageImageLoad,
     handleReorderUnit: actions.handleReorderUnit,
