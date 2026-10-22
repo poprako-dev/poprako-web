@@ -11,21 +11,25 @@ export function useMemberGlanceLoader(
   activeTeamId: string | null,
   fuzzyName: string,
   activeRole: RoleFilter | null,
-): (offset: number, limit: number) => Promise<Result<MemberInfo[]>> {
+): (offset: number, limit: number, signal?: AbortSignal) => Promise<Result<MemberInfo[]>> {
   const client = useApiClient();
   return useCallback(
-    async (offset: number, limit: number): Promise<Result<MemberInfo[]>> => {
+    async (offset: number, limit: number, signal?: AbortSignal): Promise<Result<MemberInfo[]>> => {
       if (!activeTeamId) {
         return { success: true, data: [] };
       }
-      const result = await listMembers(client, {
-        teamId: activeTeamId,
-        offset,
-        limit,
-        includes: ["user"],
-        nickname: fuzzyName.trim() || undefined,
-        role: activeRole ? roleMask([activeRole]) : undefined,
-      });
+      const result = await listMembers(
+        client,
+        {
+          teamId: activeTeamId,
+          offset,
+          limit,
+          includes: ["user"],
+          nickname: fuzzyName.trim() || undefined,
+          role: activeRole ? roleMask([activeRole]) : undefined,
+        },
+        signal,
+      );
       if (!result.success) {
         return result;
       }
