@@ -36,6 +36,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   private pageId: string | undefined;
   private generation = 0;
   private revision = 0;
+  private reloadRevision = 0;
   private active = true;
   private suspended = false;
   private pending: SaveBatch[] = [];
@@ -211,6 +212,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
       ),
     ];
     this.catalog.remember(localized);
+    this.reloadRevision++;
     this.publish({ units: current, refreshError: false, error: null });
   }
 
@@ -316,9 +318,10 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   }
 
   async refresh(): Promise<void> {
-    await this.flush();
-    if (!this.pageId) return;
     const epoch = this.generation;
+    const refreshed = this.reloadRevision;
+    await this.flush();
+    if (!this.pageId || epoch !== this.generation || refreshed !== this.reloadRevision) return;
     try {
       await this.reloadPage(this.pageId, epoch);
     } catch (error) {
