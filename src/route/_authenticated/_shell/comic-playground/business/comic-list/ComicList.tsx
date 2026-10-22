@@ -29,7 +29,12 @@ type Props = {
         args: { name: string; description?: string | undefined },
       ) => Promise<Result<void>>)
     | undefined;
-  onLoadComics: (offset: number, limit: number, mode: ViewMode) => Promise<Result<ComicInfo[]>>;
+  onLoadComics: (
+    offset: number,
+    limit: number,
+    mode: ViewMode,
+    signal?: AbortSignal,
+  ) => Promise<Result<ComicInfo[]>>;
   onComicClick: (comicId: string, chapterId?: string | null) => void;
   onCreateComic?: (() => void) | undefined;
   onChangeFuzzyTitle: (title: string) => void;
