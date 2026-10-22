@@ -6,7 +6,8 @@ import clsx from "clsx";
 import { AnnouncementTable } from "@/route/_authenticated/_shell/workspace/business/AnnouncementTable";
 import { CommentChatBox } from "@/route/_authenticated/_shell/workspace/business/CommentChatBox";
 import { OnlineUserPopover } from "@/route/_authenticated/_shell/workspace/business/OnlineUserPopover";
-import { ComicTranslationList } from "@/route/_authenticated/_shell/business/comic-list/ComicTranslationList";
+import { ComicTranslationListView } from "@/route/_authenticated/_shell/business/comic-list/ComicTranslationListView";
+import { useComicTranslationList } from "@/route/_authenticated/_shell/business/comic-list/use-comic-translation-list";
 import type { CommentInfo } from "@/route/_authenticated/_shell/workspace/business/comment/comment";
 import type { OnlineUserStatus } from "@/route/_authenticated/_shell/workspace/business/online/use-online-users";
 import type { UserInfo } from "@/route/business/identity/user";
@@ -50,11 +51,15 @@ export function WorkspacePanel({
   onComicClick,
 }: Props): JSX.Element {
   const client = useApiClient();
-  const { userInfo } = useReadySession();
+  const { userInfo, generation } = useReadySession();
   const loadComics = useCallback(
-    (offset: number, limit: number) =>
-      fetchMyAssignmentComicCards(client, userInfo.id, offset, limit),
+    (offset: number, limit: number, signal?: AbortSignal) =>
+      fetchMyAssignmentComicCards(client, userInfo.id, offset, limit, signal),
     [client, userInfo.id],
+  );
+  const comicList = useComicTranslationList(
+    loadComics,
+    JSON.stringify([generation, comicListRefreshKey]),
   );
   return (
     <div className={clsx("flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden")}>
@@ -95,11 +100,7 @@ export function WorkspacePanel({
         <div className={clsx("flex-1 min-h-0 min-w-0 overflow-hidden", "flex flex-col")}>
           <SectionHeading label="任务列表" />
           <div className="flex-1 min-h-0 overflow-hidden">
-            <ComicTranslationList
-              key={comicListRefreshKey}
-              onLoadComics={loadComics}
-              onComicClick={onComicClick}
-            />
+            <ComicTranslationListView state={comicList} onComicClick={onComicClick} />
           </div>
         </div>
         {team && (
@@ -150,10 +151,10 @@ export function WorkspacePanel({
               className="absolute inset-0 h-full overflow-y-auto"
               style={{ visibility: mobileTab === 0 ? "visible" : "hidden" }}
             >
-              <ComicTranslationList
-                key={comicListRefreshKey}
-                onLoadComics={loadComics}
+              <ComicTranslationListView
+                state={comicList}
                 onComicClick={onComicClick}
+                enabled={mobileTab === 0}
               />
             </div>
             <div

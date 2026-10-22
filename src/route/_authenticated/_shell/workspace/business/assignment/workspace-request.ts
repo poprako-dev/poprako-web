@@ -13,13 +13,13 @@ export async function fetchMyAssignmentComicCards(
   userId: string,
   offset: number,
   limit: number,
+  signal?: AbortSignal,
 ): Promise<Result<ComicTranslationListItem[]>> {
-  const result = await listMyAssignments(client, {
-    userId,
-    includes: ["chapter.comic.workset.team"],
-    offset,
-    limit,
-  });
+  const result = await listMyAssignments(
+    client,
+    { userId, includes: ["chapter.comic.workset.team"], offset, limit },
+    signal,
+  );
   if (!result.success) return result;
   const cards: ComicTranslationListItem[] = [];
   for (const assignment of result.data) {
