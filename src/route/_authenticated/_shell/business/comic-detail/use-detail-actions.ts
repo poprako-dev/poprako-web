@@ -47,13 +47,13 @@ export type DetailActions = {
 export function loadDetailAssignments(
   client: ApiClient,
   chapterId: string,
+  signal?: AbortSignal,
 ): Promise<Result<AssignmentInfo[]>> {
-  return listAssignmentsByChapter(client, {
-    chapterId,
-    offset: 0,
-    limit: 20,
-    includes: ["user"],
-  });
+  return listAssignmentsByChapter(
+    client,
+    { chapterId, offset: 0, limit: 20, includes: ["user"] },
+    signal,
+  );
 }
 
 export function transitionDetailWorkflow(

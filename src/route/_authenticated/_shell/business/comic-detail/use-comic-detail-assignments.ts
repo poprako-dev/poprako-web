@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import type { MemberInfo } from "@/route/business/identity/member";
 import { hasRole, type Role } from "@/route/business/identity/role";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import { useComicDetailAssignmentActions } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-assignment-actions";
 import type { DetailContract } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
+
+import { useAssignmentResources } from "./use-assignment-resources";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -52,11 +53,6 @@ type AssignmentState = {
   handleJoinRole: (role: Role) => Promise<void>;
   handleLeaveRole: (role: Role) => Promise<void>;
 };
-
-type SelectedAssignments = Pick<
-  Args,
-  "selectedChapterId" | "isSelectedChapterAvailable" | "onLoadAssignments" | "showToast"
->;
 
 type AssignmentPermissions = Pick<
   AssignmentState,
@@ -128,171 +124,6 @@ function resolveAssignmentPermissions(
   };
 }
 
-async function fetchSelectedAssignments(
-  chapterId: string,
-  onLoadAssignments: Args["onLoadAssignments"],
-  showToast: ShowToast,
-): Promise<AssignmentInfo[] | null> {
-  try {
-    const result = await onLoadAssignments(chapterId);
-    if (!result.success) {
-      console.error("[ComicDetailModal] 刷新分工失败:", result);
-      showLocalApiFailure(result, showToast);
-      return null;
-    }
-    return result.data;
-  } catch (error) {
-    console.error("[ComicDetailModal] 刷新分工异常:", error);
-    showLocalCaughtError(error, showToast, "刷新分工失败");
-    return null;
-  }
-}
-
-function useSelectedAssignments({
-  selectedChapterId,
-  isSelectedChapterAvailable,
-  onLoadAssignments,
-  showToast,
-}: SelectedAssignments): Pick<
-  AssignmentState,
-  "assignments" | "setAssignments" | "isAssignmentsLoading" | "reloadAssignments"
-> {
-  const [assignments, setAssignments] = useState<AssignmentInfo[]>([]);
-  const [isAssignmentsLoading, setIsAssignmentsLoading] = useState(false);
-  const reloadAssignments = useCallback(
-    () =>
-      reloadSelectedAssignments(
-        selectedChapterId,
-        onLoadAssignments,
-        showToast,
-        setAssignments,
-        setIsAssignmentsLoading,
-      ),
-    [onLoadAssignments, selectedChapterId, showToast],
-  );
-  useEffect(() => {
-    if (!selectedChapterId || !isSelectedChapterAvailable) {
-      // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
-      setAssignments([]);
-      setIsAssignmentsLoading(false); // eslint-disable-line @eslint-react/set-state-in-effect
-      return;
-    }
-
-    let isCancelled = false;
-    setAssignments([]); // eslint-disable-line @eslint-react/set-state-in-effect
-    setIsAssignmentsLoading(true); // eslint-disable-line @eslint-react/set-state-in-effect
-    void loadInitialAssignments(
-      selectedChapterId,
-      onLoadAssignments,
-      showToast,
-      setAssignments,
-      setIsAssignmentsLoading,
-      () => isCancelled,
-    );
-    return () => {
-      isCancelled = true;
-    };
-  }, [isSelectedChapterAvailable, onLoadAssignments, selectedChapterId, showToast]);
-  return { assignments, setAssignments, isAssignmentsLoading, reloadAssignments };
-}
-
-async function reloadSelectedAssignments(
-  chapterId: string | null,
-  onLoadAssignments: Args["onLoadAssignments"],
-  showToast: ShowToast,
-  setAssignments: Dispatch<SetStateAction<AssignmentInfo[]>>,
-  setLoading: Dispatch<SetStateAction<boolean>>,
-): Promise<AssignmentInfo[] | null> {
-  if (!chapterId) return null;
-  setLoading(true);
-  try {
-    const refreshed = await fetchSelectedAssignments(chapterId, onLoadAssignments, showToast);
-    if (refreshed) setAssignments(refreshed);
-    return refreshed;
-  } finally {
-    setLoading(false);
-  }
-}
-
-async function loadInitialAssignments(
-  chapterId: string,
-  onLoadAssignments: Args["onLoadAssignments"],
-  showToast: ShowToast,
-  setAssignments: Dispatch<SetStateAction<AssignmentInfo[]>>,
-  setLoading: Dispatch<SetStateAction<boolean>>,
-  isCancelled: () => boolean,
-): Promise<void> {
-  try {
-    const result = await onLoadAssignments(chapterId);
-    if (isCancelled()) return;
-    if (!result.success) {
-      console.error("[ComicDetailModal] 加载分工失败:", result);
-      showLocalApiFailure(result, showToast, "加载分工失败");
-      return;
-    }
-    setAssignments(result.data);
-  } catch (error) {
-    if (isCancelled()) return;
-    console.error("[ComicDetailModal] 加载分工异常:", error);
-    showLocalCaughtError(error, showToast, "加载分工失败");
-  } finally {
-    if (!isCancelled()) setLoading(false);
-  }
-}
-
-function usePinnedAssignments(
-  chapterId: string | null | undefined,
-  provided: AssignmentInfo[] | undefined,
-  onLoadAssignments: Args["onLoadAssignments"],
-  showToast: ShowToast,
-): AssignmentInfo[] | null {
-  const [pinned, setPinned] = useState<{ chapterId: string; assignments: AssignmentInfo[] } | null>(
-    null,
-  );
-  useEffect(() => {
-    if (!chapterId || provided !== undefined) return;
-    let isCurrent = true;
-    void loadPinnedAssignments(
-      chapterId,
-      onLoadAssignments,
-      showToast,
-      (assignments) => {
-        if (isCurrent) setPinned({ chapterId, assignments });
-      },
-      () => isCurrent,
-    );
-    return () => {
-      isCurrent = false;
-    };
-  }, [chapterId, provided, onLoadAssignments, showToast]);
-  if (provided !== undefined) return provided;
-  if (!pinned || pinned.chapterId !== chapterId) return null;
-  return pinned.assignments;
-}
-
-async function loadPinnedAssignments(
-  chapterId: string,
-  onLoadAssignments: Args["onLoadAssignments"],
-  showToast: ShowToast,
-  setAssignments: (assignments: AssignmentInfo[]) => void,
-  isCurrent: () => boolean,
-): Promise<void> {
-  try {
-    const result = await onLoadAssignments(chapterId);
-    if (!isCurrent()) return;
-    if (!result.success) {
-      console.error("[ComicDetail] 加载置顶章节分工失败", result);
-      showLocalApiFailure(result, showToast);
-      return;
-    }
-    setAssignments(result.data);
-  } catch (error) {
-    if (!isCurrent()) return;
-    console.error("[ComicDetail] 加载置顶章节分工异常", error);
-    showLocalCaughtError(error, showToast, "加载置顶章节分工失败");
-  }
-}
-
 function useAssignmentActions(
   args: Args,
   assignments: AssignmentInfo[],
@@ -345,35 +176,23 @@ function buildAssignmentState(
 }
 
 export function useComicDetailAssignments(args: Args): AssignmentState {
+  const { currentUserId, activeMember } = args;
   const {
-    selectedChapterId,
-    isSelectedChapterAvailable,
-    currentUserId,
-    activeMember,
-    pinnedChapterId,
-    pinnedChapterAssignments,
-    onLoadAssignments,
-    showToast,
-  } = args;
-  const { assignments, setAssignments, isAssignmentsLoading, reloadAssignments } =
-    useSelectedAssignments({
-      selectedChapterId,
-      isSelectedChapterAvailable,
-      onLoadAssignments,
-      showToast,
-    });
+    assignments,
+    setAssignments,
+    isAssignmentsLoading,
+    reloadAssignments,
+    pinnedAssignments,
+  } = useAssignmentResources({
+    ...args,
+    scope: JSON.stringify([currentUserId, activeMember?.teamId]),
+  });
   const interaction = useAssignmentInteractionState();
-  const pinnedAssignments = usePinnedAssignments(
-    pinnedChapterId,
-    pinnedChapterAssignments,
-    onLoadAssignments,
-    showToast,
-  );
   const permissions = resolveAssignmentPermissions(
     assignments,
     currentUserId,
     activeMember,
-    pinnedAssignments ?? [],
+    pinnedAssignments,
   );
 
   const assignmentActions = useAssignmentActions(

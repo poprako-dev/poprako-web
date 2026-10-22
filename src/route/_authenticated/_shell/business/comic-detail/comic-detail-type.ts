@@ -48,7 +48,7 @@ export type DetailContract = {
   initialChapterId?: string | null | undefined;
   onLoadChapter: (chapterId: string) => Promise<Result<ChapterInfo>>;
   onLoadChapters: (args: ListChapterArgs) => Promise<Result<ChapterInfo[]>>;
-  onLoadAssignments: (chapterId: string) => Promise<Result<AssignmentInfo[]>>;
+  onLoadAssignments: (chapterId: string, signal?: AbortSignal) => Promise<Result<AssignmentInfo[]>>;
   onLoadPages: (chapterId: string) => Promise<Result<PageInfo[]>>;
   onLoadWorkflowRecords: (
     args: ListChapterWorkflowRecordsArgs,
