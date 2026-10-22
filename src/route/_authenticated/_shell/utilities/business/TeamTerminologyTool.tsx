@@ -1,3 +1,4 @@
+import { useTermbaseAppend } from "@/route/_authenticated/business/terminology/use-termbase-append";
 import { useCallback, useImperativeHandle, type ReactElement, type Ref } from "react";
 import { ChevronLeft, FolderOpen } from "lucide-react";
 import clsx from "clsx";
@@ -36,6 +37,11 @@ export function TeamTerminologyTool({ terminology, active, onActivate, ref }: Pr
     state,
     mutate,
     onActivate,
+  });
+  const appends = useTermbaseAppend(terminology.dataSource, (id) => {
+    state.setBaseRevision((revision) => revision + 1);
+    state.setTermRevision((revision) => revision + 1);
+    state.setSelection((current) => (current?.id === id ? { id } : current));
   });
   const exports = useTermbaseExport(terminology.dataSource, terminology.teamId);
   const searchQuery = useDebouncedValue(state.baseQuery, 250);
@@ -89,6 +95,7 @@ export function TeamTerminologyTool({ terminology, active, onActivate, ref }: Pr
             <TermbasePanel
               dataSource={terminology.dataSource}
               termbaseExport={exports}
+              termbaseAppend={appends}
               query={state.baseQuery}
               searchQuery={searchQuery}
               revision={state.baseRevision}
