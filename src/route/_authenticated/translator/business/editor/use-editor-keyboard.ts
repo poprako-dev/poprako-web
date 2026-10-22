@@ -57,7 +57,7 @@ function useKeyboardBindings(options: Options, handleSwitchView: () => void): vo
     options.isShortcutPanelOpen ||
     options.isSpecialCharPanelOpen ||
     options.isUnitSearchTransformOpen ||
-    (options.isReadOnly && options.isPageStatsOpen);
+    options.isPageStatsOpen;
   useShortcutActions(
     {
       ...createEditorShortcutActions({ ...options, handleSwitchView }),

@@ -1,6 +1,5 @@
 import { requestBlob, requestJson, requestText } from "@/api/http-transport";
 import { putPresigned } from "@/api/presigned-upload";
-import type { ApiDecoder } from "@/api/contract";
 import { toSnakeCase } from "@/shared/utility/case-convert";
 import type { Result } from "@/shared/utility/result";
 
@@ -8,16 +7,15 @@ type QueryValue = string | number | boolean | null | undefined;
 export type ApiQuery = Readonly<Record<string, QueryValue | readonly QueryValue[]>>;
 export type ApiAuthMode = "required" | "none";
 
-export type ApiRequestOptions<Value> = {
+export type ApiRequestOptions = {
   query?: ApiQuery | undefined;
   headers?: HeadersInit | undefined;
   auth?: ApiAuthMode | undefined;
   signal?: AbortSignal | undefined;
   timeoutMs?: number | undefined;
-  decode: ApiDecoder<Value>;
 };
 
-export type ApiTextOptions = Omit<ApiRequestOptions<never>, "decode">;
+export type ApiTextOptions = ApiRequestOptions;
 export type ExternalRequestOptions = {
   headers?: HeadersInit | undefined;
   signal?: AbortSignal | undefined;
@@ -31,25 +29,13 @@ export type PresignedUploadOptions = ExternalRequestOptions & {
 };
 
 export interface ApiClient {
-  get<Value>(path: string, options: ApiRequestOptions<Value>): Promise<Result<Value>>;
-  post<Value>(
-    path: string,
-    body: unknown,
-    options: ApiRequestOptions<Value>,
-  ): Promise<Result<Value>>;
-  put<Value>(
-    path: string,
-    body: unknown,
-    options: ApiRequestOptions<Value>,
-  ): Promise<Result<Value>>;
-  patch<Value>(
-    path: string,
-    body: unknown,
-    options: ApiRequestOptions<Value>,
-  ): Promise<Result<Value>>;
+  get<Value>(path: string, options?: ApiRequestOptions): Promise<Result<Value>>;
+  post<Value>(path: string, body: unknown, options?: ApiRequestOptions): Promise<Result<Value>>;
+  put<Value>(path: string, body: unknown, options?: ApiRequestOptions): Promise<Result<Value>>;
+  patch<Value>(path: string, body: unknown, options?: ApiRequestOptions): Promise<Result<Value>>;
   delete<Value>(
     path: string,
-    options: ApiRequestOptions<Value> & { body?: unknown },
+    options?: ApiRequestOptions & { body?: unknown },
   ): Promise<Result<Value>>;
   getText(path: string, options?: ApiTextOptions): Promise<Result<string>>;
   download(url: string, options?: ExternalRequestOptions): Promise<Result<Blob>>;
@@ -73,16 +59,16 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
   const sendJson = createJsonSender(options, fetchImpl, defaultTimeoutMs);
 
   return {
-    get: <Value>(path: string, requestOptions: ApiRequestOptions<Value>) =>
-      sendJson("GET", path, undefined, requestOptions),
-    post: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions<Value>) =>
-      sendJson("POST", path, body, requestOptions),
-    put: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions<Value>) =>
-      sendJson("PUT", path, body, requestOptions),
-    patch: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions<Value>) =>
-      sendJson("PATCH", path, body, requestOptions),
-    delete: <Value>(path: string, requestOptions: ApiRequestOptions<Value> & { body?: unknown }) =>
-      sendJson("DELETE", path, requestOptions.body, requestOptions),
+    get: <Value>(path: string, requestOptions: ApiRequestOptions = {}) =>
+      sendJson<Value>("GET", path, undefined, requestOptions),
+    post: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions = {}) =>
+      sendJson<Value>("POST", path, body, requestOptions),
+    put: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions = {}) =>
+      sendJson<Value>("PUT", path, body, requestOptions),
+    patch: <Value>(path: string, body: unknown, requestOptions: ApiRequestOptions = {}) =>
+      sendJson<Value>("PATCH", path, body, requestOptions),
+    delete: <Value>(path: string, requestOptions: ApiRequestOptions & { body?: unknown } = {}) =>
+      sendJson<Value>("DELETE", path, requestOptions.body, requestOptions),
     getText: (path, requestOptions = {}) =>
       sendText(options, fetchImpl, defaultTimeoutMs, path, requestOptions),
     download: (url, requestOptions = {}) =>
@@ -112,7 +98,7 @@ function createJsonSender(
     method: string,
     path: string,
     body: unknown,
-    requestOptions: ApiRequestOptions<Value>,
+    requestOptions: ApiRequestOptions,
   ): Promise<Result<Value>> {
     const revision = options.getAuthRevision?.() ?? 0;
     const url = buildUrl(options.baseUrl, path, requestOptions.query);
@@ -130,16 +116,13 @@ function createJsonSender(
         ? {}
         : { body: JSON.stringify(toSnakeCase(body, { preserveObjectKeys: ["headers"] })) }),
     };
-    return requestJson(
-      {
-        fetchImpl,
-        url,
-        init,
-        timeoutMs: requestOptions.timeoutMs ?? defaultTimeoutMs,
-        ...(requestOptions.signal ? { signal: requestOptions.signal } : {}),
-      },
-      requestOptions.decode,
-    ).then((result) => notifyUnauthorized(result, headers, revision, options));
+    return requestJson<Value>({
+      fetchImpl,
+      url,
+      init,
+      timeoutMs: requestOptions.timeoutMs ?? defaultTimeoutMs,
+      ...(requestOptions.signal ? { signal: requestOptions.signal } : {}),
+    }).then((result) => notifyUnauthorized(result, headers, revision, options));
   };
 }
 
@@ -205,18 +188,15 @@ function createHeaders(
 function buildUrl(baseUrl: string, path: string, query?: ApiQuery): string {
   const normalizedPath = `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
   if (!query || Object.keys(query).length === 0) return normalizedPath;
-  const snakeQuery = toSnakeCase(query);
-  if (typeof snakeQuery !== "object" || snakeQuery === null || Array.isArray(snakeQuery)) {
-    throw new TypeError("API query must be an object");
-  }
+  const snakeQuery: ApiQuery = toSnakeCase(query);
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(snakeQuery)) {
     if (value === undefined || value === null) continue;
     if (Array.isArray(value)) {
       for (const item of value) {
-        if (isQueryValue(item)) params.append(key, String(item));
+        if (item !== undefined && item !== null) params.append(key, String(item));
       }
-    } else if (isQueryValue(value)) {
+    } else {
       params.append(key, String(value));
     }
   }
@@ -226,14 +206,4 @@ function buildUrl(baseUrl: string, path: string, query?: ApiQuery): string {
   const address = hashIndex < 0 ? normalizedPath : normalizedPath.slice(0, hashIndex);
   const hash = hashIndex < 0 ? "" : normalizedPath.slice(hashIndex);
   return `${address}${address.includes("?") ? "&" : "?"}${queryText}${hash}`;
-}
-
-function isQueryValue(value: unknown): value is QueryValue {
-  return (
-    value === null ||
-    value === undefined ||
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
-  );
 }

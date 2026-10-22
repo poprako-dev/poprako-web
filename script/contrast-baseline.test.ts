@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
+import { stories as designExceptions } from "../.storybook/contrast-exceptions.json";
 import {
   type AccessibilityViolation,
   compareContrastBaseline,
@@ -161,4 +162,61 @@ test("removed baseline issues do not fail", () => {
     story: [{ target: '[".label"]', checks: "[]", count: 1 }],
   });
   assert.deepEqual(result, { known: 0, unexpected: [] });
+});
+
+function annotationViolation(
+  field: string,
+  generatedId = "r8",
+  focused = true,
+): AccessibilityViolation {
+  return violation([`#unit-note-«${generatedId}»-${field}-label`], {
+    fgColor: focused ? "#808690" : "#848a94",
+    bgColor: focused ? "#e8e7e5" : "#fafaf9",
+    data: { contrastRatio: focused ? 2.96 : 3.32, fontSize: "9.0pt (12px)" },
+  });
+}
+
+test("approved note labels match across generated React IDs only in registered stories", () => {
+  for (const story of Object.keys(designExceptions)) {
+    const focused = story !== "features-unitannotations--read-only";
+    assert.deepEqual(
+      compareContrastBaseline(
+        story,
+        [
+          annotationViolation("typographyNote", "r1", focused),
+          annotationViolation("translationNote", "r99", focused),
+        ],
+        designExceptions,
+      ),
+      { known: 2, unexpected: [] },
+    );
+  }
+  const result = compareContrastBaseline(
+    "unregistered-story",
+    [annotationViolation("typographyNote")],
+    designExceptions,
+  );
+  assert.equal(result.known, 0);
+  assert.equal(result.unexpected.length, 1);
+});
+
+test("note exception rejects changed colors, extra labels and non-contrast rules", () => {
+  const changedColor = annotationViolation("typographyNote");
+  const check = changedColor.nodes[0]?.any[0];
+  if (!check) throw new Error("Expected contrast check");
+  check.data = { ...(check.data as Record<string, unknown>), fgColor: "#999999" };
+  const result = compareContrastBaseline(
+    "features-unitannotations--proofread",
+    [
+      annotationViolation("typographyNote"),
+      annotationViolation("translationNote"),
+      annotationViolation("typographyNote", "r99"),
+      annotationViolation("otherField"),
+      changedColor,
+      violation(["#unit-note-«r8»-typographyNote-label"], { id: "aria-label" }),
+    ],
+    designExceptions,
+  );
+  assert.equal(result.known, 2);
+  assert.equal(result.unexpected.length, 4);
 });

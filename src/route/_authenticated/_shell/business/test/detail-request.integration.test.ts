@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { toUserInfo } from "@/route/business/identity/api-adapter";
-import { decodeApiUser } from "@/api/identity-contract";
 import { toCamelCase } from "@/shared/utility/case-convert";
 import { createTestApi } from "@/test-resource/api-client";
 import { useAppStore } from "@/route/business/session/session-store";
@@ -40,7 +39,7 @@ describe("workspace assignment comic integration", () => {
       accessToken: null,
       selectedTeamId: "team-a",
       loginState: {
-        userInfo: toUserInfo(decodeApiUser(toCamelCase(detailUser()))),
+        userInfo: toUserInfo(toCamelCase(detailUser())),
         memberInfos: [],
       },
     });

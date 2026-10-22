@@ -1,6 +1,6 @@
 import type { JSX } from "react/jsx-runtime";
 import clsx from "clsx";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import {
   unitId,
   type UnitInfo,
@@ -15,8 +15,10 @@ import {
 } from "@/route/_authenticated/translator/business/unit-list/text-diff";
 import { BaseUnitItem } from "@/route/_authenticated/translator/business/unit-list/BaseUnitItem";
 import { LineBreakOverlay } from "@/route/_authenticated/translator/business/unit-list/LineBreakOverlay";
+import { UnitProgressIndicator } from "./UnitProgressIndicator";
 
 type Props = {
+  annotationEditor?: ReactNode;
   hasLocalDraft?: boolean | undefined;
   unit: UnitInfo;
   isFocused: boolean;
@@ -74,6 +76,7 @@ function DiffSegment({ part }: { part: UnitTextDiffPart }): JSX.Element {
 }
 
 export function ReadOnlyDiffUnitItem({
+  annotationEditor,
   unit,
   hasLocalDraft,
   isFocused,
@@ -136,19 +139,9 @@ export function ReadOnlyDiffUnitItem({
             <LineBreakOverlay targetRef={contentRef} layoutKey={[parts, isFocused]} />
           )}
         </div>
-        <div className="flex size-7 shrink-0 items-center justify-center rounded p-1">
-          <div
-            role={hasLocalDraft ? "img" : undefined}
-            aria-label={hasLocalDraft ? "有未保存草稿" : undefined}
-            title={hasLocalDraft ? "有未保存草稿" : undefined}
-            className={clsx(
-              "size-2.5 rounded-full",
-              hasLocalDraft ? "border-[2.5px] border-current" : "bg-current",
-              unitIsProofread(unit) ? "text-[var(--brand-leaf)]" : "text-[var(--surface-gray-200)]",
-            )}
-          />
-        </div>
+        <UnitProgressIndicator complete={unitIsProofread(unit)} hasLocalDraft={hasLocalDraft} />
       </div>
+      {annotationEditor}
     </BaseUnitItem>
   );
 }

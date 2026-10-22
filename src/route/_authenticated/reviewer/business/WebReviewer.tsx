@@ -34,8 +34,8 @@ function mapReviewerPages(pages: PageArtwork[], chapterId: string): ReviewerProj
     .map((page) => ({
       id: page.id,
       index: page.index,
-      imageUrl: page.imageUrl,
-      imageOptimizedUrl: page.imageOptimizedUrl,
+      imageUrl: page.imageUrl ?? null,
+      imageOptimizedUrl: page.imageOptimizedUrl ?? null,
     }));
 }
 

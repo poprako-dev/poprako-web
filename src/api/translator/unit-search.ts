@@ -1,6 +1,5 @@
-import { decodeArray, decodeObject, decodeString, decodeVoid } from "@/api/contract";
 import type { ApiClient } from "@/api/client";
-import { decodeUnitApiInfo, type UnitApiInfo } from "@/api/translator/unit";
+import type { UnitApiInfo } from "@/api/translator/unit";
 import type { Result } from "@/shared/utility/result";
 
 export type UnitTextPart = "translated_text" | "proofread_text";
@@ -13,23 +12,19 @@ export type TransformChapterUnitsBody = {
   }[];
 };
 
-function decodeUnitSearchMatch(value: unknown): UnitSearchMatchResponse {
-  const record = decodeObject(value, "unit search match");
-  return {
-    pageId: decodeString(record["pageId"], "pageId"),
-    unit: decodeUnitApiInfo(record),
-  };
-}
-
-export function searchChapterUnits(
+export async function searchChapterUnits(
   client: ApiClient,
   chapterId: string,
   query: { part: UnitTextPart; phrase: string },
 ): Promise<Result<UnitSearchMatchResponse[]>> {
-  return client.get(`/chapters/${chapterId}/units/search`, {
+  const result = await client.get<UnitApiInfo[]>(`/chapters/${chapterId}/units/search`, {
     query,
-    decode: (value) => decodeArray(value, decodeUnitSearchMatch, "unit search results"),
   });
+  if (!result.success) return result;
+  return {
+    success: true,
+    data: result.data.map((unit) => ({ pageId: unit.pageId, unit })),
+  };
 }
 
 export function transformChapterUnits(
@@ -37,7 +32,5 @@ export function transformChapterUnits(
   chapterId: string,
   body: TransformChapterUnitsBody,
 ): Promise<Result<undefined>> {
-  return client.post(`/chapters/${chapterId}/units/transform`, body, {
-    decode: decodeVoid,
-  });
+  return client.post<undefined>(`/chapters/${chapterId}/units/transform`, body);
 }

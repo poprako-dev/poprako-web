@@ -39,7 +39,8 @@ export const Overwrite: Story = {
 export const Cancel: Story = {
   play: async ({ canvasElement, args }) => {
     const screen = within(canvasElement.ownerDocument.body);
-    await userEvent.click(screen.getByRole("button", { name: "取消" }));
+    await userEvent.click(screen.getByRole("button", { name: "关闭" }));
+    await expect(screen.queryByRole("button", { name: "取消" })).not.toBeInTheDocument();
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await expect(args.onConfirm).not.toHaveBeenCalled();
   },
@@ -50,7 +51,7 @@ export const Importing: Story = {
   play: async ({ canvasElement, args }) => {
     const screen = within(canvasElement.ownerDocument.body);
     await expect(screen.getByRole("radio", { name: /覆盖已有内容/ })).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "取消" }));
+    await userEvent.click(screen.getByRole("button", { name: "关闭" }));
     await expect(args.onCancel).not.toHaveBeenCalled();
   },
 };

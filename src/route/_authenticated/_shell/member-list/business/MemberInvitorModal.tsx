@@ -83,7 +83,6 @@ export function MemberInvitorModal({
 
         <InvitationForm
           teamId={teamId}
-          onClose={onClose}
           onCreateInvitation={onCreateInvitation}
           onInviteCreated={refreshInvitations}
         />

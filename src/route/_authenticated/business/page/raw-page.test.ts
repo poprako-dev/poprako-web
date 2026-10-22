@@ -1,9 +1,10 @@
 import { describe, expect, test } from "vitest";
 import { toPageInfo } from "./page-request";
-import { decodePage } from "@/api/page/page-api";
 import { toCamelCase } from "@/shared/utility/case-convert";
+import type { SnakeCase } from "@/shared/utility/case-convert-type";
+import type { PageResponse } from "@/api/page/page-api";
 
-function rawPage(imageOptimizedUrl: string | null | undefined): Record<string, unknown> {
+function rawPage(imageOptimizedUrl: string | null | undefined): SnakeCase<PageResponse> {
   return {
     id: "page-1",
     chapter_id: "chapter-1",
@@ -24,14 +25,11 @@ function rawPage(imageOptimizedUrl: string | null | undefined): Record<string, u
 describe("page API conversion", () => {
   test("unwraps the optimized image URL", () => {
     expect(
-      toPageInfo(decodePage(toCamelCase(rawPage("images.test/page-optimized.png"))))
-        .imageOptimizedUrl,
+      toPageInfo(toCamelCase(rawPage("images.test/page-optimized.png"))).imageOptimizedUrl,
     ).toBe("https://images.test/page-optimized.png");
   });
 
   test.each([null, undefined])("keeps a missing optimized image URL empty", (imageOptimizedUrl) => {
-    expect(toPageInfo(decodePage(toCamelCase(rawPage(imageOptimizedUrl)))).imageOptimizedUrl).toBe(
-      "",
-    );
+    expect(toPageInfo(toCamelCase(rawPage(imageOptimizedUrl))).imageOptimizedUrl).toBe("");
   });
 });

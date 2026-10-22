@@ -3,6 +3,7 @@ import {
   createTeamTermbase as createTeamTermbaseApi,
   importTeamTermbase as importTeamTermbaseApi,
   listTeamTermbases as listTeamTermbasesApi,
+  type ImportTermbaseBody,
 } from "@/api/terminology/termbase";
 import type { Result } from "@/shared/utility/result";
 import type { TermbaseInfo } from "./termbase";
@@ -35,9 +36,9 @@ export function importTeamTermbase(
   teamId: string,
   content: string,
 ): Promise<Result<ImportTermbaseResult>> {
-  let document: unknown;
+  let document: ImportTermbaseBody;
   try {
-    document = JSON.parse(content);
+    document = JSON.parse(content) as ImportTermbaseBody;
   } catch (error) {
     console.error("[TeamTerminology] 解析术语库 JSON 失败", error);
     return Promise.resolve({ success: false, error: "术语库文件不是有效的 JSON" });

@@ -1,5 +1,6 @@
 // 该包有关联及其复杂的逻辑，因此绝对不允许直接使用其类型的字段
 // 必须通过关联的函数提供封装性，防止错误逻辑散落到其他文件
+import type { UnitNotes } from "./unit-notes";
 
 export type UnitInfo = {
   id: string;
@@ -17,13 +18,14 @@ export type UnitInfo = {
 
   translatedText?: string | undefined;
   translatorId?: string | undefined;
-  translatorCommnet?: string | undefined;
 
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread: boolean;
   proofreadText?: string | undefined;
   proofreaderId?: string | undefined;
-  proofreaderComment?: string | undefined;
+
+  typographyNote?: UnitNotes["typographyNote"] | undefined;
+  translationNote?: UnitNotes["translationNote"] | undefined;
 };
 
 export function unitId(unit: Pick<UnitInfo, "id">): string {
@@ -39,7 +41,7 @@ export function unitIndex(unit: UnitInfo): number {
 }
 
 export function unitIsTranslated(unit: UnitInfo): boolean {
-  return Boolean(unit.translatedText);
+  return Boolean(unit.translatedText?.trim()) || unitTypographyNote(unit) !== null;
 }
 
 export function unitIsProofread(unit: UnitInfo): boolean {
@@ -81,17 +83,17 @@ export function unitProofreaderId(unit: UnitInfo): string | null {
   return unit.proofreaderId ?? null;
 }
 
-export function unitTranslatorComment(unit: UnitInfo): string | null {
-  if (unit.translatorCommnet && unit.translatorCommnet !== "") {
-    return unit.translatorCommnet;
+export function unitTypographyNote(unit: UnitInfo): string | null {
+  if (unit.typographyNote?.trim()) {
+    return unit.typographyNote;
   }
 
   return null;
 }
 
-export function unitProofreaderComment(unit: UnitInfo): string | null {
-  if (unit.proofreaderComment && unit.proofreaderComment !== "") {
-    return unit.proofreaderComment;
+export function unitTranslationNote(unit: UnitInfo): string | null {
+  if (unit.translationNote?.trim()) {
+    return unit.translationNote;
   }
 
   return null;
@@ -107,6 +109,8 @@ export function createUnit(xCoord: number, yCoord: number, isBubble: boolean): U
     isBubble,
     isFlagged: false,
     isProofread: false,
+    typographyNote: null,
+    translationNote: null,
   };
 }
 
@@ -200,22 +204,19 @@ export function modifyUnitIsProofread(unit: UnitInfo, isProofread: boolean): Uni
   };
 }
 
-export function modifyUnitTranslatorComment(
-  unit: UnitInfo,
-  translatorComment: string | null,
-): UnitInfo {
+export function modifyUnitTypographyNote(unit: UnitInfo, typographyNote: string | null): UnitInfo {
   return {
     ...unit,
-    translatorCommnet: translatorComment ?? undefined,
+    typographyNote: typographyNote === "" ? null : typographyNote,
   };
 }
 
-export function modifyUnitProofreaderComment(
+export function modifyUnitTranslationNote(
   unit: UnitInfo,
-  proofreaderComment: string | null,
+  translationNote: string | null,
 ): UnitInfo {
   return {
     ...unit,
-    proofreaderComment: proofreaderComment ?? undefined,
+    translationNote: translationNote === "" ? null : translationNote,
   };
 }

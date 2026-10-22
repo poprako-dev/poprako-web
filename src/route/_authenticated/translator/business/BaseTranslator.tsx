@@ -11,7 +11,7 @@ export function BaseTranslator(props: EditorProps): JSX.Element {
     <>
       <WorkbenchLayout
         canvas={<EditorCanvas session={session} />}
-        sidebar={<EditorSidebar session={session} />}
+        sidebar={<EditorSidebar session={session} annotations={props.annotations} />}
       />
       <EditorDialog session={session} />
     </>

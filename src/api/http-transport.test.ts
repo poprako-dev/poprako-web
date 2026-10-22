@@ -1,7 +1,6 @@
 import { parseRequestBody } from "@/test-resource/api-client";
 import { expect, test, vi } from "vitest";
 import { createApiClient } from "./client";
-import { decodeVoid } from "./contract";
 
 test.each(["fetch", "body"])("preserves %s rejection diagnostics", async (stage) => {
   const error = new TypeError("Failed to fetch");
@@ -17,7 +16,7 @@ test.each(["fetch", "body"])("preserves %s rejection diagnostics", async (stage)
     fetchImpl: request,
   });
   try {
-    expect(await client.get("/offline", { decode: decodeVoid })).toMatchObject({
+    expect(await client.get("/offline", {})).toMatchObject({
       success: false,
       error: "网络连接失败",
       failureKind: "network",
@@ -42,7 +41,6 @@ test("queries repeat includes, preserve false and zero, and omit missing values"
       isPending: false,
       omitted: undefined,
     },
-    decode: decodeVoid,
   });
   expect(request.mock.calls[0]?.[0]).toBe(
     "/api/members?active=true&owner_id=user+1&incl=team&incl=user&offset=0&is_pending=false",
@@ -58,7 +56,7 @@ test("body conversion retains explicit null clears while omitting undefined", as
   await client.post(
     "/edit",
     { nextId: null, nested: { keep: false, remove: undefined }, items: [null, { keep: 0 }] },
-    { decode: decodeVoid },
+    {},
   );
   expect(parseRequestBody(request.mock.calls[0]?.[1]?.body)).toEqual({
     next_id: null,
@@ -76,12 +74,12 @@ test("malformed HTTP failures and network failures stay distinct", async () => {
     getAccessToken: () => null,
     fetchImpl: request,
   });
-  expect(await client.get("/proxy", { decode: decodeVoid })).toMatchObject({
+  expect(await client.get("/proxy", {})).toMatchObject({
     success: false,
     httpStatus: 502,
     failureKind: "http",
   });
-  expect(await client.get("/offline", { decode: decodeVoid })).toMatchObject({
+  expect(await client.get("/offline", {})).toMatchObject({
     success: false,
     failureKind: "network",
   });
@@ -104,7 +102,7 @@ test.each(["json", "text", "blob"])(
     });
     const result =
       kind === "json"
-        ? await client.post("/units/save", [], { decode: decodeVoid })
+        ? await client.post("/units/save", [], {})
         : kind === "text"
           ? await client.getText("/export")
           : await client.download("/download");

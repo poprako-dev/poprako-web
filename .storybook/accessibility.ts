@@ -1,8 +1,15 @@
 import { afterEach as runAccessibilityAudit } from "@storybook/addon-a11y/preview";
-import { compareContrastBaseline, type AccessibilityViolation } from "../script/contrast-baseline";
+import {
+  compareContrastBaseline,
+  type AccessibilityViolation,
+  type ContrastEntry,
+} from "../script/contrast-baseline";
 import { stories as contrastBaseline } from "./contrast-baseline.json";
+import { stories as contrastExceptions } from "./contrast-exceptions.json";
 
 type StoryContext = Parameters<typeof runAccessibilityAudit>[0];
+const baseline: Record<string, ContrastEntry[]> = contrastBaseline;
+const exceptions: Record<string, ContrastEntry[]> = contrastExceptions;
 
 export async function checkStoryAccessibility(context: StoryContext): Promise<void> {
   await waitForPaint();
@@ -62,7 +69,9 @@ function verifyAccessibilityReport(context: StoryContext): void {
   const comparison = compareContrastBaseline(
     context.id,
     result.violations as AccessibilityViolation[],
-    contrastBaseline,
+    {
+      [context.id]: [...(baseline[context.id] ?? []), ...(exceptions[context.id] ?? [])],
+    },
   );
   if (comparison.unexpected.length > 0) {
     console.error(

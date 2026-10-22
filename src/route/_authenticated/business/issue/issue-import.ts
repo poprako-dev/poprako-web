@@ -1,6 +1,6 @@
-import { decodeIssueImport, decodeIssueInput } from "@/api/issue/issue-contract";
+import { decodeIssueImport, decodeIssueInput } from "./issue-file-contract";
 import type { IssueInput } from "@/api/issue/issue-contract";
-import { decodeArray, decodeObject } from "@/api/contract";
+import { decodeArray, decodeObject } from "./issue-file-value";
 import { naturalArtworkPages } from "@/route/_authenticated/business/artwork/artwork";
 import type { PageArtwork } from "@/route/_authenticated/business/artwork/artwork";
 import { toCamelCase } from "@/shared/utility/case-convert";

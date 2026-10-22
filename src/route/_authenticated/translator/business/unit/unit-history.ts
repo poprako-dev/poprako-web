@@ -1,12 +1,18 @@
 import { applyPatches, enablePatches, produceWithPatches, type Patch } from "immer";
-import { normalizeUnitIndexes, type UnitInfo } from "./unit";
+import {
+  normalizeUnitIndexes,
+  unitTranslationNote,
+  unitTypographyNote,
+  type UnitInfo,
+} from "./unit";
+import type { UnitNotes } from "./unit-notes";
 
 enablePatches();
 
 type UnitContent = Pick<
   UnitInfo,
   "xCoord" | "yCoord" | "isBubble" | "isFlagged" | "isProofread"
-> & { translatedText: string; proofreadText: string };
+> & { translatedText: string; proofreadText: string } & UnitNotes;
 type UnitDocument = { order: string[]; units: Record<string, UnitContent> };
 
 function content(unit: UnitInfo): UnitContent {
@@ -18,6 +24,8 @@ function content(unit: UnitInfo): UnitContent {
     isProofread: unit.isProofread,
     translatedText: unit.translatedText ?? "",
     proofreadText: unit.proofreadText ?? "",
+    translationNote: unitTranslationNote(unit),
+    typographyNote: unitTypographyNote(unit),
   };
 }
 

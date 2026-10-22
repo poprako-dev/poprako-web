@@ -10,7 +10,6 @@ import type { ToastType } from "@/shared/component/notification-toast/notificati
 
 type Props = {
   teamId: string;
-  onClose: () => void;
   onCreateInvitation: (args: CreateInvitationArgs) => Promise<Result<string>>;
   onInviteCreated: () => Promise<void>;
 };
@@ -35,7 +34,6 @@ function copyInvitationCode(
 
 export function InvitationForm({
   teamId,
-  onClose,
   onCreateInvitation,
   onInviteCreated,
 }: Props): JSX.Element {
@@ -162,16 +160,6 @@ export function InvitationForm({
         </div>
 
         <div className="flex gap-2 pt-1">
-          <button
-            type="button"
-            onClick={onClose}
-            className={clsx(
-              "flex-1 rounded-lg py-2 text-xs font-semibold transition-all active:scale-[0.98]",
-              "bg-surface-slate-50 text-text-muted-cool hover:bg-surface-slate-100 border border-line-slate-100",
-            )}
-          >
-            取消
-          </button>
           <button
             type="button"
             disabled={!isFormValid || isSubmitting}

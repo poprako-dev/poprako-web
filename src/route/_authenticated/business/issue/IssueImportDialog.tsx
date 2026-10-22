@@ -162,9 +162,6 @@ export function IssueImportDialog({ chapterId, onImported, onClose }: Props): JS
       locked={busy}
       footer={
         <div className="flex gap-2">
-          <AppDialogAction onClick={onClose} disabled={busy}>
-            取消
-          </AppDialogAction>
           <AppDialogAction
             tone="brand"
             onClick={() => {

@@ -7,7 +7,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { useAppStore } from "@/route/business/session/session-store";
 import { toMemberInfo, toUserInfo } from "@/route/business/identity/api-adapter";
-import { decodeApiMember, decodeApiUser } from "@/api/identity-contract";
 import { toCamelCase } from "@/shared/utility/case-convert";
 import type { Role } from "@/route/business/identity/role";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
@@ -243,9 +242,9 @@ const meta = {
       accessToken: null,
       selectedTeamId: "team-a",
       loginState: {
-        userInfo: toUserInfo(decodeApiUser(toCamelCase(detailUser()))),
+        userInfo: toUserInfo(toCamelCase(detailUser())),
         memberInfos: ["team-a", "team-b", "team-c"].map((teamId) => ({
-          ...toMemberInfo(decodeApiMember(toCamelCase(detailMember(teamId)))),
+          ...toMemberInfo(toCamelCase(detailMember(teamId))),
           team: {
             id: teamId,
             name: teamId,

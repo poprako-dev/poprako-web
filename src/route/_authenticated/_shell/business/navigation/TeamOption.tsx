@@ -277,7 +277,6 @@ export function TeamOption({
           title="头像上传尚未完成"
           description="当前正在上传并记录团队头像。现在退出可能导致未完成确认，请继续等待或确认退出。"
           confirmLabel="确认退出"
-          cancelLabel="继续等待"
           onConfirm={() => {
             setShowExitWarning(false);
             onToggleList(false);

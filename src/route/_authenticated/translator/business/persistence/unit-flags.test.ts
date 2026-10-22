@@ -23,8 +23,8 @@ function fixture(): {
   index: number;
   isBubble: boolean;
   isFlagged: boolean;
-  translatorCommnet?: string | undefined;
-  proofreaderComment?: string | undefined;
+  typographyNote?: string | null | undefined;
+  translationNote?: string | null | undefined;
 } {
   return {
     ...createUnit(0.2, 0.3, true),

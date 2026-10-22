@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import clsx from "clsx";
 import { Check, ChevronDown } from "lucide-react";
 import { Select } from "radix-ui";
-import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
+import { AppDialog } from "@/shared/component/AppDialog";
 import type { useArchiveTool } from "@/route/_authenticated/_shell/utilities/business/use-archive-tool";
 
 const PRESET_OPTIONS = [
@@ -21,17 +21,7 @@ export function ArchiveOutputSettings({
   onClose: () => void;
 }): JSX.Element {
   return (
-    <AppDialog
-      title="输出设置"
-      onClose={onClose}
-      footer={
-        <div className="flex w-full">
-          <AppDialogAction tone="brand" className="w-full" onClick={onClose}>
-            完成
-          </AppDialogAction>
-        </div>
-      }
-    >
+    <AppDialog title="输出设置" onClose={onClose}>
       <div className="space-y-4">
         <label className="block text-xs text-muted-foreground">
           输出文件名

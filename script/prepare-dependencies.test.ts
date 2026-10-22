@@ -48,7 +48,7 @@ async function withInstallation(
     await writeFile(join(framework, "package.json"), '{"name":"@storybook/react-vite"}');
     await writeFile(
       join(renderer, "package.json"),
-      '{"name":"@storybook/react","version":"10.6.0"}',
+      '{"name":"@storybook/react","version":"10.6.2"}',
     );
     await writeFile(join(radix, "package.json"), '{"version":"2.3.7","main":"dist/index.js"}');
     await writeFile(join(radix, "dist/index.js"), "");
@@ -85,8 +85,8 @@ test("unknown declarations and package upgrades fail without writes", async () =
     assert.equal(await readFile(declaration, "utf8"), "unknown content\n");
     await writeFile(
       join(root, "node_modules/@storybook/react/package.json"),
-      '{"version":"10.6.1"}',
+      '{"version":"10.6.3"}',
     );
-    await assert.rejects(prepareDependencies(root, "apply"), /requires @storybook\/react 10.6.0/u);
+    await assert.rejects(prepareDependencies(root, "apply"), /requires @storybook\/react 10.6.2/u);
   });
 });

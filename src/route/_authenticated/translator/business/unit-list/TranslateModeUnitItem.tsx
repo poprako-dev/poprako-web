@@ -1,6 +1,6 @@
 import type { JSX } from "react/jsx-runtime";
-import { type PointerEvent as ReactPointerEvent, useRef } from "react";
-import clsx from "clsx";
+import { type PointerEvent as ReactPointerEvent, type ReactNode, useRef } from "react";
+import { UnitProgressIndicator } from "./UnitProgressIndicator";
 import {
   isUnitFlagged,
   unitId,
@@ -21,6 +21,7 @@ import {
 } from "@/route/_authenticated/translator/business/unit-list/use-unit-text-insertion";
 
 type Props = {
+  annotationEditor?: ReactNode;
   hasLocalDraft?: boolean | undefined;
   unit: UnitInfo;
   isFocused: boolean;
@@ -45,6 +46,7 @@ type Props = {
 };
 
 export function TranslateModeUnitItem({
+  annotationEditor,
   unit,
   hasLocalDraft,
   isFocused,
@@ -117,20 +119,10 @@ export function TranslateModeUnitItem({
           isDisabled={enableReadOnly || onModifyUnit === undefined}
           onToggle={() => onModifyUnit?.(unitId(unit), { isFlagged: !isUnitFlagged(unit) })}
         />
-        <div className="shrink-0 w-7 h-7 p-1 rounded flex items-center justify-center">
-          <div
-            role={hasLocalDraft ? "img" : undefined}
-            aria-label={hasLocalDraft ? "有未保存草稿" : undefined}
-            title={hasLocalDraft ? "有未保存草稿" : undefined}
-            className={clsx(
-              "size-2.5 rounded-full",
-              hasLocalDraft ? "border-[2.5px] border-current" : "bg-current",
-              unitTranslatedText(unit)
-                ? "text-[var(--brand-leaf)]"
-                : "text-[var(--surface-gray-200)]",
-            )}
-          />
-        </div>
+        <UnitProgressIndicator
+          complete={Boolean(unitTranslatedText(unit))}
+          hasLocalDraft={hasLocalDraft}
+        />
       </div>
       {isFocused &&
         !enableReadOnly &&
@@ -144,6 +136,7 @@ export function TranslateModeUnitItem({
             />
           </>
         )}
+      {annotationEditor}
     </BaseUnitItem>
   );
 }

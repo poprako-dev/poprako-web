@@ -24,6 +24,8 @@ export type UnitCreateOp = {
   coord: UnitCoord;
   translation?: UnitTranslation | undefined;
   revision?: UnitRevision | undefined;
+  translationNote?: string | undefined;
+  typographyNote?: string | undefined;
 };
 
 export type UnitPatchOp = {
@@ -35,6 +37,8 @@ export type UnitPatchOp = {
   coord?: UnitCoord | undefined;
   translation: Patch<UnitTranslation>;
   revision: Patch<UnitRevision>;
+  translationNote?: Patch<string> | undefined;
+  typographyNote?: Patch<string> | undefined;
 };
 
 export type UnitDeleteOp = {

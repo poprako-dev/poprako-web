@@ -49,6 +49,7 @@ test.each([
   "isShortcutPanelOpen",
   "isSpecialCharPanelOpen",
   "isUnitSearchTransformOpen",
+  "isPageStatsOpen",
 ] as const)("undo is disabled during %s", (field) => {
   const options = keyboardOptions();
   const { rerender } = renderHook((args) => useEditorKeyboard(args), {

@@ -110,10 +110,10 @@ describe("assignment invitation protocol", () => {
 });
 
 describe("assignment invitation protocol", () => {
-  test("invalid list payloads are protocol failures, never empty success", async () => {
-    const { client } = clientFor({ items: [] });
+  test("preserves an empty list without endpoint decoding", async () => {
+    const { client } = clientFor([]);
     expect(
       await listAssignmentInvitations(client, { chapterId: "chapter", offset: 0, limit: 20 }),
-    ).toMatchObject({ success: false, failureKind: "protocol" });
+    ).toEqual({ success: true, data: [] });
   });
 });

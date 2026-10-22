@@ -4,7 +4,6 @@ import type { Mock } from "vitest";
 import { getComic } from "@/route/_authenticated/business/comic/comic-request";
 import { useAppStore } from "@/route/business/session/session-store";
 import { toMemberInfo } from "@/route/business/identity/api-adapter";
-import { decodeApiMember } from "@/api/identity-contract";
 import { toCamelCase } from "@/shared/utility/case-convert";
 import {
   findComicMember,
@@ -110,9 +109,7 @@ function registerMemberCandidateTests(): void {
     const fetchMock = installFetch();
     const result = await loadComicDetail(createTestApi(), "comic-b");
     if (!result.success) throw new Error(result.error);
-    const members = ["team-a", "team-b"].map((id) =>
-      toMemberInfo(decodeApiMember(toCamelCase(detailMember(id)))),
-    );
+    const members = ["team-a", "team-b"].map((id) => toMemberInfo(toCamelCase(detailMember(id))));
     expect(findComicMember(result.data.comicInfo, members)?.teamId).toBe("team-b");
     expect(findComicMember(result.data.comicInfo, members.slice(0, 1))).toBeNull();
     fetchMock.mockResolvedValueOnce(

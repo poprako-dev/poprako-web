@@ -59,8 +59,8 @@ export type ChapterExportUnit = {
   proofreadText?: string | undefined;
   translatorId?: string | undefined;
   proofreaderId?: string | undefined;
-  translatorComment?: string | undefined;
-  proofreaderComment?: string | undefined;
+  translationNote?: string | undefined;
+  typographyNote?: string | undefined;
   xCoord?: number | undefined;
   yCoord?: number | undefined;
   isBubble?: boolean | undefined;

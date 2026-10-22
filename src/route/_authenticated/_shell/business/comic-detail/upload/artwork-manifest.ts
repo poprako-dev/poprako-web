@@ -10,7 +10,7 @@ export function mergeArtworkManifest(
     if (!page.imageHash || !page.ext) throw new Error("已有成稿缺少图片信息，请先修复后重试。");
     return {
       pageArtworkId: page.id,
-      rawIdent: page.rawIdent,
+      rawIdent: page.rawIdent ?? null,
       imageHash: page.imageHash,
       ext: page.ext,
     };

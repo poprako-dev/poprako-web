@@ -10,6 +10,7 @@ import type {
   UnitOp,
   UnitPatchOp,
 } from "@/route/_authenticated/translator/business/contract/type";
+import { buildUnitNotes, buildUnitNotePatch } from "./unit-note-patch";
 
 function normalizedText(val?: string): string | null {
   return val && val !== "" ? val : null;
@@ -62,6 +63,7 @@ function buildCreateUnitOp(unit: UnitInfo, nextId: string | null): UnitCreateOp 
     coord: buildUnitCoord(unit),
     translation: buildUnitTranslation(unit),
     revision: buildUnitRevision(unit),
+    ...buildUnitNotes(unit),
   };
 }
 
@@ -76,6 +78,7 @@ function buildPatchUnitOp(
     nextId: skipPatch(),
     translation: skipPatch(),
     revision: skipPatch(),
+    ...buildUnitNotePatch(unit, baseline),
   };
 
   if (nextId !== undefined) {
@@ -119,7 +122,9 @@ function isEmptyPatch(edit: UnitPatchOp): boolean {
     edit.isFlagged === undefined &&
     edit.coord === undefined &&
     edit.translation.type === "skip" &&
-    edit.revision.type === "skip"
+    edit.revision.type === "skip" &&
+    (edit.translationNote === undefined || edit.translationNote.type === "skip") &&
+    (edit.typographyNote === undefined || edit.typographyNote.type === "skip")
   );
 }
 

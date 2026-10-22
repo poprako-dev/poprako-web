@@ -156,8 +156,8 @@ export function EditorCanvas({ session }: Props): JSX.Element {
           <SquareArrowRight size={20} />
         </button>
       </div>
-      {!isReadOnly && completionStage && (
-        <div className="absolute bottom-2 right-2">
+      <div className="absolute bottom-2 right-2 flex items-center gap-2">
+        {!isReadOnly && completionStage && (
           <button
             type="button"
             title={completionStage === "proofread" ? "完成校对" : "完成翻译"}
@@ -179,22 +179,21 @@ export function EditorCanvas({ session }: Props): JSX.Element {
               <Check size={20} strokeWidth={2.5} />
             )}
           </button>
-        </div>
-      )}
-      {isReadOnly && project.pages[pageIndex] && (
-        <div className="absolute bottom-2 right-2">
+        )}
+        {project.pages[pageIndex] && (
           <ReadOnlyPageActions
             key={project.id}
             pages={project.pages}
             currentPageId={project.pages[pageIndex].id}
             isDisabled={isLoadingPage || saving}
+            showNextEditedPage={isReadOnly}
             isOpen={isPageStatsOpen}
             onOpenChange={setIsPageStatsOpen}
             onListPageUnitDiffStats={onListPageUnitDiffStats}
             onNavigate={handleNavigate}
           />
-        </div>
-      )}
+        )}
+      </div>
       <div className="absolute top-2 right-2">
         <TranslatorPaginator
           drafts={session.drafts}

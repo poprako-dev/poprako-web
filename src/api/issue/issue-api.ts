@@ -1,6 +1,4 @@
 import type { ApiClient } from "@/api/client";
-import { decodeArray, decodeNumber, decodeObject } from "@/api/contract";
-import { decodeIssue } from "./issue-contract";
 import type {
   ImportChapterIssuesRequest,
   ImportChapterIssuesResult,
@@ -13,18 +11,9 @@ export function listChapterIssues(
   chapterId: string,
   signal?: AbortSignal,
 ): Promise<Result<IssueResponse[]>> {
-  return client.get(`/chapters/${chapterId}/issues`, {
-    decode: (value) => decodeArray(value, decodeIssue, "issues"),
+  return client.get<IssueResponse[]>(`/chapters/${chapterId}/issues`, {
     ...(signal ? { signal } : {}),
   });
-}
-
-function decodeImportResult(value: unknown): ImportChapterIssuesResult {
-  const object = decodeObject(value, "issue import result");
-  return {
-    importedPageCount: decodeNumber(object["importedPageCount"], "importedPageCount"),
-    importedIssueCount: decodeNumber(object["importedIssueCount"], "importedIssueCount"),
-  };
 }
 
 export function importChapterIssues(
@@ -33,8 +22,7 @@ export function importChapterIssues(
   input: ImportChapterIssuesRequest,
   signal?: AbortSignal,
 ): Promise<Result<ImportChapterIssuesResult>> {
-  return client.post(`/chapters/${chapterId}/issues/import`, input, {
-    decode: decodeImportResult,
+  return client.post<ImportChapterIssuesResult>(`/chapters/${chapterId}/issues/import`, input, {
     ...(signal ? { signal } : {}),
   });
 }

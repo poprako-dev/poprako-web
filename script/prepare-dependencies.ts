@@ -5,7 +5,7 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 
-const PACKAGE_VERSION = "10.6.0";
+const PACKAGE_VERSION = "10.6.2";
 const DECLARATION_FILE = "dist/chunk-ojHmM-yX.d.ts";
 const ORIGINAL_HASH = "38cd16dff5398eb4ea0ec7286ad2923b51631672dc3cd3a224048e8482820c79";
 const PREPARED_HASH = "fdfbabf470c56421cf57f998b542c495824c4b91a51cf57aa7f08244a60d7763";
@@ -74,7 +74,7 @@ export async function findDeclaration(root: string): Promise<string> {
     !("version" in parsed) ||
     parsed.version !== PACKAGE_VERSION
   ) {
-    throw new Error("Dependency preparation requires @storybook/react 10.6.0; review any upgrade.");
+    throw new Error("Dependency preparation requires @storybook/react 10.6.2; review any upgrade.");
   }
   const declaration = await realpath(join(dirname(manifest), DECLARATION_FILE));
   requireLocalPath(installation, declaration);
