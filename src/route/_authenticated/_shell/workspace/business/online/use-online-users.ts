@@ -1,117 +1,92 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useApiClient } from "@/route/business/api-context";
+import { useReadySession } from "@/route/business/session/ready-session";
 import { listOnlineUserIds } from "@/api/identity/identity-api";
-import { getUser } from "@/route/business/identity/user-request";
 import type { UserInfo } from "@/route/business/identity/user";
-const ONLINE_USERS_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
-const EMPTY_ONLINE_USER_IDS: ReadonlySet<string> = new Set();
-const EMPTY_ONLINE_USERS: readonly UserInfo[] = [];
+import type { ApiClient } from "@/api/client";
+import { createOnlineUserCache, loadOnlineUsers } from "./online-user-cache";
 
-type OnlineUsersState = {
-  teamId: string;
-  userIds: ReadonlySet<string>;
-  status: "ready" | "error";
-};
-
-type OnlineUserInfosState = {
-  teamId: string;
-  userIdSignature: string;
-  users: readonly UserInfo[];
-  status: "ready" | "error";
-};
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+const EMPTY_IDS: ReadonlySet<string> = new Set();
+const EMPTY_USERS: readonly UserInfo[] = [];
 
 export type OnlineUserStatus = "loading" | "ready" | "error";
 type OnlineUserIds = { userIds: ReadonlySet<string>; status: OnlineUserStatus };
 type OnlineUserInfos = { users: readonly UserInfo[]; status: OnlineUserStatus };
+type Scope = { client: ApiClient; generation: number; userId: string; teamId: string | null };
 
-async function loadOnlineUsers(
-  client: ReturnType<typeof useApiClient>,
-  teamId: string,
-  userIdSignature: string,
-): Promise<OnlineUserInfosState> {
-  const results = await Promise.all(
-    userIdSignature.split("\0").map((userId) => getUser(client, userId)),
+function useOnlineScope(teamId: string | null): Scope {
+  const client = useApiClient();
+  const { generation, userInfo } = useReadySession();
+  return useMemo(
+    () => ({ client, generation, userId: userInfo.id, teamId }),
+    [client, generation, userInfo.id, teamId],
   );
-  const users: UserInfo[] = [];
-  let hasError = false;
-  for (const result of results) {
-    if (result.success) users.push(result.data);
-    else {
-      hasError = true;
-      console.error("[TeamOnline] 获取在线用户资料失败:", result.error);
-    }
-  }
-  users.sort((left, right) => left.name.localeCompare(right.name, "zh-CN"));
-  return { teamId, userIdSignature, users, status: hasError ? "error" : "ready" };
 }
 
 export function useOnlineUserIds(teamId: string | null): OnlineUserIds {
-  const client = useApiClient();
-  const [state, setState] = useState<OnlineUsersState | null>(null);
-
+  const scope = useOnlineScope(teamId);
+  const [state, setState] = useState<(OnlineUserIds & { scope: Scope }) | null>(null);
   useEffect(() => {
-    if (!teamId) return;
-
-    let isCurrent = true;
-
-    const refresh = async (): Promise<void> => {
-      const result = await listOnlineUserIds(client, teamId);
-
-      if (!isCurrent) return;
-
-      if (!result.success) {
-        console.error("[TeamOnline] 获取在线成员失败:", result.error);
-        setState({ teamId, userIds: EMPTY_ONLINE_USER_IDS, status: "error" });
-        return;
+    if (!scope.teamId) return;
+    const request = new AbortController();
+    let pending = false;
+    async function refresh(): Promise<void> {
+      if (pending || !scope.teamId) return;
+      pending = true;
+      try {
+        const result = await listOnlineUserIds(scope.client, scope.teamId, request.signal);
+        if (request.signal.aborted) return;
+        if (!result.success) console.error("[TeamOnline] 获取在线成员失败:", result.error);
+        setState({
+          scope,
+          userIds: result.success ? new Set(result.data) : EMPTY_IDS,
+          status: result.success ? "ready" : "error",
+        });
+      } catch (error) {
+        if (request.signal.aborted) return;
+        console.error("[TeamOnline] 获取在线成员失败:", error);
+        setState({ scope, userIds: EMPTY_IDS, status: "error" });
+      } finally {
+        pending = false;
       }
-
-      setState({ teamId, userIds: new Set(result.data), status: "ready" });
-    };
-
+    }
     void refresh();
-
-    const intervalId = setInterval(() => void refresh(), ONLINE_USERS_REFRESH_INTERVAL_MS);
-
+    const interval = setInterval(() => void refresh(), REFRESH_INTERVAL_MS);
     return () => {
-      isCurrent = false;
-      clearInterval(intervalId);
+      request.abort();
+      clearInterval(interval);
     };
-  }, [client, teamId]);
-
-  if (!teamId || state?.teamId !== teamId) {
-    return { userIds: EMPTY_ONLINE_USER_IDS, status: "loading" };
-  }
-  return { userIds: state.userIds, status: state.status };
+  }, [scope]);
+  return state?.scope === scope ? state : { userIds: EMPTY_IDS, status: "loading" };
 }
 
-export function useOnlineUsers(teamId: string | null, onlineUsers: OnlineUserIds): OnlineUserInfos {
-  const client = useApiClient();
-  const userIdSignature = [...onlineUsers.userIds].join("\0");
-  const [state, setState] = useState<OnlineUserInfosState | null>(null);
-
+export function useOnlineUsers(
+  teamId: string | null,
+  onlineUsers: OnlineUserIds,
+  enabled = true,
+): OnlineUserInfos {
+  const scope = useOnlineScope(teamId);
+  const { client, generation, userId } = scope;
+  const cacheScope = useMemo(() => ({ client, generation, userId }), [client, generation, userId]);
+  const cache = useMemo(() => createOnlineUserCache(cacheScope.client), [cacheScope]);
+  const signature = [...onlineUsers.userIds].sort().join("\0");
+  const [state, setState] = useState<
+    (OnlineUserInfos & { scope: Scope; signature: string }) | null
+  >(null);
   useEffect(() => {
-    if (!teamId || onlineUsers.status !== "ready" || !userIdSignature) return;
-
-    let isCurrent = true;
-    void loadOnlineUsers(client, teamId, userIdSignature).then((result) => {
-      if (isCurrent) setState(result);
+    if (!enabled || !teamId || onlineUsers.status !== "ready" || !signature) return;
+    const request = new AbortController();
+    void loadOnlineUsers(cache, signature.split("\0"), request.signal).then((result) => {
+      if (!request.signal.aborted) setState({ ...result, scope, signature });
     });
-
     return () => {
-      isCurrent = false;
+      request.abort();
     };
-  }, [client, teamId, userIdSignature, onlineUsers.status]);
-
-  const isCurrent = state?.teamId === teamId && state.userIdSignature === userIdSignature;
-
-  if (onlineUsers.status === "error") {
-    return { users: EMPTY_ONLINE_USERS, status: "error" };
-  }
-  if (onlineUsers.status === "loading" || !teamId) {
-    return { users: EMPTY_ONLINE_USERS, status: "loading" };
-  }
-  if (!userIdSignature) return { users: EMPTY_ONLINE_USERS, status: "ready" };
-  return isCurrent
-    ? { users: state.users, status: state.status }
-    : { users: EMPTY_ONLINE_USERS, status: "loading" };
+  }, [scope, teamId, signature, onlineUsers.userIds, onlineUsers.status, enabled, cache]);
+  if (onlineUsers.status !== "ready") return { users: EMPTY_USERS, status: onlineUsers.status };
+  if (!signature) return { users: EMPTY_USERS, status: "ready" };
+  return state?.scope === scope && state.signature === signature
+    ? state
+    : { users: EMPTY_USERS, status: "loading" };
 }

@@ -35,6 +35,8 @@ export function Workspace({ search, onChangeSearch, onNavigateToWorkbench }: Pro
           onlineCount={workspace.onlineCount}
           onlineUsers={workspace.onlineUsers}
           onlineStatus={workspace.onlineStatus}
+          onlineCountStatus={workspace.onlineCountStatus}
+          onOnlineOpenChange={workspace.onOnlineOpenChange}
           comments={workspace.comments}
           commentsLoading={workspace.commentsLoading}
           onSendComment={workspace.handleSendComment}

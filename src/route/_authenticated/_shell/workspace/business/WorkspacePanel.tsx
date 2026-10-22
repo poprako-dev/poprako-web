@@ -21,6 +21,8 @@ type Props = {
   onlineCount: number;
   onlineUsers: readonly UserInfo[];
   onlineStatus: OnlineUserStatus;
+  onlineCountStatus?: OnlineUserStatus;
+  onOnlineOpenChange?: (isOpen: boolean) => void;
   comments: CommentInfo[];
   commentsLoading: boolean;
   onSendComment: (content: string) => Promise<void>;
@@ -40,6 +42,8 @@ export function WorkspacePanel({
   onlineCount,
   onlineUsers,
   onlineStatus,
+  onlineCountStatus,
+  onOnlineOpenChange,
   comments,
   commentsLoading,
   onSendComment,
@@ -81,7 +85,14 @@ export function WorkspacePanel({
           )}
         </div>
         {team && (
-          <OnlineUserPopover onlineCount={onlineCount} users={onlineUsers} status={onlineStatus} />
+          <OnlineUserPopover
+            key={teamScope}
+            onlineCount={onlineCount}
+            users={onlineUsers}
+            status={onlineStatus}
+            countStatus={onlineCountStatus ?? onlineStatus}
+            onOpenChange={onOnlineOpenChange}
+          />
         )}
       </div>
 

@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import clsx from "clsx";
 import { ChevronDown, UserRound, UsersRound } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { UserInfo } from "@/route/business/identity/user";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
 import type { OnlineUserStatus } from "@/route/_authenticated/_shell/workspace/business/online/use-online-users";
@@ -10,15 +10,30 @@ type Props = {
   onlineCount: number;
   users: readonly UserInfo[];
   status: OnlineUserStatus;
+  countStatus?: OnlineUserStatus;
+  onOpenChange?: ((isOpen: boolean) => void) | undefined;
 };
 
 function avatarChar(user: UserInfo): string {
   return user.name.slice(0, 1).toUpperCase();
 }
 
-export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.Element {
+export function OnlineUserPopover({
+  onlineCount,
+  users,
+  status,
+  countStatus = status,
+  onOpenChange,
+}: Props): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  const changeOpen = useCallback(
+    (open: boolean) => {
+      setIsOpen(open);
+      onOpenChange?.(open);
+    },
+    [onOpenChange],
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -27,11 +42,11 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
       const target = event.target;
       if (!(target instanceof Node)) return;
       if (popoverRef.current?.contains(target)) return;
-      setIsOpen(false);
+      changeOpen(false);
     };
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.defaultPrevented || isKeyboardComposing(event)) return;
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") changeOpen(false);
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
@@ -41,7 +56,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, changeOpen]);
 
   return (
     <div ref={popoverRef} className="relative mt-2 self-start sm:mt-0 sm:self-auto">
@@ -50,7 +65,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         onClick={() => {
-          setIsOpen((open) => !open);
+          changeOpen(!isOpen);
         }}
         className={clsx(
           "flex items-center gap-2 rounded-md px-2.5 py-1.5",
@@ -59,7 +74,7 @@ export function OnlineUserPopover({ onlineCount, users, status }: Props): JSX.El
         )}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-activity-recent" />
-        <span>{status === "error" ? "在线人数未知" : <>{onlineCount} 人在线</>}</span>
+        <span>{countStatus === "error" ? "在线人数未知" : <>{onlineCount} 人在线</>}</span>
         <ChevronDown
           size={14}
           className={clsx("text-icon-muted-cool transition-transform", isOpen && "rotate-180")}

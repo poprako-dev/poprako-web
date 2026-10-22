@@ -41,7 +41,10 @@ type WorkspaceTeam = {
   onlineCount: number;
   onlineUsers: ReturnType<typeof useOnlineUsers>["users"];
   onlineStatus: ReturnType<typeof useOnlineUsers>["status"];
+  onlineCountStatus: ReturnType<typeof useOnlineUserIds>["status"];
+  onOnlineOpenChange: (isOpen: boolean) => void;
 };
+type OnlineScope = { generation: number; userId: string; teamId: string | null };
 
 export function useWorkspaceController({
   search,
@@ -86,8 +89,8 @@ function useWorkspaceTeam(
   selectedTeamId: string | null,
   memberInfos: ReturnType<typeof useReadySession>["memberInfos"],
 ): WorkspaceTeam {
-  const onlineUserIds = useOnlineUserIds(selectedTeamId);
-  const onlineUsers = useOnlineUsers(selectedTeamId, onlineUserIds);
+  const { generation, userInfo } = useReadySession();
+  const [openScope, setOpenScope] = useState<OnlineScope | null>(null);
   const activeMember = useMemo(() => {
     if (!selectedTeamId) return null;
     return memberInfos.find((member) => member.teamId === selectedTeamId) ?? null;
@@ -96,12 +99,27 @@ function useWorkspaceTeam(
     () => (activeMember ? hasRole(activeMember, "admin") : false),
     [activeMember],
   );
+  const teamId = activeMember?.team.id ?? null;
+  const scope = useMemo(
+    () => ({ generation, userId: userInfo.id, teamId }),
+    [generation, userInfo.id, teamId],
+  );
+  const onlineUserIds = useOnlineUserIds(teamId);
+  const onlineUsers = useOnlineUsers(teamId, onlineUserIds, openScope === scope);
+  const onOnlineOpenChange = useCallback(
+    (isOpen: boolean) => {
+      setOpenScope(isOpen ? scope : null);
+    },
+    [scope],
+  );
   return {
     team: activeMember?.team ? { id: activeMember.team.id, name: activeMember.team.name } : null,
     isAdmin,
     onlineCount: onlineUserIds.userIds.size,
     onlineUsers: onlineUsers.users,
     onlineStatus: onlineUsers.status,
+    onlineCountStatus: onlineUserIds.status,
+    onOnlineOpenChange,
   };
 }
 
