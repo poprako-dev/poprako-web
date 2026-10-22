@@ -1,4 +1,6 @@
 import clsx from "clsx";
+import { useRouteIntent } from "@/route/_authenticated/business/navigation/use-route-intent";
+import type { NavId } from "./business/navigation/app-sidebar-type";
 import { useState, type ReactElement } from "react";
 import { BookOpen, LayoutDashboard, Mail, Settings, Users } from "lucide-react";
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
@@ -62,7 +64,17 @@ function MobileBottomNav(): ReactElement {
   );
 }
 
+const navRouteIds = {
+  workspace: "/_authenticated/_shell/workspace/",
+  "comic-playground": "/_authenticated/_shell/comic-playground/",
+  "member-list": "/_authenticated/_shell/member-list/",
+  "system-mail": "/_authenticated/_shell/system-mail/",
+  settings: "/_authenticated/_shell/settings/",
+  utilities: "/_authenticated/_shell/utilities/",
+} as const satisfies Record<NavId, string>;
+
 function Shell(): ReactElement {
+  const warmRoute = useRouteIntent();
   const navigate = useNavigate();
   useMailRefresh("unread");
   const [showGuide, setShowGuide] = useState(() => !readFirstRegistrationFlag());
@@ -73,7 +85,11 @@ function Shell(): ReactElement {
   };
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-page-paper">
-      <AppSidebar />
+      <AppSidebar
+        onNavIntent={(id) => {
+          warmRoute(navRouteIds[id]);
+        }}
+      />
       <main className={clsx("flex-1 min-h-0 w-full overflow-y-auto", "sm:pl-14", "pb-14 sm:pb-0")}>
         <Outlet />
       </main>

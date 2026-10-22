@@ -78,7 +78,11 @@ function leaveSidebar(
   }
 }
 
-export function AppSidebar(): ReactElement {
+type Props = {
+  onNavIntent?: ((id: NavId) => void) | undefined;
+};
+
+export function AppSidebar({ onNavIntent }: Props): ReactElement {
   const client = useApiClient();
   const navigate = useNavigate();
   const location = useLocation();
@@ -164,6 +168,9 @@ export function AppSidebar(): ReactElement {
               onClick={() => {
                 handleNavSelect(item.id);
               }}
+              onIntent={() => {
+                onNavIntent?.(item.id);
+              }}
               hasBadge={item.id === "system-mail" && hasUnread}
             />
           ))}
@@ -171,6 +178,9 @@ export function AppSidebar(): ReactElement {
             icon={utilityNavConfig.icon}
             label={utilityNavConfig.label}
             isActive={activeNavId === "utilities"}
+            onIntent={() => {
+              onNavIntent?.("utilities");
+            }}
             onClick={() => {
               handleNavSelect("utilities");
             }}
@@ -181,6 +191,9 @@ export function AppSidebar(): ReactElement {
         <SettingsFooter
           config={footerNavConfig}
           isActive={activeNavId === "settings"}
+          onIntent={() => {
+            onNavIntent?.("settings");
+          }}
           onClick={() => {
             handleNavSelect("settings");
           }}
