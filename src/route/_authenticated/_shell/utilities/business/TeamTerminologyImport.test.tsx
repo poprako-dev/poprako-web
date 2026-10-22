@@ -135,7 +135,7 @@ test("clears browsing on team change and keeps the compression tool available wi
   await user.click(await screen.findByRole("button", { name: /^奇幻世界共用词/ }));
   await screen.findByRole("textbox", { name: "搜索术语原文" });
   view.rerender(<Utilities />);
-  expect(screen.getByText("暂无可用团队")).toBeVisible();
+  expect(screen.getByText("暂无可用汉化组")).toBeVisible();
   expect(screen.queryByRole("button", { name: "返回术语库" })).not.toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "定界压缩" }));
   expect(screen.getByRole("button", { name: "定界压缩" })).toHaveAttribute("aria-pressed", "true");

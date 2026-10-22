@@ -27,7 +27,7 @@ export function TermbaseRow({
   directory = false,
   termbaseAppend,
 }: Props): React.ReactElement {
-  const scope = termbase.comicId ? "本作" : "团队";
+  const scope = termbase.comicId ? "本作" : "全组";
   const longPress = useLongPress({ onLongPress: () => onEdit?.(), onClick: onSelect });
 
   return (

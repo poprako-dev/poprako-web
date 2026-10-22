@@ -81,7 +81,7 @@ export function TermPanel({
                 : "border-line-stone-200 bg-surface-stone-50 text-text-muted-warm",
             )}
           >
-            {termbase.comicId ? "本作" : "团队"}
+            {termbase.comicId ? "本作" : "全组"}
           </span>
           {canEdit && (
             <button
