@@ -116,7 +116,7 @@ export function AutoResizeTextarea({
           >
             {displayText}
           </div>
-          <LineBreakOverlay targetRef={mirrorRef} layoutKey={[displayText, className]} />
+          <LineBreakOverlay targetRef={mirrorRef} contentKey={displayText} styleKey={className} />
         </>
       )}
     </div>

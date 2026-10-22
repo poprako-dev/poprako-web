@@ -136,7 +136,7 @@ export function ReadOnlyDiffUnitItem({
             ))}
           </div>
           {parts.some((part) => part.text.includes("\n")) && (
-            <LineBreakOverlay targetRef={contentRef} layoutKey={[parts, isFocused]} />
+            <LineBreakOverlay targetRef={contentRef} contentKey={parts} styleKey={isFocused} />
           )}
         </div>
         <UnitProgressIndicator complete={unitIsProofread(unit)} hasLocalDraft={hasLocalDraft} />
