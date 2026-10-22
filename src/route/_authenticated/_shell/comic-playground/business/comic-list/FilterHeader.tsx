@@ -4,6 +4,7 @@ import { IconInputRow } from "@/shared/component/IconInputRow";
 import clsx from "clsx";
 import { HoverSelect } from "@/shared/component/hover-select/HoverSelect";
 import type { Option } from "@/shared/component/hover-select/hover-select-type";
+import { isKeyboardComposing } from "@/shared/utility/keyboard";
 import type {
   BinaryFilter,
   TripleFilter,
@@ -77,6 +78,11 @@ export function FilterHeader({
     setInputValue(activeFuzzyTitle ?? "");
   }, [activeFuzzyTitle]);
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key !== "Enter" || isKeyboardComposing(event.nativeEvent)) return;
+    onChangeFuzzyTitle(inputValue.trim());
+  };
+
   return (
     <div className="flex w-full flex-col gap-2">
       {/* 第一行：搜索框 + 创建按钮 */}
@@ -86,9 +92,9 @@ export function FilterHeader({
             icon={<Search />}
             placeholder="标题 / 作者 / 序号..."
             value={inputValue}
+            onKeyDown={handleKeyDown}
             onChange={(v) => {
               setInputValue(v);
-              onChangeFuzzyTitle(v.trim());
             }}
           />
         </div>
