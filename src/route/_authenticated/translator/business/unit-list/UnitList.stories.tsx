@@ -3,7 +3,7 @@ import type { JSX } from "react/jsx-runtime";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import clsx from "clsx";
 import { useState } from "react";
-import { UnitList } from "@/route/_authenticated/translator/business/unit-list/UnitList";
+import { UnitList } from "./test/UnitListPreview";
 import {
   moveUnitToIndex,
   type UnitInfo,

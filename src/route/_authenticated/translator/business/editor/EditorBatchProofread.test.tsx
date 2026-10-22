@@ -30,6 +30,7 @@ test("batch confirmation and cancellation each undo in one step without changing
     expect(result.current.isLoadingPage).toBe(false);
   });
   const before = structuredClone(result.current.unitBuf);
+  const actions = [result.current.handleModifyUnit, result.current.handleFocusUnit];
   act(() => {
     result.current.handleProofreadAllUnits(true);
   });
@@ -39,6 +40,7 @@ test("batch confirmation and cancellation each undo in one step without changing
     proofreadText: "校对",
     proofreaderId: "reviewer",
   });
+  expect([result.current.handleModifyUnit, result.current.handleFocusUnit]).toEqual(actions);
   act(() => {
     result.current.handleProofreadAllUnits(false);
   });

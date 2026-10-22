@@ -2,7 +2,7 @@ import type { JSX } from "react/jsx-runtime";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
-import { UnitList } from "@/route/_authenticated/translator/business/unit-list/UnitList";
+import { UnitList } from "./test/UnitListPreview";
 import { TranslatorPaginator } from "@/route/_authenticated/translator/business/page-statistic/TranslatorPaginator";
 import { createUnit, type UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
 import {

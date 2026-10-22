@@ -1,3 +1,5 @@
+import { preloadTranslatorMode } from "../editor/translator-mode-module";
+import { availableTranslatorModes, initialTranslatorMode } from "../contract/access";
 import type { JSX } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, type RefObject } from "react";
 import { useBlocker } from "@tanstack/react-router";
@@ -30,6 +32,7 @@ type Props = {
 export function WebTranslator({ chapterId, startPageId, onExit, startMode }: Props): JSX.Element {
   const client = useApiClient();
   const { state, setState } = useTranslatorProject(chapterId);
+  useTranslatorModePreload(startMode, state);
   const { activeRef, latestLoadsRef } = useTranslatorLoadLifecycle(chapterId);
   const { userInfo: currentUser } = useReadySession();
   const currentUserId = currentUser.id;
@@ -177,4 +180,24 @@ function useTranslatorSearchSource(
     }),
     [chapterId, client, handleFetchUnits, handleTransformUnits],
   );
+}
+
+function useTranslatorModePreload(
+  startMode: Props["startMode"],
+  state: ReturnType<typeof useTranslatorProject>["state"],
+): void {
+  const targetMode =
+    startMode === "readOnly"
+      ? "readOnly"
+      : state.status === "ready"
+        ? initialTranslatorMode(
+            availableTranslatorModes(state),
+            startMode === "auto" ? undefined : startMode,
+          )
+        : startMode === "auto"
+          ? undefined
+          : startMode;
+  useEffect(() => {
+    if (targetMode) void preloadTranslatorMode(targetMode).catch(() => undefined);
+  }, [targetMode]);
 }

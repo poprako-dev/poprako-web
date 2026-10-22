@@ -27,6 +27,7 @@ export function useUnitContributors({
       void cacheRef.current.resolve(userId, onResolveUser).then((user) => {
         if (isActive && user) {
           setResolvedUsers((current) => {
+            if (current.get(userId) === user) return current;
             const next = new Map(current);
             next.set(userId, user);
             return next;

@@ -307,15 +307,32 @@ export function useDetachableSpecialCharsBar({ enabled, interactionKey }: Option
   const isDetached = position !== null;
   useViewportConstraint({ enabled, isDetached, floatingRef, positionRef, updatePosition });
 
-  return {
-    isEnabled: enabled,
-    position,
-    isGripHeld: drag.isGripHeld,
-    placeholderHeight: drag.placeholderHeight,
-    floatingRef,
-    handleGripPointerDown: drag.handleGripPointerDown,
-    dock: drag.dock,
-  };
+  return useMemoBarController(enabled, position, floatingRef, drag);
 }
 
 export type SpecialCharsBarController = ReturnType<typeof useDetachableSpecialCharsBar>;
+
+function useMemoBarController(
+  enabled: boolean,
+  position: Position | null,
+  floatingRef: RefObject<HTMLDivElement | null>,
+  drag: BarDragActions,
+): {
+  isEnabled: boolean;
+  position: Position | null;
+  floatingRef: RefObject<HTMLDivElement | null>;
+} & BarDragActions {
+  const { isGripHeld, placeholderHeight, handleGripPointerDown, dock } = drag;
+  return useMemo(
+    () => ({
+      isEnabled: enabled,
+      position,
+      floatingRef,
+      isGripHeld,
+      placeholderHeight,
+      handleGripPointerDown,
+      dock,
+    }),
+    [enabled, position, floatingRef, isGripHeld, placeholderHeight, handleGripPointerDown, dock],
+  );
+}

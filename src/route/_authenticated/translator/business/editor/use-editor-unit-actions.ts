@@ -65,6 +65,11 @@ export function useEditorUnitActions(options: Options): {
     ...editActions,
     ...focusActions,
     ...deleteActions,
+    handleModifyUnit: useCommittedCallback(editActions.handleModifyUnit),
+    handleReorderUnit: useCommittedCallback(editActions.handleReorderUnit),
+    handleFocusUnit: useCommittedCallback(focusActions.handleFocusUnit),
+    handleSpecialCharUse: useCommittedCallback(charActions.handleSpecialCharUse),
+    handleSpecialCharInserted: useCommittedCallback(charActions.handleSpecialCharInserted),
     handleProofreadAllUnits: useCommittedCallback((isProofread: boolean) => {
       if (!options.canEditView || options.isLoadingPage || options.isCompletingStage) return;
       options.commitUnits(
