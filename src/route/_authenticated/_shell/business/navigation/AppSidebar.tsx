@@ -83,9 +83,8 @@ export function AppSidebar(): ReactElement {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedTeamId = useAppStore((s) => s.selectedTeamId);
-  const sysMails = useMailStore((s) => s.mails);
+  const hasUnread = useMailStore((s) => s.hasUnread);
   const loginState = useReadySession();
-  const hasUnread = sysMails.some((mail) => !mail.isRead);
 
   const isTeamAdmin = useMemo(() => {
     const member = loginState.memberInfos.find((m) => m.teamId === selectedTeamId);
