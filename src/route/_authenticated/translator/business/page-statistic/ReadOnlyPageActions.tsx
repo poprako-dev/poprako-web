@@ -15,6 +15,7 @@ type Props = {
   pages: StatsPage[];
   currentPageId: string;
   isDisabled: boolean;
+  showNextEditedPage?: boolean;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onListPageUnitDiffStats: () => Promise<PageUnitDiffStats[]>;
@@ -120,6 +121,7 @@ export function ReadOnlyPageActions({
   pages,
   currentPageId,
   isDisabled,
+  showNextEditedPage = true,
   isOpen,
   onOpenChange,
   onListPageUnitDiffStats,
@@ -181,27 +183,29 @@ export function ReadOnlyPageActions({
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>
-      <button
-        type="button"
-        title="前进到下一个修改"
-        aria-label="前进到下一个修改"
-        disabled={isDisabled || isLoadingNext || isOpen}
-        onClick={() => {
-          void handleNextEditedPage();
-        }}
-        className={clsx(
-          "flex size-8 items-center justify-center rounded-md border",
-          "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
-          "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
-          "focus-visible:outline-outline-stone-400 disabled:opacity-60",
-        )}
-      >
-        {isLoadingNext ? (
-          <Loader2 size={18} className="animate-spin" />
-        ) : (
-          <CircleArrowRight size={20} strokeWidth={2.25} />
-        )}
-      </button>
+      {showNextEditedPage && (
+        <button
+          type="button"
+          title="前进到下一个修改"
+          aria-label="前进到下一个修改"
+          disabled={isDisabled || isLoadingNext || isOpen}
+          onClick={() => {
+            void handleNextEditedPage();
+          }}
+          className={clsx(
+            "flex size-8 items-center justify-center rounded-md border",
+            "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
+            "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
+            "focus-visible:outline-outline-stone-400 disabled:opacity-60",
+          )}
+        >
+          {isLoadingNext ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <CircleArrowRight size={20} strokeWidth={2.25} />
+          )}
+        </button>
+      )}
     </div>
   );
 }

@@ -196,7 +196,27 @@ export const ReadOnlyWithoutTerminology: Story = {
   },
 };
 
-export const ReadOnlyPageStatistics: Story = {
+async function verifyEditablePageStatistics(
+  canvasElement: HTMLElement,
+  completionLabel: string,
+): Promise<void> {
+  const canvas = within(canvasElement);
+  const page = within(canvasElement.ownerDocument.body);
+  const trigger = canvas.getByRole("button", { name: "页面 unit 统计" });
+  await waitFor(async () => {
+    await expect(trigger).toBeEnabled();
+  });
+  await expect(canvas.getByRole("button", { name: completionLabel })).toBeVisible();
+  await expect(canvas.queryByRole("button", { name: "前进到下一个修改" })).toBeNull();
+  await userEvent.click(trigger);
+  await expect(
+    await page.findByRole("button", { name: "第 2 页，翻译 10，编辑 3，追加 2" }),
+  ).toBeVisible();
+  await userEvent.keyboard("{Escape}");
+  await expect(trigger).toHaveFocus();
+}
+
+export const AllModePageStatistics: Story = {
   args: {
     ...createStoryArgs({ canTranslate: true, canProofread: true }),
     onLoadPageImage: () =>
@@ -208,9 +228,9 @@ export const ReadOnlyPageStatistics: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const page = within(canvasElement.ownerDocument.body);
-    await expect(canvas.queryByRole("button", { name: "页面 unit 统计" })).toBeNull();
+    await verifyEditablePageStatistics(canvasElement, "完成校对");
     await userEvent.click(canvas.getByRole("button", { name: "切换到翻译模式" }));
-    await expect(canvas.queryByRole("button", { name: "页面 unit 统计" })).toBeNull();
+    await verifyEditablePageStatistics(canvasElement, "完成校对");
     await userEvent.click(canvas.getByRole("button", { name: "切换到只读模式" }));
 
     const trigger = canvas.getByRole("button", { name: "页面 unit 统计" });
