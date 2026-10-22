@@ -1,5 +1,5 @@
 {
-  "reason": "User-approved design exception (2026-10-22): retain the light neutral gray of translation and supplement comment labels. This acknowledges the contrast violation; it does not change the WCAG threshold. Match only the recorded stories, labels, colors, font metrics and counts.",
+  "reason": "User-approved design exception (2026-10-22): retain the light neutral gray of translation and supplement comment labels. This acknowledges the contrast violation; it does not change the WCAG threshold. Match only the recorded stories, labels, colors, font metrics and counts. Annotation editing behavior now keeps existing comments visible on focused and unfocused units; these records cover the same approved label style in the resulting story states.",
   "stories": {
     "features-unitannotations--proofread": [
       {
@@ -10,6 +10,11 @@
       {
         "target": "[\"#unit-comment-generated-supplementComment-label\"]",
         "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      },
+      {
+        "target": "[\"#unit-comment-generated-supplementComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#848a94\",\"bgColor\":\"#fafaf9\",\"contrastRatio\":3.32,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
         "count": 1
       }
     ],
@@ -23,18 +28,23 @@
         "target": "[\"#unit-comment-generated-supplementComment-label\"]",
         "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
         "count": 1
+      },
+      {
+        "target": "[\"#unit-comment-generated-supplementComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#848a94\",\"bgColor\":\"#fafaf9\",\"contrastRatio\":3.32,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
       }
     ],
     "features-unitannotations--read-only": [
       {
         "target": "[\"#unit-comment-generated-translationComment-label\"]",
-        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#848a94\",\"bgColor\":\"#fafaf9\",\"contrastRatio\":3.32,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
         "count": 1
       },
       {
         "target": "[\"#unit-comment-generated-supplementComment-label\"]",
-        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
-        "count": 1
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#848a94\",\"bgColor\":\"#fafaf9\",\"contrastRatio\":3.32,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 2
       }
     ],
     "features-unitannotations--clear-comments": [
@@ -46,6 +56,67 @@
       {
         "target": "[\"#unit-comment-generated-supplementComment-label\"]",
         "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      },
+      {
+        "target": "[\"#unit-comment-generated-supplementComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#848a94\",\"bgColor\":\"#fafaf9\",\"contrastRatio\":3.32,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      }
+    ],
+    "features-basetranslator--translator-only": [
+      {
+        "target": "[\"#unit-comment-generated-translationComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      },
+      {
+        "target": "[\"#unit-comment-generated-supplementComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      }
+    ],
+    "features-unitannotations--translate": [
+      {
+        "target": "[\"#unit-comment-generated-translationComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      },
+      {
+        "target": "[\"#unit-comment-generated-supplementComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      },
+      {
+        "target": "[\"#unit-comment-generated-translationComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#848a94\",\"bgColor\":\"#fafaf9\",\"contrastRatio\":3.32,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      },
+      {
+        "target": "[\"#unit-comment-generated-supplementComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#848a94\",\"bgColor\":\"#fafaf9\",\"contrastRatio\":3.32,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 2
+      }
+    ],
+    "features-unitannotations--single-comment": [
+      {
+        "target": "[\"#unit-comment-generated-translationComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      },
+      {
+        "target": "[\"#unit-comment-generated-supplementComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#808690\",\"bgColor\":\"#e8e7e5\",\"contrastRatio\":2.96,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 1
+      },
+      {
+        "target": "[\"#unit-comment-generated-translationComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#848a94\",\"bgColor\":\"#fafaf9\",\"contrastRatio\":3.32,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
+        "count": 2
+      },
+      {
+        "target": "[\"#unit-comment-generated-supplementComment-label\"]",
+        "checks": "[{\"id\":\"color-contrast\",\"data\":{\"fgColor\":\"#848a94\",\"bgColor\":\"#fafaf9\",\"contrastRatio\":3.32,\"fontSize\":\"9.0pt (12px)\",\"fontWeight\":\"normal\",\"expectedContrastRatio\":\"4.5:1\"}}]",
         "count": 1
       }
     ]

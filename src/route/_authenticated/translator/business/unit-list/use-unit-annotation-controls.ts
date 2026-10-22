@@ -13,20 +13,20 @@ export function useUnitAnnotationControls(
   source: UnitAnnotationSource | undefined,
   unitId: string,
   readOnly: boolean,
-  expanded: boolean,
+  isEditingEnabled: boolean,
 ): ComponentProps<typeof UnitAnnotationEditor> {
   const id = useId();
   const values = useSyncExternalStore(
     source?.subscribe ?? subscribeNothing,
     () => source?.get(unitId) ?? emptyValues,
   );
+  const isReadOnly = readOnly || !isEditingEnabled;
   return {
     id,
-    expanded,
     values,
-    readOnly,
+    readOnly: isReadOnly,
     onChange: (target, content) => {
-      if (!readOnly) source?.set(unitId, target, content);
+      if (!isReadOnly) source?.set(unitId, target, content);
     },
   };
 }

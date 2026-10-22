@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function EditorSidebar({ session, annotations }: Props): JSX.Element {
-  const [isAnnotationsVisible, setIsAnnotationsVisible] = useState(false);
+  const [isAnnotationEditingEnabled, setIsAnnotationEditingEnabled] = useState(false);
   return (
     <>
       <DraftRecoveryNotice
@@ -22,11 +22,11 @@ export function EditorSidebar({ session, annotations }: Props): JSX.Element {
       />
       <EditorToolbar
         session={session}
-        isAnnotationsVisible={isAnnotationsVisible}
-        onToggleAnnotations={
+        isAnnotationEditingEnabled={isAnnotationEditingEnabled}
+        onToggleAnnotationEditing={
           annotations
             ? () => {
-                setIsAnnotationsVisible((value) => !value);
+                setIsAnnotationEditingEnabled((value) => !value);
               }
             : undefined
         }
@@ -34,7 +34,7 @@ export function EditorSidebar({ session, annotations }: Props): JSX.Element {
       <div className="flex-1 overflow-y-auto bg-surface-stone-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
         <UnitList
           annotations={annotations}
-          isAnnotationsVisible={isAnnotationsVisible}
+          isAnnotationEditingEnabled={isAnnotationEditingEnabled}
           units={session.unitBuf}
           pendingUnitIds={session.saveState.pendingUnitIds}
           focusedUnitId={session.focusedUnitId}

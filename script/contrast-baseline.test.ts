@@ -164,22 +164,27 @@ test("removed baseline issues do not fail", () => {
   assert.deepEqual(result, { known: 0, unexpected: [] });
 });
 
-function annotationViolation(field: string, generatedId = "r8"): AccessibilityViolation {
+function annotationViolation(
+  field: string,
+  generatedId = "r8",
+  focused = true,
+): AccessibilityViolation {
   return violation([`#unit-comment-«${generatedId}»-${field}-label`], {
-    fgColor: "#808690",
-    bgColor: "#e8e7e5",
-    data: { contrastRatio: 2.96, fontSize: "9.0pt (12px)" },
+    fgColor: focused ? "#808690" : "#848a94",
+    bgColor: focused ? "#e8e7e5" : "#fafaf9",
+    data: { contrastRatio: focused ? 2.96 : 3.32, fontSize: "9.0pt (12px)" },
   });
 }
 
 test("approved comment labels match across generated React IDs only in registered stories", () => {
   for (const story of Object.keys(designExceptions)) {
+    const focused = story !== "features-unitannotations--read-only";
     assert.deepEqual(
       compareContrastBaseline(
         story,
         [
-          annotationViolation("translationComment", "r1"),
-          annotationViolation("supplementComment", "r99"),
+          annotationViolation("translationComment", "r1", focused),
+          annotationViolation("supplementComment", "r99", focused),
         ],
         designExceptions,
       ),

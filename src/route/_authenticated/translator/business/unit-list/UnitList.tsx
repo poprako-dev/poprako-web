@@ -35,7 +35,7 @@ export type SpecialCharInsertRequest = {
 
 type Props = {
   annotations?: UnitAnnotationSource | undefined;
-  isAnnotationsVisible?: boolean | undefined;
+  isAnnotationEditingEnabled?: boolean | undefined;
   units: UnitInfo[];
   pendingUnitIds?: string[] | undefined;
   focusedUnitId?: string | undefined;
@@ -55,7 +55,7 @@ type Props = {
 
 type UnitListItemProps = {
   annotations: Props["annotations"];
-  isAnnotationsVisible: boolean;
+  isAnnotationEditingEnabled: boolean;
   unit: UnitInfo;
   pendingUnitIds: string[] | undefined;
   focusedUnitId: string | undefined;
@@ -124,7 +124,7 @@ function UnitListItem(props: UnitListItemProps): JSX.Element {
     props.annotations,
     unitId(unit),
     props.readOnly,
-    props.isAnnotationsVisible && props.focusedUnitId === unitId(unit),
+    props.isAnnotationEditingEnabled && props.focusedUnitId === unitId(unit),
   );
   const commonProps = {
     annotationEditor: props.annotations && <UnitAnnotationEditor {...annotation} />,
@@ -161,7 +161,7 @@ function UnitListItem(props: UnitListItemProps): JSX.Element {
 
 export function UnitList({
   annotations,
-  isAnnotationsVisible = false,
+  isAnnotationEditingEnabled = false,
   units,
   pendingUnitIds,
   focusedUnitId,
@@ -212,7 +212,7 @@ export function UnitList({
             <UnitListItem
               key={unitId(unit)}
               annotations={annotations}
-              isAnnotationsVisible={isAnnotationsVisible}
+              isAnnotationEditingEnabled={isAnnotationEditingEnabled}
               unit={unit}
               pendingUnitIds={pendingUnitIds}
               focusedUnitId={focusedUnitId}

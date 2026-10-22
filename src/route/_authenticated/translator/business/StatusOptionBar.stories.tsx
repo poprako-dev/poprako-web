@@ -23,7 +23,7 @@ function InteractiveWrapper({
   initialMode: TranslatorMode;
   availableModes: TranslatorMode[];
 }): JSX.Element {
-  const [isAnnotationsVisible, setIsAnnotationsVisible] = useState(false);
+  const [isAnnotationEditingEnabled, setIsAnnotationEditingEnabled] = useState(false);
   const [view, setView] = useState<TranslatorMode>(initialMode);
   const [relocation, setRelocation] = useState(false);
   const [isHighResolution, setIsHighResolution] = useState(false);
@@ -42,9 +42,9 @@ function InteractiveWrapper({
   return (
     <div className="w-64 border border-border rounded">
       <StatusOptionBar
-        isAnnotationsVisible={isAnnotationsVisible}
-        onToggleAnnotations={() => {
-          setIsAnnotationsVisible((value) => !value);
+        isAnnotationEditingEnabled={isAnnotationEditingEnabled}
+        onToggleAnnotationEditing={() => {
+          setIsAnnotationEditingEnabled((value) => !value);
         }}
         currMode={view}
         view={view}

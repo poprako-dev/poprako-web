@@ -16,8 +16,8 @@ import type { TranslatorMode } from "@/route/_authenticated/translator/business/
 import type { ProofreadPreviewVisibility } from "@/route/_authenticated/translator/business/contract/preview";
 
 type Props = {
-  isAnnotationsVisible?: boolean | undefined;
-  onToggleAnnotations?: (() => void) | undefined;
+  isAnnotationEditingEnabled?: boolean | undefined;
+  onToggleAnnotationEditing?: (() => void) | undefined;
   currMode: TranslatorMode;
   view: TranslatorMode;
   nextView: TranslatorMode;
@@ -50,8 +50,8 @@ const modeLabel: Record<TranslatorMode, string> = {
 };
 
 export function StatusOptionBar({
-  isAnnotationsVisible = false,
-  onToggleAnnotations,
+  isAnnotationEditingEnabled = false,
+  onToggleAnnotationEditing,
   currMode,
   view,
   nextView,
@@ -167,16 +167,16 @@ export function StatusOptionBar({
       >
         <Eye size={18} />
       </button>
-      {onToggleAnnotations && (
+      {onToggleAnnotationEditing && (
         <button
           type="button"
-          title={isAnnotationsVisible ? "隐藏注释" : "显示注释"}
-          aria-label="显示注释"
-          aria-pressed={isAnnotationsVisible}
-          onClick={onToggleAnnotations}
+          title={isAnnotationEditingEnabled ? "关闭注释编辑" : "开启注释编辑"}
+          aria-label="注释编辑"
+          aria-pressed={isAnnotationEditingEnabled}
+          onClick={onToggleAnnotationEditing}
           className={clsx(
             btnBase,
-            isAnnotationsVisible
+            isAnnotationEditingEnabled
               ? "bg-surface-green-50 hover:bg-surface-green-100"
               : "bg-surface-white hover:bg-surface-stone-100",
           )}

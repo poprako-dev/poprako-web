@@ -10,7 +10,7 @@ export async function verifyTranslatorAnnotations(canvasElement: HTMLElement): P
   const canvas = within(canvasElement);
   const row = within(firstUnit(canvasElement));
   await expect(row.queryByRole("textbox", { name: "翻译注释" })).toBeNull();
-  const toggle = canvas.getByRole("button", { name: "显示注释" });
+  const toggle = canvas.getByRole("button", { name: "注释编辑" });
   await userEvent.click(row.getByRole("textbox"));
   await userEvent.click(toggle);
   await expect(row.getByRole("textbox", { name: "补充注释" })).toBeVisible();

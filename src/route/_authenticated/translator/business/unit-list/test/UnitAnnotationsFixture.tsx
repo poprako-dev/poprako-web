@@ -28,11 +28,15 @@ function initialUnit(index: number): UnitInfo {
 }
 
 export function UnitAnnotationsFixture({ mode, width, readOnly }: Props): JSX.Element {
-  const [isAnnotationsVisible, setIsAnnotationsVisible] = useState(false);
+  const [isAnnotationEditingEnabled, setIsAnnotationEditingEnabled] = useState(false);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>();
   const [units, setUnits] = useState(() => texts.map((_text, index) => initialUnit(index)));
   const [annotations] = useState(() =>
     createUnitAnnotationFixture({
+      "annotation-unit-2": {
+        translationComment: null,
+        supplementComment: "这里是两人约定见面的地方。",
+      },
       "annotation-unit-1": {
         translationComment: "“他”字加重，保留省略号。",
         supplementComment: "这里带有确认语气，补上“就”更贴近原意。",
@@ -59,16 +63,16 @@ export function UnitAnnotationsFixture({ mode, width, readOnly }: Props): JSX.El
         onToggleProofreadPreviewClick={() => undefined}
         onToggleImageQualityClick={() => Promise.resolve()}
         onSaveClick={() => Promise.resolve()}
-        isAnnotationsVisible={isAnnotationsVisible}
-        onToggleAnnotations={() => {
-          setIsAnnotationsVisible((value) => !value);
+        isAnnotationEditingEnabled={isAnnotationEditingEnabled}
+        onToggleAnnotationEditing={() => {
+          setIsAnnotationEditingEnabled((value) => !value);
         }}
       />
       <div className="min-h-0 flex-1">
         <UnitList
           units={units}
           annotations={annotations}
-          isAnnotationsVisible={isAnnotationsVisible}
+          isAnnotationEditingEnabled={isAnnotationEditingEnabled}
           mode={mode}
           focusedUnitId={focusedUnitId}
           onFocusUnit={setFocusedUnitId}

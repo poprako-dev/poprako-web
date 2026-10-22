@@ -68,7 +68,7 @@ export const TranslatorOnly: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("button", { name: "显示注释" })).toHaveAttribute(
+    await expect(canvas.getByRole("button", { name: "注释编辑" })).toHaveAttribute(
       "aria-pressed",
       "false",
     );
