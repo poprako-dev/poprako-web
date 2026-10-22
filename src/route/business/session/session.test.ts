@@ -77,29 +77,41 @@ describe("session identity recovery", () => {
     requests.listMyMembers.mockReset();
   });
 
-  test("shares recovery and selects the first real team", async () => {
+  test("loads identity in parallel, shares recovery and selects the first real team", async () => {
     const userRequest = deferred<Result<ApiUser>>();
+    const memberRequest = deferred<Result<ApiMember[]>>();
     requests.getMyUser.mockReturnValue(userRequest.promise);
-    requests.listMyMembers.mockResolvedValue(ok(members(["team-a", "team-b"])));
+    requests.listMyMembers.mockReturnValue(memberRequest.promise);
     beginSession("token-a");
 
     const first = ensureSession(client);
     const second = ensureSession(client);
     expect(first).toBe(second);
     expect(requests.getMyUser).toHaveBeenCalledWith(client);
-    userRequest.resolve(ok(user("user-a")));
-
-    const [firstState, secondState] = await Promise.all([first, second]);
-    expect(firstState).toEqual(secondState);
-    expect(useAppStore.getState().selectedTeamId).toBe("team-a");
     expect(requests.listMyMembers).toHaveBeenCalledWith(client, {
       offset: 0,
       limit: 200,
       includes: ["team"],
     });
+    memberRequest.resolve(ok(members(["team-a", "team-b"])));
+    await Promise.resolve();
+    expect(useAppStore.getState().loginState).toBeNull();
+    userRequest.resolve(ok(user("user-a")));
+
+    const [firstState, secondState] = await Promise.all([first, second]);
+    expect(firstState).toEqual(secondState);
+    expect(useAppStore.getState().selectedTeamId).toBe("team-a");
+  });
+});
+
+describe("session identity recovery", () => {
+  beforeEach(() => {
+    clearSession();
+    requests.getMyUser.mockReset();
+    requests.listMyMembers.mockReset();
   });
 
-  test("a stale user response cannot start member loading or overwrite a new identity", async () => {
+  test("a stale user response cannot overwrite a new identity", async () => {
     const oldResponse = deferred<Result<ApiUser>>();
     requests.getMyUser
       .mockReturnValueOnce(oldResponse.promise)
@@ -115,6 +127,65 @@ describe("session identity recovery", () => {
     await expect(oldRequest).rejects.toThrow("会话已失效");
     expect(newState.userInfo.id).toBe("user-new");
     expect(useAppStore.getState().loginState?.userInfo.id).toBe("user-new");
+  });
+});
+
+describe("parallel session isolation", () => {
+  beforeEach(() => {
+    clearSession();
+    requests.getMyUser.mockReset();
+    requests.listMyMembers.mockReset();
+  });
+
+  test("stale membership completion cannot clear a newer pending recovery", async () => {
+    const oldMembers = deferred<Result<ApiMember[]>>();
+    const nextMembers = deferred<Result<ApiMember[]>>();
+    requests.getMyUser.mockResolvedValue(ok(user("user-a")));
+    requests.listMyMembers
+      .mockReturnValueOnce(oldMembers.promise)
+      .mockReturnValueOnce(nextMembers.promise);
+    beginSession("token-old");
+    const oldRequest = ensureSession(client);
+    await Promise.resolve();
+    beginSession("token-new");
+    const nextRequest = ensureSession(client);
+    oldMembers.resolve(ok(members(["team-old"])));
+
+    await expect(oldRequest).rejects.toThrow("会话已失效");
+    expect(ensureSession(client)).toBe(nextRequest);
+    expect(requests.getMyUser).toHaveBeenCalledTimes(2);
+    expect(requests.listMyMembers).toHaveBeenCalledTimes(2);
+    expect(useAppStore.getState().loginState).toBeNull();
+    nextMembers.resolve(ok(members(["team-new"])));
+    await nextRequest;
+    expect(useAppStore.getState().selectedTeamId).toBe("team-new");
+  });
+});
+
+describe("parallel session failures", () => {
+  beforeEach(() => {
+    clearSession();
+    requests.getMyUser.mockReset();
+    requests.listMyMembers.mockReset();
+  });
+
+  test("fails without waiting for the other branch and permits a clean retry", async () => {
+    const oldMembers = deferred<Result<ApiMember[]>>();
+    requests.getMyUser
+      .mockResolvedValueOnce({ success: false, error: "identity unavailable" })
+      .mockResolvedValueOnce(ok(user("user-a")));
+    requests.listMyMembers
+      .mockReturnValueOnce(oldMembers.promise)
+      .mockResolvedValueOnce(ok(members(["team-new"])));
+    beginSession("token");
+
+    await expect(ensureSession(client)).rejects.toThrow("identity unavailable");
+    expect(useAppStore.getState().loginState).toBeNull();
+    await ensureSession(client);
+    oldMembers.resolve(ok(members(["team-old"])));
+    await oldMembers.promise;
+    expect(useAppStore.getState().selectedTeamId).toBe("team-new");
+    expect(requests.getMyUser).toHaveBeenCalledTimes(2);
   });
 });
 

@@ -28,6 +28,12 @@ function assertCurrent(generation: number): void {
   }
 }
 
+function requireCurrentResult<Value>(result: Result<Value>, generation: number): Value {
+  assertCurrent(generation);
+  if (!result.success) throw toApiRequestError(result);
+  return result.data;
+}
+
 function initialize(client: ApiClient): Promise<LoginState> {
   const { accessToken, generation } = useAppStore.getState();
   if (!accessToken) {
@@ -35,36 +41,31 @@ function initialize(client: ApiClient): Promise<LoginState> {
   }
   if (pending?.generation === generation) return pending.promise;
 
-  const promise = (async () => {
-    const userResult = await getMyUser(client);
-    assertCurrent(generation);
-    if (!userResult.success) throw toApiRequestError(userResult);
-
-    const membersResult = await listMyMembers(client, {
-      offset: 0,
-      limit: 200,
-      includes: ["team"],
+  const promise = Promise.all([
+    getMyUser(client).then((result) => requireCurrentResult(result, generation)),
+    listMyMembers(client, { offset: 0, limit: 200, includes: ["team"] }).then((result) =>
+      requireCurrentResult(result, generation),
+    ),
+  ])
+    .then(([user, members]) => {
+      if (members.some((member) => member.team === null || member.team === undefined)) {
+        throw new Error("成员响应缺少团队信息");
+      }
+      const loginState: LoginState = {
+        userInfo: toUserInfo(user),
+        memberInfos: members.map((value) => {
+          const member = toMemberInfo(value);
+          if (!member.team) throw new Error("成员响应缺少团队信息");
+          return { ...member, team: member.team };
+        }),
+      };
+      assertCurrent(generation);
+      useAppStore.getState().setLoginState(loginState);
+      return loginState;
+    })
+    .finally(() => {
+      if (pending?.generation === generation) pending = null;
     });
-    assertCurrent(generation);
-    if (!membersResult.success) throw toApiRequestError(membersResult);
-    if (membersResult.data.some((member) => member.team === null || member.team === undefined)) {
-      throw new Error("成员响应缺少团队信息");
-    }
-
-    const loginState: LoginState = {
-      userInfo: toUserInfo(userResult.data),
-      memberInfos: membersResult.data.map((value) => {
-        const member = toMemberInfo(value);
-        if (!member.team) throw new Error("成员响应缺少团队信息");
-        return { ...member, team: member.team };
-      }),
-    };
-    assertCurrent(generation);
-    useAppStore.getState().setLoginState(loginState);
-    return loginState;
-  })().finally(() => {
-    if (pending?.generation === generation) pending = null;
-  });
   pending = { generation, promise };
   return promise;
 }
