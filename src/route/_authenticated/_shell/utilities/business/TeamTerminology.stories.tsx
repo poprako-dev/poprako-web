@@ -25,7 +25,9 @@ export const Libraries: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "查看术语库" }));
-    await expect(await canvas.findByRole("button", { name: /^奇幻世界共用词/ })).toBeVisible();
+    await waitFor(async () => {
+      await expect(canvas.getByRole("button", { name: /^奇幻世界共用词/ })).toBeVisible();
+    });
     await expect(canvas.getByRole("button", { name: "新建术语库" })).toBeVisible();
   },
 };
@@ -46,7 +48,9 @@ export const TermsAndBack: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "查看术语库" }));
     await expect(canvas.getByRole("textbox", { name: "搜索术语原文" })).toHaveValue("団");
     await userEvent.click(canvas.getByRole("button", { name: "返回术语库" }));
-    await expect(await canvas.findByRole("button", { name: /^奇幻世界共用词/ })).toBeVisible();
+    await waitFor(async () => {
+      await expect(canvas.getByRole("button", { name: /^奇幻世界共用词/ })).toBeVisible();
+    });
   },
 };
 export const ReadOnly: Story = {
