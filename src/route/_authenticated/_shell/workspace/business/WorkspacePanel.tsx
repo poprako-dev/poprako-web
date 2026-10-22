@@ -4,13 +4,12 @@ import { useReadySession } from "@/route/business/session/ready-session";
 import type { JSX, TouchEventHandler } from "react";
 import clsx from "clsx";
 import { AnnouncementTable } from "@/route/_authenticated/_shell/workspace/business/AnnouncementTable";
-import { CommentChatBox } from "@/route/_authenticated/_shell/workspace/business/CommentChatBox";
 import { OnlineUserPopover } from "@/route/_authenticated/_shell/workspace/business/OnlineUserPopover";
-import { ComicTranslationListView } from "@/route/_authenticated/_shell/business/comic-list/ComicTranslationListView";
 import { useComicTranslationList } from "@/route/_authenticated/_shell/business/comic-list/use-comic-translation-list";
 import type { CommentInfo } from "@/route/_authenticated/_shell/workspace/business/comment/comment";
 import type { OnlineUserStatus } from "@/route/_authenticated/_shell/workspace/business/online/use-online-users";
 import type { UserInfo } from "@/route/business/identity/user";
+import { WorkspaceContent } from "./WorkspaceContent";
 import { fetchMyAssignmentComicCards } from "@/route/_authenticated/_shell/workspace/business/assignment/workspace-request";
 
 type Props = {
@@ -108,130 +107,18 @@ export function WorkspacePanel({
         <AnnouncementTable key={team.id} teamId={team.id} teamName={team.name} isAdmin={isAdmin} />
       )}
 
-      <div className={clsx("hidden md:flex", "flex-1 min-h-0 min-w-0 flex-row gap-4")}>
-        <div className={clsx("flex-1 min-h-0 min-w-0 overflow-hidden", "flex flex-col")}>
-          <SectionHeading label="任务列表" />
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <ComicTranslationListView state={comicList} onComicClick={onComicClick} />
-          </div>
-        </div>
-        {team && (
-          <div className={clsx("w-64 shrink-0 min-h-0", "flex flex-col")}>
-            <SectionHeading label="留言板" />
-            <div
-              className={clsx(
-                "flex-1 min-h-0",
-                "rounded-md border border-border/50",
-                "overflow-hidden",
-              )}
-            >
-              <CommentChatBox
-                key={teamScope}
-                comments={comments}
-                loading={commentsLoading}
-                onSend={onSendComment}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {team && (
-        <div className="md:hidden flex-1 min-h-0 min-w-0 flex flex-col">
-          <div className={clsx("flex items-center gap-4 px-1 mb-2 shrink-0")}>
-            <TabButton
-              label="任务列表"
-              active={mobileTab === 0}
-              onClick={() => {
-                onChangeMobileTab(0);
-              }}
-            />
-            <TabButton
-              label="留言板"
-              active={mobileTab === 1}
-              onClick={() => {
-                onChangeMobileTab(1);
-              }}
-            />
-            <div className="flex-1 h-0.5 bg-surface-stone-200" />
-          </div>
-          <div
-            className="flex-1 min-h-0 overflow-hidden relative"
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-          >
-            <div
-              className="absolute inset-0 h-full overflow-y-auto"
-              style={{ visibility: mobileTab === 0 ? "visible" : "hidden" }}
-            >
-              <ComicTranslationListView
-                state={comicList}
-                onComicClick={onComicClick}
-                enabled={mobileTab === 0}
-              />
-            </div>
-            <div
-              className="absolute inset-0 h-full"
-              style={{ visibility: mobileTab === 1 ? "visible" : "hidden" }}
-            >
-              <div
-                className={clsx("h-full", "rounded-md border border-border/50", "overflow-hidden")}
-              >
-                <CommentChatBox
-                  key={teamScope}
-                  comments={comments}
-                  loading={commentsLoading}
-                  onSend={onSendComment}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SectionHeading({ label }: { label: "任务列表" | "留言板" }): JSX.Element {
-  return (
-    <div className={clsx("flex items-center gap-2 px-1 mb-2 shrink-0")}>
-      <span className="w-1.5 h-1.5 rounded-full bg-surface-slate-300 shrink-0" />
-      <span className="text-sm font-semibold text-ink-slate-500 tracking-tight">{label}</span>
-      <div
-        className={clsx(
-          "flex-1 h-0.5",
-          label === "任务列表" ? "bg-surface-slate-200" : "bg-surface-stone-200",
-        )}
+      <WorkspaceContent
+        state={comicList}
+        onComicClick={onComicClick}
+        teamScope={team ? teamScope : null}
+        comments={comments}
+        commentsLoading={commentsLoading}
+        onSendComment={onSendComment}
+        mobileTab={mobileTab}
+        onChangeMobileTab={onChangeMobileTab}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
       />
     </div>
-  );
-}
-
-function TabButton({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}): JSX.Element {
-  return (
-    <button type="button" onClick={onClick} className="flex items-center gap-2">
-      <span
-        className={clsx(
-          "w-1.5 h-1.5 rounded-full shrink-0",
-          active ? "bg-surface-slate-500" : "bg-surface-slate-300",
-        )}
-      />
-      <span
-        className={clsx(
-          "text-sm font-semibold tracking-tight",
-          active ? "text-ink-slate-600" : "text-text-muted-cool",
-        )}
-      >
-        {label}
-      </span>
-    </button>
   );
 }
