@@ -8,10 +8,7 @@ import { useReadySession } from "@/route/business/session/ready-session";
 import { useApiClient } from "@/route/business/api-context";
 import { useTranslatorProject } from "@/route/_authenticated/translator/business/remote/use-translator-project";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
-import {
-  searchChapterUnits,
-  transformChapterUnits,
-} from "@/route/_authenticated/translator/business/remote/translator-request";
+import { searchChapterUnits } from "@/route/_authenticated/translator/business/remote/translator-request";
 import { useTranslatorApiActions } from "./use-translator-api-actions";
 import { useTranslatorTerminology } from "@/route/_authenticated/translator/business/remote/terminology-adapter";
 
@@ -46,26 +43,22 @@ export function WebTranslator({ chapterId, startPageId, onExit, startMode }: Pro
     client,
     chapterId,
     currentUser,
+    drafts,
     state,
     setState,
     activeRef,
     latestLoadsRef,
   });
-  const {
-    handleResolveUser,
-    handleFetchUnits,
-    handleLoadUnits,
-    handleSaveUnits,
-    handleLoadPageImage,
-    handleCompleteStage,
-    handleListPageUnitFlaggedStats,
-    handleListPageUnitDiffStats,
-  } = apiActions;
 
   const comicId = state.status === "ready" ? state.comicId : undefined;
   const terminology = useTranslatorTerminology(comicId);
 
-  const unitSearchTransform = useTranslatorSearchSource(client, chapterId, handleFetchUnits);
+  const unitSearchTransform = useTranslatorSearchSource(
+    client,
+    chapterId,
+    apiActions.handleFetchUnits,
+    apiActions.handleTransformUnits,
+  );
 
   if (state.status === "loading") {
     return (
@@ -123,13 +116,15 @@ export function WebTranslator({ chapterId, startPageId, onExit, startMode }: Pro
       canWrite={state.canTranslate || state.canProofread}
       registerLeaveGuard={registerLeaveGuard}
       project={state.project}
-      onLoadUnits={handleLoadUnits}
-      onSaveUnits={handleSaveUnits}
-      onLoadPageImage={handleLoadPageImage}
-      onResolveUser={handleResolveUser}
-      onCompleteStage={handleCompleteStage}
-      onListPageUnitDiffStats={handleListPageUnitDiffStats}
-      onListPageUnitFlaggedStats={handleListPageUnitFlaggedStats}
+      onLoadUnits={apiActions.handleLoadUnits}
+      onReloadUnits={apiActions.handleReloadUnits}
+      onPrefetchUnits={apiActions.handlePrefetchUnits}
+      onSaveUnits={apiActions.handleSaveUnits}
+      onLoadPageImage={apiActions.handleLoadPageImage}
+      onResolveUser={apiActions.handleResolveUser}
+      onCompleteStage={apiActions.handleCompleteStage}
+      onListPageUnitDiffStats={apiActions.handleListPageUnitDiffStats}
+      onListPageUnitFlaggedStats={apiActions.handleListPageUnitFlaggedStats}
       onExit={onExit}
       currentUserId={currentUserId}
       canTranslate={state.canTranslate}
@@ -172,13 +167,14 @@ function useTranslatorSearchSource(
   client: ReturnType<typeof useApiClient>,
   chapterId: string,
   handleFetchUnits: UnitSearchTransformDataSource["reloadPage"],
+  handleTransformUnits: UnitSearchTransformDataSource["transform"],
 ): UnitSearchTransformDataSource {
   return useMemo(
     () => ({
       search: (args) => searchChapterUnits(client, chapterId, args),
-      transform: (args) => transformChapterUnits(client, chapterId, args),
+      transform: handleTransformUnits,
       reloadPage: handleFetchUnits,
     }),
-    [chapterId, client, handleFetchUnits],
+    [chapterId, client, handleFetchUnits, handleTransformUnits],
   );
 }

@@ -41,10 +41,15 @@ export function useEditorPageLoader(
 function useInitialEditorPage(props: EditorProps, state: EditorState, loadPage: LoadPage): void {
   useEffect(() => {
     if (props.project.pages.length === 0) return;
+    let current = true;
     void loadPage(state.initialPageIndex).catch((error: unknown) => {
+      if (!current) return;
       console.error("[BaseTranslator] 初始页面加载失败", error);
       showLocalCaughtError(error, state.showToast, "页面加载失败，请重试");
     });
+    return () => {
+      current = false;
+    };
   }, [loadPage, props.project.pages.length, state.initialPageIndex, state.showToast]);
 }
 
@@ -70,6 +75,7 @@ async function loadEditorPage(
     context.state.relocationSuppressedUnitIdRef.current = null;
     context.state.pendingCenteredUnitIdRef.current = targetUnitId ?? null;
     context.state.setFocusedUnitId(targetUnitId);
+    context.props.onPrefetchUnits?.(page.id);
   } finally {
     if (generation === context.generationRef.current) context.state.setIsLoadingPage(false);
   }

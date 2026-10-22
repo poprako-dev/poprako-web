@@ -8,15 +8,10 @@ import { completeChapterStage } from "@/route/_authenticated/business/chapter/ch
 import { listPages } from "@/route/_authenticated/business/page/page-request";
 import { getUser } from "@/route/business/identity/user-request";
 import type { UserInfo } from "@/route/business/identity/user";
-import type { UnitDiff, UnitSaveResult } from "../contract/type";
-import type { UnitInfo } from "../unit/unit";
 import type { TranslatorCompletionStage } from "../contract/access";
-import {
-  aggregateProjectCounters,
-  mergePageCounters,
-  type TranslatorProjectState,
-} from "./use-translator-project";
-import { listUnits, saveUnits } from "./translator-request";
+import type { TranslatorProjectState } from "./use-translator-project";
+import { usePageUnitActions, type PageUnitActions } from "./use-page-unit-source";
+import type { DraftStore } from "../persistence/draft-store";
 import { selectPageImageUrl } from "./page-image";
 import { toApiRequestError } from "@/route/business/request-error";
 import { useCallback, type Dispatch, type RefObject, type SetStateAction } from "react";
@@ -26,6 +21,7 @@ type Options = {
   client: ApiClient;
   chapterId: string;
   currentUser: UserInfo;
+  drafts: DraftStore;
   state: TranslatorProjectState;
   setState: Dispatch<SetStateAction<TranslatorProjectState>>;
   activeRef: RefObject<boolean>;
@@ -33,11 +29,8 @@ type Options = {
 };
 
 type UnwrapResult<Value> = Value extends Promise<Result<infer Data>> ? Data : never;
-interface ApiActions {
+interface ApiActions extends PageUnitActions {
   handleResolveUser: (userId: string) => Promise<Result<UserInfo>>;
-  handleFetchUnits: (pageId: string) => Promise<Result<UnitInfo[]>>;
-  handleLoadUnits: (pageId: string) => Promise<UnitInfo[]>;
-  handleSaveUnits: (pageId: string, diff: UnitDiff, saveId: string) => Promise<UnitSaveResult>;
   handleLoadPageImage: (pageId: string, quality: PageImageQuality) => Promise<string>;
   handleCompleteStage: (stage: TranslatorCompletionStage) => Promise<void>;
   handleListPageUnitFlaggedStats: () => Promise<
@@ -51,9 +44,7 @@ interface ApiActions {
 export function useTranslatorApiActions(options: Options): ApiActions {
   return {
     handleResolveUser: useUserResolver(options.client, options.currentUser),
-    handleFetchUnits: useUnitFetcher(options),
-    handleLoadUnits: useUnitLoader(options),
-    handleSaveUnits: useUnitSaver(options.client),
+    ...usePageUnitActions(options),
     handleLoadPageImage: usePageImageLoader(options.client, options.chapterId, options.state),
     handleCompleteStage: useStageCompletion(options.client, options.chapterId),
     handleListPageUnitFlaggedStats: useFlaggedStatsLoader(options.client, options.chapterId),
@@ -80,102 +71,6 @@ async function resolveUser(
 ): Promise<Result<UserInfo>> {
   if (currentUser.id === userId) return { success: true, data: currentUser };
   return await getUser(client, userId);
-}
-
-function useUnitFetcher(options: Options): ApiActions["handleFetchUnits"] {
-  const { client, chapterId, setState, activeRef, latestLoadsRef } = options;
-  return useCallback(
-    (pageId: string) => fetchUnits(client, chapterId, setState, activeRef, latestLoadsRef, pageId),
-    [activeRef, chapterId, client, latestLoadsRef, setState],
-  );
-}
-
-async function fetchUnits(
-  client: ApiClient,
-  chapterId: string,
-  setState: Dispatch<SetStateAction<TranslatorProjectState>>,
-  activeRef: RefObject<boolean>,
-  latestLoadsRef: RefObject<Map<string, symbol>>,
-  pageId: string,
-): Promise<Result<UnitInfo[]>> {
-  const generation = Symbol();
-  latestLoadsRef.current.set(pageId, generation);
-  const result = await listUnits(client, pageId);
-  if (!result.success) return result;
-  mergeFetchedPageCounters(
-    setState,
-    chapterId,
-    activeRef,
-    latestLoadsRef,
-    pageId,
-    generation,
-    result.data,
-  );
-  return {
-    success: true as const,
-    data: [...result.data.units].sort((left, right) => left.index - right.index),
-  };
-}
-
-function mergeFetchedPageCounters(
-  setState: Dispatch<SetStateAction<TranslatorProjectState>>,
-  chapterId: string,
-  activeRef: RefObject<boolean>,
-  latestLoadsRef: RefObject<Map<string, symbol>>,
-  pageId: string,
-  generation: symbol,
-  data: { totalUnitCount: number; translatedUnitCount: number; proofreadUnitCount: number },
-): void {
-  setState((previous) => {
-    if (
-      !activeRef.current ||
-      previous.status !== "ready" ||
-      previous.project.id !== chapterId ||
-      latestLoadsRef.current.get(pageId) !== generation
-    )
-      return previous;
-    const pages = mergePageCounters(previous.project.pages, pageId, data);
-    return {
-      ...previous,
-      project: { ...previous.project, pages, ...aggregateProjectCounters(pages) },
-    };
-  });
-}
-
-function useUnitLoader(options: Options): ApiActions["handleLoadUnits"] {
-  const fetchPage = useUnitFetcher(options);
-  return useCallback((pageId: string) => loadUnits(fetchPage, pageId), [fetchPage]);
-}
-
-async function loadUnits(
-  fetchPage: (pageId: string) => ReturnType<typeof fetchUnits>,
-  pageId: string,
-): Promise<UnitInfo[]> {
-  const result = await fetchPage(pageId);
-  if (result.success) return result.data;
-  console.error("[WebTranslator] 加载单页单位失败", { pageId, error: result.error });
-  throw toApiRequestError(result);
-}
-
-function useUnitSaver(client: ApiClient): ApiActions["handleSaveUnits"] {
-  return useCallback(
-    (pageId: string, diff: UnitDiff, saveId: string): Promise<UnitSaveResult> => {
-      return savePageUnits(client, pageId, diff, saveId);
-    },
-    [client],
-  );
-}
-
-async function savePageUnits(
-  client: ApiClient,
-  pageId: string,
-  diff: UnitDiff,
-  saveId: string,
-): Promise<UnitSaveResult> {
-  const result = await saveUnits(client, pageId, diff, saveId);
-  if (result.success) return result.data;
-  console.error("[WebTranslator] 保存单页单位失败", { pageId, diff, error: result.error });
-  throw toApiRequestError(result);
 }
 
 function usePageImageLoader(
