@@ -1,20 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createComment } from "@/api/comment";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
-import type { CommentInfo } from "./comment/comment";
-import { listComments } from "./comment/comment-request";
 import { useReadySession } from "@/route/business/session/ready-session";
 import { hasRole } from "@/route/business/identity/role";
-import { useApiClient } from "@/route/business/api-context";
 import { useAppStore } from "@/route/business/session/session-store";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
-import { showLocalApiFailure } from "@/route/business/request-error";
 import {
   type ComicDetailSearch,
   type WorkbenchDestination,
   useComicDetailHost,
 } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
 import { useOnlineUserIds, useOnlineUsers } from "./online/use-online-users";
+import { useWorkspaceComments } from "./comment/use-workspace-comments";
 
 type Props = {
   search: ComicDetailSearch;
@@ -28,7 +24,7 @@ type Props = {
 
 type WorkspaceController = ReturnType<typeof useComicDetailHost> &
   WorkspaceTeam &
-  WorkspaceComments & {
+  ReturnType<typeof useWorkspaceComments> & {
     username: string;
     selectedTeamId: string | null;
     mobileTab: number;
@@ -47,20 +43,12 @@ type WorkspaceTeam = {
   onlineStatus: ReturnType<typeof useOnlineUsers>["status"];
 };
 
-type WorkspaceComments = {
-  comments: CommentInfo[];
-  commentsLoading: boolean;
-  handleSendComment: (content: string) => Promise<void>;
-};
-
 export function useWorkspaceController({
   search,
   onChangeSearch,
   onNavigateToWorkbench,
 }: Props): WorkspaceController {
-  const client = useApiClient();
   const loginState = useReadySession();
-  const currentUserId = loginState.userInfo.id;
   const showToast = useToastStore((state) => state.showToast);
   const [comicListRefreshKey, setComicListRefreshKey] = useState(0);
   const [mobileTab, setMobileTab] = useState(0);
@@ -74,13 +62,7 @@ export function useWorkspaceController({
   });
   const selectedTeamId = useAppStore((state) => state.selectedTeamId);
   const team = useWorkspaceTeam(selectedTeamId, loginState.memberInfos);
-  const comments = useWorkspaceComments({
-    client,
-    selectedTeamId,
-    currentUserId,
-    userInfo: loginState.userInfo,
-    showToast,
-  });
+  const comments = useWorkspaceComments(team.team?.id ?? null);
   const retryComicDetail = detail.retryComicDetail;
   const handleDetailChanged = useCallback(() => {
     setComicListRefreshKey((key) => key + 1);
@@ -123,29 +105,6 @@ function useWorkspaceTeam(
   };
 }
 
-function useWorkspaceComments(input: {
-  client: ReturnType<typeof useApiClient>;
-  selectedTeamId: string | null;
-  currentUserId: string;
-  userInfo: ReturnType<typeof useReadySession>["userInfo"];
-  showToast: ReturnType<typeof useToastStore.getState>["showToast"];
-}): WorkspaceComments {
-  const [comments, setComments] = useState<CommentInfo[]>([]);
-  const [commentsLoading, setCommentsLoading] = useState(false);
-  const loadComments = useCommentLoader(
-    input.client,
-    input.showToast,
-    setComments,
-    setCommentsLoading,
-  );
-  useEffect(() => {
-    if (!input.selectedTeamId) return;
-    void loadComments(input.selectedTeamId);
-  }, [input.selectedTeamId, loadComments]);
-  const handleSendComment = useCommentSender({ ...input, setComments });
-  return { comments, commentsLoading, handleSendComment };
-}
-
 function useTouchStart(
   setMobileTab: React.Dispatch<React.SetStateAction<number>>,
 ): Pick<WorkspaceController, "handleTouchStart" | "handleTouchEnd"> {
@@ -169,63 +128,4 @@ function useTouchStart(
     [setMobileTab],
   );
   return { handleTouchStart, handleTouchEnd };
-}
-
-function useCommentLoader(
-  client: ReturnType<typeof useApiClient>,
-  showToast: ReturnType<typeof useToastStore.getState>["showToast"],
-  setComments: React.Dispatch<React.SetStateAction<CommentInfo[]>>,
-  setCommentsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-): (teamId: string) => Promise<void> {
-  return useCallback(
-    async (teamId: string) => {
-      setCommentsLoading(true);
-      const result = await listComments(client, {
-        teamId,
-        offset: 0,
-        limit: 15,
-        includes: ["user"],
-      });
-      setCommentsLoading(false);
-      if (!result.success) {
-        console.error("[Workspace] 加载留言失败:", result.error);
-        showLocalApiFailure(result, showToast, "加载留言失败");
-        return;
-      }
-      setComments([...result.data].reverse());
-    },
-    [client, setComments, setCommentsLoading, showToast],
-  );
-}
-
-function useCommentSender(input: {
-  client: ReturnType<typeof useApiClient>;
-  selectedTeamId: string | null;
-  currentUserId: string;
-  userInfo: ReturnType<typeof useReadySession>["userInfo"];
-  showToast: ReturnType<typeof useToastStore.getState>["showToast"];
-  setComments: React.Dispatch<React.SetStateAction<CommentInfo[]>>;
-}): (content: string) => Promise<void> {
-  const { client, selectedTeamId, currentUserId, userInfo, showToast, setComments } = input;
-  return useCallback(
-    async (content: string) => {
-      if (!selectedTeamId || !currentUserId) return;
-      const result = await createComment(client, { teamId: selectedTeamId, content });
-      if (!result.success) {
-        console.error("[Workspace] 发送留言失败:", result.error);
-        showLocalApiFailure(result, showToast, "发送留言失败");
-        return;
-      }
-      const newComment: CommentInfo = {
-        id: result.data,
-        teamId: selectedTeamId,
-        userId: currentUserId,
-        user: userInfo,
-        content,
-        createdAt: Date.now(),
-      };
-      setComments((previous) => [...previous, newComment]);
-    },
-    [client, selectedTeamId, currentUserId, userInfo, showToast, setComments],
-  );
 }

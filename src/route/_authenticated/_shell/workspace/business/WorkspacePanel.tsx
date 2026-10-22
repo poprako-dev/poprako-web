@@ -61,6 +61,7 @@ export function WorkspacePanel({
     loadComics,
     JSON.stringify([generation, comicListRefreshKey]),
   );
+  const teamScope = JSON.stringify([generation, userInfo.id, team?.id]);
   return (
     <div className={clsx("flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden")}>
       <div
@@ -114,6 +115,7 @@ export function WorkspacePanel({
               )}
             >
               <CommentChatBox
+                key={teamScope}
                 comments={comments}
                 loading={commentsLoading}
                 onSend={onSendComment}
@@ -165,6 +167,7 @@ export function WorkspacePanel({
                 className={clsx("h-full", "rounded-md border border-border/50", "overflow-hidden")}
               >
                 <CommentChatBox
+                  key={teamScope}
                   comments={comments}
                   loading={commentsLoading}
                   onSend={onSendComment}
