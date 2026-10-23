@@ -2,7 +2,7 @@ import type { ApiClient } from "@/api/client";
 import type { UploadProgressCallbacks } from "@/route/_authenticated/business/page/page";
 import { getFileExtension } from "@/route/_authenticated/_shell/business/comic-detail/utils";
 import { hashPageFile } from "@/shared/utility/hash/image-hash";
-import { putPageUploadTask } from "@/route/_authenticated/_shell/business/comic-detail/upload/page-upload-store";
+import { patchPageUploadTasks, putPageUploadTasks } from "./page-upload-store";
 import {
   assertSessionGeneration,
   currentSessionGeneration,
@@ -38,29 +38,40 @@ function validateFile(file: File): string {
   return extension;
 }
 
-async function prepareFile(
+function registerFiles(
   batchId: string,
   chapterId: string,
-  file: File,
-  fileIndex: number,
+  files: File[],
+  sessionGeneration: number,
+): Pick<PreparedFile, "taskId" | "file" | "fileIndex">[] {
+  const inputs = files.map((file, fileIndex) => ({
+    taskId: nextId("page-upload"),
+    file,
+    fileIndex,
+  }));
+  if (sessionGeneration === currentSessionGeneration()) {
+    putPageUploadTasks(
+      inputs.map(({ taskId, file }) => ({
+        taskId,
+        batchId,
+        chapterId,
+        pageId: null,
+        index: null,
+        fileName: file.name,
+        progress: 0,
+        attempt: 0,
+        status: "preparing" as const,
+        error: null,
+      })),
+    );
+  }
+  return inputs;
+}
+
+async function prepareFile(
+  { taskId, file, fileIndex }: Pick<PreparedFile, "taskId" | "file" | "fileIndex">,
   sessionGeneration: number,
 ): Promise<PreparedFile> {
-  const taskId = nextId("page-upload");
-  if (sessionGeneration === currentSessionGeneration()) {
-    putPageUploadTask({
-      taskId,
-      batchId,
-      chapterId,
-      pageId: null,
-      index: null,
-      fileName: file.name,
-      progress: 0,
-      attempt: 0,
-      status: "preparing",
-      error: null,
-    });
-  }
-
   try {
     const extension = validateFile(file);
     const { imageHash } = await hashPageFile(file);
@@ -92,8 +103,9 @@ export async function startChapterPageUpload(
 ): Promise<StartPageUploadResult> {
   const sessionGeneration = currentSessionGeneration();
   const batchId = nextId("page-upload-batch");
+  const inputs = registerFiles(batchId, chapterId, files, sessionGeneration);
   const preparedFiles = await Promise.all(
-    files.map((file, index) => prepareFile(batchId, chapterId, file, index, sessionGeneration)),
+    inputs.map((input) => prepareFile(input, sessionGeneration)),
   );
   try {
     return await serializeChapterAlloc(chapterId, () =>
@@ -119,9 +131,13 @@ function markPreparedFilesFailed(
   error: unknown,
 ): void {
   const message = error instanceof Error ? error.message : String(error);
-  for (const prepared of preparedFiles) {
-    patchTask(prepared.taskId, sessionGeneration, { status: "failed", error: message });
-  }
+  if (sessionGeneration !== currentSessionGeneration()) return;
+  patchPageUploadTasks(
+    preparedFiles.map(({ taskId }) => ({
+      taskId,
+      patch: { status: "failed", error: message },
+    })),
+  );
 }
 
 export async function startPageReupload(
@@ -132,7 +148,9 @@ export async function startPageReupload(
 ): Promise<StartPageUploadResult> {
   const sessionGeneration = currentSessionGeneration();
   const batchId = nextId("page-reupload-batch");
-  const prepared = await prepareFile(batchId, chapterId, file, 0, sessionGeneration);
+  const input = registerFiles(batchId, chapterId, [file], sessionGeneration)[0];
+  if (!input) throw new Error("请选择上传文件");
+  const prepared = await prepareFile(input, sessionGeneration);
   assertSessionGeneration(sessionGeneration);
 
   patchTask(prepared.taskId, sessionGeneration, {

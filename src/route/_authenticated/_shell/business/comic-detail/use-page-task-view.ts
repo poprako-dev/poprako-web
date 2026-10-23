@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import type { PageInfo } from "@/route/_authenticated/business/page/page";
 
 import {
+  EMPTY_PAGE_UPLOAD_TASKS,
   type PageUploadTaskStatus,
   type PageUploadTaskView,
   usePageUploadTaskStore,
@@ -16,11 +17,10 @@ function isActiveTask(status: PageUploadTaskStatus): boolean {
 
 function latestTasksByPage(
   tasks: Record<string, PageUploadTaskView>,
-  chapterId: string | null,
 ): Map<string, PageUploadTaskView> {
   const latest = new Map<string, PageUploadTaskView>();
   for (const task of Object.values(tasks)) {
-    if (task.chapterId !== chapterId || !task.pageId) continue;
+    if (!task.pageId) continue;
     latest.set(task.pageId, task);
   }
   return latest;
@@ -82,11 +82,12 @@ function summarizeTasks(
 }
 
 export function usePageTaskView(chapterId: string | null): PageTaskView {
-  const uploadTasks = usePageUploadTaskStore((state) => state.tasks);
-  const taskByPageId = useMemo(
-    () => latestTasksByPage(uploadTasks, chapterId),
-    [chapterId, uploadTasks],
+  const uploadTasks = usePageUploadTaskStore((state) =>
+    chapterId
+      ? (state.tasksByChapter[chapterId] ?? EMPTY_PAGE_UPLOAD_TASKS)
+      : EMPTY_PAGE_UPLOAD_TASKS,
   );
+  const taskByPageId = useMemo(() => latestTasksByPage(uploadTasks), [uploadTasks]);
 
   const summary = useMemo(() => summarizeTasks(taskByPageId), [taskByPageId]);
   return { taskByPageId, ...summary };

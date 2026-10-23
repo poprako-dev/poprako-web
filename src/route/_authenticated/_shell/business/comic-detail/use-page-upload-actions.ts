@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { showLocalCaughtError } from "@/route/business/request-error";
+import { getChapterPageUploadTasks } from "./upload/page-upload-store";
 
 import {
   startChapterPageUpload,
@@ -57,12 +58,11 @@ export function useReuploadPage(
   client: Client,
   args: Args,
   capture: Results["capture"],
-  reuploadingPageIds: PageState["reuploadingPageIds"],
 ): PageState["handleReuploadPage"] {
   const { chapterId, showToast } = args;
   const handleReuploadPage = useCallback(
     async (pageId: string, file: File) => {
-      if (!chapterId || reuploadingPageIds[pageId] === true) return;
+      if (!chapterId || isPageUploading(chapterId, pageId)) return;
 
       const isCurrent = capture();
       try {
@@ -82,8 +82,18 @@ export function useReuploadPage(
         showLocalCaughtError(error, showToast, "重上传失败", true);
       }
     },
-    [chapterId, client, capture, reuploadingPageIds, showToast],
+    [chapterId, client, capture, showToast],
   );
 
   return handleReuploadPage;
+}
+
+function isPageUploading(chapterId: string, pageId: string): boolean {
+  const latest = Object.values(getChapterPageUploadTasks(chapterId))
+    .filter((task) => task.pageId === pageId)
+    .at(-1);
+  return (
+    latest !== undefined &&
+    ["preparing", "queued", "uploading", "confirming"].includes(latest.status)
+  );
 }
