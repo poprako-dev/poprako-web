@@ -10,6 +10,7 @@ import { toApiRequestError } from "@/route/business/request-error";
 import { mergeArtworkManifest } from "./artwork-manifest";
 import { createArtworkStaging } from "./artwork-staging";
 import { writeArtwork } from "./artwork-write";
+import { ArtworkBatchState } from "./artwork-batch-state";
 import { ArtworkBatchArchive } from "./artwork-batch-archive";
 import type {
   ArtworkBatch,
@@ -35,42 +36,13 @@ function unwrap<T>(result: Result<T>): T {
   return result.data;
 }
 
-function initialSnapshot(pages: ArtworkPageTask[], includeArchive: boolean): ArtworkBatchSnapshot {
-  const archiveTask: ArtworkTask[] = includeArchive
-    ? [
-        {
-          id: "archive",
-          name: "PSD 嵌稿压缩包",
-          kind: "archive",
-          phase: "queued",
-          progress: null,
-          error: null,
-          reused: false,
-        },
-      ]
-    : [];
-  const pageTasks = pages.map(
-    (page): ArtworkTask => ({
-      id: page.id,
-      name: page.input.name,
-      kind: "page",
-      phase: "queued",
-      progress: null,
-      error: null,
-      reused: false,
-    }),
-  );
-  return { running: false, error: null, tasks: [...archiveTask, ...pageTasks] };
-}
-
 export class ArtworkBatchRuntime implements ArtworkBatch {
   private readonly args: BatchArgs;
   private readonly generation = useAppStore.getState().generation;
-  private readonly listeners = new Set<() => void>();
   private readonly pages: ArtworkPageTask[];
   private readonly staging;
   private readonly archive: ArtworkBatchArchive;
-  private snapshot: ArtworkBatchSnapshot;
+  private readonly state: ArtworkBatchState;
   private abort = new AbortController();
   private disposed = false;
   private active: Promise<void> | null = null;
@@ -84,7 +56,7 @@ export class ArtworkBatchRuntime implements ArtworkBatch {
       putDone: false,
       done: false,
     }));
-    this.snapshot = initialSnapshot(this.pages, args.includeArchive);
+    this.state = new ArtworkBatchState(this.pages, args.includeArchive);
     this.staging = createArtworkStaging(this.pages, (id, change) => {
       this.patch(id, change);
     });
@@ -113,14 +85,11 @@ export class ArtworkBatchRuntime implements ArtworkBatch {
   }
 
   private publish(change: Partial<ArtworkBatchSnapshot>): void {
-    this.snapshot = { ...this.snapshot, ...change };
-    for (const listener of this.listeners) listener();
+    this.state.publish(change);
   }
 
   private patch(id: string, change: Partial<ArtworkTask>): void {
-    this.publish({
-      tasks: this.snapshot.tasks.map((task) => (task.id === id ? { ...task, ...change } : task)),
-    });
+    this.state.patch(id, change);
   }
 
   private async write<T>(request: () => Promise<Result<T>>): Promise<T> {
@@ -194,7 +163,10 @@ export class ArtworkBatchRuntime implements ArtworkBatch {
   private async allocatePages(): Promise<void> {
     const pending = this.pages.filter((page) => !page.allocation);
     if (pending.length === 0) return;
-    for (const page of pending) this.patch(page.id, { phase: "allocating", error: null });
+    this.state.patchMany(
+      pending.map((page) => page.id),
+      { phase: "allocating", error: null },
+    );
     if (this.args.targetId) {
       const firstPending = pending[0];
       if (firstPending) await this.allocateTargetPage(firstPending);
@@ -207,12 +179,7 @@ export class ArtworkBatchRuntime implements ArtworkBatch {
     const prepared = page.prepared;
     const allocation = page.allocation;
     if (!prepared || !allocation) throw new Error("成稿尚未分配");
-    if (
-      page.putDone ||
-      !["failed", "cancelled"].includes(
-        this.snapshot.tasks.find((task) => task.id === page.id)?.phase ?? "",
-      )
-    )
+    if (page.putDone || !["failed", "cancelled"].includes(this.state.getTask(page.id)?.phase ?? ""))
       return;
     page.allocation = await this.write(() =>
       allocateArtworkImage(
@@ -326,9 +293,11 @@ export class ArtworkBatchRuntime implements ArtworkBatch {
   private finish(): void {
     if (this.abort.signal.aborted)
       this.publish({
-        tasks: this.snapshot.tasks.map((task) =>
-          task.phase === "done" ? task : { ...task, phase: "cancelled", progress: null },
-        ),
+        tasks: this.state
+          .getSnapshot()
+          .tasks.map((task) =>
+            task.phase === "done" ? task : { ...task, phase: "cancelled", progress: null },
+          ),
       });
     this.publish({ running: false });
     chapterLocks.delete(this.args.chapterId);
@@ -359,12 +328,11 @@ export class ArtworkBatchRuntime implements ArtworkBatch {
   }
 
   getSnapshot(): ArtworkBatchSnapshot {
-    return this.snapshot;
+    return this.state.getSnapshot();
   }
 
   subscribe(listener: () => void): () => void {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+    return this.state.subscribe(listener);
   }
 
   run(): Promise<void> {
