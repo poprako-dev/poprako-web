@@ -154,7 +154,7 @@ export function AppSidebar({ onNavIntent }: Props): ReactElement {
             onAvatarUploadingChange={setIsAvatarUploading}
           />
         ) : (
-          <p className="px-3 py-2 text-xs text-navigation-muted">尚未加入团队</p>
+          <p className="px-3 py-2 text-xs text-navigation-muted">尚未加入汉化组</p>
         )
       }
       nav={

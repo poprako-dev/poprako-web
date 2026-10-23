@@ -64,7 +64,7 @@ export function Utilities({ terminology }: Props): JSX.Element {
             />
           ) : (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-              暂无可用团队
+              暂无可用汉化组
             </div>
           )}
         </div>

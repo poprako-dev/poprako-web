@@ -1,6 +1,7 @@
 import type { TermInfo } from "./term";
 import type { TermbaseInfo } from "./termbase";
 import type { Result } from "@/shared/utility/result";
+import type { AppendTermbaseResult } from "./termbase-append-request";
 import type { ImportTermbaseResult } from "./termbase-input";
 
 export type ListTermbasesArgs = {
@@ -33,6 +34,7 @@ export type CreateTermArgs = {
 export type UpdateTermArgs = Omit<CreateTermArgs, "termbaseId">;
 
 export interface TerminologyDataSource {
+  appendTermbase: (id: string, content: string) => Promise<Result<AppendTermbaseResult>>;
   importTermbase: (content: string) => Promise<Result<ImportTermbaseResult>>;
   exportTermbase: (id: string, signal?: AbortSignal) => Promise<Result<string>>;
   listTermbases: (args: ListTermbasesArgs) => Promise<Result<TermbaseInfo[]>>;

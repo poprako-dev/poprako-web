@@ -156,6 +156,8 @@ export function createTeamTerminologyFixture(): TeamTerminologyDataSource {
     ...readers(store),
     ...baseWriters(store),
     ...termWriters(store),
+    appendTermbase: () =>
+      Promise.resolve({ success: true, data: { added: 0, updated: 0, unchanged: 0 } }),
     importTermbase: importer(store),
   };
 }

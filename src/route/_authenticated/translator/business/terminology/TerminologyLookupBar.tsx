@@ -1,5 +1,6 @@
+import { useTermbaseAppend } from "@/route/_authenticated/business/terminology/use-termbase-append";
 import { useId } from "react";
-import { Search } from "lucide-react";
+import { TerminologyLookupControls } from "./TerminologyLookupControls";
 import clsx from "clsx";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { showLocalApiFailure } from "@/route/business/request-error";
@@ -22,20 +23,6 @@ type Props = {
 };
 type Toast = ReturnType<typeof useToastStore.getState>["showToast"];
 
-function firstGrapheme(value: string): string {
-  const normalized = value.trim();
-  if (!normalized) return "术";
-
-  if ("Segmenter" in Intl) {
-    const segmenter = new Intl.Segmenter(undefined, {
-      granularity: "grapheme",
-    });
-    return segmenter.segment(normalized)[Symbol.iterator]().next().value?.segment ?? "术";
-  }
-
-  return Array.from(normalized)[0] ?? "术";
-}
-
 function handleLoadError(failure: ResultFailure, showToast: Toast): void {
   console.error("[TerminologyLookup] 加载术语数据失败", { error: failure.error });
   showLocalApiFailure(failure, showToast);
@@ -47,22 +34,17 @@ function selectTermbase(termbase: TermbaseInfo, state: TerminologyLookupState): 
   state.setPanel("closed");
 }
 
-function toggleTermbasePanel(state: TerminologyLookupState): void {
-  if (state.panel === "termbases") {
-    state.setPanel("closed");
-    return;
-  }
-  state.setRenderedPanel("termbases");
-  state.setPanel("termbases");
-}
-
-function openTermPanel(state: TerminologyLookupState): void {
-  state.setRenderedPanel("terms");
-  state.setPanel("terms");
-}
-
 export function TerminologyLookupBar({ dataSource, termbaseExport }: Props): React.ReactElement {
   const state = useTerminologyLookupState();
+  const appends = useTermbaseAppend(dataSource, (id, result) => {
+    state.setTermbaseRevision((revision) => revision + 1);
+    state.setTermRevision((revision) => revision + 1);
+    state.setSelectedTermbase((current) =>
+      current?.id === id && result
+        ? { ...current, termCount: current.termCount + result.added }
+        : current,
+    );
+  });
   const {
     panel,
     renderedPanel,
@@ -70,7 +52,6 @@ export function TerminologyLookupBar({ dataSource, termbaseExport }: Props): Rea
     termbaseQuery,
     setTermbaseQuery,
     sourceQuery,
-    setSourceQuery,
     termbaseRevision,
     termRevision,
     editor,
@@ -121,6 +102,7 @@ export function TerminologyLookupBar({ dataSource, termbaseExport }: Props): Rea
                 canCreate
                 canEdit={(termbase) => Boolean(termbase.comicId)}
                 termbaseExport={termbaseExport}
+                termbaseAppend={appends}
                 dataSource={dataSource}
                 query={termbaseQuery}
                 searchQuery={debouncedTermbaseQuery}
@@ -161,69 +143,7 @@ export function TerminologyLookupBar({ dataSource, termbaseExport }: Props): Rea
           </div>
         )}
 
-        <div
-          className={clsx(
-            "flex h-8 overflow-hidden rounded-lg",
-            "border border-(--brand-leaf-border)",
-            "bg-surface-white/95 shadow-(--shadow-sm) backdrop-blur-md",
-          )}
-        >
-          <button
-            type="button"
-            title={selectedTermbase?.name ?? "选择术语库"}
-            aria-label={
-              selectedTermbase ? `切换术语库，当前为 ${selectedTermbase.name}` : "选择术语库"
-            }
-            aria-haspopup="dialog"
-            aria-expanded={panel === "termbases"}
-            aria-controls={panel === "termbases" ? popoverId : undefined}
-            onClick={() => {
-              toggleTermbasePanel(state);
-            }}
-            className={clsx(
-              "flex size-8 shrink-0 items-center justify-center border-r",
-              "border-line-stone-200 text-xs font-semibold text-ink-stone-600",
-              "transition-colors hover:bg-surface-stone-100 focus-visible:outline-2",
-              "focus-visible:outline-offset-[-2px] focus-visible:outline-primary-border",
-              selectedTermbase ? "bg-surface-green-50" : "bg-surface-white/80",
-            )}
-          >
-            {selectedTermbase ? firstGrapheme(selectedTermbase.name) : "术"}
-          </button>
-
-          <label className="relative min-w-0 flex-1">
-            <Search
-              size={13}
-              strokeWidth={1.8}
-              className={clsx(
-                "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2",
-                "text-icon-muted-warm",
-              )}
-            />
-            <span className="sr-only">搜索术语原文</span>
-            <input
-              role="combobox"
-              value={sourceQuery}
-              disabled={!selectedTermbase}
-              aria-haspopup="dialog"
-              aria-expanded={panel === "terms"}
-              aria-controls={panel === "terms" ? popoverId : undefined}
-              onFocus={() => {
-                openTermPanel(state);
-              }}
-              onChange={(event) => {
-                setSourceQuery(event.target.value);
-              }}
-              placeholder={selectedTermbase ? "搜索原文…" : "先选择术语库"}
-              className={clsx(
-                "h-full w-full bg-surface-stone-50/45 pl-7.5 pr-2.5 text-xs text-ink-stone-700",
-                "outline-none placeholder:text-text-muted-warm focus:bg-surface-white",
-                "disabled:cursor-not-allowed disabled:bg-surface-stone-50/70",
-                "disabled:text-ink-stone-400 disabled:placeholder:text-ink-stone-400",
-              )}
-            />
-          </label>
-        </div>
+        <TerminologyLookupControls state={state} popoverId={popoverId} />
       </div>
       <TerminologyLookupEditors editor={editor} setEditor={setEditor} mutations={mutations} />
     </>
