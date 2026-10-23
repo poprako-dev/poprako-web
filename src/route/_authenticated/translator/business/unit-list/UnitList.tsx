@@ -5,7 +5,7 @@ import type { RefObject } from "react";
 import clsx from "clsx";
 import { ListCheck } from "lucide-react";
 import { Tooltip } from "radix-ui";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import type { TranslatorMode } from "@/route/_authenticated/translator/business/unit/translator-mode";
 import {
@@ -91,6 +91,28 @@ function useFocusedUnitScroll(
   }, [focusedUnitId, listRef]);
 }
 
+function useProofreadAll(
+  units: UnitInfo[],
+  readOnly: boolean,
+  editing: UnitListProps["editing"],
+): {
+  isAllUnitsProofread: boolean;
+  proofreadAll: () => void;
+} {
+  const showToast = useToastStore((state) => state.showToast);
+  const isAllUnitsProofread = units.length > 0 && units.every(unitIsProofread);
+  const proofreadAll = (): void => {
+    proofreadAllUnits({
+      units,
+      readOnly,
+      onProofreadAllUnits: editing?.proofreadAllUnits,
+      isAllUnitsProofread,
+      showToast,
+    });
+  };
+  return { isAllUnitsProofread, proofreadAll };
+}
+
 export function UnitList({
   ItemComponent,
   annotations,
@@ -108,6 +130,7 @@ export function UnitList({
   onSpecialCharUse,
   onSpecialCharInserted,
 }: UnitListProps & { ItemComponent: UnitItemComponent }): JSX.Element {
+  const pendingIds = useMemo(() => new Set(pendingUnitIds), [pendingUnitIds]);
   const onModifyUnit = editing?.modifyUnit;
   const onReorderUnit = editing?.reorderUnit;
   const readOnly = enableReadOnly || editing === null || mode === "readOnly";
@@ -126,19 +149,7 @@ export function UnitList({
     onReorderUnit,
   });
   const getContributor = useUnitContributors({ units, onResolveUser });
-
-  const showToast = useToastStore((state) => state.showToast);
-  const isAllUnitsProofread = units.length > 0 && units.every(unitIsProofread);
-
-  const proofreadAll = (): void => {
-    proofreadAllUnits({
-      units,
-      readOnly,
-      onProofreadAllUnits: editing?.proofreadAllUnits,
-      isAllUnitsProofread,
-      showToast,
-    });
-  };
+  const { isAllUnitsProofread, proofreadAll } = useProofreadAll(units, readOnly, editing);
 
   return (
     <Tooltip.Provider>
@@ -154,7 +165,7 @@ export function UnitList({
               annotations={annotations}
               isAnnotationEditingEnabled={isAnnotationEditingEnabled}
               unit={unit}
-              hasLocalDraft={pendingUnitIds?.includes(unitId(unit)) ?? false}
+              hasLocalDraft={pendingIds.has(unitId(unit))}
               isFocused={focusedUnitId === unitId(unit)}
               onFocusUnit={onFocusUnit}
               activateIndex={activateIndex}

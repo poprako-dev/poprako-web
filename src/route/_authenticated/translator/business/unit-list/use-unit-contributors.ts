@@ -17,7 +17,8 @@ export function useUnitContributors({
   onResolveUser,
 }: Args): (userId: string | null) => UserInfo | undefined {
   const cacheRef = useRef(new UnitContributorCache());
-  const contributorIds = useMemo(() => unitContributorIds(units), [units]);
+  const contributorKey = JSON.stringify(unitContributorIds(units).sort());
+  const contributorIds = useMemo(() => JSON.parse(contributorKey) as string[], [contributorKey]);
   const [resolvedUsers, setResolvedUsers] = useState<Map<string, UserInfo>>(() => new Map());
 
   useEffect(() => {
