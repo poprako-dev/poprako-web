@@ -7,7 +7,8 @@ case "$installation" in
     /*) ;;
     *) echo "Installation directory must be absolute" >&2; exit 1 ;;
 esac
-node_version=$(cat "$project_root/.node-version")
+. "$project_root/script/node-version.sh"
+assert_node_range "$(cat "$project_root/.node-version")"
 pnpm_version=$(sed -n 's/.*"packageManager": "pnpm@\([^"]*\)".*/\1/p' "$project_root/package.json")
 case "$(uname -s)" in
     Linux) platform=linux ;;
@@ -19,14 +20,18 @@ case "$(uname -m)" in
     arm64 | aarch64) architecture=arm64 ;;
     *) echo "Unsupported architecture" >&2; exit 1 ;;
 esac
+staging=$(mktemp -d)
+trap 'rm -rf "$staging"' EXIT HUP INT TERM
+curl --fail --location --silent --show-error \
+    https://nodejs.org/dist/index.tab -o "$staging/index.tab"
+node_version=$(latest_node_version "$staging/index.tab")
+assert_safe_node_version "$node_version"
 node_root="$installation/node-$node_version"
 pnpm_root="$installation/pnpm-$pnpm_version"
 [ ! -e "$node_root" ] && [ ! -e "$pnpm_root" ] || {
     echo "Use a fresh installation directory; existing tools are never overwritten" >&2
     exit 1
 }
-staging=$(mktemp -d)
-trap 'rm -rf "$staging"' EXIT HUP INT TERM
 archive="node-v$node_version-$platform-$architecture.tar.gz"
 base="https://nodejs.org/dist/v$node_version"
 curl --fail --location --silent --show-error "$base/$archive" -o "$staging/$archive"
