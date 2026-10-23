@@ -18,6 +18,8 @@ export type DraftStore = StoreApi<DraftState> & {
   ready: Promise<void>;
   readRecovery: () => Promise<DraftMap>;
   update: (pageId: string, record: DraftRecord | undefined) => void;
+  /** Retain a controller-owned immutable value; callers must replace every changed branch. */
+  retain: (pageId: string, record: DraftRecord | undefined) => void;
   write: (pageId: string, record: DraftRecord) => Promise<DraftRecord>;
   acknowledge: (pageId: string, saveId: string, identities: [string, string][]) => Promise<void>;
 };
@@ -29,13 +31,17 @@ export function createDraftStore(
 ): DraftStore {
   const scope = JSON.stringify([userId, chapterId]);
   const store = createStore<DraftState>(() => ({ drafts: {}, errors: {}, recoveryErrors: {} }));
-  function update(pageId: string, record: DraftRecord | undefined): void {
+  function retain(pageId: string, record: DraftRecord | undefined): void {
     store.setState((s) => ({
       drafts: Object.fromEntries([
         ...Object.entries(s.drafts).filter(([id]) => id !== pageId),
-        ...(record ? [[pageId, structuredClone(record)] as const] : []),
+        ...(record ? [[pageId, record] as const] : []),
       ]),
     }));
+  }
+  function update(pageId: string, record: DraftRecord | undefined): void {
+    // External callers retain ownership; controller publications use retain instead.
+    retain(pageId, record ? structuredClone(record) : undefined);
   }
   async function readRecovery(): Promise<DraftMap> {
     return await readDraftRecovery(database, scope, store);
@@ -54,7 +60,7 @@ export function createDraftStore(
   ): Promise<void> {
     await acknowledgeDraft(database, userId, chapterId, pageId, saveId, identities);
   }
-  return { ...store, ready, readRecovery, update, write, acknowledge };
+  return { ...store, ready, readRecovery, update, retain, write, acknowledge };
 }
 
 async function readDraftRecovery(
@@ -170,7 +176,7 @@ async function acknowledgeDraft(
   identities: [string, string][],
 ): Promise<void> {
   const key = JSON.stringify([userId, chapterId, pageId]);
-  await database.transact((rows) => acknowledgeDraftRows(rows, key, saveId, identities));
+  await database.transact((rows) => acknowledgeDraftRows(rows, key, saveId, identities), key);
 }
 
 function acknowledgeDraftRows(

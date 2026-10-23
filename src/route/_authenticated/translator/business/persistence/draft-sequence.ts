@@ -25,10 +25,14 @@ function registerCreatedUnits(
   diff: UnitDiff,
   resolve: (id: string) => string,
 ): void {
+  const existing = new Set(units.map((unit) => unit.id));
   for (const op of diff.ops) {
-    if (op.edit !== "create" || units.some((unit) => unit.id === resolve(op.localId))) continue;
+    if (op.edit !== "create") continue;
+    const id = resolve(op.localId);
+    if (existing.has(id)) continue;
+    existing.add(id);
     units.push({
-      id: resolve(op.localId),
+      id,
       index: units.length,
       ...op.coord,
       isBubble: op.isBubble,
@@ -128,7 +132,8 @@ function placeOperationUnit(
       : op.edit === "patch" && op.nextId.type === "assign"
         ? op.nextId.value
         : undefined;
-  const anchor = next === undefined ? -1 : result.findIndex((item) => item.id === resolve(next));
+  const nextId = next === undefined ? undefined : resolve(next);
+  const anchor = nextId === undefined ? -1 : result.findIndex((item) => item.id === nextId);
   if (!skip && next !== undefined && anchor < 0) throw new Error("草稿排序锚点不存在");
   result.splice(skip && oldIndex >= 0 ? oldIndex : anchor < 0 ? result.length : anchor, 0, unit);
   return result;

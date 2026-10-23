@@ -2,13 +2,20 @@ import type { UnitInfo } from "../unit/unit";
 import type { UnitDiff } from "../contract/type";
 import { migrateDraftUnitNotes } from "./draft-note-migration";
 
-export type SaveBatch = { saveId: string; diff: UnitDiff; target: UnitInfo[]; wire?: UnitDiff };
+/** Published batches are values: replace the batch to attach a wire request. */
+export type SaveBatch = Readonly<{
+  saveId: string;
+  diff: UnitDiff;
+  target: UnitInfo[];
+  wire?: UnitDiff;
+}>;
+/** Controller-owned value: all changes replace branches before publication or retention. */
 export type DraftRecord = {
   version: 1;
   revision: number;
   units: UnitInfo[];
   baseline: UnitInfo[];
-  pending: SaveBatch[];
+  pending: readonly SaveBatch[];
   identities: [string, string][];
 };
 export type DraftMap = Record<string, DraftRecord>;
