@@ -9,6 +9,18 @@ function currentScale(surface: HTMLElement): number {
   return new DOMMatrixReadOnly(getComputedStyle(surface).transform).a;
 }
 
+function waitForImageLayout(canvasElement: HTMLElement): Promise<HTMLImageElement> {
+  return waitFor(async () => {
+    const image = canvasElement.querySelector("img");
+    if (!image) throw new Error("Reviewer canvas image did not load");
+    await expect(image.naturalWidth).toBeGreaterThan(0);
+    const bounds = image.getBoundingClientRect();
+    await expect(bounds.width).toBeGreaterThan(0);
+    await expect(bounds.height).toBeGreaterThan(0);
+    return image;
+  });
+}
+
 async function expectFixedBorders(
   image: HTMLImageElement,
   markers: HTMLElement[],
@@ -112,12 +124,9 @@ export const ZoomInvariantBorders: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const region = await canvas.findByRole("button", { name: "定位 issue 1" });
-    await waitFor(() =>
-      expect(canvasElement.querySelector("img")?.naturalWidth).toBeGreaterThan(0),
-    );
-    const image = canvasElement.querySelector("img");
+    const image = await waitForImageLayout(canvasElement);
     const surface = region.parentElement;
-    if (!image || !surface) {
+    if (!surface) {
       throw new Error("Reviewer canvas did not load");
     }
 
@@ -147,6 +156,31 @@ export const ZoomInvariantBorders: Story = {
     await expectFixedBorders(loadedImage, markers, regions);
   },
 };
+
+export const DelayedViewportBorders: Story = {
+  ...ZoomInvariantBorders,
+  name: "延迟布局 · 框线固定 2px",
+  beforeEach: () => {
+    const NativeObserver = globalThis.ResizeObserver;
+    const pending = new Set<ReturnType<typeof setTimeout>>();
+    globalThis.ResizeObserver = class extends NativeObserver {
+      constructor(callback: ResizeObserverCallback) {
+        super((entries, observer) => {
+          const timer = setTimeout(() => {
+            pending.delete(timer);
+            callback(entries, observer);
+          }, 500);
+          pending.add(timer);
+        });
+      }
+    };
+    return () => {
+      globalThis.ResizeObserver = NativeObserver;
+      for (const timer of pending) clearTimeout(timer);
+    };
+  },
+};
+
 export const Unavailable: Story = {
   name: "预览不可用",
   args: { ...createIssueStoryArgs(), loadReviewPage: null },
