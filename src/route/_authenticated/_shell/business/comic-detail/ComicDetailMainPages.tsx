@@ -3,7 +3,7 @@ import { ArtworkList } from "./artwork/ArtworkList";
 import type { usePageArtworks } from "@/route/_authenticated/business/artwork/use-page-artworks";
 import type { artworkPermissions } from "@/route/_authenticated/business/artwork/artwork";
 
-import type { ReactElement } from "react";
+import { useCallback, type ReactElement } from "react";
 
 import { PageList } from "@/route/_authenticated/_shell/business/comic-detail/page/PageList";
 import { Button } from "@/shared/component/Button";
@@ -37,6 +37,25 @@ export function ComicDetailMainPages({
   const canClickPage = assignments.canTranslateOrProofread || assignments.canReadOnly;
   const canUploadNewRawPages = assignments.canUploadRawPages && Boolean(chapters.selectedChapterId);
   const canReuploadRawPages = assignments.canUploadRawPages;
+  const onWorkbenchIntent = callbacks.onWorkbenchIntent;
+  const canTranslateOrProofread = assignments.canTranslateOrProofread;
+  const reuploadPage = pages.handleReuploadPage;
+  const handlePageIntent = useCallback(() => {
+    if (selectedChapterId) onWorkbenchIntent?.(mode);
+  }, [mode, onWorkbenchIntent, selectedChapterId]);
+  const handleClickPage = useCallback(
+    (pageId: string) => {
+      if (!selectedChapterId) return;
+      navigateToWorkbench(selectedChapterId, pageId, !canTranslateOrProofread || undefined, mode);
+    },
+    [canTranslateOrProofread, mode, navigateToWorkbench, selectedChapterId],
+  );
+  const handleReuploadPage = useCallback(
+    (pageId: string, file: File) => {
+      void reuploadPage(pageId, file);
+    },
+    [reuploadPage],
+  );
   return mode === "reviewer" ? (
     <div>
       {artworks.loading && artworks.pages.length === 0 && (
@@ -60,6 +79,9 @@ export function ComicDetailMainPages({
           onUpload={(files) => {
             if (selectedChapterId) setUploadFiles({ chapterId: selectedChapterId, files });
           }}
+          onOpenIntent={() => {
+            if (selectedChapterId) callbacks.onWorkbenchIntent?.("reviewer");
+          }}
           onOpen={(id) => {
             if (selectedChapterId) navigateToWorkbench(selectedChapterId, id, true, "reviewer");
           }}
@@ -75,29 +97,12 @@ export function ComicDetailMainPages({
       mode={mode}
       pages={pages.pages}
       enableClick={canClickPage}
-      onClickPage={
-        canClickPage
-          ? (pageId) => {
-              if (!chapters.selectedChapterId) return;
-              callbacks.onNavigateToWorkbench(
-                chapters.selectedChapterId,
-                pageId,
-                !assignments.canTranslateOrProofread || undefined,
-                mode,
-              );
-            }
-          : undefined
-      }
+      onPageIntent={handlePageIntent}
+      onClickPage={canClickPage ? handleClickPage : undefined}
       onAddPages={canUploadNewRawPages ? pages.handleAddRawPages : undefined}
       canReuploadPage={canReuploadRawPages ? () => true : undefined}
       isPageReuploading={(pageId) => pages.reuploadingPageIds[pageId] === true}
-      onReuploadPage={
-        canReuploadRawPages
-          ? (pageId, file) => {
-              void pages.handleReuploadPage(pageId, file);
-            }
-          : undefined
-      }
+      onReuploadPage={canReuploadRawPages ? handleReuploadPage : undefined}
       reuploadAccept="image/*"
       accept="image/*"
       uploadProgressByPageId={pages.uploadProgressByPageId}

@@ -46,8 +46,9 @@ export type DetailContract = {
   pinnedChapter: ChapterInfo | null;
   pinnedChapterAssignments?: AssignmentInfo[] | undefined;
   initialChapterId?: string | null | undefined;
+  onLoadChapter: (chapterId: string) => Promise<Result<ChapterInfo>>;
   onLoadChapters: (args: ListChapterArgs) => Promise<Result<ChapterInfo[]>>;
-  onLoadAssignments: (chapterId: string) => Promise<Result<AssignmentInfo[]>>;
+  onLoadAssignments: (chapterId: string, signal?: AbortSignal) => Promise<Result<AssignmentInfo[]>>;
   onLoadPages: (chapterId: string) => Promise<Result<PageInfo[]>>;
   onLoadWorkflowRecords: (
     args: ListChapterWorkflowRecordsArgs,
@@ -71,6 +72,7 @@ export type DetailContract = {
     presetAssignmentRoles?: number | undefined;
   }) => Promise<Result<string>>;
   onDeleteChapter: (chapterId: string) => Promise<Result<void>>;
+  onWorkbenchIntent?: ((mode: ComicDetailMode) => void) | undefined;
   onNavigateToWorkbench: (
     chapterId: string,
     pageId: string,

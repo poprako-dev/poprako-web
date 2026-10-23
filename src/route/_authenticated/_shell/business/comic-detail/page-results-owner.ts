@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { PageInfo } from "@/route/_authenticated/business/page/page";
 import { useAppStore } from "@/route/business/session/session-store";
-import { getPageUploadTaskState, type PageUploadTaskView } from "./upload/page-upload-store";
+import { getChapterPageUploadTasks, type PageUploadTaskView } from "./upload/page-upload-store";
 
 export type PageResultsOwner = {
   active: boolean;
@@ -65,7 +65,7 @@ export function latestPageUploadTask(
   pageId: string,
   chapterId: string | null,
 ): PageUploadTaskView | undefined {
-  return Object.values(getPageUploadTaskState().tasks)
-    .filter((task) => task.chapterId === chapterId && task.pageId === pageId)
+  return Object.values(getChapterPageUploadTasks(chapterId))
+    .filter((task) => task.pageId === pageId)
     .at(-1);
 }

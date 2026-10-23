@@ -8,6 +8,7 @@ import {
   createChapter,
   deleteChapter,
   exportChapter,
+  getChapter,
   importChapter,
   joinChapter,
   listChapters,
@@ -26,6 +27,7 @@ import type { ApiClient } from "@/api/client";
 
 type Action = Required<DetailContract>;
 export type DetailActions = {
+  onLoadChapter: Action["onLoadChapter"];
   onLoadChapters: Action["onLoadChapters"];
   onLoadAssignments: Action["onLoadAssignments"];
   onLoadPages: Action["onLoadPages"];
@@ -45,13 +47,13 @@ export type DetailActions = {
 export function loadDetailAssignments(
   client: ApiClient,
   chapterId: string,
+  signal?: AbortSignal,
 ): Promise<Result<AssignmentInfo[]>> {
-  return listAssignmentsByChapter(client, {
-    chapterId,
-    offset: 0,
-    limit: 20,
-    includes: ["user"],
-  });
+  return listAssignmentsByChapter(
+    client,
+    { chapterId, offset: 0, limit: 20, includes: ["user"] },
+    signal,
+  );
 }
 
 export function transitionDetailWorkflow(
@@ -106,23 +108,36 @@ export async function removeDetailAssignment(
   return { success: true, data: undefined };
 }
 
-export function createDetailActions(client: ApiClient): DetailActions {
+export function createDetailActions(client: ApiClient, onMutated?: () => void): DetailActions {
   return {
+    onLoadChapter: (chapterId) => getChapter(client, chapterId),
     onLoadChapters: (...args) => listChapters(client, ...args),
     onLoadAssignments: (...args) => loadDetailAssignments(client, ...args),
     onLoadPages: (chapterId) => loadDetailPages(client, chapterId),
     onLoadWorkflowRecords: (...args) => listChapterWorkflowRecords(client, ...args),
     onResolveWorkflowRecordUser: (userId) => getUser(client, userId),
-    onTransiteWorkflow: (...args) => transitionDetailWorkflow(client, ...args),
-    onRemoveAssignment: (...args) => removeDetailAssignment(client, ...args),
-    onAddAssignment: (...args) => addDetailAssignment(client, ...args),
-    onCreateChapter: (...args) => createChapter(client, ...args),
-    onDeleteChapter: (...args) => deleteChapter(client, ...args),
-    onDeleteChapterPages: (chapterId) => deleteChapterPages(client, chapterId),
-    onJoinChapterRole: (...args) => joinDetailRole(client, ...args),
-    onImportChapter: (...args) => importChapter(client, ...args),
+    onTransiteWorkflow: (...args) =>
+      afterMutation(transitionDetailWorkflow(client, ...args), onMutated),
+    onRemoveAssignment: (...args) =>
+      afterMutation(removeDetailAssignment(client, ...args), onMutated),
+    onAddAssignment: (...args) => afterMutation(addDetailAssignment(client, ...args), onMutated),
+    onCreateChapter: (...args) => afterMutation(createChapter(client, ...args), onMutated),
+    onDeleteChapter: (...args) => afterMutation(deleteChapter(client, ...args), onMutated),
+    onDeleteChapterPages: (chapterId) =>
+      afterMutation(deleteChapterPages(client, chapterId), onMutated),
+    onJoinChapterRole: (...args) => afterMutation(joinDetailRole(client, ...args), onMutated),
+    onImportChapter: (...args) => afterMutation(importChapter(client, ...args), onMutated),
     onExportChapter: (...args) => exportChapter(client, ...args),
   };
+}
+
+async function afterMutation<T>(
+  operation: Promise<Result<T>>,
+  onMutated: (() => void) | undefined,
+): Promise<Result<T>> {
+  const result = await operation;
+  if (result.success) onMutated?.();
+  return result;
 }
 
 function loadDetailPages(

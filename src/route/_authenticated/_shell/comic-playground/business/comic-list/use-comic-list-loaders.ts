@@ -4,15 +4,32 @@ import type { Result } from "@/shared/utility/result";
 import type { ViewMode } from "@/route/_authenticated/_shell/business/comic-list/comic-card-type";
 import type { ComicTranslationListItem } from "@/route/_authenticated/_shell/business/comic-list/comic-list";
 
-type LoadComics = (offset: number, limit: number, mode: ViewMode) => Promise<Result<ComicInfo[]>>;
+type LoadComics = (
+  offset: number,
+  limit: number,
+  mode: ViewMode,
+  signal?: AbortSignal,
+) => Promise<Result<ComicInfo[]>>;
 
 export function useComicListLoaders(onLoadComics: LoadComics): {
-  loadComicCards: (offset: number, limit: number) => Promise<Result<ComicTranslationListItem[]>>;
-  loadComicProgress: (offset: number, limit: number) => Promise<Result<ComicInfo[]>>;
+  loadComicCards: (
+    offset: number,
+    limit: number,
+    signal?: AbortSignal,
+  ) => Promise<Result<ComicTranslationListItem[]>>;
+  loadComicProgress: (
+    offset: number,
+    limit: number,
+    signal?: AbortSignal,
+  ) => Promise<Result<ComicInfo[]>>;
 } {
   const loadComicCards = useCallback(
-    async (offset: number, limit: number): Promise<Result<ComicTranslationListItem[]>> => {
-      const result = await onLoadComics(offset, limit, "translator");
+    async (
+      offset: number,
+      limit: number,
+      signal?: AbortSignal,
+    ): Promise<Result<ComicTranslationListItem[]>> => {
+      const result = await onLoadComics(offset, limit, "translator", signal);
       if (!result.success) {
         return result;
       }
@@ -27,7 +44,8 @@ export function useComicListLoaders(onLoadComics: LoadComics): {
     [onLoadComics],
   );
   const loadComicProgress = useCallback(
-    async (offset: number, limit: number) => onLoadComics(offset, limit, "reviewer"),
+    async (offset: number, limit: number, signal?: AbortSignal) =>
+      onLoadComics(offset, limit, "reviewer", signal),
     [onLoadComics],
   );
   return { loadComicCards, loadComicProgress };

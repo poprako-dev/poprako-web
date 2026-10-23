@@ -1,21 +1,26 @@
-import type { JSX } from "react";
+import { type JSX, memo } from "react";
 import { RotateCcw, X } from "lucide-react";
 import { Button } from "@/shared/component/Button";
 import { formatSize } from "@/route/_authenticated/_shell/utilities/business/archive";
-import { imageLimit } from "@/route/_authenticated/_shell/utilities/business/bounded-images";
 import type { BoundedImage } from "@/route/_authenticated/_shell/utilities/business/bounded-images";
-import type { useBoundedCompression } from "@/route/_authenticated/_shell/utilities/business/use-bounded-compression";
+import type { BoundedItemActions } from "./bounded-compression-actions";
 import { ImageSizeInput } from "@/route/_authenticated/_shell/utilities/business/ImageSizeInput";
 
-export function BoundedImageItem({
-  item,
-  index,
-  tool,
-}: {
+type Props = BoundedItemActions & {
   item: BoundedImage;
-  index: number;
-  tool: ReturnType<typeof useBoundedCompression>;
-}): JSX.Element {
+  isCover: boolean;
+  value: string;
+  busy: boolean;
+};
+
+function BoundedImageItemView({
+  item,
+  isCover,
+  value,
+  busy,
+  changeLimit,
+  removeItem,
+}: Props): JSX.Element {
   return (
     <li className="flex flex-wrap items-center gap-3 py-3">
       <div className="min-w-0 flex-1 basis-32">
@@ -23,8 +28,8 @@ export function BoundedImageItem({
           {item.file.name}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          <span className={index === 0 ? "text-text-green" : undefined}>
-            {index === 0 ? "封面" : "正文"}
+          <span className={isCover ? "text-text-green" : undefined}>
+            {isCover ? "封面" : "正文"}
           </span>
           {" · "}
           {formatSize(item.file.size)}
@@ -34,14 +39,10 @@ export function BoundedImageItem({
       </div>
       <ImageSizeInput
         label={`${item.file.name} 压缩上限`}
-        value={imageLimit(item, index, tool.body, tool.cover)}
-        disabled={tool.busy}
+        value={value}
+        disabled={busy}
         onChange={(value) => {
-          tool.updateItems(
-            tool.items.map((entry) =>
-              entry.id === item.id ? { ...entry, limitKiB: value } : entry,
-            ),
-          );
+          changeLimit(item.id, value);
         }}
       />
       <Button
@@ -49,13 +50,9 @@ export function BoundedImageItem({
         variant="ghost"
         size="icon-sm"
         aria-label={`恢复 ${item.file.name} 默认上限`}
-        disabled={tool.busy || item.limitKiB === null}
+        disabled={busy || item.limitKiB === null}
         onClick={() => {
-          tool.updateItems(
-            tool.items.map((entry) =>
-              entry.id === item.id ? { ...entry, limitKiB: null } : entry,
-            ),
-          );
+          changeLimit(item.id, null);
         }}
       >
         <RotateCcw size={14} />
@@ -65,9 +62,9 @@ export function BoundedImageItem({
         variant="ghost"
         size="icon-sm"
         aria-label={`移除 ${item.file.name}`}
-        disabled={tool.busy}
+        disabled={busy}
         onClick={() => {
-          tool.updateItems(tool.items.filter((entry) => entry.id !== item.id));
+          removeItem(item.id);
         }}
       >
         <X size={16} />
@@ -75,3 +72,5 @@ export function BoundedImageItem({
     </li>
   );
 }
+
+export const BoundedImageItem = memo(BoundedImageItemView);

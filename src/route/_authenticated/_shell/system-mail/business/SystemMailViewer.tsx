@@ -1,4 +1,4 @@
-import { type JSX, useCallback, useEffect, useRef, useState } from "react";
+import { type JSX, useCallback, useEffect, useState } from "react";
 import { Check, Mail, RotateCw } from "lucide-react";
 import clsx from "clsx";
 import { useApiClient } from "@/route/business/api-context";
@@ -7,6 +7,8 @@ import type { SysMailInfo } from "@/api/system-mail";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { useMailStore } from "@/route/_authenticated/_shell/business/mail/mail-store";
+import { useMailRefresh } from "@/route/_authenticated/_shell/business/mail/use-mail-refresh";
+import { useMailPagination } from "./use-mail-pagination";
 
 const PAGE_SIZE = 15;
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
@@ -28,6 +30,7 @@ async function markMailRead(
 ): Promise<void> {
   const result = await markRead(client, mailId);
   if (!result.success) {
+    if (result.failureKind === "aborted") return;
     showLocalApiFailure(result, showToast);
     console.error("[SystemMailViewer] markSysMailRead:", result.error);
     return;
@@ -38,43 +41,24 @@ async function markMailRead(
 export function SystemMailViewer(): JSX.Element {
   const client = useApiClient();
   const mails = useMailStore((state) => state.mails);
-  const hasMore = useMailStore((state) => state.hasMore);
   const loadState = useMailStore((state) => state.loadState);
   const loadError = useMailStore((state) => state.loadError);
+  const isRefreshing = useMailStore((state) => state.isRefreshing);
   const isLoadingMore = useMailStore((state) => state.isLoadingMore);
   const loadMoreError = useMailStore((state) => state.loadMoreError);
   const loadInitial = useMailStore((state) => state.loadInitial);
-  const loadMore = useMailStore((state) => state.loadMore);
   const markRead = useMailStore((state) => state.markRead);
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const [cutoff] = useState(() => Date.now() - THREE_DAYS_MS);
   const showToast = useToastStore((s) => s.showToast);
+  useMailRefresh("mailbox", PAGE_SIZE);
+  const { sentinelRef, fetchMore } = useMailPagination(
+    loadState === "ready" && mails.length > 0 && !isRefreshing,
+    PAGE_SIZE,
+  );
 
   useEffect(() => {
-    if (loadState === "idle") {
-      void loadInitial(client, PAGE_SIZE);
-    }
-  }, [client, loadInitial, loadState]);
-
-  const fetchMore = useCallback(async () => {
-    const result = await loadMore(client, PAGE_SIZE);
-    if (!result.success) showLocalApiFailure(result, showToast);
-  }, [client, loadMore, showToast]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (hasMore && loadMoreError === null && entries[0]?.isIntersecting) void fetchMore();
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(sentinel);
-    return () => {
-      observer.disconnect();
-    };
-  }, [hasMore, loadMoreError, fetchMore]);
+    if (loadState === "ready" && loadError !== null) showToast(loadError, "error");
+  }, [loadError, loadState, showToast]);
 
   const handleMarkRead = useCallback(
     (mailId: string) => void markMailRead(mailId, client, markRead, showToast),

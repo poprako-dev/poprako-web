@@ -9,7 +9,11 @@ export async function getMyUser(client: ApiClient): Promise<Result<UserInfo>> {
   return result.success ? { success: true, data: toUserInfo(result.data) } : result;
 }
 
-export async function getUser(client: ApiClient, userId: string): Promise<Result<UserInfo>> {
-  const result = await getUserApi(client, userId);
+export async function getUser(
+  client: ApiClient,
+  userId: string,
+  signal?: AbortSignal,
+): Promise<Result<UserInfo>> {
+  const result = await getUserApi(client, userId, signal);
   return result.success ? { success: true, data: toUserInfo(result.data) } : result;
 }

@@ -1,10 +1,13 @@
 #!/usr/bin/env sh
 set -eu
 
+. ./script/node-version.sh
 expected_node=$(cat .node-version)
+assert_node_range "$expected_node"
+assert_safe_node_version "$(node --version)"
 expected_pnpm=$(node --input-type=module -e 'import p from "./package.json" with { type: "json" }; console.log(p.packageManager.split("@")[1])')
-[ "$(node --version)" = "v$expected_node" ] || {
-    echo "Node.js $expected_node is required." >&2
+[ "$(node --input-type=module -e 'import p from "./package.json" with { type: "json" }; console.log(p.engines.node)')" = "$expected_node" ] || {
+    echo "package.json engines.node must match .node-version ($expected_node)." >&2
     exit 1
 }
 [ "$(pnpm --version)" = "$expected_pnpm" ] || {

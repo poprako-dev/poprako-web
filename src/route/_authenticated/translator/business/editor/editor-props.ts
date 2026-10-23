@@ -22,6 +22,8 @@ export type EditorProps = {
   project: Project;
   // 懒加载的 units 获取器，BaseTranslator 只负责在需要时调用它来获取 units 列表
   onLoadUnits: (pageId: string) => Promise<UnitInfo[]>;
+  onReloadUnits?: ((pageId: string) => Promise<UnitInfo[]>) | undefined;
+  onPrefetchUnits?: ((pageId: string) => void) | undefined;
   // 具体是否是 upsert 由实现决定，BaseTranslator 只负责传递修改后的 units 列表
   // BaseTranslator 为了减少 IO，采用内置 buffer 来缓存当前页的 units 的修改
   // onUpsertUnits 的默认调用时机是：翻页时、退出 BaseTranslator 时，

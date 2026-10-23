@@ -3,7 +3,7 @@ import type { JSX } from "react/jsx-runtime";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import clsx from "clsx";
 import { useState } from "react";
-import { UnitList } from "@/route/_authenticated/translator/business/unit-list/UnitList";
+import { UnitList } from "./test/UnitListPreview";
 import {
   moveUnitToIndex,
   type UnitInfo,
@@ -231,6 +231,10 @@ function UnitListWrapper({
     setUnits((prev) => moveUnitToIndex(prev, unitId, targetIndex));
   };
 
+  const handleProofreadAllUnits = (isProofread: boolean): void => {
+    setUnits((current) => current.map((unit) => applyUnitUpdates(unit, { isProofread })));
+  };
+
   return (
     <div className={clsx("flex h-screen w-full flex-col bg-surface-gray-50 font-sans antialiased")}>
       <header
@@ -293,7 +297,13 @@ function UnitListWrapper({
           mode={mode}
           onFocusUnit={setFocusedUnitId}
           editing={
-            readOnly ? null : { modifyUnit: handleModifyUnit, reorderUnit: handleReorderUnit }
+            readOnly
+              ? null
+              : {
+                  modifyUnit: handleModifyUnit,
+                  reorderUnit: handleReorderUnit,
+                  proofreadAllUnits: handleProofreadAllUnits,
+                }
           }
           onResolveUser={resolveStoryUser}
           enableReadOnly={readOnly}

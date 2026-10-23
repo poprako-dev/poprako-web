@@ -39,8 +39,11 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
     if (!trimmed || sending) return;
     setSending(true);
     setInput("");
-    await onSend(trimmed);
-    setSending(false);
+    try {
+      await onSend(trimmed);
+    } finally {
+      setSending(false);
+    }
   }, [input, sending, onSend]);
 
   const handleKeyDown = useCallback(
@@ -67,7 +70,7 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
         aria-label="留言列表"
       >
         <div className={clsx("flex flex-col", "px-3 py-3 gap-3")}>
-          {loading && (
+          {loading && comments.length === 0 && (
             <div className="flex justify-center py-8">
               <span className="text-sm text-muted-foreground">加载中…</span>
             </div>
@@ -77,54 +80,53 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
               <span className="text-sm text-muted-foreground">还没有留言，来打第一发吧</span>
             </div>
           )}
-          {!loading &&
-            comments.map((c) => {
-              const name = c.user?.name ?? c.userId;
-              return (
-                <div key={c.id}>
-                  {/* avatar + name / time */}
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={clsx(
-                        "shrink-0 w-7 h-7 rounded-full",
-                        "flex items-center justify-center",
-                        "text-xs font-medium select-none",
-                        "bg-surface-stone-100 overflow-hidden",
-                      )}
-                    >
-                      {c.user?.avatarThumbnailUrl || c.user?.avatarUrl ? (
-                        <img
-                          src={c.user.avatarThumbnailUrl ?? c.user.avatarUrl}
-                          alt={c.user.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-[var(--brand-leaf)]">{avatarChar(c.user?.name)}</span>
-                      )}
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className={clsx("text-xs font-medium text-foreground leading-tight")}>
-                        {name}
-                      </span>
-                      <span className={clsx("text-[10px] text-muted-foreground leading-tight")}>
-                        {formatTime(c.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                  {/* content */}
-                  <p
+          {comments.map((c) => {
+            const name = c.user?.name ?? c.userId;
+            return (
+              <div key={c.id}>
+                {/* avatar + name / time */}
+                <div className="flex items-center gap-2">
+                  <div
                     className={clsx(
-                      "mt-1.5 text-sm leading-snug wrap-break-word",
-                      "whitespace-pre-wrap",
-                      "px-3 py-1.5 rounded-xl rounded-tl-sm",
-                      "bg-surface-stone-100/80 text-foreground",
+                      "shrink-0 w-7 h-7 rounded-full",
+                      "flex items-center justify-center",
+                      "text-xs font-medium select-none",
+                      "bg-surface-stone-100 overflow-hidden",
                     )}
                   >
-                    {c.content}
-                  </p>
+                    {c.user?.avatarThumbnailUrl || c.user?.avatarUrl ? (
+                      <img
+                        src={c.user.avatarThumbnailUrl ?? c.user.avatarUrl}
+                        alt={c.user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-[var(--brand-leaf)]">{avatarChar(c.user?.name)}</span>
+                    )}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className={clsx("text-xs font-medium text-foreground leading-tight")}>
+                      {name}
+                    </span>
+                    <span className={clsx("text-[10px] text-muted-foreground leading-tight")}>
+                      {formatTime(c.createdAt)}
+                    </span>
+                  </div>
                 </div>
-              );
-            })}
+                {/* content */}
+                <p
+                  className={clsx(
+                    "mt-1.5 text-sm leading-snug wrap-break-word",
+                    "whitespace-pre-wrap",
+                    "px-3 py-1.5 rounded-xl rounded-tl-sm",
+                    "bg-surface-stone-100/80 text-foreground",
+                  )}
+                >
+                  {c.content}
+                </p>
+              </div>
+            );
+          })}
           <div ref={bottomRef} />
         </div>
       </div>

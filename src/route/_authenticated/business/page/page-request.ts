@@ -75,8 +75,9 @@ export async function listPageUnitDiffStats(
 export async function listPages(
   client: ApiClient,
   args: ListPageArgs,
+  signal?: AbortSignal,
 ): Promise<Result<PageInfo[]>> {
-  const res = await getPages(client, args.chapterId, args.offset, args.limit);
+  const res = await getPages(client, args.chapterId, args.offset, args.limit, signal);
   if (!res.success) return res;
   return {
     success: true,

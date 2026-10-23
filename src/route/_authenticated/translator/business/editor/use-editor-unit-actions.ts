@@ -1,3 +1,4 @@
+import { useCommittedCallback } from "@/shared/hook/use-committed-callback";
 import { useEffect } from "react";
 import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
 import { applyUnitUpdates } from "@/route/_authenticated/translator/business/unit/unit-edit";
@@ -17,6 +18,7 @@ import type { EditorState } from "./use-editor-state";
 import type { EditorProps } from "./editor-props";
 type Options = Pick<
   EditorState,
+  | "canEditView"
   | "focusedUnitId"
   | "setFocusedUnitId"
   | "isLoadingPage"
@@ -43,6 +45,7 @@ export function useEditorUnitActions(options: Options): {
   handleSpecialCharInserted: (requestId: number, char: string) => void;
   handleToggleBubble: (targetUnitId: string) => void;
   handleModifyUnit: (targetUnitId: string, updates: UnitEdit) => void;
+  handleProofreadAllUnits: (isProofread: boolean) => void;
   handleMoveUnit: (targetUnitId: string, xCoord: number, yCoord: number) => void;
   handleReorderUnit: (targetUnitId: string, targetIndex: number) => void;
   handleAddUnit: (xCoord: number, yCoord: number, isBubble: boolean) => void;
@@ -62,6 +65,21 @@ export function useEditorUnitActions(options: Options): {
     ...editActions,
     ...focusActions,
     ...deleteActions,
+    handleModifyUnit: useCommittedCallback(editActions.handleModifyUnit),
+    handleReorderUnit: useCommittedCallback(editActions.handleReorderUnit),
+    handleFocusUnit: useCommittedCallback(focusActions.handleFocusUnit),
+    handleSpecialCharUse: useCommittedCallback(charActions.handleSpecialCharUse),
+    handleSpecialCharInserted: useCommittedCallback(charActions.handleSpecialCharInserted),
+    handleProofreadAllUnits: useCommittedCallback((isProofread: boolean) => {
+      if (!options.canEditView || options.isLoadingPage || options.isCompletingStage) return;
+      options.commitUnits(
+        options.unitBufRef.current.map((unit) => {
+          const updates: UnitEdit = { isProofread };
+          applyEditorAuthors(updates, updates, unit, options.currentUserId);
+          return applyUnitUpdates(unit, updates);
+        }),
+      );
+    }),
   };
 }
 

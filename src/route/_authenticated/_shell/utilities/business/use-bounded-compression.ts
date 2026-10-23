@@ -1,12 +1,14 @@
-import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import type { ArchiveResult } from "@/route/_authenticated/_shell/utilities/business/archive";
 import type { BoundedImage } from "@/route/_authenticated/_shell/utilities/business/bounded-images";
 import {
   createBoundedActions,
+  createBoundedItemActions,
   disposeBoundedResult,
   isBoundedInputValid,
 } from "@/route/_authenticated/_shell/utilities/business/bounded-compression-actions";
+import type { BoundedItemActions } from "./bounded-compression-actions";
 
 type BoundedCompressionState = {
   items: BoundedImage[];
@@ -67,7 +69,7 @@ function useBoundedCompressionState(): BoundedCompressionState {
   };
 }
 
-type BoundedCompressionApi = {
+type BoundedCompressionApi = BoundedItemActions & {
   items: BoundedImage[];
   body: string;
   cover: string;
@@ -76,17 +78,40 @@ type BoundedCompressionApi = {
   status: string;
   result: ArchiveResult | null;
   isValid: boolean;
-  updateItems: (next: BoundedImage[]) => void;
   addFiles: (files: File[]) => void;
   changeDefault: (kind: "body" | "cover", value: string) => void;
   start: () => Promise<void>;
   cancel: () => void;
 };
 
+function useBoundedItemActions({
+  controllerRef,
+  resultRef,
+  setItems,
+  setResult,
+  setStatus,
+  setCompleted,
+}: BoundedCompressionState): BoundedItemActions {
+  return useMemo(
+    () =>
+      createBoundedItemActions({
+        controllerRef,
+        resultRef,
+        setItems,
+        setResult,
+        setStatus,
+        setCompleted,
+      }),
+    [controllerRef, resultRef, setItems, setResult, setStatus, setCompleted],
+  );
+}
+
 export function useBoundedCompression(): BoundedCompressionApi {
   const state = useBoundedCompressionState();
   const actions = createBoundedActions(state);
-  const isValid = isBoundedInputValid(state.items, state.body, state.cover);
+  const itemActions = useBoundedItemActions(state);
+  const { items, body, cover } = state;
+  const isValid = useMemo(() => isBoundedInputValid(items, body, cover), [items, body, cover]);
 
   return {
     items: state.items,
@@ -97,7 +122,7 @@ export function useBoundedCompression(): BoundedCompressionApi {
     status: state.status,
     result: state.result,
     isValid,
-    updateItems: actions.updateItems,
+    ...itemActions,
     addFiles: actions.addFiles,
     changeDefault: actions.changeDefault,
     start: actions.start,

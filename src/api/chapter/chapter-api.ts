@@ -35,8 +35,12 @@ export function listChapters(
     query: { incl: args.includes, offset: args.offset, limit: args.limit },
   });
 }
-export function getChapter(client: ApiClient, chapterId: string): Promise<Result<ChapterResponse>> {
-  return client.get<ChapterResponse>(`/chapters/${chapterId}`);
+export function getChapter(
+  client: ApiClient,
+  chapterId: string,
+  signal?: AbortSignal,
+): Promise<Result<ChapterResponse>> {
+  return client.get<ChapterResponse>(`/chapters/${chapterId}`, { signal });
 }
 export function getPinnedChapter(
   client: ApiClient,

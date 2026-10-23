@@ -67,7 +67,7 @@ export function useComicDetailPages(args: ComicDetailPagesArgs): PageState {
   const stats = useChapterStatsRecovery(args, capture);
   const deletion = useChapterPageDeletion(args, results, stats.refreshChapterStats);
   const handleAddRawPages = useAddRawPages(client, args, capture);
-  const handleReuploadPage = useReuploadPage(client, args, capture, taskView.reuploadingPageIds);
+  const handleReuploadPage = useReuploadPage(client, args, capture);
   const reloadChapterStats = useReloadChapterStats(args);
 
   return {

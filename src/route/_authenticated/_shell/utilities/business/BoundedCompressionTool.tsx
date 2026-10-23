@@ -5,7 +5,7 @@ import { Button } from "@/shared/component/Button";
 import { formatSize } from "@/route/_authenticated/_shell/utilities/business/archive";
 import { useBoundedCompression } from "@/route/_authenticated/_shell/utilities/business/use-bounded-compression";
 import { ImageSizeInput } from "@/route/_authenticated/_shell/utilities/business/ImageSizeInput";
-import { BoundedImageItem } from "@/route/_authenticated/_shell/utilities/business/BoundedImageItem";
+import { BoundedImageList } from "./BoundedImageList";
 
 export function BoundedCompressionTool(): JSX.Element {
   const tool = useBoundedCompression();
@@ -79,11 +79,14 @@ export function BoundedCompressionTool(): JSX.Element {
         为满足上限，可能降低画质与分辨率。
       </p>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <ol className="divide-y divide-border/60">
-          {tool.items.map((item, index) => (
-            <BoundedImageItem key={item.id} item={item} index={index} tool={tool} />
-          ))}
-        </ol>
+        <BoundedImageList
+          items={tool.items}
+          body={tool.body}
+          cover={tool.cover}
+          busy={tool.busy}
+          changeLimit={tool.changeLimit}
+          removeItem={tool.removeItem}
+        />
       </div>
       <footer className="mt-3 shrink-0 border-t border-border pt-3">
         <div className="flex items-center justify-between gap-3">

@@ -42,6 +42,7 @@ type Props = {
   isDeletingComic: boolean;
   isExportingData: boolean;
   isImportingData?: boolean | undefined;
+  onReadOnlyIntent?: (() => void) | undefined;
   onNavigateReadOnly?: (() => void) | undefined;
   onExport?: (() => void) | undefined;
   onImportFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -196,6 +197,7 @@ export function ComicDetailSidebar({
   isExportingData,
   isImportingData,
   onNavigateReadOnly,
+  onReadOnlyIntent,
   onExport,
   onImportFileChange,
   onDeletePages,
@@ -254,7 +256,12 @@ export function ComicDetailSidebar({
           {selectedChapter && (
             <>
               {canReadOnly && onNavigateReadOnly && (
-                <ActionButton icon={Search} title="只读查看" onClick={onNavigateReadOnly} />
+                <ActionButton
+                  icon={Search}
+                  title="只读查看"
+                  onClick={onNavigateReadOnly}
+                  onIntent={onReadOnlyIntent}
+                />
               )}
               {mode === "translator" && canTranslateOrProofread && (
                 <ActionButton

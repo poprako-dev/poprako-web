@@ -1,4 +1,6 @@
 import type { Plugin } from "vite";
+import { checkFeatureBundles } from "./check-feature-bundle.ts";
+import { checkHeavyBundles } from "./check-heavy-bundle.ts";
 
 // Verify emitted modules, not merely the presence of autoCodeSplitting in config.
 const PAGE_MODULES = [
@@ -43,7 +45,12 @@ export function routeBundleGuard(): Plugin {
           }
         }
       }
-      this.info(`Verified ${String(PAGE_MODULES.length)} pages outside the initial static graph.`);
+      const chunks = Object.values(bundle).filter((output) => output.type === "chunk");
+      checkFeatureBundles(chunks);
+      checkHeavyBundles(chunks, PAGE_MODULES);
+      this.info(
+        `Verified ${String(PAGE_MODULES.length)} pages, deferred features and heavy codec boundaries.`,
+      );
     },
   };
 }

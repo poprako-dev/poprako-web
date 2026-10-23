@@ -1,4 +1,4 @@
-import { normalizeUnitIndexes, type UnitInfo } from "../unit/unit";
+import type { UnitInfo } from "../unit/unit";
 import { identifyDraft, identifyUnits, unitIdentityResolver } from "./unit-identity";
 import { mergeUnitVersions } from "./merge-unit-versions";
 import { recoverDraft } from "./recover-draft";
@@ -16,7 +16,9 @@ import type {
 import type { UnitDiff } from "../contract/type";
 import { UnitHistory } from "../unit/unit-history";
 import { UnitSaveCatalog } from "./unit-save-catalog";
-import { persistDetachedDraft } from "./unit-save-detached";
+import { UnitSavePublication } from "./unit-save-publication";
+import { UnitSnapshotOwnership } from "./unit-snapshot-ownership";
+import { acknowledgeSavedDraft, persistDetachedDraft } from "./unit-save-detached";
 import { LocalDraftSavedError } from "./local-draft-saved-error";
 
 export class UnitSaveControllerRuntime implements UnitSaveController {
@@ -24,6 +26,8 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   private baseline: UnitInfo[] = [];
   private readonly history = new UnitHistory();
   private readonly catalog = new UnitSaveCatalog();
+  private readonly publication = new UnitSavePublication();
+  private readonly ownership = new UnitSnapshotOwnership();
   private snapshot: SaveSnapshot = {
     units: [],
     dirty: false,
@@ -36,19 +40,16 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   private pageId: string | undefined;
   private generation = 0;
   private revision = 0;
+  private reloadRevision = 0;
   private active = true;
   private suspended = false;
-  private pending: SaveBatch[] = [];
+  private pending: readonly SaveBatch[] = [];
   private running: Promise<void> | undefined;
   private recovering: Promise<void> | undefined;
-  private readonly identities = new Map<string, string>();
+  private identities = new Map<string, string>();
 
   constructor(options: UnitSaveControllerOptions) {
     this.options = options;
-  }
-
-  private resolveId(id: string): string {
-    return unitIdentityResolver(this.identities, this.preferredUnits())(id);
   }
 
   private preferredUnits(): UnitInfo[] {
@@ -60,31 +61,29 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   }
 
   private record(): DraftRecord {
-    return {
-      version: 1,
-      revision: this.revision,
-      units: this.snapshot.units,
-      baseline: this.baseline,
-      pending: this.pending,
-      identities: [...this.identities],
-    };
+    return this.publication.record(
+      this.revision,
+      this.snapshot.units,
+      this.baseline,
+      this.pending,
+      this.identities,
+    );
   }
 
   private publish(changes: Partial<SaveSnapshot> = {}): void {
     this.snapshot = { ...this.snapshot, ...changes };
-    const tail = buildUnitDiff(
-      this.snapshot.units,
-      this.pending.at(-1)?.target ?? this.baseline,
-      this.catalog.project(this.pending),
-    );
-    this.snapshot.canUndo = this.history.canUndo;
-    const ops = [...this.pending.flatMap((batch) => batch.diff.ops), ...tail.ops];
-    this.snapshot.dirty = ops.length > 0;
-    this.snapshot.pendingUnitIds = [
-      ...new Set(ops.map((op) => this.resolveId(op.edit === "create" ? op.localId : op.id))),
-    ];
+    const record = this.record();
+    this.snapshot = {
+      ...this.snapshot,
+      ...this.publication.project(record, this.catalog, this.identities),
+      canUndo: this.history.canUndo,
+    };
     if (this.pageId) {
-      this.options.drafts?.update(this.pageId, this.snapshot.dirty ? this.record() : undefined);
+      this.publication.retain(
+        this.options.drafts,
+        this.pageId,
+        this.snapshot.dirty ? record : undefined,
+      );
     }
     if (this.active) this.options.changed(this.snapshot);
   }
@@ -96,13 +95,13 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
     this.pending = [];
     this.running = undefined;
     this.suspended = false;
-    this.identities.clear();
+    this.identities = new Map();
     const cached = this.options.drafts?.getState().drafts[id];
     const restored = cached ? identifyDraft(cached, cached.units) : undefined;
-    this.baseline = normalizeUnitIndexes(restored?.baseline ?? units);
+    this.baseline = this.ownership.take(restored?.baseline ?? units);
     this.catalog.reset(this.baseline);
     this.revision = restored?.revision ?? 0;
-    this.pending = structuredClone(restored?.pending ?? []);
+    this.pending = restored?.pending ?? [];
     for (const [local, remote] of restored?.identities ??
       this.baseline.map((unit) => [unit.id, unit.id] as const)) {
       this.identities.set(local, remote);
@@ -121,7 +120,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
 
   commit(units: UnitInfo[]): void {
     if (!this.canCommit()) return;
-    const next = normalizeUnitIndexes(units);
+    const next = this.ownership.take(units);
     if (!this.history.record(this.snapshot.units, next)) return;
     this.revision += 1;
     this.publish({ units: next, storageError: null });
@@ -147,13 +146,12 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   }
 
   private seal(): void {
-    this.pending.push(
-      ...createSaveBatches(
-        this.snapshot.units,
-        this.pending.at(-1)?.target ?? this.baseline,
-        this.catalog.project(this.pending),
-      ),
+    const batches = createSaveBatches(
+      this.snapshot.units,
+      this.pending.at(-1)?.target ?? this.baseline,
+      this.catalog.project(this.pending),
     );
+    if (batches.length) this.pending = [...this.pending, ...batches];
   }
 
   private async persistFailure(id: string, epoch: number, error: unknown): Promise<never> {
@@ -161,6 +159,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
       const store = this.options.drafts;
       if (!store) throw error;
       await this.persistPendingFailure(store, id, epoch);
+      if (epoch !== this.generation) throw new Error("页面已切换");
     } catch (storageError) {
       if (epoch !== this.generation) throw storageError;
       const message = "远程和本地保存均失败，修改仍在当前页面，请勿关闭";
@@ -190,8 +189,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
       );
       this.baseline = merged.baseline;
       this.pending = merged.pending;
-      this.identities.clear();
-      for (const pair of merged.identities) this.identities.set(...pair);
+      this.identities = new Map(merged.identities);
       this.publish({ units: current, storageError: null });
       if (this.revision === savedRevision) return;
     } while (this.active);
@@ -201,7 +199,11 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
     const remote = await this.options.reload(id);
     if (!this.active || epoch !== this.generation) return;
     const newer = buildUnitDiff(this.snapshot.units, this.baseline);
-    const localized = localizeRemote(remote, this.identities, this.preferredUnits());
+    const localized = localizeRemote(
+      this.ownership.take(remote),
+      this.identities,
+      this.preferredUnits(),
+    );
     const edited = new Set(newer.ops.flatMap((op) => (op.edit === "patch" ? [op.id] : [])));
     const current = mergeUnitVersions(this.baseline, this.snapshot.units, localized);
     this.baseline = [
@@ -211,6 +213,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
       ),
     ];
     this.catalog.remember(localized);
+    this.reloadRevision++;
     this.publish({ units: current, refreshError: false, error: null });
   }
 
@@ -227,9 +230,10 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
     }
     this.seal();
     if (!this.pending.length && !this.snapshot.refreshError) return Promise.resolve();
+    const running = this.executeSave(id, epoch);
+    this.running = running;
     this.publish({ saving: true });
-    this.running = this.executeSave(id, epoch);
-    return this.running;
+    return running;
   }
 
   private async executeSave(id: string, epoch: number): Promise<void> {
@@ -249,20 +253,22 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   private async saveBatches(id: string, epoch: number): Promise<boolean> {
     while (this.pending.length) {
       if (!this.active || epoch !== this.generation) return false;
-      const batch = this.pending[0];
-      if (!batch) return true;
-      const wire = batch.wire ?? wireUnitDiff(batch.diff, this.identities);
-      batch.wire = wire;
+      const first = this.pending[0];
+      if (!first) return true;
+      const wire = first.wire ?? wireUnitDiff(first.diff, this.identities);
+      const batch = first.wire ? first : { ...first, wire };
+      if (batch !== first) this.pending = [batch, ...this.pending.slice(1)];
       this.publish();
+      if (epoch !== this.generation) return false;
       const sent = this.record();
       if (!(await this.sendBatch(id, epoch, batch, wire, sent))) return false;
       this.catalog.acknowledge(batch);
-      this.baseline = replayEdits(this.baseline, batch.diff, batch.target, (unitId) =>
-        this.resolveId(unitId),
-      );
-      this.pending.shift();
+      const resolve = unitIdentityResolver(this.identities, this.preferredUnits());
+      this.baseline = replayEdits(this.baseline, batch.diff, batch.target, resolve);
+      this.pending = this.pending.slice(1);
+      const identities = [...this.identities];
       this.publish({ lastSavedAt: Date.now(), error: null, storageError: null });
-      await this.acknowledge(id, batch.saveId);
+      await acknowledgeSavedDraft(this.options.drafts, id, batch.saveId, identities);
     }
     return true;
   }
@@ -277,7 +283,9 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
     try {
       const result = await this.options.save(id, wire, batch.saveId);
       if (epoch !== this.generation) return false;
-      acceptCreatedIds(batch.diff, result, this.identities);
+      const identities = new Map(this.identities);
+      acceptCreatedIds(batch.diff, result, identities);
+      this.identities = identities;
       return true;
     } catch (error) {
       if (epoch !== this.generation) {
@@ -287,12 +295,6 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
       await this.persistFailure(id, epoch, error);
       return false;
     }
-  }
-
-  private async acknowledge(id: string, saveId: string): Promise<void> {
-    await this.options.drafts?.acknowledge(id, saveId, [...this.identities]).catch(() => {
-      // Acknowledged requests remain safe to replay by their original save ID.
-    });
   }
 
   private async refreshAfterSave(id: string, epoch: number): Promise<void> {
@@ -316,9 +318,10 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
   }
 
   async refresh(): Promise<void> {
-    await this.flush();
-    if (!this.pageId) return;
     const epoch = this.generation;
+    const refreshed = this.reloadRevision;
+    await this.flush();
+    if (!this.pageId || epoch !== this.generation || refreshed !== this.reloadRevision) return;
     try {
       await this.reloadPage(this.pageId, epoch);
     } catch (error) {
@@ -365,8 +368,7 @@ export class UnitSaveControllerRuntime implements UnitSaveController {
     const merged = recoverDraft(draft, this.record());
     this.baseline = merged.baseline;
     this.pending = merged.pending;
-    this.identities.clear();
-    for (const pair of merged.identities) this.identities.set(...pair);
+    this.identities = new Map(merged.identities);
     this.catalog.remember(merged.baseline);
     this.history.clear();
     this.publish({ units: merged.units });

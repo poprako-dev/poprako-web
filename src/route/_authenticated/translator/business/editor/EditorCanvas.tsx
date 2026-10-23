@@ -1,16 +1,16 @@
 import type { JSX } from "react/jsx-runtime";
+import type { ReactNode } from "react";
 import clsx from "clsx";
 import { CaseSensitive, Check, Command, Loader2, ReplaceAll, SquareArrowRight } from "lucide-react";
 import { TranslatorPaginator } from "@/route/_authenticated/translator/business/page-statistic/TranslatorPaginator";
 import { ToolboxDropdown } from "@/shared/component/toolbox-dropdown/ToolboxDropdown";
 import { Canvas } from "@/route/_authenticated/translator/business/canvas/Canvas";
-import { TerminologyLookupBar } from "@/route/_authenticated/translator/business/terminology/TerminologyLookupBar";
 import { ReadOnlyPageActions } from "@/route/_authenticated/translator/business/page-statistic/ReadOnlyPageActions";
 import type { ToolboxOption } from "@/shared/component/toolbox-dropdown/toolbox-option";
 import type { EditorSession } from "./use-editor-session";
-import { useTermbaseExport } from "@/route/_authenticated/business/terminology/use-termbase-export";
 
 type Props = {
+  terminologyBar?: ReactNode;
   session: Pick<
     EditorSession,
     | "project"
@@ -78,12 +78,11 @@ function toolboxOptions(session: Props["session"]): ToolboxOption[] {
   ];
 }
 
-export function EditorCanvas({ session }: Props): JSX.Element {
+export function EditorCanvas({ session, terminologyBar }: Props): JSX.Element {
   const {
     project,
     onListPageUnitDiffStats,
     onListPageUnitFlaggedStats,
-    terminology,
     pageIndex,
     unitBuf,
     focusedUnitId,
@@ -112,7 +111,6 @@ export function EditorCanvas({ session }: Props): JSX.Element {
     completionStage,
   } = session;
   const options = toolboxOptions(session);
-  const termbaseExport = useTermbaseExport(terminology, project.id);
 
   return (
     <div className="@container relative w-full h-full bg-surface-stone-700">
@@ -133,9 +131,7 @@ export function EditorCanvas({ session }: Props): JSX.Element {
         enableReadOnly={!canEditView || isLoadingPage || isCompletingStage}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
-      {!isReadOnly && (
-        <TerminologyLookupBar dataSource={terminology} termbaseExport={termbaseExport} />
-      )}
+      {!isReadOnly && terminologyBar}
       <div className="absolute top-2 left-2 flex items-center gap-2">
         {!isReadOnly && <ToolboxDropdown options={options} direction="down" />}
         <button

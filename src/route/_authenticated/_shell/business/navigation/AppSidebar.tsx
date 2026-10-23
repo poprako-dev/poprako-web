@@ -78,14 +78,17 @@ function leaveSidebar(
   }
 }
 
-export function AppSidebar(): ReactElement {
+type Props = {
+  onNavIntent?: ((id: NavId) => void) | undefined;
+};
+
+export function AppSidebar({ onNavIntent }: Props): ReactElement {
   const client = useApiClient();
   const navigate = useNavigate();
   const location = useLocation();
   const selectedTeamId = useAppStore((s) => s.selectedTeamId);
-  const sysMails = useMailStore((s) => s.mails);
+  const hasUnread = useMailStore((s) => s.hasUnread);
   const loginState = useReadySession();
-  const hasUnread = sysMails.some((mail) => !mail.isRead);
 
   const isTeamAdmin = useMemo(() => {
     const member = loginState.memberInfos.find((m) => m.teamId === selectedTeamId);
@@ -165,6 +168,9 @@ export function AppSidebar(): ReactElement {
               onClick={() => {
                 handleNavSelect(item.id);
               }}
+              onIntent={() => {
+                onNavIntent?.(item.id);
+              }}
               hasBadge={item.id === "system-mail" && hasUnread}
             />
           ))}
@@ -172,6 +178,9 @@ export function AppSidebar(): ReactElement {
             icon={utilityNavConfig.icon}
             label={utilityNavConfig.label}
             isActive={activeNavId === "utilities"}
+            onIntent={() => {
+              onNavIntent?.("utilities");
+            }}
             onClick={() => {
               handleNavSelect("utilities");
             }}
@@ -182,6 +191,9 @@ export function AppSidebar(): ReactElement {
         <SettingsFooter
           config={footerNavConfig}
           isActive={activeNavId === "settings"}
+          onIntent={() => {
+            onNavIntent?.("settings");
+          }}
           onClick={() => {
             handleNavSelect("settings");
           }}

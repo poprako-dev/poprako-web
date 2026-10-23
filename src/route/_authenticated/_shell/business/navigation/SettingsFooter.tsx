@@ -6,12 +6,19 @@ type Props = {
   config: NavConfig;
   isActive: boolean;
   onClick: () => void;
+  onIntent?: (() => void) | undefined;
 };
 
-export function SettingsFooter({ config, isActive, onClick }: Props): ReactElement {
+export function SettingsFooter({ config, isActive, onClick, onIntent }: Props): ReactElement {
   return (
     <div className="py-2 border-t border-navigation-border">
-      <NavItem icon={config.icon} label={config.label} isActive={isActive} onClick={onClick} />
+      <NavItem
+        icon={config.icon}
+        label={config.label}
+        isActive={isActive}
+        onClick={onClick}
+        onIntent={onIntent}
+      />
     </div>
   );
 }

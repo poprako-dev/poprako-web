@@ -5,16 +5,27 @@ type Props = {
   icon: React.ElementType;
   title: string;
   onClick: () => void;
+  onIntent?: (() => void) | undefined;
   disabled?: boolean | undefined;
   danger?: boolean | undefined;
 };
 
-export function ActionButton({ icon: Icon, title, onClick, disabled, danger }: Props): JSX.Element {
+export function ActionButton({
+  icon: Icon,
+  title,
+  onClick,
+  onIntent,
+  disabled,
+  danger,
+}: Props): JSX.Element {
   return (
     <button
       type="button"
       title={title}
       onClick={onClick}
+      onPointerEnter={disabled ? undefined : onIntent}
+      onFocus={disabled ? undefined : onIntent}
+      onPointerDown={disabled ? undefined : onIntent}
       disabled={disabled}
       className={clsx(
         "h-7 w-full rounded-sm flex items-center justify-center gap-1.5 px-2",

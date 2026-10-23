@@ -53,6 +53,7 @@ export type EditorSession = Pick<
     | "handleDeleteUnit"
     | "handleFocusUnit"
     | "handleModifyUnit"
+    | "handleProofreadAllUnits"
     | "handleMoveUnit"
     | "handlePageImageLoad"
     | "handleReorderUnit"

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState, type ReactElement } from "react";
+import { useState, type KeyboardEventHandler, type ReactElement } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
   placeholder: string;
   mode?: "text" | "password" | "numeric";
   className?: string;
+  onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
 };
 
 export function IconInputRow({
@@ -18,6 +19,7 @@ export function IconInputRow({
   onChange,
   mode = "text",
   className,
+  onKeyDown,
 }: Props): ReactElement {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = mode === "password";
@@ -53,6 +55,7 @@ export function IconInputRow({
         placeholder={placeholder}
         aria-label={placeholder}
         value={value}
+        onKeyDown={onKeyDown}
         onChange={(event) => {
           const nextValue = event.target.value;
           onChange(isNumeric ? nextValue.replaceAll(/\D+/g, "") : nextValue);

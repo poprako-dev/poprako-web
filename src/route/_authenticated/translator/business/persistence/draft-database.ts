@@ -1,19 +1,28 @@
 export type DraftRow = { key: string; scope: string; pageId: string; raw: string; touched: number };
 export interface DraftDatabase {
-  transact: <T>(change: (rows: DraftRow[]) => { rows: DraftRow[]; result: T }) => Promise<T>;
+  transact: <T>(
+    change: (rows: DraftRow[]) => { rows: DraftRow[]; result: T },
+    key?: string,
+  ) => Promise<T>;
 }
 const budget = 4 * 1024 * 1024;
 
 export function limitDraftRows(rows: DraftRow[], current: string): DraftRow[] {
-  let result = [...rows];
-  const size = (): number =>
-    result.reduce((n, row) => n + new TextEncoder().encode(row.raw).length, 0);
-  while (size() > budget) {
-    const oldest = result.filter((r) => r.key !== current).sort((a, b) => a.touched - b.touched)[0];
-    if (!oldest) throw new Error("本页草稿超过本地容量限制");
-    result = result.filter((r) => r.key !== oldest.key);
+  const encoder = new TextEncoder();
+  const sized = rows.map((row) => ({ row, bytes: encoder.encode(row.raw).length }));
+  let bytes = sized.reduce((total, entry) => total + entry.bytes, 0);
+  if (bytes <= budget) return [...rows];
+  const candidates = sized
+    .filter((entry) => entry.row.key !== current)
+    .sort((a, b) => a.row.touched - b.row.touched);
+  const evicted = new Set<string>();
+  for (const entry of candidates) {
+    evicted.add(entry.row.key);
+    bytes -= entry.bytes;
+    if (bytes <= budget) break;
   }
-  return result;
+  if (bytes > budget) throw new Error("本页草稿超过本地容量限制");
+  return rows.filter((row) => !evicted.has(row.key));
 }
 
 export function createDraftDatabase(): DraftDatabase {
@@ -39,9 +48,10 @@ export function createDraftDatabase(): DraftDatabase {
   }
   async function transact<T>(
     change: (rows: DraftRow[]) => { rows: DraftRow[]; result: T },
+    key?: string,
   ): Promise<T> {
     const db = await open();
-    return transactDraftRows(db, change);
+    return transactDraftRows(db, change, key);
   }
   return { transact };
 }
@@ -49,13 +59,14 @@ export function createDraftDatabase(): DraftDatabase {
 function transactDraftRows<T>(
   db: IDBDatabase,
   change: (rows: DraftRow[]) => { rows: DraftRow[]; result: T },
+  key?: string,
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const tx = db.transaction("pages", "readwrite");
     const store = tx.objectStore("pages");
     let result: T;
     let failure: unknown;
-    const request = store.getAll();
+    const request = key === undefined ? store.getAll() : store.getAll(key);
     request.onsuccess = () => {
       try {
         const before = request.result as DraftRow[];
@@ -80,11 +91,12 @@ function transactDraftRows<T>(
 }
 
 function applyDraftRowChanges(store: IDBObjectStore, before: DraftRow[], next: DraftRow[]): void {
+  const previousByKey = new Map(before.map((row) => [row.key, row]));
   const keys = new Set(next.map((row) => row.key));
   for (const row of before) {
     if (!keys.has(row.key)) store.delete(row.key);
   }
   for (const row of next) {
-    if (before.find((previous) => previous.key === row.key)?.raw !== row.raw) store.put(row);
+    if (previousByKey.get(row.key)?.raw !== row.raw) store.put(row);
   }
 }

@@ -21,9 +21,11 @@ export type ListCommentsArgs = {
 export async function listComments(
   client: ApiClient,
   args: ListCommentsArgs,
+  signal?: AbortSignal,
 ): Promise<Result<CommentResponse[]>> {
   const result = await client.get<CommentResponse[]>(`/teams/${args.teamId}/comments`, {
     query: { offset: args.offset, limit: args.limit, incl: args.includes },
+    signal,
   });
   return result;
 }

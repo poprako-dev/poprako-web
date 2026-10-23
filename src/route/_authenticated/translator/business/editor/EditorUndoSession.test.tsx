@@ -65,3 +65,22 @@ test("successful stage completion clears history after saving", async () => {
   act(undo);
   expect(result.current.unitBuf[0]?.translatedText).toBe("a");
 });
+
+test("complete editing and diff mode switches preserve draft and undo ownership", async () => {
+  const { result } = await setup();
+  const drafts = result.current.drafts;
+  const units = result.current.unitBuf;
+  for (const view of ["translate", "readOnly", "proofread"] as const) {
+    act(() => {
+      result.current.handleSwitchView();
+    });
+    await waitFor(() => {
+      expect(result.current.view).toBe(view);
+    });
+    expect(result.current.drafts).toBe(drafts);
+    expect(result.current.unitBuf).toBe(units);
+    expect(result.current.saveState).toMatchObject({ canUndo: true, dirty: true });
+  }
+  act(undo);
+  expect(result.current.unitBuf[0]?.translatedText ?? "").toBe("");
+});

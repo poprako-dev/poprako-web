@@ -4,11 +4,12 @@ import clsx from "clsx";
 import { Plus, UploadCloud } from "lucide-react";
 import type { PageInfo } from "@/route/_authenticated/business/page/page";
 import type { PageUploadTaskStatus } from "@/route/_authenticated/_shell/business/comic-detail/upload/page-upload-store";
-import { PageCard } from "@/route/_authenticated/_shell/business/comic-detail/page/PageCard";
+import { PageListItem } from "./PageListItem";
 
 type Props = {
   mode?: ComicDetailMode;
   pages: PageInfo[];
+  onPageIntent?: (() => void) | undefined;
   onClickPage?: ((pageId: string) => void) | undefined;
   onDeletePage?: ((pageId: string) => void) | undefined;
   onReuploadPage?: ((pageId: string, file: File) => void) | undefined;
@@ -42,6 +43,7 @@ export function PageList({
   mode = "translator",
   pages,
   onClickPage,
+  onPageIntent,
   onDeletePage,
   onReuploadPage,
   canReuploadPage,
@@ -116,35 +118,18 @@ export function PageList({
         )}
       >
         {pages.map((page) => (
-          <PageCard
+          <PageListItem
             key={page.id}
             page={page}
+            onIntent={onPageIntent}
             showTranslationProgress={mode === "translator"}
-            onClick={
-              onClickPage
-                ? () => {
-                    onClickPage(page.id);
-                  }
-                : undefined
-            }
-            onDelete={
-              onDeletePage
-                ? () => {
-                    onDeletePage(page.id);
-                  }
-                : undefined
-            }
+            onClickPage={onClickPage}
+            onDeletePage={onDeletePage}
             enableDelete={enableDelete}
             enableClick={enableClick}
             canReupload={canReuploadPage ? canReuploadPage(page) : false}
             isReuploading={isPageReuploading ? isPageReuploading(page.id) : false}
-            onReupload={
-              onReuploadPage
-                ? (file) => {
-                    onReuploadPage(page.id, file);
-                  }
-                : undefined
-            }
+            onReuploadPage={onReuploadPage}
             reuploadAccept={reuploadAccept}
             uploadProgress={uploadProgressByPageId?.[page.id]}
             uploadStatus={uploadStatusByPageId?.[page.id]}

@@ -16,6 +16,8 @@ function keyboardOptions(): Options {
     setFocusedUnitId: vi.fn(),
     availableModes: ["translate", "readOnly"],
     mode: "translate",
+    view: "translate",
+    nextView: "readOnly",
     setViewState: vi.fn(),
     setProofreadPreviewVisibility: vi.fn(),
     isReadOnly: false,

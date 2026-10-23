@@ -7,8 +7,9 @@ import type { Result } from "@/shared/utility/result";
 export async function listComments(
   client: ApiClient,
   args: ListCommentsArgs,
+  signal?: AbortSignal,
 ): Promise<Result<CommentInfo[]>> {
-  const result = await listResponses(client, args);
+  const result = await listResponses(client, args, signal);
   return result.success
     ? {
         success: true,

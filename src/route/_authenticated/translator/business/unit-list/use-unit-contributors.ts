@@ -17,7 +17,8 @@ export function useUnitContributors({
   onResolveUser,
 }: Args): (userId: string | null) => UserInfo | undefined {
   const cacheRef = useRef(new UnitContributorCache());
-  const contributorIds = useMemo(() => unitContributorIds(units), [units]);
+  const contributorKey = JSON.stringify(unitContributorIds(units).sort());
+  const contributorIds = useMemo(() => JSON.parse(contributorKey) as string[], [contributorKey]);
   const [resolvedUsers, setResolvedUsers] = useState<Map<string, UserInfo>>(() => new Map());
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function useUnitContributors({
       void cacheRef.current.resolve(userId, onResolveUser).then((user) => {
         if (isActive && user) {
           setResolvedUsers((current) => {
+            if (current.get(userId) === user) return current;
             const next = new Map(current);
             next.set(userId, user);
             return next;

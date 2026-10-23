@@ -1,9 +1,11 @@
+import { useCommittedCallback } from "@/shared/hook/use-committed-callback";
+import { UnitListItem, type UnitItemComponent } from "./UnitListItem";
 import type { JSX } from "react/jsx-runtime";
 import type { RefObject } from "react";
 import clsx from "clsx";
 import { ListCheck } from "lucide-react";
 import { Tooltip } from "radix-ui";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import type { TranslatorMode } from "@/route/_authenticated/translator/business/unit/translator-mode";
 import {
@@ -18,14 +20,8 @@ import type { UnitEdit } from "@/route/_authenticated/translator/business/unit/u
 import { useUnitReorder } from "@/route/_authenticated/translator/business/unit-list/use-unit-reorder";
 import { useUnitContributors } from "@/route/_authenticated/translator/business/unit-list/use-unit-contributors";
 import type { UnitUserResolver } from "@/route/_authenticated/translator/business/unit-list/unit-contributor-cache";
-import type { UserInfo } from "@/route/business/identity/user";
-import { TranslateModeUnitItem } from "@/route/_authenticated/translator/business/unit-list/TranslateModeUnitItem";
-import { ProofreadModeUnitItem } from "@/route/_authenticated/translator/business/unit-list/ProofreadModeUnitItem";
-import { ReadOnlyDiffUnitItem } from "@/route/_authenticated/translator/business/unit-list/ReadOnlyDiffUnitItem";
 import type { SpecialCharsBarController } from "@/route/_authenticated/translator/business/preference/use-detachable-special-chars-bar";
 import type { UnitAnnotationSource } from "../contract/unit-annotations";
-import { useUnitAnnotationControls } from "./use-unit-annotation-controls";
-import { UnitAnnotationEditor } from "./UnitAnnotationEditor";
 
 export type SpecialCharInsertRequest = {
   id: number;
@@ -33,7 +29,7 @@ export type SpecialCharInsertRequest = {
   targetUnitId: string;
 };
 
-type Props = {
+export type UnitListProps = {
   annotations?: UnitAnnotationSource | undefined;
   isAnnotationEditingEnabled?: boolean | undefined;
   units: UnitInfo[];
@@ -44,6 +40,7 @@ type Props = {
   editing: {
     modifyUnit: (unitId: string, unit: UnitEdit) => void;
     reorderUnit?: (unitId: string, targetIndex: number) => void;
+    proofreadAllUnits?: (isProofread: boolean) => void;
   } | null;
   onResolveUser: UnitUserResolver;
   enableReadOnly?: boolean | undefined;
@@ -53,34 +50,12 @@ type Props = {
   onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
 };
 
-type UnitListItemProps = {
-  annotations: Props["annotations"];
-  isAnnotationEditingEnabled: boolean;
-  unit: UnitInfo;
-  pendingUnitIds: string[] | undefined;
-  focusedUnitId: string | undefined;
-  mode: TranslatorMode;
-  onFocusUnit: Props["onFocusUnit"];
-  activateIndex: (unitId: string) => void;
-  getContributor: (userId: string | null) => UserInfo | undefined;
-  canToggleBubble: boolean;
-  onModifyUnit: ((unitId: string, unit: UnitEdit) => void) | undefined;
-  canReorder: boolean;
-  handleIndexPointerDown: ReturnType<typeof useUnitReorder>["handleIndexPointerDown"];
-  draggingUnitId: string | null;
-  readOnly: boolean;
-  specialCharInsertRequest: Props["specialCharInsertRequest"];
-  specialCharsBar: Props["specialCharsBar"];
-  onSpecialCharUse: Props["onSpecialCharUse"];
-  onSpecialCharInserted: Props["onSpecialCharInserted"];
-};
-
 function activateUnitIndex(
   targetUnitId: string,
   units: UnitInfo[],
   canToggleBubble: boolean,
   onModifyUnit: ((unitId: string, unit: UnitEdit) => void) | undefined,
-  onFocusUnit: Props["onFocusUnit"],
+  onFocusUnit: UnitListProps["onFocusUnit"],
 ): void {
   const targetUnit = units.find((unit) => unitId(unit) === targetUnitId);
   if (canToggleBubble && targetUnit) {
@@ -93,15 +68,13 @@ function activateUnitIndex(
 function proofreadAllUnits(options: {
   units: UnitInfo[];
   readOnly: boolean;
-  onModifyUnit: ((unitId: string, unit: UnitEdit) => void) | undefined;
+  onProofreadAllUnits: ((isProofread: boolean) => void) | undefined;
   isAllUnitsProofread: boolean;
   showToast: ReturnType<typeof useToastStore.getState>["showToast"];
 }): void {
-  const { units, readOnly, onModifyUnit, isAllUnitsProofread, showToast } = options;
-  if (readOnly || !onModifyUnit || units.length === 0) return;
-  for (const unit of units) {
-    onModifyUnit(unitId(unit), { isProofread: !isAllUnitsProofread });
-  }
+  const { units, readOnly, onProofreadAllUnits, isAllUnitsProofread, showToast } = options;
+  if (readOnly || !onProofreadAllUnits || units.length === 0) return;
+  onProofreadAllUnits(!isAllUnitsProofread);
   showToast(isAllUnitsProofread ? "已取消全部校对" : "全部校对已确认", "success");
 }
 
@@ -118,48 +91,30 @@ function useFocusedUnitScroll(
   }, [focusedUnitId, listRef]);
 }
 
-function UnitListItem(props: UnitListItemProps): JSX.Element {
-  const { unit } = props;
-  const annotation = useUnitAnnotationControls(
-    props.annotations,
-    unitId(unit),
-    props.readOnly,
-    props.isAnnotationEditingEnabled && props.focusedUnitId === unitId(unit),
-  );
-  const commonProps = {
-    annotationEditor: props.annotations && <UnitAnnotationEditor {...annotation} />,
-    unit,
-    hasLocalDraft: props.pendingUnitIds?.includes(unitId(unit)),
-    isFocused: props.focusedUnitId === unitId(unit),
-    onSelect: props.onFocusUnit,
-    onIndexActivate: props.activateIndex,
-    translator: props.getContributor(unitTranslatorId(unit)),
-    proofreader: props.getContributor(unitProofreaderId(unit)),
-    dataUnitId: unitId(unit),
+function useProofreadAll(
+  units: UnitInfo[],
+  readOnly: boolean,
+  editing: UnitListProps["editing"],
+): {
+  isAllUnitsProofread: boolean;
+  proofreadAll: () => void;
+} {
+  const showToast = useToastStore((state) => state.showToast);
+  const isAllUnitsProofread = units.length > 0 && units.every(unitIsProofread);
+  const proofreadAll = (): void => {
+    proofreadAllUnits({
+      units,
+      readOnly,
+      onProofreadAllUnits: editing?.proofreadAllUnits,
+      isAllUnitsProofread,
+      showToast,
+    });
   };
-  if (props.mode === "readOnly") {
-    return <ReadOnlyDiffUnitItem {...commonProps} />;
-  }
-  const ItemComponent = props.mode === "translate" ? TranslateModeUnitItem : ProofreadModeUnitItem;
-  return (
-    <ItemComponent
-      {...commonProps}
-      canToggleBubble={props.canToggleBubble}
-      onModifyUnit={props.onModifyUnit}
-      onIndexPointerDown={props.canReorder ? props.handleIndexPointerDown : undefined}
-      isDragging={props.draggingUnitId === unitId(unit)}
-      isDragDimmed={props.draggingUnitId !== null && props.draggingUnitId !== unitId(unit)}
-      showDropIndicator={props.draggingUnitId === unitId(unit)}
-      enableReadOnly={props.readOnly}
-      specialCharInsertRequest={props.specialCharInsertRequest}
-      specialCharsBar={props.specialCharsBar}
-      onSpecialCharUse={props.onSpecialCharUse}
-      onSpecialCharInserted={props.onSpecialCharInserted}
-    />
-  );
+  return { isAllUnitsProofread, proofreadAll };
 }
 
 export function UnitList({
+  ItemComponent,
   annotations,
   isAnnotationEditingEnabled = false,
   units,
@@ -174,7 +129,8 @@ export function UnitList({
   specialCharsBar,
   onSpecialCharUse,
   onSpecialCharInserted,
-}: Props): JSX.Element {
+}: UnitListProps & { ItemComponent: UnitItemComponent }): JSX.Element {
+  const pendingIds = useMemo(() => new Set(pendingUnitIds), [pendingUnitIds]);
   const onModifyUnit = editing?.modifyUnit;
   const onReorderUnit = editing?.reorderUnit;
   const readOnly = enableReadOnly || editing === null || mode === "readOnly";
@@ -182,9 +138,9 @@ export function UnitList({
   useFocusedUnitScroll(listRef, focusedUnitId);
   const canReorder = !readOnly && onReorderUnit !== undefined;
   const canToggleBubble = !readOnly && onModifyUnit !== undefined;
-  const activateIndex = (targetUnitId: string): void => {
+  const activateIndex = useCommittedCallback((targetUnitId: string): void => {
     activateUnitIndex(targetUnitId, units, canToggleBubble, onModifyUnit, onFocusUnit);
-  };
+  });
   const { orderedUnits, draggingUnitId, handleIndexPointerDown } = useUnitReorder({
     units,
     listRef,
@@ -193,13 +149,7 @@ export function UnitList({
     onReorderUnit,
   });
   const getContributor = useUnitContributors({ units, onResolveUser });
-
-  const { showToast } = useToastStore();
-  const isAllUnitsProofread = units.length > 0 && units.every(unitIsProofread);
-
-  const proofreadAll = (): void => {
-    proofreadAllUnits({ units, readOnly, onModifyUnit, isAllUnitsProofread, showToast });
-  };
+  const { isAllUnitsProofread, proofreadAll } = useProofreadAll(units, readOnly, editing);
 
   return (
     <Tooltip.Provider>
@@ -210,23 +160,29 @@ export function UnitList({
         >
           {orderedUnits.map((unit) => (
             <UnitListItem
+              ItemComponent={ItemComponent}
               key={unitId(unit)}
               annotations={annotations}
               isAnnotationEditingEnabled={isAnnotationEditingEnabled}
               unit={unit}
-              pendingUnitIds={pendingUnitIds}
-              focusedUnitId={focusedUnitId}
-              mode={mode}
+              hasLocalDraft={pendingIds.has(unitId(unit))}
+              isFocused={focusedUnitId === unitId(unit)}
               onFocusUnit={onFocusUnit}
               activateIndex={activateIndex}
-              getContributor={getContributor}
+              translator={getContributor(unitTranslatorId(unit))}
+              proofreader={getContributor(unitProofreaderId(unit))}
               canToggleBubble={canToggleBubble}
               onModifyUnit={onModifyUnit}
               canReorder={canReorder}
               handleIndexPointerDown={handleIndexPointerDown}
-              draggingUnitId={draggingUnitId}
+              isDragging={draggingUnitId === unitId(unit)}
+              isDragDimmed={draggingUnitId !== null && draggingUnitId !== unitId(unit)}
               readOnly={readOnly}
-              specialCharInsertRequest={specialCharInsertRequest}
+              specialCharInsertRequest={
+                specialCharInsertRequest?.targetUnitId === unitId(unit)
+                  ? specialCharInsertRequest
+                  : undefined
+              }
               specialCharsBar={specialCharsBar}
               onSpecialCharUse={onSpecialCharUse}
               onSpecialCharInserted={onSpecialCharInserted}

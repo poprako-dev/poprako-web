@@ -81,6 +81,10 @@ export function ComicDetailMainSidebar({
       isDeletingComic={isDeletingComic}
       isExportingData={exportState.isExportingData}
       isImportingData={exportState.isImportingData}
+      onReadOnlyIntent={() => {
+        const firstPage = mode === "reviewer" ? artworks.pages[0] : pages.pages[0];
+        if (selectedChapterId && firstPage) callbacks.onWorkbenchIntent?.(mode);
+      }}
       onNavigateReadOnly={
         (mode === "reviewer" ? canClickPage : assignments.canReadOnly) && selectedChapterId
           ? () => {

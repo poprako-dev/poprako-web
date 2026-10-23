@@ -5,6 +5,9 @@ import type { ToastType } from "@/shared/component/notification-toast/notificati
 import type { DetailContract } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
 import type { Result } from "@/shared/utility/result";
 import { useComicDetailChapterActions } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-chapter-actions";
+import { useChapterCollection } from "./use-chapter-collection";
+import { useLocatedChapter } from "./use-located-chapter";
+import { useChapterRefresh } from "./use-chapter-refresh";
 import {
   useComicDetailChapterLoading,
   useInitialComicDetailChapters,
@@ -15,6 +18,7 @@ type Args = {
   comicId: string;
   pinnedChapter: ChapterInfo | null;
   initialChapterId?: string | null | undefined;
+  onLoadChapter: DetailContract["onLoadChapter"];
   onLoadChapters: DetailContract["onLoadChapters"];
   showToast: ShowToast;
 };
@@ -45,10 +49,49 @@ type ChapterState = {
 const CHAPTERS_LIMIT = 20;
 
 export function useComicDetailChapters(args: Args): ChapterState {
-  const [chapters, setChapters] = useState<ChapterInfo[]>([]);
+  const { chapters, listed, setChapters, setListed, setLocated } = useChapterCollection();
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
     args.initialChapterId ?? args.pinnedChapter?.id ?? null,
   );
+  const reloadLocated = useLocatedChapter({
+    ...args,
+    setLocated,
+    setSelectedChapterId,
+  });
+  const loading = useChapterList(args, listed, setListed, setSelectedChapterId);
+  const reload = useChapterRefresh(
+    loading.reloadLoadedChapters,
+    reloadLocated,
+    chapters.length > listed.length,
+  );
+  const actions = useComicDetailChapterActions({
+    comicId: args.comicId,
+    selectedChapterId,
+    setChapters,
+    setSelectedChapterId,
+    onLoadChapters: args.onLoadChapters,
+    showToast: args.showToast,
+  });
+  return buildChapterState(
+    chapters,
+    setChapters,
+    selectedChapterId,
+    setSelectedChapterId,
+    loading.chaptersHasMore,
+    loading.isChaptersLoading,
+    args.initialChapterId ? null : args.pinnedChapter,
+    { ...loading, reloadLoadedChapters: reload },
+    actions,
+  );
+}
+
+function useChapterList(
+  args: Args,
+  chapters: ChapterInfo[],
+  setChapters: Dispatch<SetStateAction<ChapterInfo[]>>,
+  setSelectedChapterId: Dispatch<SetStateAction<string | null>>,
+): ReturnType<typeof useComicDetailChapterLoading> &
+  Pick<ChapterState, "chaptersHasMore" | "isChaptersLoading"> {
   const [chaptersHasMore, setChaptersHasMore] = useState(true);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
   const chapterLoadingArgs = {
@@ -67,25 +110,7 @@ export function useComicDetailChapters(args: Args): ChapterState {
   };
   useInitialComicDetailChapters(chapterLoadingArgs);
   const loading = useComicDetailChapterLoading(chapterLoadingArgs);
-  const actions = useComicDetailChapterActions({
-    comicId: args.comicId,
-    selectedChapterId,
-    setChapters,
-    setSelectedChapterId,
-    onLoadChapters: args.onLoadChapters,
-    showToast: args.showToast,
-  });
-  return buildChapterState(
-    chapters,
-    setChapters,
-    selectedChapterId,
-    setSelectedChapterId,
-    chaptersHasMore,
-    isChaptersLoading,
-    args.pinnedChapter,
-    loading,
-    actions,
-  );
+  return { ...loading, chaptersHasMore, isChaptersLoading };
 }
 
 function buildChapterState(

@@ -7,11 +7,14 @@ import type {
 } from "@/route/_authenticated/business/page/page";
 import type { ApiClient } from "@/api/client";
 import { toApiRequestError } from "@/route/business/request-error";
-import { bumpPageUploadChapterRevision } from "./page-upload-store";
+import {
+  bumpPageUploadChapterRevision,
+  patchPageUploadTasks,
+  type PageUploadTaskPatch,
+} from "./page-upload-store";
 import {
   assertSessionGeneration,
   enqueueTask,
-  patchTask,
   type RuntimeTask,
   summarizeTaskCompletions,
 } from "./page-upload-runtime";
@@ -125,24 +128,27 @@ function collectAllocatedUploads(
   sessionGeneration: number,
 ): { page: AllocatedPage; prepared: PreparedFile }[] {
   const uploadPages: { page: AllocatedPage; prepared: PreparedFile }[] = [];
+  const patches: PageUploadTaskPatch[] = [];
   for (const [index, page] of pages.entries()) {
     const prepared =
       index < plan.manifest.length
         ? plan.preparedFilesByPageId.get(page.pageId)
         : plan.newFiles[index - plan.manifest.length];
     if (!prepared) continue;
-    if (page.slot) {
-      uploadPages.push({ page, prepared });
-      continue;
-    }
-    patchTask(prepared.taskId, sessionGeneration, {
-      pageId: page.pageId,
-      index: page.index,
-      status: "succeeded",
-      progress: 100,
-      error: null,
+    if (page.slot) uploadPages.push({ page, prepared });
+    patches.push({
+      taskId: prepared.taskId,
+      patch: {
+        pageId: page.pageId,
+        index: page.index,
+        status: page.slot ? "queued" : "succeeded",
+        progress: page.slot ? 0 : 100,
+        error: null,
+      },
     });
   }
+  assertSessionGeneration(sessionGeneration);
+  patchPageUploadTasks(patches);
   return uploadPages;
 }
 
@@ -157,11 +163,6 @@ function enqueueAllocatedPage(args: {
   sessionGeneration: number;
 }): Promise<TaskOutcome> {
   const { page, prepared } = args;
-  patchTask(prepared.taskId, args.sessionGeneration, {
-    pageId: page.pageId,
-    index: page.index,
-    status: "queued",
-  });
   const runtimeTask: RuntimeTask = {
     client: args.client,
     taskId: prepared.taskId,

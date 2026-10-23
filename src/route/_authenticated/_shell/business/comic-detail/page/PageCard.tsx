@@ -1,4 +1,4 @@
-import { type JSX, useRef, type ChangeEvent } from "react";
+import { type JSX, useRef, type ChangeEvent, type SyntheticEvent } from "react";
 import clsx from "clsx";
 import { Trash2, Upload } from "lucide-react";
 import type { PageInfo } from "@/route/_authenticated/business/page/page";
@@ -10,6 +10,7 @@ type Props = {
   showTranslationProgress?: boolean;
   page: PageInfo;
   onClick?: (() => void) | undefined;
+  onIntent?: (() => void) | undefined;
   onDelete?: (() => void) | undefined;
   enableDelete?: boolean | undefined;
   enableClick?: boolean | undefined;
@@ -124,6 +125,7 @@ export function PageCard({
   showTranslationProgress = true,
   page,
   onClick,
+  onIntent,
   onDelete,
   enableDelete,
   enableClick = true,
@@ -142,23 +144,15 @@ export function PageCard({
   const proofread = page.proofreadUnitCount;
   const transPct = total > 0 ? Math.round((translated / total) * 100) : 0;
   const proofPct = total > 0 ? Math.round((proofread / total) * 100) : 0;
-  const isEmpty = total === 0;
-  const isCompleted = total > 0 && proofread >= total;
-  const isTranslated = total > 0 && translated >= total;
   const reuploadInputRef = useRef<HTMLInputElement>(null);
   const clampedUploadProgress =
     typeof uploadProgress === "number"
       ? Math.max(0, Math.min(100, Math.round(uploadProgress)))
       : null;
-  let statusClass = isEmpty
-    ? "border-[3px] border-line-green-500 bg-transparent"
-    : "bg-surface-gray-400";
-  if (isTranslated) {
-    statusClass = "bg-surface-orange-400";
-  }
-  if (isCompleted) {
-    statusClass = "bg-surface-green-500";
-  }
+  const statusClass = pageStatusClass(total, translated, proofread);
+  const handleIntent = (event: SyntheticEvent): void => {
+    handlePageIntent(event, onIntent);
+  };
 
   const handleReuploadFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
@@ -172,6 +166,9 @@ export function PageCard({
   return (
     <div // eslint-disable-line jsx-a11y/no-static-element-interactions -- interactive only with a callback
       onClick={isInteractive ? onClick : undefined}
+      onPointerEnter={isInteractive ? onIntent : undefined}
+      onFocus={isInteractive ? handleIntent : undefined}
+      onPointerDown={isInteractive ? handleIntent : undefined}
       role={isInteractive ? "button" : undefined}
       tabIndex={isInteractive ? 0 : undefined} // eslint-disable-line jsx-a11y/no-noninteractive-tabindex -- gated by isInteractive
       onKeyDown={
@@ -311,4 +308,16 @@ export function PageCard({
       )}
     </div>
   );
+}
+
+function pageStatusClass(total: number, translated: number, proofread: number): string {
+  if (total > 0 && proofread >= total) return "bg-surface-green-500";
+  if (total > 0 && translated >= total) return "bg-surface-orange-400";
+  return total === 0 ? "border-[3px] border-line-green-500 bg-transparent" : "bg-surface-gray-400";
+}
+
+function handlePageIntent(event: SyntheticEvent, onIntent: Props["onIntent"]): void {
+  const target = event.target;
+  if (target instanceof Element && target.closest("button, input")) return;
+  onIntent?.();
 }

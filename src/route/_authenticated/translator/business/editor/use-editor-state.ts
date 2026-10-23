@@ -1,3 +1,7 @@
+import {
+  useExternalModeTransition,
+  type TranslatorViewState,
+} from "./use-external-mode-transition";
 import type { ConfigurableShortcut } from "@/shared/utility/shortcut";
 import {
   useMemo,
@@ -27,10 +31,6 @@ import {
   initialTranslatorMode,
 } from "@/route/_authenticated/translator/business/contract/access";
 import type { EditorProps } from "./editor-props";
-type TranslatorViewState = {
-  entryMode: TranslatorMode;
-  view: TranslatorMode;
-};
 
 function initialViewState(entryMode: TranslatorMode): TranslatorViewState {
   return {
@@ -177,18 +177,20 @@ function useTranslatorModeState(options: EditorOptions): EditorModeState {
   const [storedViewState, setStoredViewState] = useState<TranslatorViewState>(() =>
     initialViewState(mode),
   );
-  const viewState = storedViewState.entryMode === mode ? storedViewState : initialViewState(mode);
-  if (storedViewState !== viewState) {
-    setStoredViewState(viewState);
-  }
+  const viewState = storedViewState;
+  useExternalModeTransition(viewState, mode, availableModes, setStoredViewState);
   const { view } = viewState;
   const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
     useState<ProofreadPreviewVisibility>("visible");
-  const isReadOnly = view === "readOnly";
-  const canSwitchView = mode !== "readOnly" && availableModes.length > 1;
-  const nextView = availableModes[(availableModes.indexOf(view) + 1) % availableModes.length];
   const canEditView =
-    !isReadOnly && (view === "translate" ? options.canTranslate : options.canProofread);
+    view !== "readOnly" && (view === "translate" ? options.canTranslate : options.canProofread);
+  const isReadOnly = !canEditView;
+  const canSwitchView =
+    mode !== "readOnly" &&
+    availableModes.length > 1 &&
+    storedViewState.entryMode === mode &&
+    availableModes.includes(view);
+  const nextView = availableModes[(availableModes.indexOf(view) + 1) % availableModes.length];
   return {
     availableModes,
     mode,

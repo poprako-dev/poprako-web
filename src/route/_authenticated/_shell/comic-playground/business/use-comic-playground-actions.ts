@@ -16,6 +16,7 @@ type LoadArgs = {
   worksetId: string | null;
   title: string;
   stages: number | undefined;
+  signal?: AbortSignal | undefined;
 };
 
 interface ComicPlaygroundActionSet {
@@ -23,6 +24,7 @@ interface ComicPlaygroundActionSet {
     offset: number,
     limit: number,
     mode: "translator" | "reviewer",
+    signal?: AbortSignal,
   ) => Promise<Result<ComicInfo[]>>;
   handleUpdateWorkset: (
     id: string,
@@ -36,24 +38,27 @@ async function loadComicPage(args: LoadArgs): Promise<Result<ComicInfo[]>> {
   if (!args.worksetId) {
     return { success: true, data: [] };
   }
-  return listComics(args.client, {
-    worksetId: args.worksetId,
-    withs:
-      args.mode === "reviewer"
-        ? ["pinned_chapter", "pinned_chapter_assignment"]
-        : ["pinned_chapter"],
-    fuzzyTitle: args.title || undefined,
-    stages: args.stages,
-    offset: args.offset,
-    limit: args.limit,
-  });
+  return listComics(
+    args.client,
+    {
+      worksetId: args.worksetId,
+      withs:
+        args.mode === "reviewer"
+          ? ["pinned_chapter", "pinned_chapter_assignment"]
+          : ["pinned_chapter"],
+      fuzzyTitle: args.title || undefined,
+      stages: args.stages,
+      offset: args.offset,
+      limit: args.limit,
+    },
+    args.signal,
+  );
 }
 
 async function saveWorkset(
   client: ApiClient,
   id: string,
   args: { name: string; description?: string | undefined },
-  loadWorksets: () => Promise<void>,
   showToast: ReturnType<typeof useToastStore.getState>["showToast"],
 ): Promise<Result<void>> {
   const result = await updateWorkset(client, id, args);
@@ -63,7 +68,6 @@ async function saveWorkset(
     return result;
   }
   showToast("作品集信息已更新", "success");
-  await loadWorksets();
   return result;
 }
 
@@ -105,7 +109,7 @@ export function useComicPlaygroundActions(args: {
   } = args;
   const showToast = useToastStore((state) => state.showToast);
   const handleLoadComics = useCallback(
-    (offset: number, limit: number, mode: "translator" | "reviewer") =>
+    (offset: number, limit: number, mode: "translator" | "reviewer", signal?: AbortSignal) =>
       loadComicPage({
         offset,
         limit,
@@ -114,13 +118,14 @@ export function useComicPlaygroundActions(args: {
         worksetId: activeWorksetId,
         title: activeTitle,
         stages: activeStages,
+        signal,
       }),
     [activeStages, activeTitle, activeWorksetId, client],
   );
   const handleUpdateWorkset = useCallback(
     (id: string, update: { name: string; description?: string | undefined }) =>
-      saveWorkset(client, id, update, loadWorksets, showToast),
-    [client, loadWorksets, showToast],
+      saveWorkset(client, id, update, showToast),
+    [client, showToast],
   );
   const handleCreateComic = (comicArgs: CreateComicArgs): Promise<Result<string>> =>
     submitComic(client, comicArgs, loadWorksets, setRefreshKey, showToast);

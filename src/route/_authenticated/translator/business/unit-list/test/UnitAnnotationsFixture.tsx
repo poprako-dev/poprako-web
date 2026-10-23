@@ -1,6 +1,6 @@
 import { useState, type JSX } from "react";
 import { StatusOptionBar } from "../../StatusOptionBar";
-import { UnitList } from "../UnitList";
+import { UnitList } from "./UnitListPreview";
 import { createUnit, type UnitInfo } from "../../unit/unit";
 import { applyUnitUpdates } from "../../unit/unit-edit";
 import { createUnitAnnotationFixture } from "../../test/unit-annotation-fixture";

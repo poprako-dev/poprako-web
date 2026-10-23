@@ -36,12 +36,16 @@ export function registerApi(
   });
 }
 
-export function getMyUser(client: ApiClient): Promise<Result<ApiUser>> {
-  return client.get<ApiUser>("/users/me");
+export function getMyUser(client: ApiClient, signal?: AbortSignal): Promise<Result<ApiUser>> {
+  return client.get<ApiUser>("/users/me", { signal });
 }
 
-export function getUser(client: ApiClient, userId: string): Promise<Result<ApiUser>> {
-  return client.get<ApiUser>(`/users/${encodeURIComponent(userId)}`);
+export function getUser(
+  client: ApiClient,
+  userId: string,
+  signal?: AbortSignal,
+): Promise<Result<ApiUser>> {
+  return client.get<ApiUser>(`/users/${encodeURIComponent(userId)}`, { signal });
 }
 
 export function listMyMembers(
@@ -51,8 +55,10 @@ export function listMyMembers(
     limit: number;
     includes?: readonly ("user" | "team")[] | undefined;
   },
+  signal?: AbortSignal,
 ): Promise<Result<ApiMember[]>> {
   return client.get<ApiMember[]>("/members/me", {
+    signal,
     query: {
       offset: options.offset,
       limit: options.limit,
@@ -64,8 +70,10 @@ export function listMyMembers(
 export function listMembers(
   client: ApiClient,
   options: ListApiMembersOptions,
+  signal?: AbortSignal,
 ): Promise<Result<ApiMember[]>> {
   return client.get<ApiMember[]>("/members", {
+    signal,
     query: {
       ownerId: options.ownerId,
       teamId: options.teamId,
@@ -120,8 +128,12 @@ export function markSelfOnline(
   });
 }
 
-export function listOnlineUserIds(client: ApiClient, teamId: string): Promise<Result<string[]>> {
-  return client.get<string[]>(`/teams/${encodeURIComponent(teamId)}/online-users`);
+export function listOnlineUserIds(
+  client: ApiClient,
+  teamId: string,
+  signal?: AbortSignal,
+): Promise<Result<string[]>> {
+  return client.get<string[]>(`/teams/${encodeURIComponent(teamId)}/online-users`, { signal });
 }
 
 export function updateTeam(

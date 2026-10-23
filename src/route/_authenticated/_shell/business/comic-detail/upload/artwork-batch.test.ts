@@ -233,3 +233,38 @@ test("parallel page uploads do not expose chapter confirmation conflicts as fail
     await batch.dispose();
   }
 });
+
+test("allocates a 100-page batch with one task phase publication", async () => {
+  requests.confirm.mockResolvedValue({ success: true, data: undefined });
+  const client = createApiClient({ baseUrl: "/api/v1", getAccessToken: () => null });
+  vi.spyOn(client, "putPresigned").mockResolvedValue({ success: true, data: undefined });
+  const batch = createArtworkBatch({
+    client,
+    chapterId: "batch-allocation-work",
+    files: Array.from({ length: 100 }, (_, index) => new File(["psd"], `${String(index)}.psd`)),
+    includeArchive: false,
+    onChanged: vi.fn(),
+  });
+  let previous = batch.getSnapshot();
+  const allocatingCounts: number[] = [];
+  const unsubscribe = batch.subscribe(() => {
+    const snapshot = batch.getSnapshot();
+    if (
+      snapshot.tasks.some(
+        (task, index) =>
+          task.phase === "allocating" && previous.tasks[index]?.phase !== "allocating",
+      )
+    ) {
+      allocatingCounts.push(snapshot.tasks.filter((task) => task.phase === "allocating").length);
+    }
+    previous = snapshot;
+  });
+  try {
+    await batch.run();
+    expect(allocatingCounts).toEqual([100]);
+    expect(batch.getSnapshot().tasks.every((task) => task.phase === "done")).toBe(true);
+  } finally {
+    unsubscribe();
+    await batch.dispose();
+  }
+});

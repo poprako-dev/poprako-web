@@ -1,9 +1,11 @@
+import { useCommittedCallback } from "@/shared/hook/use-committed-callback";
 import type { JSX } from "react/jsx-runtime";
 import { type RefObject, useLayoutEffect, useRef, useState } from "react";
 
 type Props = {
   targetRef: RefObject<HTMLDivElement | null>;
-  layoutKey: readonly unknown[];
+  contentKey: unknown;
+  styleKey: string | boolean | undefined;
 };
 
 type MarkerPosition = {
@@ -42,22 +44,25 @@ function measureLineBreakPositions(
   return positions;
 }
 
-export function LineBreakOverlay({ targetRef, layoutKey }: Props): JSX.Element {
+export function LineBreakOverlay({ targetRef, contentKey, styleKey }: Props): JSX.Element {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [positions, setPositions] = useState<MarkerPosition[]>([]);
 
-  useLayoutEffect(() => {
+  const measureNow = useCommittedCallback((): void => {
     const target = targetRef.current;
     const overlay = overlayRef.current;
-    if (!target || !overlay) return;
+    if (target && overlay) setPositions(measureLineBreakPositions(target, overlay));
+  });
+  useLayoutEffect(() => {
+    measureNow();
+  }, [measureNow, contentKey, styleKey]);
+
+  useLayoutEffect(() => {
+    const target = targetRef.current;
+    if (!target) return;
     let isDisposed = false;
     let measureFrame: number | null = null;
 
-    const measureNow = (): void => {
-      if (isDisposed) return;
-      // eslint-disable-next-line @eslint-react/set-state-in-effect -- Measure DOM before paint.
-      setPositions(measureLineBreakPositions(target, overlay));
-    };
     const scheduleMeasure = (): void => {
       if (isDisposed) return;
       if (measureFrame !== null) return;
@@ -67,8 +72,6 @@ export function LineBreakOverlay({ targetRef, layoutKey }: Props): JSX.Element {
       });
     };
 
-    // Measure the rendered text before paint; markers never enter the text flow.
-    measureNow();
     const observer = new ResizeObserver(scheduleMeasure);
     observer.observe(target);
     if (document.fonts.status === "loading") {
@@ -81,7 +84,7 @@ export function LineBreakOverlay({ targetRef, layoutKey }: Props): JSX.Element {
       document.fonts.removeEventListener("loadingdone", scheduleMeasure);
       if (measureFrame !== null) cancelAnimationFrame(measureFrame);
     };
-  }, [targetRef, layoutKey]);
+  }, [targetRef, measureNow]);
 
   return (
     <div

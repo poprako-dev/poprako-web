@@ -92,8 +92,9 @@ function toUnitInfo(value: UnitApiInfo, index: number): UnitInfo {
 export async function listUnits(
   client: ApiClient,
   pageId: string,
+  signal?: AbortSignal,
 ): Promise<Result<ListPageUnitsResult>> {
-  const result = await listPageUnitsApi(client, pageId, { timeoutMs: 30_000 });
+  const result = await listPageUnitsApi(client, pageId, { timeoutMs: 30_000, signal });
   if (!result.success) return result;
   const units = result.data.unitInfos ?? [];
   return {

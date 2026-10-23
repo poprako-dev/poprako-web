@@ -7,6 +7,7 @@ type Props = {
   label: string;
   isActive: boolean;
   onClick: () => void;
+  onIntent?: (() => void) | undefined;
   hasBadge?: boolean | undefined;
 };
 
@@ -15,12 +16,16 @@ export function NavItem({
   label,
   isActive,
   onClick,
+  onIntent,
   hasBadge = false,
 }: Props): ReactElement {
   return (
     <button
       type="button"
       onClick={onClick}
+      onPointerEnter={onIntent}
+      onFocus={onIntent}
+      onPointerDown={onIntent}
       className={clsx(
         "group/item relative flex h-11 w-full",
         "items-center outline-none transition-all",

@@ -9,8 +9,9 @@ import { toAssignmentInfo, toChapterInfo, toComicInfo } from "../content-adapter
 export async function listComics(
   client: ApiClient,
   args: ListComicArgs,
+  signal?: AbortSignal,
 ): Promise<Result<ComicInfo[]>> {
-  const result = await comicApi.listComics(client, args.worksetId, args);
+  const result = await comicApi.listComics(client, args.worksetId, args, signal);
   if (!result.success) return result;
   const { comics, pinnedChapters, pinnedChapterAssignments } = result.data;
   return {

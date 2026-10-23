@@ -27,6 +27,13 @@ type Context = {
   setResult: Dispatch<SetStateAction<ArchiveResult | null>>;
   showToast: Toast;
 };
+type ResultContext = Pick<Context, "resultRef" | "setResult" | "setStatus" | "setCompleted">;
+type ItemContext = ResultContext & Pick<Context, "controllerRef" | "setItems">;
+
+export interface BoundedItemActions {
+  changeLimit: (id: string, value: string | null) => void;
+  removeItem: (id: string) => void;
+}
 
 export function disposeBoundedResult(resultRef: ResultRef): void {
   const previous = resultRef.current;
@@ -36,11 +43,27 @@ export function disposeBoundedResult(resultRef: ResultRef): void {
   });
 }
 
-export function invalidateBoundedResult(context: Context): void {
+export function invalidateBoundedResult(context: ResultContext): void {
   disposeBoundedResult(context.resultRef);
   context.setResult(null);
   context.setStatus("");
   context.setCompleted(0);
+}
+
+export function createBoundedItemActions(context: ItemContext): BoundedItemActions {
+  const changeLimit = (id: string, value: string | null): void => {
+    if (context.controllerRef.current) return;
+    invalidateBoundedResult(context);
+    context.setItems((items) =>
+      items.map((item) => (item.id === id ? { ...item, limitKiB: value } : item)),
+    );
+  };
+  const removeItem = (id: string): void => {
+    if (context.controllerRef.current) return;
+    invalidateBoundedResult(context);
+    context.setItems((items) => items.filter((item) => item.id !== id));
+  };
+  return { changeLimit, removeItem };
 }
 
 export function updateBoundedItems(context: Context, next: BoundedImage[]): void {
@@ -134,7 +157,6 @@ export function isBoundedInputValid(items: BoundedImage[], body: string, cover: 
 }
 
 interface BoundedActions {
-  updateItems: (next: BoundedImage[]) => void;
   addFiles: (files: File[]) => void;
   changeDefault: (kind: "body" | "cover", value: string) => void;
   start: () => Promise<void>;
@@ -142,9 +164,6 @@ interface BoundedActions {
 }
 
 export function createBoundedActions(context: Context): BoundedActions {
-  const updateItems = (next: BoundedImage[]): void => {
-    updateBoundedItems(context, next);
-  };
   const addFiles = (files: File[]): void => {
     addBoundedFiles(context, files);
   };
@@ -155,5 +174,5 @@ export function createBoundedActions(context: Context): BoundedActions {
   const cancel = (): void => {
     context.controllerRef.current?.abort();
   };
-  return { updateItems, addFiles, changeDefault, start, cancel };
+  return { addFiles, changeDefault, start, cancel };
 }

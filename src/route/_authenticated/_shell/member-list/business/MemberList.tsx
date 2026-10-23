@@ -11,7 +11,11 @@ type Props = {
   activeRole: RoleFilter | null;
   onChangeRole: (role: RoleFilter | null) => void;
   onCreateMember: () => void;
-  onLoadMembers: (offset: number, limit: number) => Promise<Result<MemberInfo[]>>;
+  onLoadMembers: (
+    offset: number,
+    limit: number,
+    signal?: AbortSignal,
+  ) => Promise<Result<MemberInfo[]>>;
   onMemberClick?: ((member: MemberInfo) => void) | undefined;
 };
 

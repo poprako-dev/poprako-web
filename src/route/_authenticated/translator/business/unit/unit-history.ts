@@ -1,64 +1,49 @@
-import { applyPatches, enablePatches, produceWithPatches, type Patch } from "immer";
-import {
-  normalizeUnitIndexes,
-  unitTranslationNote,
-  unitTypographyNote,
-  type UnitInfo,
-} from "./unit";
-import type { UnitNotes } from "./unit-notes";
+import { normalizeUnitIndexes, type UnitInfo } from "./unit";
+import { reverseUnitContent, unitContent, type UnitContent } from "./unit-history-content";
 
-enablePatches();
+type HistoryEntry = {
+  order: string[] | undefined;
+  changed: Map<string, Partial<UnitContent>>;
+};
 
-type UnitContent = Pick<
-  UnitInfo,
-  "xCoord" | "yCoord" | "isBubble" | "isFlagged" | "isProofread"
-> & { translatedText: string; proofreadText: string } & UnitNotes;
-type UnitDocument = { order: string[]; units: Record<string, UnitContent> };
-
-function content(unit: UnitInfo): UnitContent {
+function historyEntry(before: UnitInfo[], after: UnitInfo[]): HistoryEntry | undefined {
+  const reordered =
+    before.length !== after.length || before.some((unit, i) => unit.id !== after[i]?.id);
+  const previous = reordered ? new Map(before.map((unit) => [unit.id, unit])) : undefined;
+  const changed = new Map<string, Partial<UnitContent>>();
+  for (let index = 0; index < after.length; index += 1) {
+    const unit = after[index];
+    if (!unit) continue;
+    const old = previous ? previous.get(unit.id) : before[index];
+    previous?.delete(unit.id);
+    if (!old) continue;
+    const reverse = reverseUnitContent(old, unit);
+    if (reverse) changed.set(unit.id, reverse);
+  }
+  if (previous) {
+    for (const [id, unit] of previous) changed.set(id, unitContent(unit));
+  }
+  if (!reordered && !changed.size) return;
   return {
-    xCoord: unit.xCoord,
-    yCoord: unit.yCoord,
-    isBubble: unit.isBubble,
-    isFlagged: unit.isFlagged,
-    isProofread: unit.isProofread,
-    translatedText: unit.translatedText ?? "",
-    proofreadText: unit.proofreadText ?? "",
-    translationNote: unitTranslationNote(unit),
-    typographyNote: unitTypographyNote(unit),
+    order: reordered ? before.map((unit) => unit.id) : undefined,
+    changed,
   };
 }
 
-function documentOf(units: UnitInfo[]): UnitDocument {
+function restoreContent(unit: UnitInfo, reverse: Partial<UnitContent>): UnitInfo {
+  const translatedText = reverse.translatedText ?? unit.translatedText;
+  const proofreadText = reverse.proofreadText ?? unit.proofreadText;
   return {
-    order: units.map((unit) => unit.id),
-    units: Object.fromEntries(units.map((unit) => [unit.id, content(unit)])),
+    ...unit,
+    ...reverse,
+    translatorId: translatedText ? unit.translatorId : undefined,
+    proofreaderId: proofreadText ? unit.proofreaderId : undefined,
   };
-}
-
-function updateDocument(draft: UnitDocument, next: UnitDocument): void {
-  if (
-    draft.order.length !== next.order.length ||
-    draft.order.some((id, i) => id !== next.order[i])
-  ) {
-    draft.order = next.order;
-  }
-  for (const id of Object.keys(draft.units)) {
-    if (!Object.hasOwn(next.units, id)) Reflect.deleteProperty(draft.units, id);
-  }
-  for (const [id, unit] of Object.entries(next.units)) {
-    const previous = draft.units[id];
-    if (!previous) {
-      draft.units[id] = unit;
-      continue;
-    }
-    Object.assign(previous, unit);
-  }
 }
 
 /** Only editable content travels through history; identity and authors stay current. */
 export class UnitHistory {
-  private readonly entries: Patch[][] = [];
+  private readonly entries: HistoryEntry[] = [];
   private readonly metadata = new Map<string, UnitInfo>();
 
   get canUndo(): boolean {
@@ -68,20 +53,23 @@ export class UnitHistory {
   record(before: UnitInfo[], after: UnitInfo[]): boolean {
     this.remember(before);
     this.remember(after);
-    const [, patches, reverse] = produceWithPatches(documentOf(before), (draft) => {
-      updateDocument(draft, documentOf(after));
-    });
-    if (!patches.length) return false;
-    this.entries.push(reverse);
+    const entry = historyEntry(before, after);
+    if (!entry) return false;
+    this.entries.push(entry);
     return true;
   }
 
   undo(current: UnitInfo[]): UnitInfo[] | undefined {
-    const reverse = this.entries.pop();
-    if (!reverse) return;
+    const entry = this.entries.pop();
+    if (!entry) return;
     this.remember(current);
-    const restored = applyPatches(documentOf(current), reverse);
-    return normalizeUnitIndexes(restored.order.map((id) => this.restoreUnit(id, restored)));
+    if (!entry.order) {
+      return normalizeUnitIndexes(current.map((unit) => this.restoreUnit(unit.id, unit, entry)));
+    }
+    const units = new Map(current.map((unit) => [unit.id, unit]));
+    return normalizeUnitIndexes(
+      entry.order.map((id) => this.restoreUnit(id, units.get(id), entry)),
+    );
   }
 
   clear(): void {
@@ -93,17 +81,10 @@ export class UnitHistory {
     for (const unit of units) this.metadata.set(unit.id, unit);
   }
 
-  private restoreUnit(id: string, document: UnitDocument): UnitInfo {
-    const unit = document.units[id];
+  private restoreUnit(id: string, current: UnitInfo | undefined, entry: HistoryEntry): UnitInfo {
+    const reverse = entry.changed.get(id);
+    const unit = current ?? this.metadata.get(id);
     if (!unit) throw new Error("回退文档缺少 Unit 内容");
-    const metadata = this.metadata.get(id);
-    return {
-      ...metadata,
-      ...unit,
-      id,
-      index: 0,
-      translatorId: unit.translatedText ? metadata?.translatorId : undefined,
-      proofreaderId: unit.proofreadText ? metadata?.proofreaderId : undefined,
-    };
+    return reverse ? restoreContent(unit, reverse) : unit;
   }
 }

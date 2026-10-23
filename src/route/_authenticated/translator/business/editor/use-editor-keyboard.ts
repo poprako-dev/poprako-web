@@ -1,3 +1,4 @@
+import { usePreparedModeSwitch } from "../editor/use-prepared-mode-switch";
 import { useEffect } from "react";
 import { unitId } from "@/route/_authenticated/translator/business/unit/unit";
 import { useShortcutActions } from "@/shared/hook/use-shortcut-actions";
@@ -14,6 +15,8 @@ type Options = Pick<
   | "setFocusedUnitId"
   | "availableModes"
   | "mode"
+  | "view"
+  | "nextView"
   | "setViewState"
   | "setProofreadPreviewVisibility"
   | "isReadOnly"
@@ -41,12 +44,18 @@ type Options = Pick<
   > &
   Pick<EditorProps, "project"> & { handleSave: () => Promise<void> };
 export function useEditorKeyboard(options: Options): { handleSwitchView: () => void } {
-  const handleSwitchView = createSwitchViewHandler({
+  const commit = createSwitchViewHandler({
     canSwitchView: options.canSwitchView,
     setIsPageStatsOpen: options.setIsPageStatsOpen,
     setViewState: options.setViewState,
-    availableModes: options.availableModes,
+    view: options.view,
+    nextView: options.nextView,
     mode: options.mode,
+  });
+  const handleSwitchView = usePreparedModeSwitch({
+    currentView: options.view,
+    nextView: options.canSwitchView ? options.nextView : undefined,
+    commit,
   });
   useKeyboardBindings(options, handleSwitchView);
   return { handleSwitchView };
@@ -75,16 +84,16 @@ function useKeyboardBindings(options: Options, handleSwitchView: () => void): vo
 function createSwitchViewHandler(
   options: Pick<
     Options,
-    "canSwitchView" | "setIsPageStatsOpen" | "setViewState" | "availableModes" | "mode"
+    "canSwitchView" | "setIsPageStatsOpen" | "setViewState" | "view" | "nextView" | "mode"
   >,
 ): () => void {
   return () => {
     if (!options.canSwitchView) return;
     options.setIsPageStatsOpen(false);
     options.setViewState((current) => {
-      const currentIndex = options.availableModes.indexOf(current.view);
-      const next = options.availableModes[(currentIndex + 1) % options.availableModes.length];
-      return next ? { entryMode: options.mode, view: next } : current;
+      return current.view === options.view && options.nextView
+        ? { entryMode: options.mode, view: options.nextView }
+        : current;
     });
   };
 }

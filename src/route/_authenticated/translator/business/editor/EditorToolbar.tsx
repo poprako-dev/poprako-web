@@ -3,6 +3,7 @@ import { StatusOptionBar } from "../StatusOptionBar";
 import type { EditorSession } from "./use-editor-session";
 
 type Props = {
+  onPreloadMode: () => void;
   session: EditorSession;
   isAnnotationEditingEnabled: boolean;
   onToggleAnnotationEditing: (() => void) | undefined;
@@ -18,6 +19,7 @@ function saveStatusLabel(session: EditorSession): string {
 
 export function EditorToolbar({
   session,
+  onPreloadMode,
   isAnnotationEditingEnabled,
   onToggleAnnotationEditing,
 }: Props): JSX.Element {
@@ -26,7 +28,7 @@ export function EditorToolbar({
       <StatusOptionBar
         isAnnotationEditingEnabled={isAnnotationEditingEnabled}
         onToggleAnnotationEditing={onToggleAnnotationEditing}
-        currMode={session.view}
+        currMode={session.isReadOnly ? "readOnly" : session.view}
         view={session.view}
         nextView={session.nextView ?? session.view}
         canSwitchView={session.canSwitchView && session.nextView !== undefined}
@@ -36,6 +38,7 @@ export function EditorToolbar({
         isHighResolution={session.isHighResolution}
         isLoadingPage={session.isLoadingPage}
         onSwitchView={session.handleSwitchView}
+        onPreloadMode={onPreloadMode}
         onRelocationClick={session.toggleRelocation}
         onUnitCreationClick={() => {
           session.setIsUnitCreationEnabled((value) => !value);

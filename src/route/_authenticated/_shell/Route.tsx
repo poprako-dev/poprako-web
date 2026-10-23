@@ -1,10 +1,12 @@
 import clsx from "clsx";
-import { useEffect, useState, type ReactElement } from "react";
+import { useRouteIntent } from "@/route/_authenticated/business/navigation/use-route-intent";
+import type { NavId } from "./business/navigation/app-sidebar-type";
+import { useState, type ReactElement } from "react";
 import { BookOpen, LayoutDashboard, Mail, Settings, Users } from "lucide-react";
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { AppSidebar } from "@/route/_authenticated/_shell/business/navigation/AppSidebar";
 import { useMailStore } from "@/route/_authenticated/_shell/business/mail/mail-store";
-import { useApiClient } from "@/route/business/api-context";
+import { useMailRefresh } from "@/route/_authenticated/_shell/business/mail/use-mail-refresh";
 import { FirstRegistrationGuideDialog } from "@/route/_authenticated/_shell/business/first-registration/FirstRegistrationGuideDialog";
 import {
   readFirstRegistrationFlag,
@@ -23,7 +25,7 @@ const mobileNavItems = [
 
 function MobileBottomNav(): ReactElement {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const hasUnread = useMailStore((state) => state.mails.some((mail) => !mail.isRead));
+  const hasUnread = useMailStore((state) => state.hasUnread);
   return (
     <nav
       className={clsx(
@@ -62,16 +64,20 @@ function MobileBottomNav(): ReactElement {
   );
 }
 
-function Shell(): ReactElement {
-  const navigate = useNavigate();
-  const client = useApiClient();
-  const loadState = useMailStore((state) => state.loadState);
-  const loadInitial = useMailStore((state) => state.loadInitial);
-  const [showGuide, setShowGuide] = useState(() => !readFirstRegistrationFlag());
+const navRouteIds = {
+  workspace: "/_authenticated/_shell/workspace/",
+  "comic-playground": "/_authenticated/_shell/comic-playground/",
+  "member-list": "/_authenticated/_shell/member-list/",
+  "system-mail": "/_authenticated/_shell/system-mail/",
+  settings: "/_authenticated/_shell/settings/",
+  utilities: "/_authenticated/_shell/utilities/",
+} as const satisfies Record<NavId, string>;
 
-  useEffect(() => {
-    if (loadState === "idle") void loadInitial(client, 15);
-  }, [client, loadInitial, loadState]);
+function Shell(): ReactElement {
+  const warmRoute = useRouteIntent();
+  const navigate = useNavigate();
+  useMailRefresh("unread");
+  const [showGuide, setShowGuide] = useState(() => !readFirstRegistrationFlag());
 
   const closeGuide = (): void => {
     writeFirstRegistrationFlag(true);
@@ -79,7 +85,11 @@ function Shell(): ReactElement {
   };
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-page-paper">
-      <AppSidebar />
+      <AppSidebar
+        onNavIntent={(id) => {
+          warmRoute(navRouteIds[id]);
+        }}
+      />
       <main className={clsx("flex-1 min-h-0 w-full overflow-y-auto", "sm:pl-14", "pb-14 sm:pb-0")}>
         <Outlet />
       </main>

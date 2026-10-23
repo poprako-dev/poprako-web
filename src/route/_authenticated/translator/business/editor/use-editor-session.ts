@@ -94,7 +94,7 @@ function useEditorPersistenceSetup(
     canWrite: props.canWrite,
     registerLeaveGuard: props.registerLeaveGuard,
     onSaveUnits: props.onSaveUnits,
-    onReloadUnits: props.onLoadUnits,
+    onReloadUnits: props.onReloadUnits ?? props.onLoadUnits,
     onExit: props.onExit,
     showToast: state.showToast,
     loadPage,

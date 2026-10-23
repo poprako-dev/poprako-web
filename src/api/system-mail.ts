@@ -13,12 +13,18 @@ export function listSysMails(
   offset = 0,
   limit = 10,
   isRead?: boolean,
+  signal?: AbortSignal,
 ): Promise<Result<SysMailInfo[]>> {
   return client.get<SysMailInfo[]>("/system-mails", {
     query: { isRead, offset, limit },
+    ...(signal ? { signal } : {}),
   });
 }
 
-export function markSysMailRead(client: ApiClient, sysMailId: string): Promise<Result<undefined>> {
-  return client.post<undefined>("/system-mails/mark-read", { ids: [sysMailId] });
+export function markSysMailRead(
+  client: ApiClient,
+  sysMailId: string,
+  signal?: AbortSignal,
+): Promise<Result<undefined>> {
+  return client.post<undefined>("/system-mails/mark-read", { ids: [sysMailId] }, { signal });
 }

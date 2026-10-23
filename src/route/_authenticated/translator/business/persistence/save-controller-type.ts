@@ -11,6 +11,7 @@ export type UnitSaveControllerOptions = {
   canWrite?: () => boolean;
 };
 
+/** Immutable published view; editors replace units instead of mutating snapshot values. */
 export type SaveSnapshot = {
   units: UnitInfo[];
   dirty: boolean;

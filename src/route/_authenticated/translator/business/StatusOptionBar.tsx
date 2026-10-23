@@ -30,6 +30,7 @@ type Props = {
   saving: boolean;
   saveStatus: string;
   onSwitchView: () => void;
+  onPreloadMode?: (() => void) | undefined;
   onRelocationClick: () => void;
   onUnitCreationClick: () => void;
   onToggleProofreadPreviewClick: () => void;
@@ -64,6 +65,7 @@ export function StatusOptionBar({
   saving,
   saveStatus,
   onSwitchView,
+  onPreloadMode,
   onRelocationClick,
   onUnitCreationClick,
   onToggleProofreadPreviewClick,
@@ -83,6 +85,8 @@ export function StatusOptionBar({
           title={`当前：${modeLabel[view].replace("模式", "视图")}，点击切换视图`}
           aria-label={`切换到${modeLabel[nextView]}`}
           onClick={onSwitchView}
+          onPointerEnter={onPreloadMode}
+          onFocus={onPreloadMode}
           className={clsx(btnBase, "bg-surface-green-50 hover:bg-surface-green-100")}
         >
           {modeIcon[view]}

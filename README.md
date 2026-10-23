@@ -9,11 +9,13 @@ Tailwind CSS 构建。项目目前处于活跃开发阶段。
 
 ## 环境要求
 
-- Node.js 26.11.1，独立安装且不含 npm
+- Node.js ^26.12，至少 26.12.1，独立安装且不含 npm
 - pnpm 12.11.2，独立安装的唯一包管理器
 
-版本由 `.node-version` 和 `package.json` 固定。Node.js 26 当前为 Current，
-目标为 LTS（官方计划于 2026-10-28 转入 LTS）。CI 与本地使用相同版本。
+Node.js 范围由 `.node-version` 和 `package.json` 统一为 `^26.12`；安装脚本从官方
+发布索引选择最新的 26 系列稳定版本，并拒绝低于 26.12.1 的已知不安全版本。
+Node.js 26 当前为 Current，目标为 LTS（官方计划于 2026-10-28 转入 LTS）。
+CI 与本地使用相同安装脚本与版本检查。
 可运行 `sh script/setup-js.sh /absolute/path/to/poprako-js` 安装隔离工具链，
 再按脚本输出将两个 bin 目录加入 PATH；无需 npm、npx 或 Corepack。
 
