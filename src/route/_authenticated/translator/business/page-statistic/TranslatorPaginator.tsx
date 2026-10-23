@@ -1,25 +1,13 @@
 import type { JSX } from "react/jsx-runtime";
-import type { DraftState, DraftStore } from "../persistence/draft-store";
-
-const emptyDraftState: DraftState = { drafts: {}, errors: {}, recoveryErrors: {} };
-function emptySubscribe(): () => void {
-  return () => {
-    /* No store to unsubscribe from. */
-  };
-}
-function emptySnapshot(): DraftState {
-  return emptyDraftState;
-}
-import { useMemo, useSyncExternalStore } from "react";
+import type { DraftStore } from "../persistence/draft-store";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import { usePagePickerStats } from "./use-page-picker-stats";
 import { Paginator } from "@/shared/component/Paginator";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { showLocalCaughtError } from "@/route/business/request-error";
 import type { Page, PageUnitFlaggedStats } from "@/route/_authenticated/business/page/page";
 import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
-import {
-  createPageFlaggedStatsController,
-  pageFlaggedCount,
-} from "@/route/_authenticated/translator/business/page-statistic/page-flagged-stats";
+import { createPageFlaggedStatsController } from "@/route/_authenticated/translator/business/page-statistic/page-flagged-stats";
 
 type Props = {
   drafts?: DraftStore | undefined;
@@ -46,10 +34,17 @@ export function TranslatorPaginator({
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
   const showToast = useToastStore((state) => state.showToast);
   const currentPageId = pages[currentPageIndex]?.id;
-  const draftState = useSyncExternalStore(
-    drafts?.subscribe ?? emptySubscribe,
-    drafts?.getState ?? emptySnapshot,
-  );
+  const [isOpen, setIsOpen] = useState(false);
+  const pageStats = usePagePickerStats({
+    drafts,
+    pages,
+    currentPageId,
+    currentPageHasDraft,
+    currentUnits,
+    isEnabled,
+    isOpen,
+    counts: snapshot.counts,
+  });
 
   async function refresh(): Promise<void> {
     try {
@@ -61,6 +56,7 @@ export function TranslatorPaginator({
   }
 
   function handleOpenChange(isOpen: boolean): void {
+    setIsOpen(isOpen);
     if (isOpen && isEnabled) {
       void refresh();
       return;
@@ -84,21 +80,7 @@ export function TranslatorPaginator({
           void onNavigate(currentPageIndex + 1);
         }}
         onPageListOpenChange={handleOpenChange}
-        pageStats={pages.map((page) => {
-          const flaggedUnits = isEnabled
-            ? pageFlaggedCount(page.id, currentPageId, currentUnits, snapshot.counts)
-            : undefined;
-          return {
-            pageId: page.id,
-            hasLocalDraft:
-              Boolean(draftState.drafts[page.id]) ||
-              (page.id === currentPageId && currentPageHasDraft === true),
-            totalUnits: page.totalUnitCount,
-            translatedUnits: page.translatedUnitCount,
-            proofreadUnits: page.proofreadUnitCount,
-            ...(flaggedUnits === undefined ? {} : { flaggedUnits }),
-          };
-        })}
+        pageStats={pageStats}
         pageListFooter={
           isEnabled && (
             <>
