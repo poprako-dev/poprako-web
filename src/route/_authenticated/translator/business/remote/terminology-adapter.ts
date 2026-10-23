@@ -1,3 +1,4 @@
+import { appendTermbase } from "@/route/_authenticated/business/terminology/termbase-append-request";
 import { useMemo } from "react";
 import { useApiClient } from "@/route/business/api-context";
 import type { TerminologyDataSource } from "@/route/_authenticated/business/terminology/terminology-contract";
@@ -23,6 +24,7 @@ export function useTranslatorTerminology(
   return useMemo<TerminologyDataSource | undefined>(() => {
     if (!comicId) return undefined;
     return {
+      appendTermbase: (id, content) => appendTermbase(client, id, content),
       importTermbase: (content) => importComicTermbase(client, comicId, content),
       exportTermbase: (id, signal) => exportTermbase(client, id, signal),
       listTermbases: (args) => listComicTermbases(client, { comicId, ...args }),

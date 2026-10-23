@@ -54,7 +54,11 @@ async function verifyComposingEscapeAndClose(
   const source = page.getByRole("textbox", { name: "原文" });
   const dialog = page.getByRole("dialog", { name: "新建术语" });
   await expect(first.isConnected).toBe(true);
+  await waitFor(async () => {
+    await expect(dialog).toBeVisible();
+  });
   await fireEvent.keyDown(source, { key: "Escape", isComposing: true });
+  await expect(dialog).toHaveAttribute("data-state", "open");
   await expect(dialog).toBeVisible();
   await expect(selectedRow).toHaveClass("z-10");
   await userEvent.keyboard("{Escape}");

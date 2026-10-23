@@ -222,6 +222,8 @@ export function createDataSource({
   const currentTerms = [...termItems];
 
   return {
+    appendTermbase: () =>
+      Promise.resolve({ success: true, data: { added: 0, updated: 0, unchanged: 0 } }),
     importTermbase: createTermbaseImporter(currentTermbases, currentTerms),
     exportTermbase: (id) => {
       const termbase = currentTermbases.find((item) => item.id === id);

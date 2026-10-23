@@ -1,3 +1,4 @@
+import { appendTermbase } from "@/route/_authenticated/business/terminology/termbase-append-request";
 import type { ApiClient } from "@/api/client";
 import type { Result } from "@/shared/utility/result";
 import type { TermbaseInfo } from "@/route/_authenticated/business/terminology/termbase";
@@ -42,6 +43,7 @@ export function createTeamTerminologyDataSource(
   return {
     listTermbases: (args) => listTeamTermbases(client, teamId, args),
     createTermbase: (args) => createTeamTermbase(client, teamId, args),
+    appendTermbase: (id, content) => appendTermbase(client, id, content),
     importTermbase: (content) => importTeamTermbase(client, teamId, content),
     getTermbase: (id) => getTermbase(client, id),
     updateTermbase: (id, args) => updateTermbase(client, id, args),

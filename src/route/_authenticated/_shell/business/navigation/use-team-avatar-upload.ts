@@ -77,7 +77,7 @@ async function processAvatarFileChange(
       return;
     }
     console.error("[TeamOption] 上传团队头像异常:", error);
-    showLocalCaughtError(error, deps.showToast, "团队头像上传失败", true);
+    showLocalCaughtError(error, deps.showToast, "头像上传失败", true);
   } finally {
     if (operation.isCurrent()) {
       deps.setIsUploading(false);
@@ -101,7 +101,7 @@ async function uploadAvatar(deps: UploadDependencies): Promise<void> {
     return;
   }
   if (allocation.data === null) {
-    showToast("团队头像未发生变化", "success");
+    showToast("头像未发生变化", "success");
     return;
   }
   await uploadAndConfirm(deps, allocation.data);
@@ -132,7 +132,7 @@ async function uploadAndConfirm(
   }
   deps.onUploaded(file);
   await deps.onJoinTeam();
-  showToast("团队头像上传成功", "success");
+  showToast("头像上传成功", "success");
 }
 
 export function useTeamAvatarUpload(

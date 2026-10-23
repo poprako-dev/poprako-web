@@ -78,7 +78,7 @@ function TeamAvatar({
     <button
       type="button"
       onClick={onUploadClick}
-      title={canUpload ? "上传团队头像" : undefined}
+      title={canUpload ? "上传头像" : undefined}
       className={clsx(
         "relative z-10 w-11 h-11 rounded-md overflow-hidden shrink-0",
         "flex items-center justify-center",
@@ -275,7 +275,7 @@ export function TeamOption({
       {showExitWarning && (
         <ConfirmDialog
           title="头像上传尚未完成"
-          description="当前正在上传并记录团队头像。现在退出可能导致未完成确认，请继续等待或确认退出。"
+          description="当前正在上传并记录头像。现在退出可能导致未完成确认，请继续等待或确认退出。"
           confirmLabel="确认退出"
           onConfirm={() => {
             setShowExitWarning(false);

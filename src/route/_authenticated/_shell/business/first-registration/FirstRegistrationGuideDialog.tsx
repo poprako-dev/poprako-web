@@ -12,7 +12,7 @@ const guideItems = [
   {
     icon: CircleUserRound,
     title: "上传一张头像",
-    description: "让团队成员更容易认出你",
+    description: "让组员更容易认出你",
   },
   {
     icon: KeyRound,

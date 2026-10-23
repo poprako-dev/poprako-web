@@ -1,3 +1,5 @@
+import { TermbaseAppendButton } from "./TermbaseAppendButton";
+import type { TermbaseAppendActions } from "./use-termbase-append";
 import clsx from "clsx";
 import { Folder } from "lucide-react";
 import { useLongPress } from "@/shared/hook/use-long-press";
@@ -12,6 +14,7 @@ type Props = {
   onExport: () => void;
   onEdit?: () => void;
   directory?: boolean;
+  termbaseAppend?: TermbaseAppendActions;
 };
 
 export function TermbaseRow({
@@ -22,8 +25,9 @@ export function TermbaseRow({
   onExport,
   onEdit,
   directory = false,
+  termbaseAppend,
 }: Props): React.ReactElement {
-  const scope = termbase.comicId ? "本作" : "团队";
+  const scope = termbase.comicId ? "本作" : "全组";
   const longPress = useLongPress({ onLongPress: () => onEdit?.(), onClick: onSelect });
 
   return (
@@ -90,6 +94,16 @@ export function TermbaseRow({
         </span>
       </button>
       <TermbaseShareButton isExporting={isExporting} onExport={onExport} />
+      {termbaseAppend && (
+        <TermbaseAppendButton
+          name={termbase.name}
+          busy={termbaseAppend.pendingId === termbase.id}
+          disabled={termbaseAppend.pendingId !== null}
+          onAppend={(file) => {
+            void termbaseAppend.appendTermbase(termbase.id, file);
+          }}
+        />
+      )}
     </div>
   );
 }

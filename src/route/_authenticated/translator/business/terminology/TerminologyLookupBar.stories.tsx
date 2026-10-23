@@ -42,7 +42,7 @@ export const MixedTermbases: Story = {
     await waitFor(
       async () => {
         await expect(canvas.getByText("角色称谓")).toBeVisible();
-        await expect(canvas.getByText("团队")).toBeVisible();
+        await expect(canvas.getByText("全组")).toBeVisible();
         await expect(canvas.getAllByText("本作")).toHaveLength(2);
         await expect(Math.round(lookupWidth(canvasElement))).toBe(360);
       },

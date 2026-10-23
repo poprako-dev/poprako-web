@@ -1,3 +1,4 @@
+import type { TermbaseAppendActions } from "./use-termbase-append";
 import { useCallback, type ReactNode } from "react";
 import { Plus, Search } from "lucide-react";
 import clsx from "clsx";
@@ -14,6 +15,7 @@ const PAGE_SIZE = 30;
 type Props = {
   dataSource: TerminologyDataSource;
   termbaseExport: TermbaseExportActions;
+  termbaseAppend?: TermbaseAppendActions;
   query: string;
   searchQuery: string;
   selectedTermbase?: TermbaseInfo;
@@ -38,6 +40,7 @@ function normalizedQuery(value: string): string | undefined {
 export function TermbasePanel({
   dataSource,
   termbaseExport,
+  termbaseAppend,
   query,
   searchQuery,
   selectedTermbase,
@@ -132,6 +135,7 @@ export function TermbasePanel({
             key={termbase.id}
             termbase={termbase}
             directory={directory}
+            {...(canEdit(termbase) && termbaseAppend ? { termbaseAppend } : {})}
             isSelected={termbase.id === selectedTermbase?.id}
             isExporting={termbaseExport.exportingIds.has(termbase.id)}
             onExport={() => {
