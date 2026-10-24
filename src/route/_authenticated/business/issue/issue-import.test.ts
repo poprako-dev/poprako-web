@@ -4,13 +4,13 @@ import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapte
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import { roleMask } from "@/route/business/identity/role";
 
-test("accepts the PRK protocol with independent optional targets and verbatim notes", () => {
+test("accepts page annotations with optional rectangles and verbatim notes", () => {
   const input = parseIssueImport(
     JSON.stringify({
       pages: [
         {
           issues: [
-            { variant: "自定义", layer_name: "他们两个…", note: "" },
+            { variant: "自定义", note: "" },
             {
               variant: "位置",
               rect: { x_coord: 0, y_coord: 0, width: 1, height: 1 },
@@ -23,10 +23,9 @@ test("accepts the PRK protocol with independent optional targets and verbatim no
     }),
   );
   expect(input.pages[0]?.issues).toEqual([
-    { variant: "自定义", layerName: "他们两个…", rect: null, note: "" },
+    { variant: "自定义", rect: null, note: "" },
     {
       variant: "位置",
-      layerName: null,
       rect: { xCoord: 0, yCoord: 0, width: 1, height: 1 },
       note: " \n说明\n ",
     },
@@ -45,7 +44,6 @@ test("accepts independent review page counts and rejects invalid issue structure
   ).toHaveLength(33);
   const invalid = [
     { variant: " ", note: "" },
-    { variant: "位置", layer_name: " ", note: "" },
     { variant: "位置", note: "", rect: { x_coord: 0, y_coord: 0, width: 0, height: 0 } },
     { variant: "位置", note: "", rect: { x_coord: 0.9, y_coord: 0, width: 0.2, height: 0.1 } },
     { variant: "位置", note: "", rect: { x_coord: -0.1, y_coord: 0, width: 0.2, height: 0.1 } },
@@ -70,12 +68,12 @@ test("only a current reviewer assignment can import an unpublished chapter", () 
   expect(canImportIssues({ ...chapter, stages: 2 << 10 }, reviewer)).toBe(false);
 });
 
-test("rejects obsolete numeric layer fields instead of silently importing unnamed issues", () => {
+test("rejects unsupported annotation fields", () => {
   expect(() =>
     parseIssueImport(
       JSON.stringify({
-        pages: [{ issues: [{ variant: "字号错误", layer_path: "0.2.5", note: "eg2" }] }],
+        pages: [{ issues: [{ variant: "字号错误", unsupported: "value", note: "eg2" }] }],
       }),
     ),
-  ).toThrow("layer_name");
+  ).toThrow("不支持的字段");
 });

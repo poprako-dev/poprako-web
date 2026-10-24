@@ -78,7 +78,7 @@ export function ArtworkCard({
       </button>
       {issueCount !== undefined && issueCount > 0 && (
         <div
-          aria-label={`第 ${String(page.index + 1)} 页有 issue`}
+          aria-label={`第 ${String(page.index + 1)} 页有标注`}
           className="pointer-events-none absolute top-2 right-2 z-10 flex items-center justify-center rounded bg-image-label-overlay px-1.5 py-1"
         >
           <div className="h-2.5 w-2.5 rounded-full bg-surface-orange-400 shadow-sm" />

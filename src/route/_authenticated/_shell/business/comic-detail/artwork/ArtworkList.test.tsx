@@ -35,7 +35,6 @@ function artworkIssueData(issuePage: string): unknown {
       pageArtworkId: issuePage,
       index,
       variant: "文字",
-      layerName: null,
       rect: null,
       note: "修正",
     })),
@@ -99,10 +98,10 @@ afterEach(cleanup);
 
 test("refreshes artwork issue indicators immediately after importing review issues", async () => {
   setup();
-  expect(await screen.findByLabelText("第 2 页有 issue")).toBeVisible();
+  expect(await screen.findByLabelText("第 2 页有标注")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "上传监稿" }));
   const text = JSON.stringify({
-    pages: [{ issues: [{ variant: "文字", layer_name: "对白", note: "修正" }] }, { issues: [] }],
+    pages: [{ issues: [{ variant: "文字", note: "修正" }] }, { issues: [] }],
   });
   const file = new File([text], "issues.json", { type: "application/json" });
   Object.defineProperty(file, "text", { value: () => Promise.resolve(text) });
@@ -110,29 +109,29 @@ test("refreshes artwork issue indicators immediately after importing review issu
   await waitFor(() => expect(screen.getByRole("button", { name: "替换整章监稿" })).toBeEnabled());
   expect(screen.queryByText(/条监稿标注/u)).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "替换整章监稿" }));
-  expect(await screen.findByLabelText("第 1 页有 issue")).toBeVisible();
-  expect(screen.queryByLabelText("第 2 页有 issue")).not.toBeInTheDocument();
+  expect(await screen.findByLabelText("第 1 页有标注")).toBeVisible();
+  expect(screen.queryByLabelText("第 2 页有标注")).not.toBeInTheDocument();
   expect(screen.queryByRole("dialog", { name: "上传监稿" })).not.toBeInTheDocument();
 });
 
 test("maps issue counts to artwork IDs and refreshes the orange indicator", async () => {
   const fixture = setup();
-  const indicator = await screen.findByLabelText("第 2 页有 issue");
+  const indicator = await screen.findByLabelText("第 2 页有标注");
   expect(screen.queryByText(/\d+ issue/u)).not.toBeInTheDocument();
   expect(indicator.firstElementChild).toHaveClass("bg-surface-orange-400");
-  expect(screen.queryByLabelText("第 1 页有 issue")).not.toBeInTheDocument();
+  expect(screen.queryByLabelText("第 1 页有标注")).not.toBeInTheDocument();
   expect(screen.queryByText("first.psd")).not.toBeInTheDocument();
   fixture.setIssuePage("first");
   fireEvent.click(screen.getByRole("button", { name: "刷新" }));
-  expect(await screen.findByLabelText("第 1 页有 issue")).toBeVisible();
-  expect(screen.queryByLabelText("第 2 页有 issue")).not.toBeInTheDocument();
+  expect(await screen.findByLabelText("第 1 页有标注")).toBeVisible();
+  expect(screen.queryByLabelText("第 2 页有标注")).not.toBeInTheDocument();
 });
 
 test("keeps artwork previews and reports failed issue statistics", async () => {
   setup(true);
-  expect(await screen.findByRole("alert")).toHaveTextContent("issue 数量加载失败");
+  expect(await screen.findByRole("alert")).toHaveTextContent("标注数量加载失败");
   expect(screen.getByRole("button", { name: "查看第 1 页嵌稿" })).toBeEnabled();
   expect(screen.queryByText("2 issue")).not.toBeInTheDocument();
   expect(screen.queryByText("0 issue")).not.toBeInTheDocument();
-  expect(screen.queryByLabelText("第 1 页有 issue")).not.toBeInTheDocument();
+  expect(screen.queryByLabelText("第 1 页有标注")).not.toBeInTheDocument();
 });

@@ -3,6 +3,7 @@ import type { ReportReviewProgress } from "./review-load-progress";
 export type { PageRect } from "@/shared/utility/page-geometry";
 export type ReviewPreview = PagePreview;
 export type ReviewPage = {
+  imageKey?: string;
   width?: number;
   height?: number;
   composite: ReviewPreview;

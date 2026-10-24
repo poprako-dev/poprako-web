@@ -31,7 +31,6 @@ function Comparison({ selected, long }: Props): JSX.Element {
               index: 6,
               variant: "断行",
               note: long ? "保留原句，调整断行。\n".repeat(12) : "保留原句，调整断行。",
-              layerName: "对白",
               rect: null,
             }}
             isFocused={focused}
@@ -58,7 +57,7 @@ export const LongText: Story = { args: { long: true } };
 export const Hover: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const button = canvas.getByRole("button", { name: "issue 7：断行" });
+    const button = canvas.getByRole("button", { name: "标注 7：断行" });
     await userEvent.hover(button);
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "true");

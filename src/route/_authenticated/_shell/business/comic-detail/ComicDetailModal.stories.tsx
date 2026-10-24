@@ -130,9 +130,9 @@ export const ArtworkActions: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const upload = await canvas.findByRole("button", { name: "上传嵌稿" });
-    await expect(await canvas.findByLabelText("第 2 页有 issue")).toBeVisible();
+    await expect(await canvas.findByLabelText("第 2 页有标注")).toBeVisible();
     await expect(canvas.queryByText(/\d+ issue/u)).not.toBeInTheDocument();
-    await expect(canvas.queryByLabelText("第 3 页有 issue")).not.toBeInTheDocument();
+    await expect(canvas.queryByLabelText("第 3 页有标注")).not.toBeInTheDocument();
     await expect(canvas.queryByText("1.psd")).not.toBeInTheDocument();
     await expect(canvas.getByRole("button", { name: "只读查看" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "导入翻校" })).not.toBeInTheDocument();

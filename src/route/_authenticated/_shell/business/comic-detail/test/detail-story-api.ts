@@ -160,7 +160,6 @@ function issueResponse(scenario: Scenario): Response {
           pageArtworkId: "artwork-0",
           index,
           variant: "文字",
-          layerName: null,
           rect: null,
           note: "需要修正",
         }))

@@ -73,7 +73,7 @@ function zoomImage(image: HTMLImageElement, deltaY: number): void {
 }
 
 const meta: Meta<typeof Reviewer> = {
-  title: "Features/Reviewer/issue",
+  title: "Features/Reviewer/标注",
   component: Reviewer,
   parameters: { layout: "fullscreen" },
   decorators: [
@@ -92,29 +92,28 @@ export const Interactive: Story = {
   args: createIssueStoryArgs(),
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    const issue = await canvas.findByRole("button", { name: "issue 1：文字位置" });
-    const region = await canvas.findByRole("button", { name: "定位 issue 1" });
+    const issue = await canvas.findByRole("button", { name: "标注 1：文字位置" });
+    const region = await canvas.findByRole("button", { name: "定位标注 1" });
     await userEvent.click(issue);
     await expect(region).toHaveAttribute("aria-pressed", "true");
-    await userEvent.click(canvas.getByRole("button", { name: "定位 issue 2" }));
-    await expect(canvas.getByRole("button", { name: "issue 2：断行" })).toHaveAttribute(
+    await userEvent.click(canvas.getByRole("button", { name: "定位标注 2" }));
+    await expect(canvas.getByRole("button", { name: "标注 2：断行" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
-    await userEvent.click(canvas.getByRole("button", { name: "切换 issue 矩形显示" }));
-    await expect(canvas.queryByRole("button", { name: "定位 issue 1" })).toBeNull();
-    await userEvent.click(canvas.getByRole("button", { name: "切换 issue 矩形显示" }));
+    await userEvent.click(canvas.getByRole("button", { name: "切换标注矩形显示" }));
+    await expect(canvas.queryByRole("button", { name: "定位标注 1" })).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "切换标注矩形显示" }));
     await expect(args.loadIssues).toHaveBeenCalledTimes(1);
     await expect(args.loadReviewPage).toHaveBeenCalledTimes(1);
   },
 };
 
 export const WithoutIssues: Story = {
-  name: "成稿预览 · 无 issue",
+  name: "成稿预览 · 无标注",
   args: { ...createIssueStoryArgs(), loadIssues: () => Promise.resolve([]) },
   play: async ({ canvasElement }) => {
     await waitFor(() => expect(canvasElement.querySelector("img")).not.toBeNull());
-    await expect(within(canvasElement).queryByLabelText("选择 PSD 图层")).toBeNull();
   },
 };
 
@@ -123,7 +122,7 @@ export const ZoomInvariantBorders: Story = {
   args: createIssueStoryArgs(),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const region = await canvas.findByRole("button", { name: "定位 issue 1" });
+    const region = await canvas.findByRole("button", { name: "定位标注 1" });
     const image = await waitForImageLayout(canvasElement);
     const surface = region.parentElement;
     if (!surface) {
@@ -132,7 +131,7 @@ export const ZoomInvariantBorders: Story = {
 
     const loadedImage = image;
     const loadedSurface = surface;
-    const markers = canvas.getAllByRole("button", { name: /^定位 issue/ });
+    const markers = canvas.getAllByRole("button", { name: /^定位标注/ });
     const imageBounds = loadedImage.getBoundingClientRect();
     const regions = markers.map((marker) => {
       const bounds = marker.getBoundingClientRect();
@@ -148,7 +147,7 @@ export const ZoomInvariantBorders: Story = {
     zoomImage(loadedImage, -100);
     await waitFor(() => expect(currentScale(loadedSurface)).toBe(5));
     await expectFixedBorders(loadedImage, markers, regions);
-    await userEvent.click(canvas.getByRole("button", { name: "issue 1：文字位置" }));
+    await userEvent.click(canvas.getByRole("button", { name: "标注 1：文字位置" }));
     await expect(region).toHaveAttribute("aria-pressed", "true");
     await expectFixedBorders(loadedImage, markers, regions);
     zoomImage(loadedImage, 100);
@@ -189,10 +188,10 @@ export const Unavailable: Story = {
   },
 };
 export const EmptyPage: Story = {
-  name: "当前页无 issue",
+  name: "当前页无标注",
   args: { ...createIssueStoryArgs(), startPageId: "page-2" },
   play: async ({ canvasElement }) => {
-    await expect(await within(canvasElement).findByText("本页没有 issue")).toBeVisible();
+    await expect(await within(canvasElement).findByText("本页没有标注")).toBeVisible();
   },
 };
 
@@ -214,11 +213,11 @@ export const KeyboardAndNavigation: Story = {
   args: createIssueStoryArgs(),
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    const last = await canvas.findByRole("button", { name: "issue 4：整页说明" });
+    const last = await canvas.findByRole("button", { name: "标注 4：整页说明" });
     await userEvent.keyboard("{Shift>}{Tab}{/Shift}");
     await expect(last).toHaveAttribute("aria-pressed", "true");
     await userEvent.keyboard("{Escape}{Tab}");
-    await expect(canvas.getByRole("button", { name: "issue 1：文字位置" })).toHaveAttribute(
+    await expect(canvas.getByRole("button", { name: "标注 1：文字位置" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -227,12 +226,12 @@ export const KeyboardAndNavigation: Story = {
     );
     const previousImage = canvasElement.querySelector("img");
     await userEvent.click(canvas.getByRole("button", { name: "Next page" }));
-    await expect(await canvas.findByText("本页没有 issue")).toBeVisible();
+    await expect(await canvas.findByText("本页没有标注")).toBeVisible();
     await expect(previousImage?.isConnected).toBe(false);
     await expect(args.loadIssues).toHaveBeenCalledTimes(2);
     await expect(args.loadIssues).toHaveBeenLastCalledWith("page-2", expect.any(AbortSignal));
     await userEvent.click(canvas.getByRole("button", { name: "Previous page" }));
-    await expect(await canvas.findByRole("button", { name: "issue 1：文字位置" })).toHaveAttribute(
+    await expect(await canvas.findByRole("button", { name: "标注 1：文字位置" })).toHaveAttribute(
       "aria-pressed",
       "false",
     );
@@ -248,14 +247,14 @@ export const RapidNavigation: Story = {
     await expect(canvas.queryByLabelText("嵌稿预览状态")).not.toBeInTheDocument();
     await expect(canvas.queryByText("正在下载当前页预览")).not.toBeInTheDocument();
     await userEvent.click(canvas.getByRole("button", { name: "Next page" }));
-    await expect(await canvas.findByRole("button", { name: "issue 5：区域重叠" })).toBeVisible();
+    await expect(await canvas.findByRole("button", { name: "标注 5：区域重叠" })).toBeVisible();
     await expect(args.loadIssues).toHaveBeenLastCalledWith("page-3", expect.any(AbortSignal));
     await expect(args.loadReviewPage).toHaveBeenLastCalledWith(
       "page-3",
       expect.any(AbortSignal),
       expect.any(Function),
     );
-    await expect(canvas.queryByText("本页没有 issue")).toBeNull();
+    await expect(canvas.queryByText("本页没有标注")).toBeNull();
   },
 };
 
@@ -275,8 +274,8 @@ export const Failed: Story = {
   args: createIssueStoryArgs({ fail: true }),
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await expect(await canvas.findByRole("alert")).toHaveTextContent("issue 加载失败");
-    await userEvent.click(canvas.getByRole("button", { name: "重试 issue" }));
+    await expect(await canvas.findByRole("alert")).toHaveTextContent("标注加载失败");
+    await userEvent.click(canvas.getByRole("button", { name: "重试标注" }));
     await waitFor(async () => {
       await expect(args.loadIssues).toHaveBeenCalledTimes(2);
     });
