@@ -15,7 +15,10 @@ if (!checkOnly) {
   const tempRoot = await mkdtemp(join(tmpdir(), "poprako-routes-"));
   try {
     await cp(resolve(root, "src/route"), join(tempRoot, "src/route"), { recursive: true });
-    const config = getConfig(routeConfiguration, tempRoot);
+    const config = getConfig(
+      { ...routeConfiguration, tmpDir: join(tempRoot, ".tanstack/tmp") },
+      tempRoot,
+    );
     await new Generator({ config, root: tempRoot }).run();
 
     const expectedTree = await readFile(

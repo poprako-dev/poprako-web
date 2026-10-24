@@ -1,6 +1,5 @@
 import type { JSX } from "react";
 import clsx from "clsx";
-import { Layers } from "lucide-react";
 import { issueAppearance } from "./issue-appearance";
 import { WorkbenchItemFrame } from "@/shared/component/WorkbenchItemFrame";
 import type { IssueInfo } from "@/route/_authenticated/business/issue/issue";
@@ -31,7 +30,7 @@ export function IssueItem({ issue, isFocused, onSelect }: Props): JSX.Element {
             onClick={() => {
               onSelect(issue.id);
             }}
-            aria-label={`issue ${String(issue.index + 1)}：${issue.variant}`}
+            aria-label={`标注 ${String(issue.index + 1)}：${issue.variant}`}
             aria-pressed={isFocused}
             className={clsx(
               "w-8 shrink-0 flex items-center justify-center select-none touch-none",
@@ -45,18 +44,9 @@ export function IssueItem({ issue, isFocused, onSelect }: Props): JSX.Element {
         </>
       }
     >
-      <div className="mb-1 flex min-w-0 items-center justify-between gap-2">
-        {issue.layerName && (
-          <span
-            className="flex min-w-0 flex-1 items-center gap-1 text-sm font-semibold leading-5 text-ink-gray-600"
-            title={issue.layerName}
-          >
-            <Layers size={14} className="shrink-0" aria-hidden="true" />
-            <span className="truncate">{issue.layerName}</span>
-          </span>
-        )}
+      <div className="mb-1 flex min-w-0 items-center gap-2">
         <span
-          className="ml-auto max-w-[50%] truncate rounded-xs border px-1.5 py-0.5 text-xs leading-4 text-ink-stone-600"
+          className="max-w-full truncate rounded-xs border px-1.5 py-0.5 text-xs leading-4 text-ink-stone-600"
           style={{
             borderColor: `color-mix(in srgb, ${appearance.border} 35%, transparent)`,
             backgroundColor: `color-mix(in srgb, ${appearance.color} 15%, transparent)`,
@@ -69,7 +59,7 @@ export function IssueItem({ issue, isFocused, onSelect }: Props): JSX.Element {
       <div
         role="textbox"
         aria-readonly="true"
-        aria-label={`issue ${String(issue.index + 1)} 内容`}
+        aria-label={`标注 ${String(issue.index + 1)} 内容`}
         tabIndex={0}
         onFocus={() => {
           onSelect(issue.id);

@@ -10,7 +10,6 @@ function issue(id: string, index = 0): IssueInfo {
     variant: "断行",
     note: "说明",
     rect: null,
-    layerName: null,
   };
 }
 function page(): ReviewPage {

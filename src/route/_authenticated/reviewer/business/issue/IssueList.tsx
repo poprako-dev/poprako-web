@@ -16,7 +16,7 @@ export function IssueList({ issues, focusedId, onSelect }: Props): JSX.Element {
     <div
       ref={listRef}
       role="region"
-      aria-label="issue 列表"
+      aria-label="标注列表"
       className="h-full w-full overflow-y-auto bg-surface-stone-50"
     >
       {issues.map((issue) => (
@@ -29,7 +29,7 @@ export function IssueList({ issues, focusedId, onSelect }: Props): JSX.Element {
       ))}
       {issues.length === 0 && (
         <span role="status" className="block p-4 text-center text-sm text-text-muted-warm">
-          本页没有 issue
+          本页没有标注
         </span>
       )}
     </div>

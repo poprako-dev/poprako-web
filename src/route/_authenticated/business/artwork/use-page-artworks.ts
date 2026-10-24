@@ -44,7 +44,7 @@ async function loadPageArtworks({
     const errors: string[] = [];
     if (result.status === "rejected") errors.push(String(result.reason));
     else if (!result.value.success) errors.push(result.value.error);
-    if (issues.status === "rejected") errors.push(`issue 数量加载失败：${String(issues.reason)}`);
+    if (issues.status === "rejected") errors.push(`标注数量加载失败：${String(issues.reason)}`);
     setLoaded((old) => ({
       scope,
       key,
