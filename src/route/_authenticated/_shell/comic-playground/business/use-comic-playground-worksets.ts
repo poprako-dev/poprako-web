@@ -20,7 +20,7 @@ type WorksetState = {
   setActiveWorksetId: Dispatch<SetStateAction<string>>;
   activeWorkset: WorksetInfo | undefined;
   loadWorksets: () => Promise<void>;
-  handleDeleteWorkset: (worksetId: string) => Promise<void>;
+  handleDeleteWorkset: (worksetId: string) => Promise<Result<void>>;
   handleCreateWorkset: (args: CreateWorksetArgs) => Promise<Result<string>>;
 };
 
@@ -28,15 +28,17 @@ async function removeTeamWorkset(
   scope: WorksetOwner,
   worksetId: string,
   showToast: ShowToast,
-): Promise<void> {
-  if (!isWorksetScopeCurrent(scope)) return;
+): Promise<Result<void>> {
+  if (!isWorksetScopeCurrent(scope)) return { success: false, error: "会话已失效" };
   const result = await deleteWorkset(scope.client, worksetId);
-  if (!isWorksetScopeCurrent(scope)) return;
+  if (!isWorksetScopeCurrent(scope)) return { success: false, error: "会话已失效" };
   if (!result.success) {
     console.error("[ComicPlayground] 删除作品集失败:", result.error);
     showLocalApiFailure(result, showToast);
-    return;
+    return result;
   }
+  showToast("作品集已删除", "success");
+  return result;
 }
 
 async function createTeamWorkset(

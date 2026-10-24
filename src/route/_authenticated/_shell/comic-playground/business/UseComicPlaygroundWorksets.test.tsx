@@ -189,3 +189,59 @@ test("a mutation finishing after unmount cannot restart reads or display errors"
   expect(load).toHaveBeenCalledTimes(1);
   expect(showToast).not.toHaveBeenCalled();
 });
+
+test("deleting the selected workset refreshes the list and selects a remaining workset", async () => {
+  vi.spyOn(requests, "listWorksets")
+    .mockResolvedValueOnce({ success: true, data: [workset("one"), workset("two")] })
+    .mockResolvedValueOnce({ success: true, data: [workset("two")] })
+    .mockResolvedValueOnce({ success: true, data: [] });
+  const remove = vi.spyOn(worksetApi, "deleteWorkset").mockResolvedValue({
+    success: true,
+    data: undefined,
+  });
+  const { mount, client, showToast } = fixture();
+  const view = mount();
+  await waitFor(() => {
+    expect(view.result.current.activeWorksetId).toBe("one");
+  });
+  await act(async () => {
+    expect(await view.result.current.handleDeleteWorkset("one")).toEqual({
+      success: true,
+      data: undefined,
+    });
+  });
+  await waitFor(() => {
+    expect(view.result.current.activeWorksetId).toBe("two");
+  });
+  expect(remove).toHaveBeenCalledWith(client, "one");
+  expect(view.result.current.worksets.map((item) => item.id)).toEqual(["two"]);
+  expect(showToast).toHaveBeenCalledWith("作品集已删除", "success");
+  await act(async () => {
+    await view.result.current.handleDeleteWorkset("two");
+  });
+  await waitFor(() => {
+    expect(view.result.current.worksets).toEqual([]);
+  });
+  expect(view.result.current.activeWorksetId).toBe("");
+});
+
+test("a failed deletion returns its error and keeps the workset selected", async () => {
+  const failure = { success: false as const, error: "没有删除权限" };
+  const load = vi.spyOn(requests, "listWorksets").mockResolvedValue({
+    success: true,
+    data: [workset("one")],
+  });
+  vi.spyOn(worksetApi, "deleteWorkset").mockResolvedValue(failure);
+  const { mount, showToast } = fixture();
+  const view = mount();
+  await waitFor(() => {
+    expect(view.result.current.activeWorksetId).toBe("one");
+  });
+  await act(async () => {
+    expect(await view.result.current.handleDeleteWorkset("one")).toEqual(failure);
+  });
+  expect(view.result.current.activeWorksetId).toBe("one");
+  expect(view.result.current.worksets).toHaveLength(1);
+  expect(load).toHaveBeenCalledOnce();
+  expect(showToast).toHaveBeenCalledWith("没有删除权限", "error");
+});

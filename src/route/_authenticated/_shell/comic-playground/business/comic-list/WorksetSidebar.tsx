@@ -19,6 +19,7 @@ type Props = {
   onCreateWorkset: () => void;
   onChangeWorkset: (worksetId: string) => void;
   onUpdateWorkset?: ((id: string, args: UpdateWorksetArgs) => Promise<Result<void>>) | undefined;
+  onDeleteWorkset?: ((id: string) => Promise<Result<void>>) | undefined;
 };
 
 export function WorksetSidebar({
@@ -28,6 +29,7 @@ export function WorksetSidebar({
   onCreateWorkset,
   onChangeWorkset,
   onUpdateWorkset,
+  onDeleteWorkset,
 }: Props): JSX.Element {
   const [worksetToModify, setWorksetToModify] = useState<WorksetInfo | null>(null);
   const {
@@ -94,6 +96,7 @@ export function WorksetSidebar({
             const res = await onUpdateWorkset(worksetToModify.id, args);
             return res;
           }}
+          onDelete={onDeleteWorkset ? () => onDeleteWorkset(worksetToModify.id) : undefined}
           onClose={() => {
             setWorksetToModify(null);
           }}
