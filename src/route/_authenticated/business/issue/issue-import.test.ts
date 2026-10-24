@@ -60,9 +60,9 @@ test("accepts independent review page counts and rejects invalid issue structure
 test("only a current reviewer assignment can import an unpublished chapter", () => {
   const chapter = { id: "chapter", stages: 0 } as ChapterInfo;
   const reviewer = { chapterId: "chapter", roles: roleMask(["reviewer"]) } as AssignmentInfo;
-  const admin = { chapterId: "chapter", roles: roleMask(["admin"]) } as AssignmentInfo;
+  const translator = { chapterId: "chapter", roles: roleMask(["translator"]) } as AssignmentInfo;
   expect(canImportIssues(chapter, reviewer)).toBe(true);
-  expect(canImportIssues(chapter, admin)).toBe(false);
+  expect(canImportIssues(chapter, translator)).toBe(false);
   expect(canImportIssues(chapter, undefined)).toBe(false);
   expect(canImportIssues(chapter, { ...reviewer, chapterId: "other" })).toBe(false);
   expect(canImportIssues({ ...chapter, stages: 2 << 10 }, reviewer)).toBe(false);

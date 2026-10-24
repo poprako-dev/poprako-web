@@ -8,13 +8,25 @@ export type Role =
   | "publisher"
   | "admin";
 
+export type WorkerRole = Exclude<Role, "admin">;
+
+export const WORKER_ROLES: WorkerRole[] = [
+  "rawProvider",
+  "translator",
+  "proofreader",
+  "typesetter",
+  "redrawer",
+  "reviewer",
+  "publisher",
+];
+
 // 利用 TS 的类型兼容，将任意满足 WithRole 的对象视为具有 Role 的对象
 export type WithRole = { roles: number };
 export function hasRole(withRole: WithRole, role: Role): boolean {
   return (withRole.roles & roleToBit[role]) !== 0;
 }
 
-export function matchesAssignmentRole(withRole: WithRole, role: Role): boolean {
+export function matchesAssignmentRole(withRole: WithRole, role: WorkerRole): boolean {
   if (role === "typesetter") {
     return hasRole(withRole, "typesetter") || hasRole(withRole, "redrawer");
   }
@@ -49,4 +61,8 @@ export function unmaskRoles(mask: RoleMask): Role[] {
   }
 
   return roles;
+}
+
+export function unmaskWorkerRoles(mask: RoleMask): WorkerRole[] {
+  return WORKER_ROLES.filter((role) => hasRole({ roles: mask }, role));
 }

@@ -185,7 +185,6 @@ export const EDGE_RECORDS: ChapterWorkflowRecord[] = [
           "redrawer",
           "reviewer",
           "publisher",
-          "admin",
         ]),
       },
     },

@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import type { MemberInfo } from "@/route/business/identity/member";
-import { hasRole, type Role } from "@/route/business/identity/role";
+import { hasRole, type WorkerRole } from "@/route/business/identity/role";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import { assignmentRolesForStage } from "@/route/_authenticated/_shell/business/comic-detail/assignment-stage";
@@ -14,13 +14,13 @@ type Args = {
   activeMember: MemberInfo | null;
   assignments: AssignmentInfo[];
   currentAssignment: AssignmentInfo | undefined;
-  memberSelectorRole: Role | null;
-  setMemberSelectorRole: Dispatch<SetStateAction<Role | null>>;
+  memberSelectorRole: WorkerRole | null;
+  setMemberSelectorRole: Dispatch<SetStateAction<WorkerRole | null>>;
   setIsAddingAssignment: Dispatch<SetStateAction<boolean>>;
-  joiningRoles: Partial<Record<Role, boolean>>;
-  setJoiningRoles: Dispatch<SetStateAction<Partial<Record<Role, boolean>>>>;
-  leavingRoles: Partial<Record<Role, boolean>>;
-  setLeavingRoles: Dispatch<SetStateAction<Partial<Record<Role, boolean>>>>;
+  joiningRoles: Partial<Record<WorkerRole, boolean>>;
+  setJoiningRoles: Dispatch<SetStateAction<Partial<Record<WorkerRole, boolean>>>>;
+  leavingRoles: Partial<Record<WorkerRole, boolean>>;
+  setLeavingRoles: Dispatch<SetStateAction<Partial<Record<WorkerRole, boolean>>>>;
   onAddAssignment?: DetailContract["onAddAssignment"] | undefined;
   onRemoveAssignment?: DetailContract["onRemoveAssignment"] | undefined;
   onJoinChapterRole?: DetailContract["onJoinChapterRole"] | undefined;
@@ -30,13 +30,13 @@ type Args = {
 };
 
 interface AssignmentActions {
-  handleRemoveAssignment: (userId: string, role: Role) => void;
-  handleOpenMemberSelector: (role: Role) => void;
+  handleRemoveAssignment: (userId: string, role: WorkerRole) => void;
+  handleOpenMemberSelector: (role: WorkerRole) => void;
   handleAddAssignment: (userId: string) => Promise<void>;
-  canJoinRole: (role: Role) => boolean;
-  canLeaveRole: (role: Role) => boolean;
-  handleJoinRole: (role: Role) => Promise<void>;
-  handleLeaveRole: (role: Role) => Promise<void>;
+  canJoinRole: (role: WorkerRole) => boolean;
+  canLeaveRole: (role: WorkerRole) => boolean;
+  handleJoinRole: (role: WorkerRole) => Promise<void>;
+  handleLeaveRole: (role: WorkerRole) => Promise<void>;
 }
 
 export function useComicDetailAssignmentActions(args: Args): AssignmentActions {
@@ -61,9 +61,9 @@ export function useComicDetailAssignmentActions(args: Args): AssignmentActions {
   };
 }
 
-function useRemoveRoles(args: Args): (userId: string, roles: Role[]) => Promise<boolean> {
+function useRemoveRoles(args: Args): (userId: string, roles: WorkerRole[]) => Promise<boolean> {
   return useCallback(
-    async (userId: string, roles: Role[]): Promise<boolean> => {
+    async (userId: string, roles: WorkerRole[]): Promise<boolean> => {
       if (!args.selectedChapterId || !args.onRemoveAssignment || roles.length === 0) {
         return false;
       }
@@ -95,10 +95,10 @@ function useRemoveRoles(args: Args): (userId: string, roles: Role[]) => Promise<
 
 function useRemoveAssignment(
   args: Args,
-  removeRoles: (userId: string, roles: Role[]) => Promise<boolean>,
+  removeRoles: (userId: string, roles: WorkerRole[]) => Promise<boolean>,
 ): AssignmentActions["handleRemoveAssignment"] {
   return useCallback(
-    (userId: string, role: Role): void => {
+    (userId: string, role: WorkerRole): void => {
       const assignment = args.assignments.find((item) => item.userId === userId);
       if (!assignment) return;
       void removeRoles(userId, assignmentRolesForStage(assignment, role));
@@ -110,7 +110,7 @@ function useRemoveAssignment(
 function useOpenMemberSelector(args: Args): AssignmentActions["handleOpenMemberSelector"] {
   const { selectedChapterId, setMemberSelectorRole } = args;
   return useCallback(
-    (role: Role): void => {
+    (role: WorkerRole): void => {
       if (selectedChapterId) setMemberSelectorRole(role);
     },
     [selectedChapterId, setMemberSelectorRole],
@@ -142,9 +142,9 @@ function useAddAssignment(args: Args): AssignmentActions["handleAddAssignment"] 
 
 function useIsRoleAlreadyJoined(
   currentAssignment: AssignmentInfo | undefined,
-): (role: Role) => boolean {
+): (role: WorkerRole) => boolean {
   return useCallback(
-    (role: Role): boolean => {
+    (role: WorkerRole): boolean => {
       if (!currentAssignment) return false;
       if (role === "typesetter") {
         return hasRole(currentAssignment, "typesetter") || hasRole(currentAssignment, "redrawer");
@@ -157,10 +157,10 @@ function useIsRoleAlreadyJoined(
 
 function useCanJoinRole(
   args: Args,
-  isRoleAlreadyJoined: (role: Role) => boolean,
+  isRoleAlreadyJoined: (role: WorkerRole) => boolean,
 ): AssignmentActions["canJoinRole"] {
   return useCallback(
-    (role: Role): boolean =>
+    (role: WorkerRole): boolean =>
       Boolean(
         args.activeMember &&
           args.onJoinChapterRole &&
@@ -175,7 +175,7 @@ function useCanJoinRole(
 
 function useCanLeaveRole(args: Args): AssignmentActions["canLeaveRole"] {
   return useCallback(
-    (role: Role): boolean =>
+    (role: WorkerRole): boolean =>
       Boolean(
         args.onRemoveAssignment &&
           args.selectedChapterId &&
@@ -188,7 +188,7 @@ function useCanLeaveRole(args: Args): AssignmentActions["canLeaveRole"] {
 
 function useJoinRole(args: Args): AssignmentActions["handleJoinRole"] {
   return useCallback(
-    async (role: Role): Promise<void> => {
+    async (role: WorkerRole): Promise<void> => {
       if (!args.selectedChapterId || !args.onJoinChapterRole || args.joiningRoles[role] === true)
         return;
       args.setJoiningRoles((previous) => ({ ...previous, [role]: true }));
@@ -215,10 +215,10 @@ function useJoinRole(args: Args): AssignmentActions["handleJoinRole"] {
 
 function useLeaveRole(
   args: Args,
-  removeRoles: (userId: string, roles: Role[]) => Promise<boolean>,
+  removeRoles: (userId: string, roles: WorkerRole[]) => Promise<boolean>,
 ): AssignmentActions["handleLeaveRole"] {
   return useCallback(
-    async (role: Role): Promise<void> => {
+    async (role: WorkerRole): Promise<void> => {
       if (
         !args.selectedChapterId ||
         !args.currentUserId ||

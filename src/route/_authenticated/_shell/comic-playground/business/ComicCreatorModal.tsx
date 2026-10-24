@@ -4,7 +4,7 @@ import { AlignLeft, BookOpen, Layers, Loader2, Type, User } from "lucide-react";
 import clsx from "clsx";
 import { AppDialogClose } from "@/shared/component/AppDialog";
 import { IconInputRow } from "@/shared/component/IconInputRow";
-import { type Role, roleMask } from "@/route/business/identity/role";
+import { type WorkerRole, roleMask } from "@/route/business/identity/role";
 import type { MemberInfo } from "@/route/business/identity/member";
 import type { CreateComicArgs } from "@/route/_authenticated/business/comic/comic-input";
 import type { Result } from "@/shared/utility/result";
@@ -30,7 +30,7 @@ export function ComicCreatorModal({
     description: "",
     firstChapterTitle: "",
   });
-  const [presetRoles, setPresetRoles] = useState<Role[]>([]);
+  const [presetRoles, setPresetRoles] = useState<WorkerRole[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isValid = formData.title.trim().length > 0 && formData.author.trim().length > 0;

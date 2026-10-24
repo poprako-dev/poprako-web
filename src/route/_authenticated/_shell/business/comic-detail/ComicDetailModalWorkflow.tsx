@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 
 import { ComicDetailWorkflowView } from "@/route/_authenticated/_shell/business/comic-detail/ComicDetailWorkflowView";
 
@@ -24,7 +24,7 @@ export function ComicDetailModalWorkflow({ state }: Props): ReactElement {
     isAssignmentsLoading,
     joiningRoles,
     leavingRoles,
-    canManageChapterAssignments,
+    isTeamAdmin,
     handleRemoveAssignment,
     handleOpenMemberSelector,
     canJoinRole,
@@ -44,12 +44,12 @@ export function ComicDetailModalWorkflow({ state }: Props): ReactElement {
     onAddAssignment: handleOpenMemberSelector,
     onJoinRole: handleJoinRole,
     canJoinRole,
-    isRoleJoining: (role: Role) => joiningRoles[role] === true,
+    isRoleJoining: (role: WorkerRole) => joiningRoles[role] === true,
     onLeaveRole: handleLeaveRole,
     canLeaveRole,
-    isRoleLeaving: (role: Role) => leavingRoles[role] === true,
-    canOperateWorkflow: canManageChapterAssignments,
-    canManageAssignments: canManageChapterAssignments,
+    isRoleLeaving: (role: WorkerRole) => leavingRoles[role] === true,
+    canOperateWorkflow: isTeamAdmin,
+    canManageAssignments: isTeamAdmin,
   };
 
   return (

@@ -3,9 +3,9 @@ import type { ReactElement } from "react";
 import clsx from "clsx";
 import { Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 
-const ROLE_LABEL: Record<Role, string> = {
+const ROLE_LABEL: Record<WorkerRole, string> = {
   rawProvider: "图源",
   translator: "翻译",
   proofreader: "校对",
@@ -13,14 +13,13 @@ const ROLE_LABEL: Record<Role, string> = {
   redrawer: "美工",
   reviewer: "监修",
   publisher: "发布",
-  admin: "管理员",
 };
 
 type Props = {
   name: string;
   userId: string;
-  role: Role;
-  onRemove?: ((userId: string, role: Role) => void) | undefined;
+  role: WorkerRole;
+  onRemove?: ((userId: string, role: WorkerRole) => void) | undefined;
 };
 
 export function UserTag({ name, userId, role, onRemove }: Props): ReactElement {

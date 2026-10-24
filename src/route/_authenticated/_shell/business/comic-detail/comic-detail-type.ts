@@ -5,7 +5,7 @@ import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
 import type { PageInfo } from "@/route/_authenticated/business/page/page";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import type { MemberInfo } from "@/route/business/identity/member";
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 import type { Result } from "@/shared/utility/result";
 import type {
   ChapterExports,
@@ -30,7 +30,7 @@ export const DEFAULT_EXPORT_PROGRESS: ExportProgressState = {
   progress: 0,
 };
 
-export const ROLE_TITLE_LABEL: Record<Role, string> = {
+export const ROLE_TITLE_LABEL: Record<WorkerRole, string> = {
   rawProvider: "图源",
   translator: "翻译",
   proofreader: "校对",
@@ -38,7 +38,6 @@ export const ROLE_TITLE_LABEL: Record<Role, string> = {
   redrawer: "美工",
   reviewer: "监修",
   publisher: "发布",
-  admin: "管理员",
 };
 
 export type DetailContract = {
@@ -55,17 +54,21 @@ export type DetailContract = {
   ) => Promise<Result<ChapterWorkflowRecord[]>>;
   onResolveWorkflowRecordUser: (userId: string) => Promise<Result<UserInfo>>;
   onTransiteWorkflow: (chapterId: string, transition: WorkflowTransition) => Promise<Result<void>>;
-  onRemoveAssignment: (chapterId: string, userId: string, role: Role) => Promise<Result<void>>;
+  onRemoveAssignment: (
+    chapterId: string,
+    userId: string,
+    role: WorkerRole,
+  ) => Promise<Result<void>>;
   onLoadAssignableMembers: (
     chapterId: string,
     args: {
-      role: Role;
+      role: WorkerRole;
       keyword?: string | undefined;
       offset: number;
       limit: number;
     },
   ) => Promise<Result<MemberInfo[]>>;
-  onAddAssignment: (chapterId: string, userId: string, role: Role) => Promise<Result<void>>;
+  onAddAssignment: (chapterId: string, userId: string, role: WorkerRole) => Promise<Result<void>>;
   onCreateChapter: (args: {
     comicId: string;
     subtitle?: string | undefined;
@@ -81,7 +84,7 @@ export type DetailContract = {
   ) => void;
   currentUserId: string;
   onDeleteChapterPages: (chapterId: string) => Promise<Result<void>>;
-  onJoinChapterRole: (chapterId: string, role: Role) => Promise<Result<void>>;
+  onJoinChapterRole: (chapterId: string, role: WorkerRole) => Promise<Result<void>>;
   onImportChapter: (args: ImportChapterArgs) => Promise<Result<ImportChapterResult>>;
   onExportChapter: (
     chapterId: string,

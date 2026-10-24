@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import type { MemberInfo } from "@/route/business/identity/member";
-import { hasRole, type Role } from "@/route/business/identity/role";
+import { hasRole, type WorkerRole } from "@/route/business/identity/role";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import { useComicDetailAssignmentActions } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-assignment-actions";
 import type { DetailContract } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
@@ -30,28 +30,27 @@ type AssignmentState = {
   assignments: AssignmentInfo[];
   setAssignments: Dispatch<SetStateAction<AssignmentInfo[]>>;
   isAssignmentsLoading: boolean;
-  memberSelectorRole: Role | null;
-  setMemberSelectorRole: Dispatch<SetStateAction<Role | null>>;
+  memberSelectorRole: WorkerRole | null;
+  setMemberSelectorRole: Dispatch<SetStateAction<WorkerRole | null>>;
   isMemberSelectorLoading: boolean;
   setIsMemberSelectorLoading: Dispatch<SetStateAction<boolean>>;
   isAddingAssignment: boolean;
-  joiningRoles: Partial<Record<Role, boolean>>;
-  leavingRoles: Partial<Record<Role, boolean>>;
+  joiningRoles: Partial<Record<WorkerRole, boolean>>;
+  leavingRoles: Partial<Record<WorkerRole, boolean>>;
   currentAssignment: AssignmentInfo | undefined;
   canTranslateOrProofread: boolean;
   canReadOnly: boolean;
-  canManageChapterAssignments: boolean;
   canUploadRawPages: boolean;
   isTeamAdmin: boolean;
   canCreateChapter: boolean;
   reloadAssignments: () => Promise<AssignmentInfo[] | null>;
-  handleRemoveAssignment: (userId: string, role: Role) => void;
-  handleOpenMemberSelector: (role: Role) => void;
+  handleRemoveAssignment: (userId: string, role: WorkerRole) => void;
+  handleOpenMemberSelector: (role: WorkerRole) => void;
   handleAddAssignment: (userId: string) => Promise<void>;
-  canJoinRole: (role: Role) => boolean;
-  canLeaveRole: (role: Role) => boolean;
-  handleJoinRole: (role: Role) => Promise<void>;
-  handleLeaveRole: (role: Role) => Promise<void>;
+  canJoinRole: (role: WorkerRole) => boolean;
+  canLeaveRole: (role: WorkerRole) => boolean;
+  handleJoinRole: (role: WorkerRole) => Promise<void>;
+  handleLeaveRole: (role: WorkerRole) => Promise<void>;
 };
 
 type AssignmentPermissions = Pick<
@@ -59,7 +58,6 @@ type AssignmentPermissions = Pick<
   | "currentAssignment"
   | "canTranslateOrProofread"
   | "canReadOnly"
-  | "canManageChapterAssignments"
   | "canUploadRawPages"
   | "isTeamAdmin"
   | "canCreateChapter"
@@ -68,22 +66,22 @@ type AssignmentPermissions = Pick<
 type AssignmentInteractionState = {
   isMemberSelectorLoading: boolean;
   setIsMemberSelectorLoading: Dispatch<SetStateAction<boolean>>;
-  memberSelectorRole: Role | null;
-  setMemberSelectorRole: Dispatch<SetStateAction<Role | null>>;
+  memberSelectorRole: WorkerRole | null;
+  setMemberSelectorRole: Dispatch<SetStateAction<WorkerRole | null>>;
   isAddingAssignment: boolean;
   setIsAddingAssignment: Dispatch<SetStateAction<boolean>>;
-  joiningRoles: Partial<Record<Role, boolean>>;
-  setJoiningRoles: Dispatch<SetStateAction<Partial<Record<Role, boolean>>>>;
-  leavingRoles: Partial<Record<Role, boolean>>;
-  setLeavingRoles: Dispatch<SetStateAction<Partial<Record<Role, boolean>>>>;
+  joiningRoles: Partial<Record<WorkerRole, boolean>>;
+  setJoiningRoles: Dispatch<SetStateAction<Partial<Record<WorkerRole, boolean>>>>;
+  leavingRoles: Partial<Record<WorkerRole, boolean>>;
+  setLeavingRoles: Dispatch<SetStateAction<Partial<Record<WorkerRole, boolean>>>>;
 };
 
 function useAssignmentInteractionState(): AssignmentInteractionState {
   const [isMemberSelectorLoading, setIsMemberSelectorLoading] = useState(false);
-  const [memberSelectorRole, setMemberSelectorRole] = useState<Role | null>(null);
+  const [memberSelectorRole, setMemberSelectorRole] = useState<WorkerRole | null>(null);
   const [isAddingAssignment, setIsAddingAssignment] = useState(false);
-  const [joiningRoles, setJoiningRoles] = useState<Partial<Record<Role, boolean>>>({});
-  const [leavingRoles, setLeavingRoles] = useState<Partial<Record<Role, boolean>>>({});
+  const [joiningRoles, setJoiningRoles] = useState<Partial<Record<WorkerRole, boolean>>>({});
+  const [leavingRoles, setLeavingRoles] = useState<Partial<Record<WorkerRole, boolean>>>({});
   return {
     isMemberSelectorLoading,
     setIsMemberSelectorLoading,
@@ -113,7 +111,6 @@ function resolveAssignmentPermissions(
     currentAssignment,
     canTranslateOrProofread,
     canReadOnly: activeMember !== null && !canTranslateOrProofread,
-    canManageChapterAssignments: Boolean(currentAssignment && hasRole(currentAssignment, "admin")),
     canUploadRawPages: Boolean(currentAssignment && hasRole(currentAssignment, "rawProvider")),
     isTeamAdmin: activeMember !== null && hasRole(activeMember, "admin"),
     canCreateChapter:

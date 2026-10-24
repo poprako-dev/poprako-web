@@ -14,6 +14,7 @@ export function createViteBase(includeReact = true): UserConfig {
       exclude: ["simple-wasi-zstd"],
     },
     build: {
+      license: { fileName: "THIRD-PARTY-LICENSES.md" },
       target: ["chrome111", "safari16.4"],
       cssTarget: ["chrome111", "safari16.4"],
     },

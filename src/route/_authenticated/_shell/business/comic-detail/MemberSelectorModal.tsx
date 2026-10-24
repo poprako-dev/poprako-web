@@ -6,7 +6,7 @@ import { useToastStore } from "@/shared/component/notification-toast/toast-store
 import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { MemberInfo } from "@/route/business/identity/member";
 import type { Result } from "@/shared/utility/result";
-import { type Role, unmaskRoles } from "@/route/business/identity/role";
+import { type WorkerRole, unmaskWorkerRoles } from "@/route/business/identity/role";
 
 const ROLE_LABEL: Record<string, string> = {
   rawProvider: "图",
@@ -16,17 +16,16 @@ const ROLE_LABEL: Record<string, string> = {
   redrawer: "美",
   reviewer: "监",
   publisher: "传",
-  admin: "管",
 };
 
 type Props = {
   title: string;
   chapterId: string;
-  role: Role;
+  role: WorkerRole;
   onLoadMembers: (
     chapterId: string,
     args: {
-      role: Role;
+      role: WorkerRole;
       keyword?: string | undefined;
       offset: number;
       limit: number;
@@ -46,7 +45,7 @@ type MemberOptionProps = {
 
 type MemberSearchProps = {
   chapterId: string;
-  role: Role;
+  role: WorkerRole;
   keyword: string;
   queryKey: string;
   onLoadMembers: Props["onLoadMembers"];
@@ -104,7 +103,7 @@ function useMemberSearch({
 }
 
 function MemberOption({ member, isSubmitting, onSelectUser }: MemberOptionProps): JSX.Element {
-  const visibleRoles = unmaskRoles(member.roles).filter((memberRole) => memberRole !== "admin");
+  const visibleRoles = unmaskWorkerRoles(member.roles);
   return (
     <button
       type="button"

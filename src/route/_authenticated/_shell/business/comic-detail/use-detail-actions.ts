@@ -18,7 +18,7 @@ import {
 import { deleteChapterPages, listPages } from "@/route/_authenticated/business/page/page-request";
 import { getUser } from "@/route/business/identity/user-request";
 import { roleMask } from "@/route/business/identity/role";
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 import type { Result } from "@/shared/utility/result";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import type { WorkflowTransition } from "@/route/_authenticated/business/chapter/chapter-input";
@@ -74,7 +74,7 @@ export async function addDetailAssignment(
   client: ApiClient,
   chapterId: string,
   userId: string,
-  role: Role,
+  role: WorkerRole,
 ): Promise<Result<void>> {
   const result = await loadDetailAssignments(client, chapterId);
   if (!result.success) return result;
@@ -93,7 +93,7 @@ export async function removeDetailAssignment(
   client: ApiClient,
   chapterId: string,
   userId: string,
-  role: Role,
+  role: WorkerRole,
 ): Promise<Result<void>> {
   const result = await loadDetailAssignments(client, chapterId);
   if (!result.success) return result;
@@ -147,6 +147,10 @@ function loadDetailPages(
   return listPages(client, { chapterId });
 }
 
-function joinDetailRole(client: ApiClient, chapterId: string, role: Role): Promise<Result<void>> {
+function joinDetailRole(
+  client: ApiClient,
+  chapterId: string,
+  role: WorkerRole,
+): Promise<Result<void>> {
   return joinChapter(client, chapterId, roleMask([role]));
 }

@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
 import type { MemberInfo } from "@/route/business/identity/member";
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 import type { ImportChapterMode } from "@/route/_authenticated/business/chapter/chapter-input";
 import type { Result } from "@/shared/utility/result";
 import type { ExportProgressState } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
@@ -32,12 +32,12 @@ type Props = {
   isImportingData: boolean;
   confirmImport: (mode: ImportChapterMode) => Promise<void>;
   cancelImport: () => void;
-  memberSelectorRole: Role | null;
+  memberSelectorRole: WorkerRole | null;
   selectedChapterId: string | null;
   onLoadAssignableMembers: (
     chapterId: string,
     args: {
-      role: Role;
+      role: WorkerRole;
       keyword?: string | undefined;
       offset: number;
       limit: number;

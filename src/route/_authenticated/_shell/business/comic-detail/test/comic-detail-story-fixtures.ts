@@ -121,7 +121,6 @@ export function makePages(chapterId: string, count: number): PageInfo[] {
 
 export function makeAssignments(chapterId: string): AssignmentInfo[] {
   return [
-    makeAssignment(chapterId, "a-admin", "u-admin", "Mori", 128),
     makeAssignment(chapterId, "a1", "u-kira", "Kira", 1),
     makeAssignment(chapterId, "a2", "u-mio", "Mio", 1),
     makeAssignment(chapterId, "a3", "u-aki", "Aki", 2),

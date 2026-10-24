@@ -7,7 +7,7 @@ import type {
   ChapterWorkflowRecordStage,
   ChapterWorkflowRecordTranslationFormat,
 } from "@/route/_authenticated/business/chapter/chapter-workflow-record";
-import { unmaskRoles, type Role } from "@/route/business/identity/role";
+import { unmaskWorkerRoles, type WorkerRole } from "@/route/business/identity/role";
 
 type UserLabel = (userId: string) => string;
 
@@ -21,7 +21,7 @@ export type WorkflowRecordEventPresentation = {
   detail: WorkflowRecordTextPart[];
 };
 
-const ROLE_LABELS: Record<Role, string> = {
+const ROLE_LABELS: Record<WorkerRole, string> = {
   rawProvider: "图源",
   translator: "翻译",
   proofreader: "校对",
@@ -29,7 +29,6 @@ const ROLE_LABELS: Record<Role, string> = {
   redrawer: "美工",
   reviewer: "监修",
   publisher: "发布",
-  admin: "总管",
 };
 
 const STAGE_LABELS: Record<ChapterWorkflowRecordStage, string> = {
@@ -65,7 +64,7 @@ function variable(text: string): WorkflowRecordTextPart {
 }
 
 function roleLabels(mask: number): string {
-  const labels = unmaskRoles(mask).map((role) => ROLE_LABELS[role]);
+  const labels = unmaskWorkerRoles(mask).map((role) => ROLE_LABELS[role]);
   return labels.length > 0 ? labels.join("、") : "未分配角色";
 }
 

@@ -5,7 +5,6 @@ import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/
 import type { UserInfo } from "@/route/business/identity/user";
 import { toSnakeCase } from "@/shared/utility/case-convert";
 import {
-  required,
   ALL_CHAPTERS,
   makeAssignments,
   makePages,
@@ -49,15 +48,15 @@ function listAssignments(
       : scenario === "many" || scenario === "admin"
         ? makeManyAssignments(chapterId)
         : makeAssignments(chapterId);
-  if (["admin", "combined", "artwork"].includes(scenario)) {
+  if (scenario === "artwork") {
     values = [
       ...values.filter((value) => value.userId !== "u-admin"),
       {
-        id: "a-admin",
+        id: "a-artwork",
         chapterId,
         userId: "u-admin",
         user: makeUser("u-admin", "Mori"),
-        roles: scenario === "artwork" ? 139 : 128,
+        roles: 11,
         createdAt: now,
         updatedAt: now,
       },
@@ -65,7 +64,6 @@ function listAssignments(
   }
   if (scenario === "combined") {
     values = [
-      required(values[values.length - 1]),
       {
         id: "a-dual",
         chapterId,
