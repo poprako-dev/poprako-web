@@ -125,9 +125,6 @@ export function AppDialog({
   );
 }
 
-type ActionProps = ComponentProps<"button"> & {
-  tone?: "neutral" | "brand" | "danger" | "warning";
-};
 type CloseProps = {
   onClose: () => void;
   disabled?: boolean;
@@ -153,6 +150,9 @@ export function AppDialogClose({ onClose, disabled = false }: CloseProps): React
   );
 }
 
+type ActionProps = ComponentProps<"button"> & {
+  tone?: "neutral" | "brand" | "danger" | "warning";
+};
 
 export function AppDialogAction({
   tone = "neutral",
