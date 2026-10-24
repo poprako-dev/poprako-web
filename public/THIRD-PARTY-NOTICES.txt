@@ -1,0 +1,52 @@
+Third-party notices for PopRaKo Web
+
+PopRaKo's MIT license applies to its own code. It does not replace the
+licenses of the following third-party components.
+
+Source Han Sans SC Variable 2.005
+Copyright 2014-2025 Adobe, with Reserved Font Name 'Source'.
+https://github.com/adobe-fonts/source-han-sans
+The unmodified official WOFF2 is distributed under SIL OFL 1.1.
+Full copyright and license: SourceHanSansSC-LICENSE.txt
+The font remains under OFL 1.1 when bundled with software under other
+licenses, including MIT or AGPLv3. It is not relicensed under those licenses.
+
+JavaScript and CSS dependencies
+The production builds include THIRD-PARTY-LICENSES.md for bundled modules
+and RUNTIME-LICENSES.txt for all production dependencies, including workers.
+The latter preserves package license, NOTICE and AUTHORS files, the isarray
+README license, the react-remove-scroll-bar upstream license omitted from
+its published package, and pako's additional Zlib source notice.
+JSZip is used under its MIT license option. The presence of JSZip's
+alternative GPL license text does not change this choice.
+Lucide's license also contains the MIT notice for derived Feather icons.
+
+Storybook 10.6.2 preview dependencies
+https://github.com/storybookjs/storybook/tree/v10.6.2
+Some published Storybook packages omit the repository-level MIT file.
+The complete upstream text is preserved in license/storybook-LICENSE.txt
+for storybook, @storybook/react, @storybook/react-dom-shim,
+@storybook/addon-docs and @storybook/addon-a11y.
+
+Zstandard native code in simple-wasi-zstd 0.1.5
+https://github.com/yskszk63/simple-wasi-zstd/tree/v0.1.5
+The wrapper's MIT license is included in RUNTIME-LICENSES.txt.
+Its upstream Zstandard submodule is a488ba114ec17ea1054b9057c26a046fc122b3b6.
+The BSD license option is used for Zstandard.
+Full copyright and license: license/zstd-LICENSE.txt
+
+Native toolchain reference notices
+The shipped WASM producer metadata identifies clang 12.0.1. The LLVM 12.0.1
+license is preserved in license/llvm-12.0.1-LICENSE.txt.
+WASI libc reference notices are preserved from upstream revision
+a78cd329aec717f149934d7362f57050c9401f60 (contemporaneous with the wrapper
+release) in license/wasi-libc-LICENSE*.txt, musl-COPYRIGHT.txt and
+cloudlibc-LICENSE.txt. The upstream binary release does not identify its
+exact WASI SDK revision; these reference notices are not proof of an exact
+source-to-binary mapping. See docs/third-party-licenses.md in the source.
+
+Additional upstream license omitted from its npm package
+react-remove-scroll-bar 2.3.8
+https://github.com/theKashey/react-remove-scroll-bar
+License source revision: 8ca9ba5ea52de03308fe8ced94f7b159a44d28ff
+Full copyright and license: license/react-remove-scroll-bar-LICENSE.txt

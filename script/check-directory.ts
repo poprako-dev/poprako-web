@@ -46,6 +46,7 @@ const OWNED_NAME = new Set([
   "import",
   "invitation",
   "issue",
+  "license",
   "login",
   "mail",
   "member",

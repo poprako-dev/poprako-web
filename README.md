@@ -97,6 +97,20 @@ Vite 构建使用的 `VITE_API_BASE_URL`，不需要也不应提交 `.env.produc
 [萌翻](https://github.com/moeflow-com/moeflow) 与
 [LabelPlus](https://github.com/LabelPlus/LabelPlus) 等开源项目。
 
+感谢 Adobe 及思源黑体项目贡献者提供的
+[思源黑体（Source Han Sans）](https://github.com/adobe-fonts/source-han-sans)。
+本项目使用其简体中文可变字体，字体按
+[SIL Open Font License 1.1](public/SourceHanSansSC-LICENSE.txt) 分发。
+
 ## License
 
 [MIT](LICENSE)
+
+上述许可适用于项目自有代码；第三方字体和依赖保留各自许可。思源黑体按 OFL 1.1
+分发，JSZip 选择其 MIT 许可选项。
+
+应用和 Storybook 构建会附带项目 `LICENSE.txt`、打包依赖的
+`THIRD-PARTY-LICENSES.md`、包含 Worker 依赖的 `RUNTIME-LICENSES.txt`，以及
+[字体许可](public/SourceHanSansSC-LICENSE.txt)和
+[附带声明](public/THIRD-PARTY-NOTICES.txt)。来源核对与限制见
+[第三方许可核查](docs/third-party-licenses.md)。

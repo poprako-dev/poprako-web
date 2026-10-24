@@ -3,13 +3,19 @@ import { defineConfig, mergeConfig } from "vite";
 import { routeConfiguration } from "./script/route-config.ts";
 import { createViteBase } from "./src/application/vite-base.ts";
 import { routeBundleGuard } from "./script/check-route-bundle.ts";
+import { runtimeLicenses } from "./script/runtime-licenses.ts";
 
 const { plugins, ...base } = createViteBase();
 
 export default mergeConfig(
   base,
   defineConfig({
-    plugins: [tanstackRouter(routeConfiguration), ...(plugins ?? []), routeBundleGuard()],
+    plugins: [
+      tanstackRouter(routeConfiguration),
+      ...(plugins ?? []),
+      routeBundleGuard(),
+      runtimeLicenses(),
+    ],
     server: {
       proxy: {
         "/api": {
