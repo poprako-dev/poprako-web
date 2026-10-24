@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import clsx from "clsx";
 import { LoadingCircle } from "@/shared/component/LoadingCircle";
-import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
+import { AppDialog } from "@/shared/component/AppDialog";
 
 type Props = {
   open: boolean;
@@ -23,18 +23,7 @@ export function ExportProgressDialog({
   }
 
   return (
-    <AppDialog
-      title={title}
-      description={description}
-      onClose={onCancel}
-      showClose={false}
-      closeOnBackdrop={false}
-      footer={
-        <div className="flex">
-          <AppDialogAction onClick={onCancel}>取消下载</AppDialogAction>
-        </div>
-      }
-    >
+    <AppDialog title={title} description={description} onClose={onCancel} closeOnBackdrop={false}>
       <div className="flex items-center gap-3">
         <LoadingCircle
           size={20}

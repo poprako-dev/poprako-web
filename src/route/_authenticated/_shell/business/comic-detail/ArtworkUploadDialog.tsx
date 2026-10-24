@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { JSX } from "react";
-import { FileArchive, FileStack, FileUp, X, RotateCcw, CloudUpload } from "lucide-react";
+import { FileArchive, FileStack, FileUp, RotateCcw, CloudUpload } from "lucide-react";
 import { Switch } from "radix-ui";
 import { FilePicker } from "@/shared/component/FilePicker";
 import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
@@ -74,29 +74,23 @@ export function ArtworkUploadDialog({
     <AppDialog
       title="上传嵌稿"
       description={chapterLabel}
-      onClose={onClose}
-      locked={state.running}
-      showClose={!state.running}
+      onClose={() => {
+        if (state.running) {
+          batch?.cancel();
+          return;
+        }
+        onClose();
+      }}
+      closeOnEscape={!state.running}
       closeOnBackdrop={false}
       bodyClassName="flex max-h-[55dvh] flex-col"
       footer={
-        done ? null : (
+        done || state.running ? null : (
           <div className="flex gap-2">
-            {state.running ? (
-              <AppDialogAction
-                onClick={() => {
-                  batch?.cancel();
-                }}
-              >
-                <X size={14} />
-                停止
-              </AppDialogAction>
-            ) : (
-              <AppDialogAction tone="brand" disabled={files.length === 0} onClick={start}>
-                {batch ? <RotateCcw size={14} /> : <CloudUpload size={14} />}
-                {batch ? "重试" : "上传"}
-              </AppDialogAction>
-            )}
+            <AppDialogAction tone="brand" disabled={files.length === 0} onClick={start}>
+              {batch ? <RotateCcw size={14} /> : <CloudUpload size={14} />}
+              {batch ? "重试" : "上传"}
+            </AppDialogAction>
           </div>
         )
       }

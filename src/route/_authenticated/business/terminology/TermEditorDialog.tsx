@@ -259,18 +259,11 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
       <TerminologyDialogFrame
         title="删除术语"
         locked={isSubmitting}
-        onClose={onClose}
+        onClose={() => {
+          setIsConfirmingDelete(false);
+        }}
         footer={
           <div className="flex gap-2">
-            <AppDialogAction
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => {
-                setIsConfirmingDelete(false);
-              }}
-            >
-              返回
-            </AppDialogAction>
             <AppDialogAction
               type="button"
               tone="danger"

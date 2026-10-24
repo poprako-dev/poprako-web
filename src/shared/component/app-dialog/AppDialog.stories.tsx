@@ -109,7 +109,6 @@ export const Warning: Story = {
     ),
     footer: (
       <div className="flex gap-2">
-        <AppDialogAction>返回</AppDialogAction>
         <AppDialogAction tone="danger">确认删除</AppDialogAction>
       </div>
     ),

@@ -7,6 +7,7 @@ import type { MemberInfo } from "@/route/business/identity/member";
 import { hasRole } from "@/route/business/identity/role";
 import type { Result } from "@/shared/utility/result";
 import { MemberRoleGrid } from "@/route/_authenticated/_shell/member-list/business/MemberRoleGrid";
+import { AppDialogClose } from "@/shared/component/AppDialog";
 
 // ── Role config ──────────────────────────────────────────────────────────────
 
@@ -74,6 +75,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
           "animate-in zoom-in-95 duration-200",
         )}
       >
+        <AppDialogClose onClose={onClose} />
         {/* ── Top accent bar ────────────────────────────────────────────── */}
         <div
           className="absolute top-0 left-0 right-0 h-1 opacity-20 z-1"
@@ -85,7 +87,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
           className={clsx(
             "flex items-center justify-between",
             "bg-surface-slate-50/60 border-b border-line-slate-200/60",
-            "px-6 py-2 pr-10",
+            "px-6 py-2 pr-14",
           )}
         >
           <div className="flex flex-col min-w-0">
@@ -149,18 +151,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
         </div>
 
         {/* ── Footer ────────────────────────────────────────────────────── */}
-        <div className={clsx("grid grid-cols-2 gap-2", "px-5 py-2")}>
-          <button
-            type="button"
-            onClick={onClose}
-            className={clsx(
-              "rounded-sm px-4 py-1.5 text-xs font-semibold w-full",
-              "bg-surface-slate-50 text-text-muted-cool border border-line-slate-100",
-              "transition-all hover:bg-surface-slate-100 active:scale-[0.98]",
-            )}
-          >
-            收起
-          </button>
+        <div className="px-5 py-2">
           <button
             type="button"
             disabled={!isDirty || isSubmitting}
