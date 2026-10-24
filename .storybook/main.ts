@@ -8,6 +8,7 @@ import { localRevisionPsd } from "./local-revision-psd";
 const STORYBOOK_CHUNK_SIZE_WARNING_LIMIT = 1200;
 
 const config: StorybookConfig = {
+  staticDirs: ["../public"],
   stories: (_, { configType }) => {
     const local =
       "../test-resource/generated/revision-performance-rar/LocalRevisionPsd.stories.tsx";

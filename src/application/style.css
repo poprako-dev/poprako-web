@@ -3,6 +3,14 @@
 @import "./appearance.css";
 @import "./readable-colors.css";
 
+@font-face {
+  font-family: "Source Han Sans SC";
+  src: url("/SourceHanSansSC-VF.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 250 900;
+  font-display: swap;
+}
+
 @custom-variant data-disabled {
   &:where([data-disabled="true"]),
   &:where([data-disabled]:not([data-disabled="false"])) {
@@ -11,9 +19,7 @@
 }
 
 @theme inline {
-  --font-sans:
-    ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
+  --font-sans: "Source Han Sans SC", ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
@@ -189,9 +195,7 @@
   html,
   body {
     @apply bg-background text-foreground;
-    font-family:
-      ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-      monospace;
+    font-family: var(--font-sans);
     overflow-x: hidden;
   }
 }
