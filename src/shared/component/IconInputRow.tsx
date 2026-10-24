@@ -31,7 +31,6 @@ export function IconInputRow({
         className={clsx(
           "pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3",
           "text-ink-slate-400 transition-colors duration-200",
-          "group-focus-within:text-ink-slate-600",
         )}
         aria-hidden
       >
@@ -47,7 +46,7 @@ export function IconInputRow({
           "shadow-sm shadow-shadow-slate-100",
           // 悬停样式：平滑变深 + 极其微小的外发光感
           "hover:border-control-border",
-          "focus:border-line-slate-300 focus:ring-0 focus:outline-none",
+          "focus:ring-0 focus:outline-none",
         )}
         type={isPassword && !showPassword ? "password" : "text"}
         inputMode={isNumeric ? "numeric" : undefined}

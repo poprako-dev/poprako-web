@@ -31,10 +31,7 @@ export function ArchiveOutputSettings({
               onChange={(event) => {
                 tool.setName(event.target.value);
               }}
-              className={clsx(
-                "h-9 min-w-0 flex-1 rounded-md px-3 text-sm text-foreground",
-                "focus-visible:outline-2 focus-visible:outline-ring",
-              )}
+              className="h-9 min-w-0 flex-1 rounded-md px-3 text-sm text-foreground"
             />
             <span className="px-3">{tool.extension}</span>
           </span>
@@ -53,7 +50,6 @@ export function ArchiveOutputSettings({
                   "mt-2 flex h-9 w-full items-center justify-between rounded-md px-3",
                   "border border-input bg-surface-white text-sm text-foreground outline-none",
                   "transition-colors hover:border-line-slate-300",
-                  "focus-visible:border-(--brand-leaf-border)",
                 )}
                 aria-label="压缩偏好"
               >

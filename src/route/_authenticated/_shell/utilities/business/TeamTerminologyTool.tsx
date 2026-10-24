@@ -72,7 +72,7 @@ export function TeamTerminologyTool({ terminology, active, onActivate, ref }: Pr
             onClick={() => {
               state.setLevel("termbases");
             }}
-            className="flex items-center gap-1 rounded-md text-sm font-medium text-text-muted-warm hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+            className="flex items-center gap-1 rounded-md text-sm font-medium text-text-muted-warm hover:text-foreground"
           >
             <ChevronLeft size={16} aria-hidden="true" />
             术语库

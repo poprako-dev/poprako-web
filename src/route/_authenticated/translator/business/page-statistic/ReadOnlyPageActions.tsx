@@ -150,7 +150,7 @@ export function ReadOnlyPageActions({
               "flex size-8 items-center justify-center rounded-md border",
               "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
               "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
-              "focus-visible:outline-outline-stone-400 disabled:opacity-60",
+              "disabled:opacity-60",
               isOpen && "bg-surface-white text-ink-gray-900",
             )}
           >
@@ -196,7 +196,7 @@ export function ReadOnlyPageActions({
             "flex size-8 items-center justify-center rounded-md border",
             "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
             "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
-            "focus-visible:outline-outline-stone-400 disabled:opacity-60",
+            "disabled:opacity-60",
           )}
         >
           {isLoadingNext ? (

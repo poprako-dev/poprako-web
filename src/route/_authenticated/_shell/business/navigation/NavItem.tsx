@@ -29,7 +29,6 @@ export function NavItem({
       className={clsx(
         "group/item relative flex h-11 w-full",
         "items-center outline-none transition-all",
-        "focus-visible:outline focus-visible:outline-1 focus-visible:-outline-offset-4 focus-visible:outline-navigation-active",
         isActive ? "text-navigation-active" : "text-navigation-ink",
       )}
     >

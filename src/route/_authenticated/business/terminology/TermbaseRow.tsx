@@ -52,7 +52,6 @@ export function TermbaseRow({
         className={clsx(
           "flex min-w-0 flex-1 items-center gap-3 pl-2.5 text-left",
           directory ? "min-h-12 py-2" : "min-h-7 py-1",
-          "focus-visible:outline-2 focus-visible:outline-primary-border",
           onEdit && "select-none",
           onEdit && (directory ? "touch-pan-y" : "touch-none"),
         )}

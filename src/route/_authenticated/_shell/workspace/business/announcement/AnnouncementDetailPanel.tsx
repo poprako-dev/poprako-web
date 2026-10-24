@@ -83,7 +83,7 @@ function AnnouncementTitle({
         "w-full resize-none rounded-md px-2 py-1.5 mb-3",
         "text-sm font-bold text-ink-slate-700 leading-relaxed",
         "border border-control-border bg-surface-white",
-        "focus:border-line-slate-300 focus:outline-none",
+        "focus:outline-none",
       )}
       value={draft.title}
       onChange={(event) => {
@@ -118,7 +118,7 @@ function AnnouncementContent({
         "w-full flex-1 min-h-24 resize-none rounded-md px-2 py-1.5",
         "text-xs text-text-muted-cool leading-relaxed",
         "border border-control-border bg-surface-white",
-        "focus:border-line-slate-300 focus:outline-none",
+        "focus:outline-none",
       )}
       value={draft.content}
       onChange={(event) => {

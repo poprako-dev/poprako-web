@@ -67,7 +67,6 @@ export function BoundedCompressionTool(): JSX.Element {
         className={clsx(
           "flex w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-dashed",
           "border-input bg-muted/30 p-4 text-sm hover:bg-muted/50 disabled:opacity-50",
-          "focus-visible:outline-2 focus-visible:outline-ring",
         )}
       >
         <FilePlus2 size={20} className="text-text-green" />

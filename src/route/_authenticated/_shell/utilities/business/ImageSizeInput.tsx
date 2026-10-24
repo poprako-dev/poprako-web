@@ -28,7 +28,7 @@ export function ImageSizeInput({ label, value, disabled, onChange }: Props): JSX
           }}
           className={clsx(
             "h-9 w-24 rounded-md border border-input bg-background px-2 text-sm text-foreground",
-            "focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50",
+            "disabled:opacity-50",
             "aria-invalid:border-destructive",
           )}
         />

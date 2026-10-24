@@ -48,7 +48,6 @@ export function TermbaseAppendButton({ name, busy, disabled, onAppend }: Props):
           "border-line-stone-200 bg-surface-stone-100 text-ink-stone-600 transition-colors",
           "enabled:hover:border-line-stone-300 enabled:hover:bg-surface-stone-200",
           "disabled:cursor-not-allowed disabled:opacity-40",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-outline-stone-500",
         )}
       >
         {busy ? (

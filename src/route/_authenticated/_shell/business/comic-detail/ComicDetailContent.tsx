@@ -30,7 +30,6 @@ function ViewButton({ active, label, onClick, children }: ViewButtonProps): JSX.
       className={clsx(
         "flex h-6 w-12 items-center justify-center rounded-sm",
         "transition-all duration-200",
-        "focus-visible:outline-2 focus-visible:outline-primary/60",
         active
           ? "bg-surface-stone-200 text-ink-stone-700 shadow-(--shadow-sm)"
           : "text-text-muted-warm hover:bg-surface-stone-100 hover:text-ink-stone-600",

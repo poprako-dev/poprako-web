@@ -97,7 +97,7 @@ export function TranslatorPaginator({
                     onClick={() => {
                       void refresh();
                     }}
-                    className="mt-1 cursor-pointer underline focus-visible:outline-outline-stone-500"
+                    className="mt-1 cursor-pointer underline"
                   >
                     重试
                   </button>

@@ -142,7 +142,7 @@ export function CommentChatBox({ comments, loading, onSend }: Props): JSX.Elemen
             "text-sm leading-relaxed bg-surface-white/80 text-foreground",
             "placeholder:text-text-subtle-warm",
             "border border-control-border-warm",
-            "focus:outline-none focus:border-[var(--brand-leaf)]/40",
+            "focus:outline-none",
             "transition-colors min-h-8 max-h-24",
           )}
           rows={1}

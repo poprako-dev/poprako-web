@@ -180,11 +180,7 @@ export function RoleTag({
           "pl-4 pr-2 py-1 gap-3",
           "transition-all duration-200",
           "bg-surface-white",
-          onClickable && [
-            "cursor-pointer hover:bg-surface-stone-100",
-            "focus-visible:outline-2 focus-visible:outline-outline-stone-400",
-            "focus-visible:outline-offset-[-2px]",
-          ],
+          onClickable && "cursor-pointer hover:bg-surface-stone-100",
         )}
       >
         {/* Label */}

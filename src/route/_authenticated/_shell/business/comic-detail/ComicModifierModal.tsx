@@ -97,7 +97,7 @@ export function ComicModifierModal({ comicInfo, onUpdate, onClose }: Props): JSX
                 "flex items-start gap-2.5 rounded-md px-3 py-2",
                 "border border-line-slate-200 bg-surface-white shadow-sm shadow-shadow-slate-100",
                 "hover:border-line-slate-300",
-                "focus-within:border-line-slate-300 transition-all",
+                "transition-all",
               )}
             >
               <AlignLeft className="w-3.5 h-3.5 text-icon-muted-cool mt-0.5 shrink-0" />

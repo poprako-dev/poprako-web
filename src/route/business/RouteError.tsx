@@ -52,7 +52,7 @@ function ErrorView({ code, title, message, onGoHome, retry }: ErrorViewProps): R
             "inline-flex items-center justify-center rounded-full",
             "border-2 border-line-emerald-300/50 px-8 py-3 text-sm font-medium text-text-emerald",
             "transition-colors duration-200 hover:text-text-emerald",
-            "focus:outline-none focus:ring-2 focus:ring-focus-emerald-500 focus:ring-offset-2",
+            "focus:outline-none",
           )}
         >
           返回首页

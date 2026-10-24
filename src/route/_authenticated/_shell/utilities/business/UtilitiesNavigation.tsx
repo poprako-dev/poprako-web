@@ -12,7 +12,7 @@ import type { TeamTerminologyHandle } from "./TeamTerminologyTool";
 
 import { archiveTools, type UtilityMode } from "./utility-mode";
 const rowClass =
-  "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ring";
+  "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors";
 const inactiveClass = "text-muted-foreground hover:bg-muted/50 hover:text-foreground";
 const activeClass = "bg-surface-green-50 font-semibold text-text-green";
 
