@@ -31,7 +31,7 @@ export function IssueItem({ issue, isFocused, onSelect }: Props): JSX.Element {
             onClick={() => {
               onSelect(issue.id);
             }}
-            aria-label={`issue ${String(issue.index + 1)}：${issue.variant}`}
+            aria-label={`标注 ${String(issue.index + 1)}：${issue.variant}`}
             aria-pressed={isFocused}
             className={clsx(
               "w-8 shrink-0 flex items-center justify-center select-none touch-none",
@@ -69,7 +69,7 @@ export function IssueItem({ issue, isFocused, onSelect }: Props): JSX.Element {
       <div
         role="textbox"
         aria-readonly="true"
-        aria-label={`issue ${String(issue.index + 1)} 内容`}
+        aria-label={`标注 ${String(issue.index + 1)} 内容`}
         tabIndex={0}
         onFocus={() => {
           onSelect(issue.id);

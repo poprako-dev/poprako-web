@@ -36,7 +36,8 @@ export function IssueMarker({
       onTouchStart={(event) => {
         event.stopPropagation();
       }}
-      aria-label={`定位 issue ${String(number)}`}
+      aria-label={`定位标注 ${String(number)}`}
+      title={`定位标注 ${String(number)}`}
       aria-pressed={isSelected}
       onClick={() => {
         onSelect(id);

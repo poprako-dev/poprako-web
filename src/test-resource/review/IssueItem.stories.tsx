@@ -58,7 +58,7 @@ export const LongText: Story = { args: { long: true } };
 export const Hover: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const button = canvas.getByRole("button", { name: "issue 7：断行" });
+    const button = canvas.getByRole("button", { name: "标注 7：断行" });
     await userEvent.hover(button);
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "true");

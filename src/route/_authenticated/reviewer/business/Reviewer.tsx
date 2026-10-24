@@ -160,8 +160,8 @@ export function Reviewer({
               {onImport && (
                 <button
                   type="button"
-                  title="导入整章 issue"
-                  aria-label="导入整章 issue"
+                  title="导入整章标注"
+                  aria-label="导入整章标注"
                   onClick={onImport}
                   className={clsx(buttonClass, "bg-surface-white hover:bg-surface-stone-100")}
                 >
@@ -185,8 +185,8 @@ export function Reviewer({
               </button>
               <button
                 type="button"
-                title={visible ? "隐藏 issue 矩形" : "显示 issue 矩形"}
-                aria-label="切换 issue 矩形显示"
+                title={visible ? "隐藏标注矩形" : "显示标注矩形"}
+                aria-label="切换标注矩形显示"
                 aria-pressed={visible}
                 onClick={() => {
                   setVisible((value) => !value);
@@ -208,7 +208,7 @@ export function Reviewer({
                 role="status"
                 className="flex items-center justify-center gap-2 p-3 text-xs text-ink-stone-600"
               >
-                <LoadingCircle size={16} aria-label="正在加载 issue" />
+                <LoadingCircle size={16} aria-label="正在加载标注" />
                 <span>正在读取本页监稿标注…</span>
               </div>
             )}
@@ -216,11 +216,11 @@ export function Reviewer({
               <button
                 type="button"
                 title={review.issuesError}
-                aria-label="重试 issue"
+                aria-label="重试标注"
                 onClick={review.retryIssues}
                 className="self-center p-2 text-ink-stone-600"
               >
-                <span role="alert">issue 加载失败：{review.issuesError}</span>
+                <span role="alert">标注加载失败：{review.issuesError}</span>
                 <RotateCcw size={18} />
               </button>
             )}

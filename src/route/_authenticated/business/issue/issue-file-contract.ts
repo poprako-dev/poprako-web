@@ -8,12 +8,12 @@ function nonblank(value: unknown, label: string): string {
 }
 
 export function decodeIssueRect(value: unknown): IssueRect {
-  const object = decodeObject(value, "issue.rect");
+  const object = decodeObject(value, "标注区域");
   const rect = {
-    xCoord: decodeNumber(object["xCoord"], "rect.xCoord"),
-    yCoord: decodeNumber(object["yCoord"], "rect.yCoord"),
-    width: decodeNumber(object["width"], "rect.width"),
-    height: decodeNumber(object["height"], "rect.height"),
+    xCoord: decodeNumber(object["xCoord"], "标注区域横坐标"),
+    yCoord: decodeNumber(object["yCoord"], "标注区域纵坐标"),
+    width: decodeNumber(object["width"], "标注区域宽度"),
+    height: decodeNumber(object["height"], "标注区域高度"),
   };
   if (
     rect.xCoord < 0 ||
@@ -23,32 +23,32 @@ export function decodeIssueRect(value: unknown): IssueRect {
     rect.xCoord + rect.width > 1 ||
     rect.yCoord + rect.height > 1
   )
-    throw new Error("issue 矩形必须为整页 0–1 坐标，宽高为正且不能越界");
+    throw new Error("标注矩形必须为整页 0–1 坐标，宽高为正且不能越界");
   return rect;
 }
 
 export function decodeIssueInput(value: unknown): IssueInput {
-  const object = decodeObject(value, "issue");
+  const object = decodeObject(value, "标注");
   const fields = ["variant", "layerName", "rect", "note", "id", "pageArtworkId", "index"];
   if (Object.keys(object).some((key) => !fields.includes(key))) {
-    throw new Error("issue 包含不支持的字段；请使用 layer_name 提供可读图层名称。");
+    throw new Error("标注包含不支持的字段；请使用 layer_name 提供可读图层名称。");
   }
   return {
-    variant: nonblank(object["variant"], "issue.variant"),
+    variant: nonblank(object["variant"], "标注类型"),
     layerName:
       object["layerName"] === null || object["layerName"] === undefined
         ? null
-        : nonblank(object["layerName"], "issue.layerName"),
+        : nonblank(object["layerName"], "标注图层名称"),
     rect:
       object["rect"] === null || object["rect"] === undefined
         ? null
         : decodeIssueRect(object["rect"]),
-    note: decodeString(object["note"], "issue.note"),
+    note: decodeString(object["note"], "标注说明"),
   };
 }
 
 export function decodeIssueImport(value: unknown): ImportChapterIssuesRequest {
-  const object = decodeObject(value, "issue import");
+  const object = decodeObject(value, "导入标注");
   return {
     pages: decodeArray(
       object["pages"],
@@ -56,7 +56,7 @@ export function decodeIssueImport(value: unknown): ImportChapterIssuesRequest {
         const page = decodeObject(value, "page");
         return {
           pageArtworkId: nonblank(page["pageArtworkId"], "pageArtworkId"),
-          issues: decodeArray(page["issues"], decodeIssueInput, "issues"),
+          issues: decodeArray(page["issues"], decodeIssueInput, "标注列表"),
         };
       },
       "pages",

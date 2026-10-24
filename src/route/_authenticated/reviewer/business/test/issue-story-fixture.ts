@@ -87,7 +87,7 @@ function appendOverlappingIssues(issues: IssueInfo[], pageId: string): void {
     pageArtworkId: pageId,
     index: 4,
     variant: "区域重叠",
-    note: "同一区域的另一条 issue，可分别选中。",
+    note: "同一区域的另一条标注，可分别选中。",
     rect: { xCoord: 0.72, yCoord: 0.12, width: 0.18, height: 0.09 },
     layerName: "对白",
   });
@@ -96,7 +96,7 @@ function appendOverlappingIssues(issues: IssueInfo[], pageId: string): void {
     pageArtworkId: pageId,
     index: 5,
     variant: "长文本",
-    note: "这是一条需要完整保留换行与说明的 issue。\n".repeat(16),
+    note: "这是一条需要完整保留换行与说明的标注。\n".repeat(16),
     rect: null,
     layerName: null,
   });
@@ -164,7 +164,7 @@ export function createIssueStoryArgs(
   async function loadIssues(pageId: string, signal: AbortSignal): Promise<IssueInfo[]> {
     await new Promise<void>((resolve) => setTimeout(resolve, options.delay ?? 100));
     signal.throwIfAborted();
-    if (options.fail) throw new Error("示例：issue 数据读取失败");
+    if (options.fail) throw new Error("示例：标注数据读取失败");
     return issuesForPage(pageId);
   }
   return {
