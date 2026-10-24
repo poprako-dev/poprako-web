@@ -154,7 +154,7 @@ export function ReadOnlyPageActions({
               isOpen && "bg-surface-white text-ink-gray-900",
             )}
           >
-            <ChartNoAxesGantt size={16} strokeWidth={1.8} />
+            <ChartNoAxesGantt size={20} strokeWidth={2.25} />
           </button>
         </Popover.Trigger>
         <Popover.Portal>
