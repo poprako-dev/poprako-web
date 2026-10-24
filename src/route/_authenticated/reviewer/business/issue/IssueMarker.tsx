@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import type { JSX, PointerEventHandler } from "react";
 import clsx from "clsx";
 import {
   MARKER_TRANSITION,
@@ -16,6 +16,11 @@ type Props = {
   scale: number;
   isSelected: boolean;
   onSelect: (id: string) => void;
+  onPointerDown?: PointerEventHandler<HTMLButtonElement> | undefined;
+  onPointerMove?: PointerEventHandler<HTMLButtonElement> | undefined;
+  onPointerUp?: PointerEventHandler<HTMLButtonElement> | undefined;
+  onPointerCancel?: PointerEventHandler<HTMLButtonElement> | undefined;
+  onLostPointerCapture?: PointerEventHandler<HTMLButtonElement> | undefined;
 };
 export function IssueMarker({
   appearance,
@@ -25,9 +30,11 @@ export function IssueMarker({
   scale,
   isSelected,
   onSelect,
+  ...pointerEvents
 }: Props): JSX.Element {
   return (
     <button
+      {...pointerEvents}
       data-canvas-annotation={id}
       type="button"
       onMouseDown={(event) => {
@@ -43,7 +50,7 @@ export function IssueMarker({
         onSelect(id);
       }}
       className={clsx(
-        "absolute cursor-pointer rounded-sm border-2 border-solid bg-transparent outline-offset-2 focus-visible:outline-2 focus-visible:outline-outline-stone-500",
+        "absolute touch-none cursor-pointer rounded-sm border-2 border-solid bg-transparent outline-offset-2",
         isSelected ? "z-20" : "z-10",
       )}
       style={{

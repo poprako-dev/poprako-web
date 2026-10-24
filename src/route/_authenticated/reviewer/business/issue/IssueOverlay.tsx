@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import type { JSX, ComponentProps } from "react";
 import { issueAppearance } from "./issue-appearance";
 import { IssueMarker } from "./IssueMarker";
 import type { IssueInfo } from "@/route/_authenticated/business/issue/issue";
@@ -8,8 +8,29 @@ type Props = {
   focusedId: string | null;
   visible: boolean;
   onSelect: (id: string) => void;
+  markerEvents?:
+    | ((
+        issue: IssueInfo,
+      ) => Partial<
+        Pick<
+          ComponentProps<typeof IssueMarker>,
+          | "onPointerDown"
+          | "onPointerMove"
+          | "onPointerUp"
+          | "onPointerCancel"
+          | "onLostPointerCapture"
+        >
+      >)
+    | undefined;
 };
-export function IssueOverlay({ scale, issues, focusedId, visible, onSelect }: Props): JSX.Element {
+export function IssueOverlay({
+  scale,
+  issues,
+  focusedId,
+  visible,
+  onSelect,
+  markerEvents,
+}: Props): JSX.Element {
   return (
     <>
       {visible &&
@@ -18,6 +39,7 @@ export function IssueOverlay({ scale, issues, focusedId, visible, onSelect }: Pr
             issue.rect && (
               <IssueMarker
                 key={issue.id}
+                {...markerEvents?.(issue)}
                 appearance={issueAppearance(issue.variant)}
                 id={issue.id}
                 number={issue.index + 1}

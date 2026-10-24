@@ -1,5 +1,6 @@
 import type { LoadIssues } from "@/route/_authenticated/business/issue/issue";
 import type { LoadReviewPage } from "./issue/review-page";
+import type { ReviewerEditing } from "./editor/review-editing";
 export type ReviewerProject = {
   chapterId: string;
   pages: readonly {
@@ -10,6 +11,7 @@ export type ReviewerProject = {
   }[];
 };
 export type ReviewerProps = {
+  editing?: ReviewerEditing;
   project: ReviewerProject;
   startPageId: string;
   loadReviewPage: LoadReviewPage;
