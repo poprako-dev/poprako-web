@@ -21,6 +21,7 @@ export function ReviewPreviewStatus({ review }: Props): JSX.Element | null {
           <button
             type="button"
             aria-label="重试成稿预览"
+            title="重试成稿预览"
             onClick={review.retry}
             className="inline-flex items-center justify-center gap-2 rounded-md border border-line-stone-300 bg-surface-white px-3 py-2 text-sm text-ink-stone-700 hover:bg-surface-stone-100"
           >

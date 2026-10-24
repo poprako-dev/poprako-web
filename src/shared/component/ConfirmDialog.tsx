@@ -35,6 +35,7 @@ export function ConfirmDialog(props: Props): ReactElement {
         props.mode === "content" ? null : (
           <div className="flex items-center gap-2">
             <AppDialogAction
+              title={props.confirmLabel ?? "确认"}
               tone={props.confirmTone === "success" ? "brand" : "danger"}
               onClick={props.onConfirm}
               disabled={(props.loading ?? false) || (props.confirmDisabled ?? false)}
