@@ -108,7 +108,6 @@ function EditorList({ editor }: Props): JSX.Element {
             editor.select(issue.id, true);
           }}
           onChange={(patch) => {
-            if (patch.variant) categories.add(patch.variant);
             editor.modify(issue.id, patch);
           }}
           onDelete={() => {

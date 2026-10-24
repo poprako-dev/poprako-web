@@ -11,7 +11,7 @@ type Props = {
   title?: string;
   existingTypes?: string[];
   disabled: boolean;
-  onApply: (value: string) => void;
+  onApply: (value: string) => void | Promise<void>;
   onClose: () => void;
 };
 
@@ -25,36 +25,49 @@ export function CustomIssueTypeDialog({
 }: Props): JSX.Element {
   const [value, setValue] = useState(initialValue);
   const [error, setError] = useState<string | null>(null);
-  const duplicate = value.trim() !== initialValue && existingTypes.includes(value.trim());
+  const [pending, setPending] = useState(false);
+  const [attempted, setAttempted] = useState<string | null>(null);
+  const duplicate =
+    value.trim() !== initialValue &&
+    existingTypes.includes(value.trim()) &&
+    !(error && attempted === value.trim());
   const inputRef = useRef<HTMLInputElement>(null);
-  function apply(): void {
-    if (disabled || !value.trim() || duplicate) return;
+  async function apply(): Promise<void> {
+    if (disabled || pending || !value.trim() || duplicate) return;
+    setPending(true);
+    setAttempted(value.trim());
     try {
-      onApply(value.trim());
+      await onApply(value.trim());
       onClose();
     } catch (cause) {
       setError(message(cause));
+    } finally {
+      setPending(false);
     }
   }
   return (
     <AppDialog
       title={title}
       size="compact"
-      onClose={onClose}
+      onClose={() => {
+        if (!pending) onClose();
+      }}
       onOpenAutoFocus={(event) => {
         event.preventDefault();
         inputRef.current?.focus();
       }}
       footer={
         <div className="flex gap-2">
-          <AppDialogAction title="取消" onClick={onClose}>
+          <AppDialogAction title="取消" disabled={pending} onClick={onClose}>
             取消
           </AppDialogAction>
           <AppDialogAction
             title="应用分类"
             tone="brand"
-            disabled={disabled || !value.trim() || duplicate}
-            onClick={apply}
+            disabled={disabled || pending || !value.trim() || duplicate}
+            onClick={() => {
+              void apply();
+            }}
           >
             应用
           </AppDialogAction>
@@ -70,7 +83,7 @@ export function CustomIssueTypeDialog({
         autoComplete="off"
         spellCheck={false}
         value={value}
-        disabled={disabled}
+        disabled={disabled || pending}
         onChange={(event) => {
           setValue(event.target.value);
           setError(null);
@@ -78,7 +91,7 @@ export function CustomIssueTypeDialog({
         onKeyDown={(event) => {
           if (event.key === "Enter" && !isKeyboardComposing(event.nativeEvent)) {
             event.preventDefault();
-            apply();
+            void apply();
           }
         }}
         className="h-8 w-full rounded-md border border-control-border bg-surface-white px-3 text-sm text-ink-slate-700 shadow-sm placeholder:text-text-muted-cool focus:outline-none"

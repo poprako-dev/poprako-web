@@ -22,16 +22,28 @@ export function IssueTypeDialog({
   onClose,
 }: Props): JSX.Element {
   const [error, setError] = useState<string | null>(null);
+  async function remove(): Promise<void> {
+    if (action.kind !== "delete") return;
+    try {
+      await categories.remove(action.type);
+      onClose();
+    } catch (cause) {
+      setError(message(cause));
+    }
+  }
   if (action.kind !== "delete")
     return (
       <CustomIssueTypeDialog
         title={action.kind === "rename" ? "重命名分类" : "自定义分类"}
         initialValue={action.kind === "rename" ? action.type : ""}
-        existingTypes={categories.types}
+        existingTypes={action.kind === "rename" ? categories.types : categories.presets}
         disabled={disabled || (action.kind === "rename" && categories.loading)}
-        onApply={(name) => {
-          if (action.kind === "rename") categories.rename(action.type, name);
-          else onChange(name);
+        onApply={async (name) => {
+          if (action.kind === "rename") await categories.rename(action.type, name);
+          else {
+            categories.add(name);
+            onChange(name);
+          }
         }}
         onClose={onClose}
       />
@@ -43,12 +55,7 @@ export function IssueTypeDialog({
       confirmDisabled={disabled || categories.loading || categories.count(action.type) > 0}
       onCancel={onClose}
       onConfirm={() => {
-        try {
-          categories.remove(action.type);
-          onClose();
-        } catch (cause) {
-          setError(message(cause));
-        }
+        void remove();
       }}
     >
       <p className="px-5 py-2 text-sm text-ink-slate-700 [overflow-wrap:anywhere]">{action.type}</p>
