@@ -66,7 +66,7 @@ test("100-unit translator edits and hover only render markers with changed appea
   fireEvent.change(input, { target: { value: "字" } });
   expect(rendered.mock.calls.map(([index]) => index)).toEqual([0]);
   rendered.mockClear();
-  const marker = view.getByRole("button", { name: "第 1 个 Unit" });
+  const marker = view.getByRole("button", { name: "第 1 个翻校单元" });
   fireEvent.mouseEnter(marker);
   expect(view.getByText("字", { selector: "div" })).toBeVisible();
   expect(rendered).not.toHaveBeenCalled();
@@ -80,15 +80,15 @@ test("100-unit translator edits and hover only render markers with changed appea
 
 test("100-unit translator focus and zoom update only the required marker appearance", async () => {
   const view = await setup();
-  fireEvent.keyDown(view.getByRole("button", { name: "第 1 个 Unit" }), { key: "Enter" });
+  fireEvent.keyDown(view.getByRole("button", { name: "第 1 个翻校单元" }), { key: "Enter" });
   expect(rendered.mock.calls.map(([index]) => index)).toEqual([0]);
   rendered.mockClear();
-  fireEvent.keyDown(view.getByRole("button", { name: "第 2 个 Unit" }), { key: " " });
+  fireEvent.keyDown(view.getByRole("button", { name: "第 2 个翻校单元" }), { key: " " });
   expect(rendered.mock.calls.map(([index]) => index)).toEqual([0, 1]);
   rendered.mockClear();
   fireEvent.wheel(view.getByRole("application"), { deltaY: -100, clientX: 0, clientY: 0 });
   expect(rendered).toHaveBeenCalledTimes(100);
-  expect(view.getByRole("button", { name: "第 1 个 Unit" }).style.transform).toContain(
+  expect(view.getByRole("button", { name: "第 1 个翻校单元" }).style.transform).toContain(
     "scale(0.925",
   );
 });

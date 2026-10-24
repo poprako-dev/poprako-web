@@ -143,8 +143,8 @@ export function ReadOnlyPageActions({
         <Popover.Trigger asChild>
           <button
             type="button"
-            title="页面 unit 统计"
-            aria-label="页面 unit 统计"
+            title="页面翻校单元统计"
+            aria-label="页面翻校单元统计"
             disabled={isDisabled || isLoadingNext}
             className={clsx(
               "flex size-8 items-center justify-center rounded-md border",
@@ -163,7 +163,7 @@ export function ReadOnlyPageActions({
             align="end"
             sideOffset={6}
             collisionPadding={8}
-            aria-label="页面 unit 统计"
+            aria-label="页面翻校单元统计"
             className={clsx(
               "z-60 flex w-76 max-w-[calc(100vw-16px)] flex-col overflow-hidden",
               "max-h-[min(24rem,var(--radix-popover-content-available-height))]",

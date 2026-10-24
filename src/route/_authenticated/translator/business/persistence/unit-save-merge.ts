@@ -22,12 +22,12 @@ export function acceptCreatedIds(
   );
   for (const pair of result.createdUnitIds) {
     if (!expected.delete(pair.localId) || !pair.unitId || seen.has(pair.unitId)) {
-      throw new UnitSaveProtocolError("保存响应包含无效或重复的 Unit ID");
+      throw new UnitSaveProtocolError("保存响应包含无效或重复的翻校单元 ID");
     }
     seen.add(pair.unitId);
   }
   if (expected.size > 0) {
-    throw new UnitSaveProtocolError("保存响应缺少新建 Unit 的永久 ID");
+    throw new UnitSaveProtocolError("保存响应缺少新建翻校单元的永久 ID");
   }
   for (const pair of result.createdUnitIds) {
     identities.set(pair.localId, pair.unitId);

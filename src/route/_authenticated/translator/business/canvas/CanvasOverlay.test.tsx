@@ -26,10 +26,10 @@ function overlayProps(): ComponentProps<typeof CanvasOverlay> {
 test("retained markers call the latest committed handlers and retain pointer source coordinates", () => {
   const props = overlayProps();
   const view = render(<CanvasOverlay {...props} />);
-  const marker = view.getByRole("button", { name: "第 1 个 Unit" });
+  const marker = view.getByRole("button", { name: "第 1 个翻校单元" });
   const next = overlayProps();
   view.rerender(<CanvasOverlay {...next} />);
-  expect(view.getByRole("button", { name: "第 1 个 Unit" })).toBe(marker);
+  expect(view.getByRole("button", { name: "第 1 个翻校单元" })).toBe(marker);
   fireEvent.keyDown(marker, { key: "Enter" });
   fireEvent.mouseDown(marker);
   fireEvent.touchStart(marker);
@@ -50,7 +50,7 @@ test("retained markers call the latest committed handlers and retain pointer sou
 test("dragging hides preview, updates its marker position, and keeps original drag coordinates", () => {
   const props = overlayProps();
   const view = render(<CanvasOverlay {...props} hoveredUnitId="u1" />);
-  const marker = view.getByRole("button", { name: "第 1 个 Unit" });
+  const marker = view.getByRole("button", { name: "第 1 个翻校单元" });
   expect(view.getByText("translated")).toBeVisible();
   view.rerender(
     <CanvasOverlay {...props} hoveredUnitId="u1" dragMarker={{ id: "u1", x: 0.7, y: 0.8 }} />,
@@ -70,7 +70,7 @@ test("read-only focus, preview mode and bubble permissions remain responsive", (
   const props = overlayProps();
   const view = render(<CanvasOverlay {...props} mode="proofread" focusedUnitId="u1" />);
   expect(view.getByText("translated")).toBeVisible();
-  const marker = view.getByRole("button", { name: "第 1 个 Unit" });
+  const marker = view.getByRole("button", { name: "第 1 个翻校单元" });
   view.rerender(<CanvasOverlay {...props} enableReadOnly proofreadPreviewVisibility="dimmed" />);
   fireEvent.doubleClick(marker);
   expect(props.onToggleBubble).not.toHaveBeenCalled();

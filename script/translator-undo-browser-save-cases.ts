@@ -40,7 +40,9 @@ export async function pendingSaveDeleteRestore(page: Page): Promise<void> {
   await page.getByPlaceholder("点击输入翻译...").first().pressSequentially("ab");
   await page.getByRole("button", { name: "保存 · 待保存", exact: true }).click();
   await page.waitForFunction(() => globalThis.undoProbe.calls() === 1);
-  await page.getByRole("button", { name: "第 1 个 Unit", exact: true }).click({ button: "right" });
+  await page
+    .getByRole("button", { name: "第 1 个翻校单元", exact: true })
+    .click({ button: "right" });
   await page.getByRole("dialog", { name: "确认删除" }).waitFor();
   await undo(page);
   await expectTexts(page, ["ab", ""]);

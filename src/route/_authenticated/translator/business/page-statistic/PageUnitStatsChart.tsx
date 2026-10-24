@@ -82,7 +82,7 @@ function PageStatsHeader({ limit }: { limit: number }): JSX.Element {
       )}
     >
       <span aria-hidden="true" />
-      <div aria-hidden="true" title="unit" className="flex justify-between">
+      <div aria-hidden="true" title="翻校单元" className="flex justify-between">
         <span>0</span>
         <span>{limit}</span>
       </div>

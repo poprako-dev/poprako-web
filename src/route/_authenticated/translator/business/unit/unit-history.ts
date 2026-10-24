@@ -84,7 +84,7 @@ export class UnitHistory {
   private restoreUnit(id: string, current: UnitInfo | undefined, entry: HistoryEntry): UnitInfo {
     const reverse = entry.changed.get(id);
     const unit = current ?? this.metadata.get(id);
-    if (!unit) throw new Error("回退文档缺少 Unit 内容");
+    if (!unit) throw new Error("回退文档缺少翻校单元内容");
     return reverse ? restoreContent(unit, reverse) : unit;
   }
 }

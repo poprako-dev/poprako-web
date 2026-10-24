@@ -113,7 +113,7 @@ export function UnitSearchTransformDialog({
               "backdrop-blur-sm",
             )}
           >
-            <span>{matches.length} 个匹配 Unit</span>
+            <span>{matches.length} 个匹配翻校单元</span>
             <span>
               已选 {selectedIds.size}
               {matches.length > MAX_SELECTED_UNIT_COUNT ? " · 上限 100" : ""}

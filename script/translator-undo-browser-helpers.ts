@@ -64,7 +64,9 @@ export async function save(page: Page): Promise<void> {
 }
 
 export async function deleteFirst(page: Page): Promise<void> {
-  await page.getByRole("button", { name: "第 1 个 Unit", exact: true }).click({ button: "right" });
+  await page
+    .getByRole("button", { name: "第 1 个翻校单元", exact: true })
+    .click({ button: "right" });
   await page.getByRole("dialog", { name: "确认删除" }).waitFor();
   await page.getByRole("button", { name: "删除", exact: true }).click();
 }
