@@ -86,7 +86,7 @@ export const GroupedResults: Story = {
     await userEvent.type(dialog.getByRole("textbox", { name: "查找短语" }), "旧词");
     await userEvent.click(dialog.getByRole("button", { name: "搜索" }));
     await waitFor(async () => {
-      await expect(await dialog.findByText("8 个匹配 Unit")).toBeVisible();
+      await expect(await dialog.findByText("8 个匹配翻校单元")).toBeVisible();
     });
     const pageSelector = dialog.getByRole("checkbox", {
       name: "选择第 1 页全部匹配项",
@@ -97,7 +97,7 @@ export const GroupedResults: Story = {
     await userEvent.click(expandButton);
     await expect(dialog.getAllByText("旧词").length).toBeGreaterThan(0);
     await expect(dialog.getByRole("textbox", { name: "替换短语" })).toBeEnabled();
-    const unitCheckbox = dialog.getAllByRole("checkbox", { name: "选择该 Unit" })[0];
+    const unitCheckbox = dialog.getAllByRole("checkbox", { name: "选择该翻校单元" })[0];
     if (!unitCheckbox) throw new Error("Unit 复选框缺失");
     await userEvent.click(unitCheckbox);
     await expect(pageSelector).toHaveAttribute("aria-checked", "mixed");
@@ -246,7 +246,7 @@ export const CompletedWithRefreshFailure: Story = {
     await userEvent.type(dialog.getByRole("textbox", { name: "查找短语" }), "旧词");
     await userEvent.click(dialog.getByRole("button", { name: "搜索" }));
     await waitFor(async () => {
-      await expect(await dialog.findByText("8 个匹配 Unit")).toBeVisible();
+      await expect(await dialog.findByText("8 个匹配翻校单元")).toBeVisible();
       await expect(dialog.getByRole("textbox", { name: "替换短语" })).toBeEnabled();
     });
     await userEvent.type(dialog.getByRole("textbox", { name: "替换短语" }), "新词");
@@ -263,7 +263,7 @@ export const CompletedWithRefreshFailure: Story = {
     });
     await userEvent.click(dialog.getByRole("button", { name: "搜索" }));
     await waitFor(async () => {
-      await expect(await dialog.findByText("8 个匹配 Unit")).toBeVisible();
+      await expect(await dialog.findByText("8 个匹配翻校单元")).toBeVisible();
       await expect(dialog.getByRole("textbox", { name: "替换短语" })).toBeEnabled();
     });
     await expect(completedTransform).toHaveBeenCalledOnce();

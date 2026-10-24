@@ -109,22 +109,7 @@ export function AppDialog({
             {!description && (
               <Dialog.Description className="sr-only">{title}对话框</Dialog.Description>
             )}
-            {showClose && (
-              <button
-                type="button"
-                aria-label="关闭"
-                disabled={locked}
-                onClick={onClose}
-                className={clsx(
-                  "absolute right-4 top-3.5 flex size-7 items-center justify-center",
-                  "rounded-md text-text-muted-cool transition-colors",
-                  "hover:bg-surface-slate-50 hover:text-text-muted-cool",
-                  "disabled:cursor-not-allowed disabled:opacity-40",
-                )}
-              >
-                <X size={15} />
-              </button>
-            )}
+            {showClose && <AppDialogClose onClose={onClose} disabled={locked} />}
           </div>
           <div
             role="region"
@@ -140,6 +125,31 @@ export function AppDialog({
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+}
+
+type CloseProps = {
+  onClose: () => void;
+  disabled?: boolean;
+};
+
+export function AppDialogClose({ onClose, disabled = false }: CloseProps): ReactElement {
+  return (
+    <button
+      type="button"
+      aria-label="关闭"
+      title="关闭"
+      disabled={disabled}
+      onClick={onClose}
+      className={clsx(
+        "absolute right-4 top-3.5 flex size-7 items-center justify-center",
+        "rounded-md text-text-muted-cool transition-colors",
+        "hover:bg-surface-slate-50 hover:text-text-muted-cool",
+        "disabled:cursor-not-allowed disabled:opacity-40",
+      )}
+    >
+      <X size={15} />
+    </button>
   );
 }
 

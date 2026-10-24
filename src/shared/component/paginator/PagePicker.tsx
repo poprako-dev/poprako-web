@@ -56,6 +56,7 @@ function PagePickerItem({ page, index, currentPageIndex, onSelect }: ItemProps):
   return (
     <button
       type="button"
+      title={`跳转到第 ${String(index + 1)} 页`}
       onClick={() => {
         onSelect(index);
       }}

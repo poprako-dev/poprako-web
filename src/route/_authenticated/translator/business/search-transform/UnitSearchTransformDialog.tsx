@@ -78,7 +78,7 @@ export function UnitSearchTransformDialog({
           className={clsx(
             "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
             "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-            "transition-colors focus:border-line-slate-300",
+            "transition-colors",
           )}
         />
       </label>
@@ -94,7 +94,7 @@ export function UnitSearchTransformDialog({
           className={clsx(
             "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
             "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-            "transition-colors focus:border-line-slate-300",
+            "transition-colors",
             "disabled:cursor-not-allowed disabled:bg-surface-slate-50 disabled:text-ink-slate-300",
           )}
         />
@@ -113,7 +113,7 @@ export function UnitSearchTransformDialog({
               "backdrop-blur-sm",
             )}
           >
-            <span>{matches.length} 个匹配 Unit</span>
+            <span>{matches.length} 个匹配翻校单元</span>
             <span>
               已选 {selectedIds.size}
               {matches.length > MAX_SELECTED_UNIT_COUNT ? " · 上限 100" : ""}

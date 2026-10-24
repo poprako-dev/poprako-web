@@ -80,7 +80,7 @@ export const TypingDeleteAndSave: Story = {
     const page = within(canvasElement.ownerDocument.body);
     const input = await ready(canvasElement);
     await userEvent.type(input, "ab");
-    await fireEvent.contextMenu(canvas.getByRole("button", { name: "第 1 个 Unit" }));
+    await fireEvent.contextMenu(canvas.getByRole("button", { name: "第 1 个翻校单元" }));
     await page.findByRole("dialog", { name: "确认删除" });
     await undo();
     await expect(input).toHaveValue("ab");

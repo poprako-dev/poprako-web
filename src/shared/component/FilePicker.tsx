@@ -63,7 +63,7 @@ export function FilePicker({
         }}
         className={clsx(
           "flex min-h-24 w-full items-center justify-center gap-3 rounded-lg border border-dashed px-4 transition-colors",
-          "focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-default disabled:opacity-50",
+          "disabled:cursor-default disabled:opacity-50",
           invalid
             ? "border-(--danger-border) bg-surface-red-50 text-text-danger"
             : dragging

@@ -25,7 +25,7 @@ vi.mock("./translator-mode-module", () => ({
     (mode === "readOnly" ? modules.readOnly : modules.editing)?.load(),
 }));
 
-beforeEach(() => {
+beforeEach(async () => {
   refresh.mockClear();
   vi.stubGlobal(
     "ResizeObserver",
@@ -48,6 +48,8 @@ beforeEach(() => {
   });
   modules.editing = createModuleResource(() => import("./editing-mode"));
   modules.readOnly = createModuleResource(() => ready.then(() => import("./read-only-mode")));
+  // Keep cold module compilation outside the DOM query timeout.
+  await modules.editing.load();
 });
 
 afterEach(() => {

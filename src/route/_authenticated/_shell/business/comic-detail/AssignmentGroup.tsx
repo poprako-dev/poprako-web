@@ -122,11 +122,7 @@ function AssignmentRoleCard({
         "group/stage flex min-h-12 min-w-0 items-center gap-2",
         "border-b border-r border-line-stone-200/80 px-2.5 py-1.5",
         "transition-colors duration-150",
-        hasTransition && [
-          "cursor-pointer hover:bg-surface-stone-100/90",
-          "focus-visible:z-10 focus-visible:outline-2",
-          "focus-visible:outline-outline-stone-400 focus-visible:outline-offset-[-2px]",
-        ],
+        hasTransition && ["cursor-pointer hover:bg-surface-stone-100/90", "focus-visible:z-10"],
       )}
     >
       <span
@@ -151,10 +147,7 @@ function AssignmentRoleCard({
               revertTransition,
             });
           }}
-          className={clsx(
-            "w-8 shrink-0 text-left text-xs font-bold text-ink-stone-700",
-            "focus-visible:outline-2 focus-visible:outline-border",
-          )}
+          className="w-8 shrink-0 text-left text-xs font-bold text-ink-stone-700"
         >
           {roleDef.fullLabel}
         </button>

@@ -60,7 +60,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const LongBatch: Story = {
   name: "34 项任务 · 内部滚动",
-  play: async () => {
+  play: async ({ args }) => {
     const body = within(document.body);
     await userEvent.click(await body.findByRole("button", { name: "上传" }));
     const list = await body.findByRole("list", { name: "嵌稿上传任务" });
@@ -70,13 +70,15 @@ export const LongBatch: Story = {
     const rect = dialog.getBoundingClientRect();
     await expect(rect.top).toBeGreaterThanOrEqual(16);
     await expect(rect.bottom).toBeLessThanOrEqual(window.innerHeight - 16);
-    const stop = body.getByRole("button", { name: "停止" });
-    await expect(stop.getBoundingClientRect().bottom).toBeLessThan(rect.bottom);
+    const close = body.getByRole("button", { name: "关闭" });
+    await expect(close.getBoundingClientRect().bottom).toBeLessThan(rect.bottom);
+    await expect(body.queryByRole("button", { name: "停止" })).not.toBeInTheDocument();
     await waitFor(() => expect(body.getByRole("switch", { name: "打包上传" })).toBeVisible());
     scroller.scrollTop = scroller.scrollHeight;
     await expect(within(list).getByText("33.psd")).toBeVisible();
-    await userEvent.click(stop);
+    await userEvent.click(close);
     await body.findByRole("button", { name: "重试" });
+    await expect(args.onClose).not.toHaveBeenCalled();
   },
 };
 export const MobileLongBatch: Story = {

@@ -59,7 +59,6 @@ export function ArchiveTool({ mode }: Props): JSX.Element {
           "flex w-full items-center justify-center gap-3 rounded-lg border border-dashed",
           "px-4 transition-colors disabled:opacity-50",
           hasFiles ? "h-10 shrink-0" : "min-h-0 flex-1 flex-col",
-          "focus-visible:outline-2 focus-visible:outline-ring",
           isDragging
             ? "border-(--brand-leaf-border) bg-surface-green-50"
             : "border-input bg-muted/30 hover:border-(--brand-leaf-border) hover:bg-muted/50",

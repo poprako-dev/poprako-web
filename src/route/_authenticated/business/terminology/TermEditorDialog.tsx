@@ -68,8 +68,8 @@ function TermTargetRow(props: TermTargetRowProps): JSX.Element {
           "h-8 min-w-0 flex-1 rounded-md border bg-surface-white px-2.5",
           "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
           visibleTargetError && target.value.trim().length === 0
-            ? "border-control-error focus:border-control-error"
-            : "border-control-border focus:border-line-slate-300",
+            ? "border-control-error"
+            : "border-control-border",
         )}
       />
       <button
@@ -259,18 +259,11 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
       <TerminologyDialogFrame
         title="删除术语"
         locked={isSubmitting}
-        onClose={onClose}
+        onClose={() => {
+          setIsConfirmingDelete(false);
+        }}
         footer={
           <div className="flex gap-2">
-            <AppDialogAction
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => {
-                setIsConfirmingDelete(false);
-              }}
-            >
-              返回
-            </AppDialogAction>
             <AppDialogAction
               type="button"
               tone="danger"
@@ -340,7 +333,7 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
             className={clsx(
               "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
               "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-              "transition-colors focus:border-line-slate-300",
+              "transition-colors",
             )}
           />
         </label>
@@ -375,7 +368,7 @@ export function TermEditorDialog({ term, onSave, onDelete, onClose }: Props): JS
             className={clsx(
               "w-full resize-none rounded-md border border-control-border bg-surface-white px-2.5 py-2",
               "text-sm leading-relaxed text-ink-slate-700 shadow-sm shadow-shadow-slate-100",
-              "outline-none placeholder:text-text-muted-cool focus:border-line-slate-300",
+              "outline-none placeholder:text-text-muted-cool",
             )}
           />
         </label>

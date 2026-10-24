@@ -1,6 +1,7 @@
 import { type JSX, useState } from "react";
 import { AlignLeft, Loader2, Type } from "lucide-react";
 import clsx from "clsx";
+import { AppDialogClose } from "@/shared/component/AppDialog";
 import { IconInputRow } from "@/shared/component/IconInputRow";
 import type { Result } from "@/shared/utility/result";
 import type { CreateWorksetArgs } from "@/route/_authenticated/_shell/comic-playground/business/workset/workset-input";
@@ -50,7 +51,8 @@ export function WorksetCreatorModal({ teamId, onCreateWorkset, onClose }: Props)
         {/* 顶部品牌色条 */}
         <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
 
-        <div className="pt-4 pb-2 text-center">
+        <div className="relative pt-4 pb-2 text-center">
+          <AppDialogClose onClose={onClose} />
           <h3 className="text-lg font-bold text-ink-slate-800">新建作品集</h3>
         </div>
 
@@ -76,7 +78,7 @@ export function WorksetCreatorModal({ teamId, onCreateWorkset, onClose }: Props)
                 "flex items-start gap-2.5 rounded-md px-3 py-2",
                 "border border-line-slate-200 bg-surface-white shadow-sm shadow-shadow-slate-100",
                 "hover:border-line-slate-300",
-                "focus-within:border-line-slate-300 transition-all",
+                "transition-all",
               )}
             >
               <AlignLeft className="w-3.5 h-3.5 text-icon-muted-cool mt-0.5 shrink-0" />
@@ -96,18 +98,6 @@ export function WorksetCreatorModal({ teamId, onCreateWorkset, onClose }: Props)
           </div>
 
           <div className="mt-4 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className={clsx(
-                "flex-1 py-2 text-xs font-semibold rounded-lg",
-                "transition-all duration-200 active:scale-[0.98]",
-                "text-text-muted-cool bg-surface-slate-50 hover:bg-surface-slate-100",
-                "border border-line-slate-100",
-              )}
-            >
-              取消
-            </button>
             <button
               type="submit"
               disabled={isSubmitting || !isValid}

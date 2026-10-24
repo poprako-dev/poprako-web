@@ -95,12 +95,9 @@ export function TransitionDialog({
       title={`${roleName}流程`}
       tone="warning"
       size="default"
-      showClose={false}
-      closeOnEscape={false}
       onClose={onCancel}
       footer={
         <div className="flex items-center gap-2">
-          <AppDialogAction onClick={onCancel}>取消</AppDialogAction>
           {revertTransition && (
             <AppDialogAction
               tone="warning"

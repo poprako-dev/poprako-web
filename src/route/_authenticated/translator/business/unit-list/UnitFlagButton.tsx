@@ -27,7 +27,7 @@ export function UnitFlagButton({ isFlagged, isDisabled, onToggle }: Props): JSX.
       }}
       className={clsx(
         "flex size-7 shrink-0 items-center justify-center rounded cursor-pointer",
-        "transition-colors hover:bg-surface-stone-200/70 focus-visible:outline-outline-stone-500",
+        "transition-colors hover:bg-surface-stone-200/70",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isFlagged ? "text-[var(--status-flag)]" : "text-ink-stone-400",
       )}

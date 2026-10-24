@@ -91,7 +91,7 @@ function SearchGroup({
             const remainingCapacity = MAX_SELECTED_UNIT_COUNT - selectedIds.size;
             const nextIds = togglePageSelection(selectedIds, group.matches);
             if (missingCount > remainingCapacity && selectedCount < pageIds.length) {
-              showToast("一次最多选择 100 个 Unit", "info");
+              showToast("一次最多选择 100 个翻校单元", "info");
             }
             onSelectedIdsChange(nextIds);
           }}
@@ -195,7 +195,7 @@ function SearchMatchRow({
       )}
     >
       <CircleSelector
-        label="选择该 Unit"
+        label="选择该翻校单元"
         state={isChecked ? "checked" : "unchecked"}
         disabled={isDisabled}
         onClick={() => {

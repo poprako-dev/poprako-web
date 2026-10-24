@@ -97,7 +97,7 @@ async function expectChartBarGeometry(row: HTMLElement): Promise<void> {
 export const Chapter: Story = {
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
-    await userEvent.click(page.getByRole("button", { name: "页面 unit 统计" }));
+    await userEvent.click(page.getByRole("button", { name: "页面翻校单元统计" }));
     await expect(
       await page.findByRole("button", {
         name: "第 2 页，翻译 10，编辑 3，追加 2",
@@ -133,14 +133,14 @@ export const Chapter: Story = {
       plot.getBoundingClientRect().right,
       1,
     );
-    await expect(within(page.getByTitle("unit")).getByText("23")).toBeInTheDocument();
+    await expect(within(page.getByTitle("翻校单元")).getByText("23")).toBeInTheDocument();
   },
 };
 
 export const NavigationAndRefresh: Story = {
   play: async ({ canvasElement, args }) => {
     const page = within(canvasElement.ownerDocument.body);
-    const trigger = page.getByRole("button", { name: "页面 unit 统计" });
+    const trigger = page.getByRole("button", { name: "页面翻校单元统计" });
     await userEvent.click(trigger);
     await userEvent.click(
       await page.findByRole("button", {
@@ -168,7 +168,7 @@ export const NoDifferences: Story = {
   args: { onListPageUnitDiffStats: fn(() => Promise.resolve([])) },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
-    await userEvent.click(page.getByRole("button", { name: "页面 unit 统计" }));
+    await userEvent.click(page.getByRole("button", { name: "页面翻校单元统计" }));
     await expect(
       await page.findByRole("button", {
         name: "第 2 页，翻译 13，编辑 0，追加 0",
@@ -180,7 +180,7 @@ export const NoDifferences: Story = {
 export const OutsideAndTriggerClose: Story = {
   play: async ({ canvasElement, args }) => {
     const page = within(canvasElement.ownerDocument.body);
-    const trigger = page.getByRole("button", { name: "页面 unit 统计" });
+    const trigger = page.getByRole("button", { name: "页面翻校单元统计" });
     await userEvent.click(trigger);
     await page.findByRole("button", {
       name: "第 2 页，翻译 10，编辑 3，追加 2",
@@ -204,7 +204,7 @@ export const AllZero: Story = {
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
-    await userEvent.click(page.getByRole("button", { name: "页面 unit 统计" }));
+    await userEvent.click(page.getByRole("button", { name: "页面翻校单元统计" }));
     await expect(
       await page.findByRole("button", {
         name: "第 2 页，翻译 0，编辑 0，追加 0",
@@ -223,7 +223,7 @@ export const EmptyChapter: Story = {
   args: { pages: [], currentPageId: "" },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
-    await userEvent.click(page.getByRole("button", { name: "页面 unit 统计" }));
+    await userEvent.click(page.getByRole("button", { name: "页面翻校单元统计" }));
     await expect(await page.findByRole("status")).toHaveAccessibleName("当前章节暂无页面");
     await userEvent.keyboard("{Escape}");
     await expect(page.queryByRole("dialog")).not.toBeInTheDocument();
@@ -233,7 +233,7 @@ export const EmptyChapter: Story = {
 export const KeyboardNavigation: Story = {
   play: async ({ canvasElement, args }) => {
     const page = within(canvasElement.ownerDocument.body);
-    const trigger = page.getByRole("button", { name: "页面 unit 统计" });
+    const trigger = page.getByRole("button", { name: "页面翻校单元统计" });
     trigger.focus();
     await userEvent.keyboard("{Enter}");
     await page.findByRole("button", {
@@ -276,7 +276,7 @@ export const LongChapter: Story = {
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
-    await userEvent.click(page.getByRole("button", { name: "页面 unit 统计" }));
+    await userEvent.click(page.getByRole("button", { name: "页面翻校单元统计" }));
     const current = await page.findByRole("button", { name: /^第 150 页，/ });
     await expect(current).toHaveAttribute("aria-current", "page");
     await expect(current).toBeVisible();
@@ -308,7 +308,7 @@ export const FailedThenRetry: Story = {
   play: async ({ canvasElement, args }) => {
     args.onListPageUnitDiffStats.mockRejectedValueOnce(new Error("Statistics unavailable"));
     const page = within(canvasElement.ownerDocument.body);
-    await userEvent.click(page.getByRole("button", { name: "页面 unit 统计" }));
+    await userEvent.click(page.getByRole("button", { name: "页面翻校单元统计" }));
     await expect(await page.findByRole("alert")).toHaveAccessibleName("统计加载失败");
     await userEvent.click(page.getByRole("button", { name: "重试" }));
     await expect(
@@ -344,7 +344,7 @@ export const CloseDuringLoad: Story = {
     });
     args.onListPageUnitDiffStats.mockImplementationOnce(() => pending);
     const page = within(canvasElement.ownerDocument.body);
-    const trigger = page.getByRole("button", { name: "页面 unit 统计" });
+    const trigger = page.getByRole("button", { name: "页面翻校单元统计" });
     await userEvent.click(trigger);
     await expect(await page.findByRole("status")).toHaveAccessibleName("正在加载统计");
     await userEvent.keyboard("{Escape}");

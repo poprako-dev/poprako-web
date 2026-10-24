@@ -123,7 +123,6 @@ export function ComicDetailHeader({
             title="复制格式化标题"
             className={clsx(
               "text-text-muted-warm hover:text-ink-stone-700 transition-colors p-1 shrink-0 rounded-xs",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-stone-700",
             )}
           >
             <Copy size={16} aria-hidden="true" />

@@ -55,8 +55,7 @@ export function TerminologyLookupControls({ state, popoverId }: Props): React.Re
         className={clsx(
           "flex size-8 shrink-0 items-center justify-center border-r",
           "border-line-stone-200 text-xs font-semibold text-ink-stone-600",
-          "transition-colors hover:bg-surface-stone-100 focus-visible:outline-2",
-          "focus-visible:outline-offset-[-2px] focus-visible:outline-primary-border",
+          "transition-colors hover:bg-surface-stone-100",
           selectedTermbase ? "bg-surface-green-50" : "bg-surface-white/80",
         )}
       >
@@ -89,7 +88,7 @@ export function TerminologyLookupControls({ state, popoverId }: Props): React.Re
           placeholder={selectedTermbase ? "搜索原文…" : "先选择术语库"}
           className={clsx(
             "h-full w-full bg-surface-stone-50/45 pl-7.5 pr-2.5 text-xs text-ink-stone-700",
-            "outline-none placeholder:text-text-muted-warm focus:bg-surface-white",
+            "outline-none placeholder:text-text-muted-warm",
             "disabled:cursor-not-allowed disabled:bg-surface-stone-50/70",
             "disabled:text-ink-stone-400 disabled:placeholder:text-ink-stone-400",
           )}

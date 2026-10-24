@@ -143,18 +143,18 @@ export function ReadOnlyPageActions({
         <Popover.Trigger asChild>
           <button
             type="button"
-            title="页面 unit 统计"
-            aria-label="页面 unit 统计"
+            title="页面翻校单元统计"
+            aria-label="页面翻校单元统计"
             disabled={isDisabled || isLoadingNext}
             className={clsx(
               "flex size-8 items-center justify-center rounded-md border",
               "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
               "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
-              "focus-visible:outline-outline-stone-400 disabled:opacity-60",
+              "disabled:opacity-60",
               isOpen && "bg-surface-white text-ink-gray-900",
             )}
           >
-            <ChartNoAxesGantt size={16} strokeWidth={1.8} />
+            <ChartNoAxesGantt size={20} strokeWidth={2.25} />
           </button>
         </Popover.Trigger>
         <Popover.Portal>
@@ -163,7 +163,7 @@ export function ReadOnlyPageActions({
             align="end"
             sideOffset={6}
             collisionPadding={8}
-            aria-label="页面 unit 统计"
+            aria-label="页面翻校单元统计"
             className={clsx(
               "z-60 flex w-76 max-w-[calc(100vw-16px)] flex-col overflow-hidden",
               "max-h-[min(24rem,var(--radix-popover-content-available-height))]",
@@ -196,7 +196,7 @@ export function ReadOnlyPageActions({
             "flex size-8 items-center justify-center rounded-md border",
             "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
             "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
-            "focus-visible:outline-outline-stone-400 disabled:opacity-60",
+            "disabled:opacity-60",
           )}
         >
           {isLoadingNext ? (

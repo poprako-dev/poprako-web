@@ -75,6 +75,7 @@ export function Paginator(props: Props): ReactElement {
             onClick={onPageUp}
             disabled={totalPageCount === 0 || currPageIndex <= 0}
             aria-label="Previous page"
+            title="上一页"
             className={clsx(
               "flex items-center justify-center",
               "flex-1",
@@ -102,6 +103,7 @@ export function Paginator(props: Props): ReactElement {
                 }}
                 disabled={!canOpenList}
                 aria-label="Open page list"
+                title={isListVisible ? "收起页面列表" : "展开页面列表"}
                 aria-expanded={isListVisible}
                 className={clsx(
                   "flex items-center justify-center gap-0.5",
@@ -140,6 +142,7 @@ export function Paginator(props: Props): ReactElement {
             onClick={onPageDown}
             disabled={totalPageCount === 0 || currPageIndex >= totalPageCount - 1}
             aria-label="Next page"
+            title="下一页"
             className={clsx(
               "flex items-center justify-center",
               "flex-1",
@@ -171,6 +174,7 @@ export function Paginator(props: Props): ReactElement {
         <button
           type="button"
           aria-label="Close page list"
+          title="关闭页面列表"
           className="fixed inset-0 z-40 bg-surface-black/25"
           onClick={() => {
             changeOpen(false);

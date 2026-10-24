@@ -58,9 +58,9 @@ export function BaseUnitItem({
   }, [isFocused]);
 
   const canReorder = onIndexPointerDown !== undefined;
-  let indexTitle = "点击选择 Unit";
+  let indexTitle = "点击选择翻校单元";
   if (enableReadOnly && !canReorder) {
-    indexTitle = "点击选择 Unit；只读模式下不可调整顺序";
+    indexTitle = "点击选择翻校单元；只读模式下不可调整顺序";
   } else if (canReorder) {
     indexTitle = canToggleBubble ? "轻触切换气泡状态，拖动序号调整顺序" : "拖动序号调整顺序";
   } else if (canToggleBubble) {
@@ -122,7 +122,7 @@ export function BaseUnitItem({
               event.preventDefault();
             }}
             title={indexTitle}
-            aria-label={`Unit ${String(unitIndex(unit) + 1)}：${indexTitle}`}
+            aria-label={`翻校单元 ${String(unitIndex(unit) + 1)}：${indexTitle}`}
             aria-pressed={canToggleBubble ? isBubble : undefined}
             className={clsx(
               "w-8 shrink-0 flex items-center justify-center select-none touch-none",

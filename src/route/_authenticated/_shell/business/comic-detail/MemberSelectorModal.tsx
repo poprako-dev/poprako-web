@@ -212,7 +212,6 @@ export function MemberSelectorModal({
           className={clsx(
             "flex items-center gap-2 rounded-md border px-3 py-2",
             "border-line-slate-200 bg-surface-white shadow-sm shadow-shadow-slate-100",
-            "focus-within:border-line-slate-300",
           )}
         >
           <Search size={14} className="text-icon-muted-cool" />

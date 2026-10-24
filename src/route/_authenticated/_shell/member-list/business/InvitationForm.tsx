@@ -80,7 +80,7 @@ export function InvitationForm({
             "flex items-center gap-2 rounded-md bg-surface-white px-3 py-2",
             "border border-line-slate-200 shadow-sm shadow-shadow-slate-100",
             "hover:border-line-slate-300",
-            "focus-within:border-line-slate-300 transition-all",
+            "transition-all",
           )}
         >
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-icon-muted-cool" />

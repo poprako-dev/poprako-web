@@ -1,6 +1,7 @@
 import { type JSX, useState } from "react";
 import { AlignLeft, Layers, Loader2 } from "lucide-react";
 import clsx from "clsx";
+import { AppDialogClose } from "@/shared/component/AppDialog";
 import { IconInputRow } from "@/shared/component/IconInputRow";
 import type { MemberInfo } from "@/route/business/identity/member";
 import { type Role, roleMask } from "@/route/business/identity/role";
@@ -56,7 +57,8 @@ export function ChapterCreatorModal({
         {/* 顶部品牌色条 */}
         <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
 
-        <div className="pt-4 pb-2 text-center">
+        <div className="relative pt-4 pb-2 text-center">
+          <AppDialogClose onClose={onClose} />
           <h3 className="text-base font-bold text-ink-slate-800">新建章节</h3>
           <div className="mt-2 flex items-center justify-center gap-1.5 px-4">
             <div
@@ -93,18 +95,6 @@ export function ChapterCreatorModal({
           />
 
           <div className="mt-4 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className={clsx(
-                "flex-1 py-2 text-xs font-semibold rounded-lg",
-                "transition-all duration-200 active:scale-[0.98]",
-                "text-text-muted-cool bg-surface-slate-50 hover:bg-surface-slate-100",
-                "border border-line-slate-100",
-              )}
-            >
-              取消
-            </button>
             <button
               type="submit"
               disabled={isSubmitting}

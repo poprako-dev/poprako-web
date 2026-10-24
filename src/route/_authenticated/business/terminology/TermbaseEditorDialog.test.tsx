@@ -106,8 +106,10 @@ test("preserves the delete confirmation flow", async () => {
   const { props, user } = setupDialog({ termbase: comicTermbase });
   await user.click(screen.getByRole("button", { name: "删除" }));
   expect(props.onDelete).not.toHaveBeenCalled();
-  await user.click(screen.getByRole("button", { name: "返回" }));
+  expect(screen.queryByRole("button", { name: "返回" })).toBeNull();
+  await user.click(screen.getByRole("button", { name: "关闭" }));
   expect(screen.getByRole("dialog", { name: "编辑术语库" })).toBeVisible();
+  expect(props.onClose).not.toHaveBeenCalled();
   await user.click(screen.getByRole("button", { name: "删除" }));
   await user.click(screen.getByRole("button", { name: "确认删除" }));
   expect(props.onDelete).toHaveBeenCalledOnce();

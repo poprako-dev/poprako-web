@@ -15,11 +15,11 @@ async function drag(page: Page, locator: Locator, dx: number, dy: number): Promi
 
 async function prepareMixedHistory(page: Page): Promise<void> {
   await page.getByPlaceholder("点击输入翻译...").first().pressSequentially("a");
-  await drag(page, page.getByRole("button", { name: "第 1 个 Unit", exact: true }), 60, 40);
+  await drag(page, page.getByRole("button", { name: "第 1 个翻校单元", exact: true }), 60, 40);
   await page.getByRole("button", { name: "标记待回看", exact: true }).first().click();
-  await page.getByRole("button", { name: /^Unit 1：/ }).click();
-  const first = page.getByRole("button", { name: /^Unit 1：/ });
-  const second = await page.getByRole("button", { name: /^Unit 2：/ }).boundingBox();
+  await page.getByRole("button", { name: /^翻校单元 1：/ }).click();
+  const first = page.getByRole("button", { name: /^翻校单元 1：/ });
+  const second = await page.getByRole("button", { name: /^翻校单元 2：/ }).boundingBox();
   const origin = await first.boundingBox();
   assert.ok(second && origin);
   await drag(page, first, 0, second.y + second.height - origin.y);
@@ -32,7 +32,9 @@ async function prepareMixedHistory(page: Page): Promise<void> {
   assert.equal(saved[1]?.isFlagged, true);
   assert.equal(saved[1].isBubble, false);
   assert.notDeepEqual([saved[1].xCoord, saved[1].yCoord], [0.2, 0.3]);
-  await page.getByRole("button", { name: "第 2 个 Unit", exact: true }).click({ button: "right" });
+  await page
+    .getByRole("button", { name: "第 2 个翻校单元", exact: true })
+    .click({ button: "right" });
   await page.getByRole("dialog", { name: "确认删除" }).waitFor();
   await page.getByRole("button", { name: "删除", exact: true }).click();
   await save(page);
@@ -64,7 +66,9 @@ export async function mixedStructureHistory(page: Page): Promise<void> {
 export async function zeroMovementAndSelection(page: Page): Promise<void> {
   const input = page.getByPlaceholder("点击输入翻译...").first();
   await input.pressSequentially("a");
-  const box = await page.getByRole("button", { name: "第 1 个 Unit", exact: true }).boundingBox();
+  const box = await page
+    .getByRole("button", { name: "第 1 个翻校单元", exact: true })
+    .boundingBox();
   assert.ok(box);
   const x = box.x + box.width / 2;
   const y = box.y + box.height / 2;
@@ -87,8 +91,8 @@ export async function savedCreationAndOrder(page: Page): Promise<void> {
   await image.click({ button: "right", position: { x: box.width * 0.8, y: box.height * 0.7 } });
   await expectTexts(page, ["", "", ""]);
   await page.getByPlaceholder("点击输入翻译...").nth(2).pressSequentially("a");
-  const last = page.getByRole("button", { name: /^Unit 3：/ });
-  const firstBox = await page.getByRole("button", { name: /^Unit 1：/ }).boundingBox();
+  const last = page.getByRole("button", { name: /^翻校单元 3：/ });
+  const firstBox = await page.getByRole("button", { name: /^翻校单元 1：/ }).boundingBox();
   const lastBox = await last.boundingBox();
   assert.ok(firstBox && lastBox);
   await drag(page, last, 0, firstBox.y - lastBox.y - lastBox.height / 2);

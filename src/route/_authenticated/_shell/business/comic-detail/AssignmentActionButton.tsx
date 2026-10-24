@@ -38,7 +38,6 @@ export function AssignmentActionButton({
               "text-text-muted-warm hover:border-line-stone-200",
               "hover:bg-surface-stone-100 hover:text-ink-stone-600",
             ],
-        "focus-visible:outline-2 focus-visible:outline-primary/60",
         "disabled:cursor-not-allowed disabled:opacity-45",
       )}
     >

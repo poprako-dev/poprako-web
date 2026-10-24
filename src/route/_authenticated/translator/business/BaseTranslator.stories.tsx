@@ -123,7 +123,7 @@ export const SearchAndTransform: Story = {
     const matchCount =
       mockProject.pages.length *
       mockUnits.filter((unit) => unitTranslatedText(unit)?.includes("这")).length;
-    await expect(await page.findByText(`${String(matchCount)} 个匹配 Unit`)).toBeVisible();
+    await expect(await page.findByText(`${String(matchCount)} 个匹配翻校单元`)).toBeVisible();
 
     await userEvent.type(page.getByRole("textbox", { name: "替换短语" }), "那");
     await userEvent.click(page.getByRole("button", { name: "替换" }));
@@ -202,7 +202,7 @@ async function verifyEditablePageStatistics(
 ): Promise<void> {
   const canvas = within(canvasElement);
   const page = within(canvasElement.ownerDocument.body);
-  const trigger = canvas.getByRole("button", { name: "页面 unit 统计" });
+  const trigger = canvas.getByRole("button", { name: "页面翻校单元统计" });
   await waitFor(async () => {
     await expect(trigger).toBeEnabled();
   });
@@ -233,7 +233,7 @@ export const AllModePageStatistics: Story = {
     await verifyEditablePageStatistics(canvasElement, "完成校对");
     await userEvent.click(canvas.getByRole("button", { name: "切换到只读模式" }));
 
-    const trigger = canvas.getByRole("button", { name: "页面 unit 统计" });
+    const trigger = canvas.getByRole("button", { name: "页面翻校单元统计" });
     await waitFor(async () => {
       await expect(trigger).toBeEnabled();
     });

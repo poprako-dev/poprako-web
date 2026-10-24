@@ -49,18 +49,11 @@ export function TermbaseEditorDialog({
       <TerminologyDialogFrame
         title="删除术语库"
         locked={isSubmitting}
-        onClose={onClose}
+        onClose={() => {
+          setIsConfirmingDelete(false);
+        }}
         footer={
           <div className="flex gap-2">
-            <AppDialogAction
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => {
-                setIsConfirmingDelete(false);
-              }}
-            >
-              返回
-            </AppDialogAction>
             <AppDialogAction
               type="button"
               tone="danger"
@@ -139,7 +132,7 @@ export function TermbaseEditorDialog({
             className={clsx(
               "h-8 w-full rounded-md border border-control-border bg-surface-white px-2.5",
               "text-sm text-ink-slate-700 shadow-sm shadow-shadow-slate-100 outline-none",
-              "transition-colors focus:border-line-slate-300",
+              "transition-colors",
             )}
           />
         </label>
@@ -156,7 +149,7 @@ export function TermbaseEditorDialog({
             className={clsx(
               "w-full resize-none rounded-md border border-control-border bg-surface-white px-2.5 py-2",
               "text-sm leading-relaxed text-ink-slate-700 shadow-sm shadow-shadow-slate-100",
-              "outline-none placeholder:text-text-muted-cool focus:border-line-slate-300",
+              "outline-none placeholder:text-text-muted-cool",
             )}
           />
         </label>

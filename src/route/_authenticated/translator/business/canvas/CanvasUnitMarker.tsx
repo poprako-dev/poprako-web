@@ -30,7 +30,7 @@ function CanvasUnitMarkerView(props: Props): ReactElement {
       data-marker={props.id}
       role="button"
       tabIndex={0}
-      aria-label={`第 ${String(props.index + 1)} 个 Unit`}
+      aria-label={`第 ${String(props.index + 1)} 个翻校单元`}
       className="absolute pointer-events-auto"
       style={{
         left: `${String(props.x * 100)}%`,

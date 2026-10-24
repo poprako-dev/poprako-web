@@ -82,7 +82,7 @@ function PageStatsHeader({ limit }: { limit: number }): JSX.Element {
       )}
     >
       <span aria-hidden="true" />
-      <div aria-hidden="true" title="unit" className="flex justify-between">
+      <div aria-hidden="true" title="翻校单元" className="flex justify-between">
         <span>0</span>
         <span>{limit}</span>
       </div>
@@ -142,8 +142,6 @@ function PageStatsRow({
         "h-7 scroll-mt-7 items-center gap-x-2 px-2.5 text-[11px] transition-colors",
         "[@media(any-pointer:coarse)]:h-9",
         "hover:bg-surface-stone-100 active:bg-surface-stone-200/70 disabled:opacity-50",
-        "focus-visible:outline-1 focus-visible:outline-offset-[-1px]",
-        "focus-visible:outline-outline-stone-400",
         isCurrent && "bg-surface-stone-100",
       )}
     >
@@ -271,7 +269,7 @@ export function PageUnitStatsChart({
             onClick={handleRetry}
             className={clsx(
               "flex size-8 items-center justify-center rounded-sm transition-colors",
-              "hover:bg-surface-stone-100 hover:text-ink-stone-600 focus-visible:outline-outline-stone-400",
+              "hover:bg-surface-stone-100 hover:text-ink-stone-600",
             )}
           >
             <RefreshCcw size={14} />

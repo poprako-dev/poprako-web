@@ -51,6 +51,7 @@ export function ComicPlayground({
     activeWorkset,
     loadWorksets,
     handleCreateWorkset,
+    handleDeleteWorkset,
   } = worksets;
 
   const detail = useComicDetailHost({
@@ -82,6 +83,7 @@ export function ComicPlayground({
           setShowWorksetCreatorModal(true);
         }}
         onUpdateWorkset={isAdmin ? actions.handleUpdateWorkset : undefined}
+        onDeleteWorkset={isAdmin ? handleDeleteWorkset : undefined}
         onLoadComics={actions.handleLoadComics}
         onComicClick={detail.openComicDetail}
         onCreateComic={
