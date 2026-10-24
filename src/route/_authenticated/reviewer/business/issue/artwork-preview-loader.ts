@@ -15,7 +15,8 @@ export function createArtworkPreviewLoader(
     const url = page?.imageUrl;
     if (url && !openedPages.has(id)) {
       openedPages.add(id);
-      return openCompositePage(url, signal);
+      const preview = await openCompositePage(url, signal);
+      return { ...preview, imageKey: JSON.stringify(page.imageVersion ?? null) };
     }
     signal.throwIfAborted();
     const refreshed = await listPageArtworks(client, project.chapterId, signal);
@@ -25,6 +26,7 @@ export function createArtworkPreviewLoader(
     if (!current?.imageUploaded || !current.imageUrl)
       throw new Error("此页预览尚未上传完成，请稍后重试。");
     openedPages.add(id);
-    return openCompositePage(current.imageUrl, signal);
+    const preview = await openCompositePage(current.imageUrl, signal);
+    return { ...preview, imageKey: JSON.stringify(current.imageVersion ?? null) };
   };
 }

@@ -40,7 +40,15 @@ export function ReviewEditorSidebar({ editor }: Props): JSX.Element {
 
 function EditorFeedback({ editor }: Props): JSX.Element | null {
   const error =
-    editor.error ?? editor.page?.storageError ?? editor.page?.error ?? editor.review.issuesError;
+    editor.error ??
+    editor.page?.storageError ??
+    editor.page?.error ??
+    editor.review.issuesError ??
+    (editor.review.page?.imageKey &&
+    editor.page &&
+    editor.review.page.imageKey !== editor.page.baseline.imageKey
+      ? "页面图片已更新，请重新加载预览"
+      : null);
   if (error)
     return (
       <div role="alert" className="flex items-center gap-2 p-3 text-sm text-ink-stone-600">
@@ -50,7 +58,15 @@ function EditorFeedback({ editor }: Props): JSX.Element | null {
           aria-label="重试保存或加载"
           title="重试"
           disabled={editor.completing}
-          onClick={editor.page ? editor.save : editor.review.retryIssues}
+          onClick={
+            editor.review.page?.imageKey &&
+            editor.page &&
+            editor.review.page.imageKey !== editor.page.baseline.imageKey
+              ? editor.review.retry
+              : editor.page
+                ? editor.save
+                : editor.review.retryIssues
+          }
           className="shrink-0 rounded p-1 hover:bg-surface-stone-200"
         >
           <RotateCcw size={16} />

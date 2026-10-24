@@ -1,4 +1,6 @@
 import type { IssueInfo } from "@/route/_authenticated/business/issue/issue";
+import type { IssueVariantsResponse } from "@/api/issue/issue-contract";
+import type { CategoryPresets } from "./category-presets";
 
 /** UI documents use stable identities; an eventual HTTP adapter owns wire IDs. */
 export type ReviewDocument = {
@@ -13,13 +15,22 @@ export type ReviewBatch = { draft: ReviewSubmission; saveId: string };
 export type ReviewDraft = ReviewSubmission & { pending?: ReviewBatch };
 
 /** Injected only by the editing workspace; no transport or storage is prescribed. */
-export interface ReviewerEditing {
+export type ReviewerEditing = {
+  presets?: CategoryPresets;
+  categories?: {
+    load: () => Promise<IssueVariantsResponse>;
+    rename: (
+      summary: IssueVariantsResponse,
+      from: string,
+      to: string,
+    ) => Promise<Record<string, ReviewDocument>>;
+  };
   load: (pageId: string, signal: AbortSignal) => Promise<ReviewDocument>;
   save: (pageId: string, draft: ReviewDraft, saveId: string) => Promise<ReviewDocument>;
   readDraft: (pageId: string) => Promise<ReviewDraft | null>;
   writeDraft: (pageId: string, draft: ReviewDraft | null) => Promise<void>;
   complete: () => Promise<void>;
-}
+};
 
 export class ReviewChangedError extends Error {
   readonly document: ReviewDocument;

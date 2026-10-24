@@ -36,6 +36,7 @@ function mapReviewerPages(pages: PageArtwork[], chapterId: string): ReviewerProj
       index: page.index,
       imageUrl: page.imageUrl ?? null,
       imageOptimizedUrl: page.imageOptimizedUrl ?? null,
+      imageVersion: page.imageVersion ?? null,
     }));
 }
 
@@ -226,6 +227,7 @@ export function WebReviewer({ chapterId, startPageId, onExit }: Props): JSX.Elem
       <WebReviewWorkspace
         key={key}
         project={state.project}
+        editorAccountId={state.canImport ? userId : undefined}
         startPageId={state.initialPageId}
         onImport={
           state.canImport

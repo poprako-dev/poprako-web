@@ -6,6 +6,7 @@ export type ReviewerProject = {
   pages: readonly {
     id: string;
     index: number;
+    imageVersion?: number | null;
     imageUrl?: string | null;
     imageOptimizedUrl?: string | null;
   }[];

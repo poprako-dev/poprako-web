@@ -173,7 +173,12 @@ export function useReviewEditor(props: EditableReviewerProps): ReviewEditor {
     review,
     interaction,
     gesture,
-    disabled: !state.page || Boolean(state.page.blocked) || state.completing || state.completed,
+    disabled:
+      !state.page ||
+      Boolean(state.page.blocked) ||
+      state.completing ||
+      state.completed ||
+      Boolean(review.page?.imageKey && review.page.imageKey !== state.page.baseline.imageKey),
     status: saveLabel(state),
     props,
   };
