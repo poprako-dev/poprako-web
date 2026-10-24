@@ -1,7 +1,6 @@
 export type IssueRect = { xCoord: number; yCoord: number; width: number; height: number };
 export type IssueInput = {
   variant: string;
-  layerName: string | null;
   rect: IssueRect | null;
   note: string;
 };

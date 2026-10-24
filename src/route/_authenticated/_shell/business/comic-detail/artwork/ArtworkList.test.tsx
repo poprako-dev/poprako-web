@@ -35,7 +35,6 @@ function artworkIssueData(issuePage: string): unknown {
       pageArtworkId: issuePage,
       index,
       variant: "文字",
-      layerName: null,
       rect: null,
       note: "修正",
     })),
@@ -102,7 +101,7 @@ test("refreshes artwork issue indicators immediately after importing review issu
   expect(await screen.findByLabelText("第 2 页有标注")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "上传监稿" }));
   const text = JSON.stringify({
-    pages: [{ issues: [{ variant: "文字", layer_name: "对白", note: "修正" }] }, { issues: [] }],
+    pages: [{ issues: [{ variant: "文字", note: "修正" }] }, { issues: [] }],
   });
   const file = new File([text], "issues.json", { type: "application/json" });
   Object.defineProperty(file, "text", { value: () => Promise.resolve(text) });

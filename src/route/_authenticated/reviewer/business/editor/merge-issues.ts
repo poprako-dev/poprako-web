@@ -10,7 +10,6 @@ function mergeFields(base: IssueInfo, local: IssueInfo, remote: IssueInfo): Issu
     ...remote,
     variant: local.variant === base.variant ? remote.variant : local.variant,
     note: local.note === base.note ? remote.note : local.note,
-    layerName: local.layerName === base.layerName ? remote.layerName : local.layerName,
     rect: sameValue(local.rect, base.rect) ? remote.rect : local.rect,
   };
 }

@@ -3,7 +3,7 @@ import { createApiClient } from "@/api/client";
 import { listChapterIssues, importChapterIssues } from "./issue-api";
 import { parseRequestBody } from "@/test-resource/api-client";
 
-test("reads canonical page issues including empty notes and readable layer names", async () => {
+test("reads canonical page issues including empty notes and page rectangles", async () => {
   const request = vi.fn<typeof fetch>().mockResolvedValue(
     Response.json({
       code: 0,
@@ -13,7 +13,6 @@ test("reads canonical page issues including empty notes and readable layer names
           page_artwork_id: "page",
           index: 0,
           variant: "custom",
-          layer_name: "  他们两个…  ",
           rect: null,
           note: "",
         },
@@ -22,7 +21,6 @@ test("reads canonical page issues including empty notes and readable layer names
           page_artwork_id: "page",
           index: 1,
           variant: "位置",
-          layer_name: null,
           rect: { x_coord: 0.1, y_coord: 0.2, width: 0.3, height: 0.1 },
           note: " 原文\n ",
         },
@@ -40,7 +38,7 @@ test("reads canonical page issues including empty notes and readable layer names
   expect(result).toMatchObject({
     success: true,
     data: [
-      { id: "id", pageArtworkId: "page", index: 0, layerName: "  他们两个…  ", note: "" },
+      { id: "id", pageArtworkId: "page", index: 0, note: "" },
       { index: 1, rect: { xCoord: 0.1, yCoord: 0.2, width: 0.3, height: 0.1 }, note: " 原文\n " },
     ],
   });
@@ -64,7 +62,6 @@ test("sends a complete replacement including empty pages and reads import counts
         issues: [
           {
             variant: "位置",
-            layerName: "他们两个…",
             rect: { xCoord: 0.1, yCoord: 0.1, width: 0.2, height: 0.2 },
             note: "",
           },
@@ -81,7 +78,6 @@ test("sends a complete replacement including empty pages and reads import counts
         issues: [
           {
             variant: "位置",
-            layer_name: "他们两个…",
             rect: { x_coord: 0.1, y_coord: 0.1, width: 0.2, height: 0.2 },
             note: "",
           },

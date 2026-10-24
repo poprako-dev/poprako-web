@@ -29,16 +29,12 @@ export function decodeIssueRect(value: unknown): IssueRect {
 
 export function decodeIssueInput(value: unknown): IssueInput {
   const object = decodeObject(value, "标注");
-  const fields = ["variant", "layerName", "rect", "note", "id", "pageArtworkId", "index"];
+  const fields = ["variant", "rect", "note", "id", "pageArtworkId", "index"];
   if (Object.keys(object).some((key) => !fields.includes(key))) {
-    throw new Error("标注包含不支持的字段；请使用 layer_name 提供可读图层名称。");
+    throw new Error("标注包含不支持的字段");
   }
   return {
     variant: nonblank(object["variant"], "标注类型"),
-    layerName:
-      object["layerName"] === null || object["layerName"] === undefined
-        ? null
-        : nonblank(object["layerName"], "标注图层名称"),
     rect:
       object["rect"] === null || object["rect"] === undefined
         ? null

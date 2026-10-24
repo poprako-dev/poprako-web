@@ -46,7 +46,6 @@ function issuesForPage(pageId: string): IssueInfo[] {
       variant: "文字位置",
       note: "这组文字稍微偏右。请向左移动，保持两侧留白一致。",
       rect: { xCoord: 0.707, yCoord: 0.087, width: 0.175, height: 0.072 },
-      layerName: "对白",
     },
     {
       id: `${pageId}-2`,
@@ -55,7 +54,6 @@ function issuesForPage(pageId: string): IssueInfo[] {
       variant: "断行",
       note: "建议保持两行：\n等一下，\n听我说。\n第二行的逗号不用保留。",
       rect: { xCoord: 0.092, yCoord: 0.382, width: 0.151, height: 0.08 },
-      layerName: "对白",
     },
     {
       id: `${pageId}-3`,
@@ -64,16 +62,14 @@ function issuesForPage(pageId: string): IssueInfo[] {
       variant: "自定义：叠字节奏",
       note: "这里的字号比上一格略小，连着阅读时节奏会断。请结合上下两格统一检查。",
       rect: { xCoord: 0.702, yCoord: 0.383, width: 0.2, height: 0.082 },
-      layerName: "对白",
     },
     {
       id: `${pageId}-4`,
       pageArtworkId: pageId,
       index: 3,
       variant: "整页说明",
-      note: "本页标点统一采用全角。调整时保留原有文字图层，便于之后核对。",
+      note: "本页标点统一采用全角。请检查省略号与破折号。",
       rect: null,
-      layerName: null,
     },
   ];
   appendOverlappingIssues(issues, pageId);
@@ -89,7 +85,6 @@ function appendOverlappingIssues(issues: IssueInfo[], pageId: string): void {
     variant: "区域重叠",
     note: "同一区域的另一条标注，可分别选中。",
     rect: { xCoord: 0.72, yCoord: 0.12, width: 0.18, height: 0.09 },
-    layerName: "对白",
   });
   issues.push({
     id: `${pageId}-6`,
@@ -98,7 +93,6 @@ function appendOverlappingIssues(issues: IssueInfo[], pageId: string): void {
     variant: "长文本",
     note: "这是一条需要完整保留换行与说明的标注。\n".repeat(16),
     rect: null,
-    layerName: null,
   });
 }
 
@@ -108,42 +102,36 @@ const occlusionIssueTemplates: Omit<IssueInfo, "id" | "pageArtworkId">[] = [
     variant: "文字位置",
     note: "与 2 的左上角接近，两个标号互相遮叠。",
     rect: { xCoord: 0.66, yCoord: 0.12, width: 0.18, height: 0.09 },
-    layerName: "对白",
   },
   {
     index: 1,
     variant: "断行",
     note: "与 1 的标号重叠；从列表选择可观察选中后的遮挡。",
     rect: { xCoord: 0.67, yCoord: 0.125, width: 0.18, height: 0.09 },
-    layerName: "对白",
   },
   {
     index: 2,
     variant: "文字位置",
     note: "上边框被 4 的标号压住。",
     rect: { xCoord: 0.09, yCoord: 0.42, width: 0.2, height: 0.12 },
-    layerName: "对白",
   },
   {
     index: 3,
     variant: "断行",
     note: "标号跨过 3 的上边框，两个矩形也有重叠。",
     rect: { xCoord: 0.18, yCoord: 0.442, width: 0.2, height: 0.12 },
-    layerName: "对白",
   },
   {
     index: 4,
     variant: "文字位置",
     note: "与 6 的矩形相交，框线互相遮叠。",
     rect: { xCoord: 0.1, yCoord: 0.73, width: 0.5, height: 0.13 },
-    layerName: null,
   },
   {
     index: 5,
     variant: "断行",
     note: "与 5 的区域重叠；切换选中项可对比框线的层级。",
     rect: { xCoord: 0.43, yCoord: 0.77, width: 0.3, height: 0.12 },
-    layerName: null,
   },
 ];
 

@@ -233,7 +233,6 @@ function addIssue(state: State, rect: PageRect | null): void {
     index: page.issues.length,
     variant: "居中",
     note: "",
-    layerName: null,
     rect,
   };
   state.session.commit(state.pageId, [...page.issues, issue]);

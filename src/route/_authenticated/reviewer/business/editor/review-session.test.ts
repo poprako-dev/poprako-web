@@ -11,7 +11,6 @@ const issue: IssueInfo = {
   index: 0,
   variant: "文字位置",
   note: "原文",
-  layerName: "对白",
   rect: { xCoord: 0.1, yCoord: 0.2, width: 0.2, height: 0.1 },
 };
 async function setup(
@@ -37,7 +36,6 @@ test("merges unchanged fields from remote, keeps local note and undo preserves r
   expect(session.page("page-1").issues[0]).toMatchObject({
     note: "本地说明",
     variant: "字号",
-    layerName: "对白",
   });
   session.undo("page-1");
   expect(session.page("page-1").issues[0]).toMatchObject({ note: "原文", variant: "字号" });

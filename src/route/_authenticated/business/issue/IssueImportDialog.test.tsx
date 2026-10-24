@@ -85,7 +85,7 @@ test("blocks invalid manifests and exposes backend recovery without treating fai
   expect(screen.getByRole("button", { name: "替换整章监稿" })).toBeEnabled();
 });
 
-test("preserves the backend layer name when importing a review file", async () => {
+test("imports annotation text and page targets", async () => {
   render(
     <ApiProvider client={client}>
       <IssueImportDialog chapterId="chapter" onImported={vi.fn()} onClose={vi.fn()} />
@@ -93,10 +93,7 @@ test("preserves the backend layer name when importing a review file", async () =
   );
   choose(
     JSON.stringify({
-      pages: [
-        { issues: [{ variant: "居中错误", layer_name: "  他们两个…  ", note: "向左移动" }] },
-        { issues: [] },
-      ],
+      pages: [{ issues: [{ variant: "居中错误", note: "向左移动" }] }, { issues: [] }],
     }),
   );
   await waitFor(() => expect(screen.getByRole("button", { name: "替换整章监稿" })).toBeEnabled());
@@ -108,7 +105,7 @@ test("preserves the backend layer name when importing a review file", async () =
     pages: [
       {
         pageArtworkId: "artwork-0",
-        issues: [{ variant: "居中错误", layerName: "  他们两个…  ", rect: null, note: "向左移动" }],
+        issues: [{ variant: "居中错误", rect: null, note: "向左移动" }],
       },
       { pageArtworkId: "artwork-1", issues: [] },
     ],

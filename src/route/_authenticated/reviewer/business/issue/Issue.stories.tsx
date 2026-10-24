@@ -114,7 +114,6 @@ export const WithoutIssues: Story = {
   args: { ...createIssueStoryArgs(), loadIssues: () => Promise.resolve([]) },
   play: async ({ canvasElement }) => {
     await waitFor(() => expect(canvasElement.querySelector("img")).not.toBeNull());
-    await expect(within(canvasElement).queryByLabelText("选择 PSD 图层")).toBeNull();
   },
 };
 

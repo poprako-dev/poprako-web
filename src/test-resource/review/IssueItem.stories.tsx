@@ -31,7 +31,6 @@ function Comparison({ selected, long }: Props): JSX.Element {
               index: 6,
               variant: "断行",
               note: long ? "保留原句，调整断行。\n".repeat(12) : "保留原句，调整断行。",
-              layerName: "对白",
               rect: null,
             }}
             isFocused={focused}
