@@ -8,7 +8,7 @@ import { expect, userEvent, waitFor, within } from "storybook/test";
 import { useAppStore } from "@/route/business/session/session-store";
 import { toMemberInfo, toUserInfo } from "@/route/business/identity/api-adapter";
 import { toCamelCase } from "@/shared/utility/case-convert";
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { useComicDetailHost } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-host";
 import { MemberSelectorModal } from "@/route/_authenticated/_shell/business/comic-detail/MemberSelectorModal";
@@ -47,7 +47,7 @@ function Probe({
     onChangeSearch,
     onNavigateToWorkbench,
   });
-  const [role, setRole] = useState<Role | null>(null);
+  const [role, setRole] = useState<WorkerRole | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   return (
     <div aria-busy={isLoading}>

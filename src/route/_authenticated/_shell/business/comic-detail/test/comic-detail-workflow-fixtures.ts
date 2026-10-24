@@ -1,5 +1,5 @@
 import { roleMask } from "@/route/business/identity/role";
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import type { ChapterWorkflowRecord } from "@/route/_authenticated/business/chapter/chapter-workflow-record";
 import { makeUser, now, required } from "./comic-detail-story-fixtures.ts";
@@ -20,7 +20,7 @@ const LONG_NAMES = [
 ];
 
 export function makeManyAssignments(chapterId: string): AssignmentInfo[] {
-  const groups: [Role, string[]][] = [
+  const groups: [WorkerRole, string[]][] = [
     [
       "rawProvider",
       ["佐仓绫音大粉丝", "RawHunterZero", "Nakamura Yū Fan", required(LONG_NAMES[0])],
@@ -65,7 +65,7 @@ export function makeManyAssignments(chapterId: string): AssignmentInfo[] {
 
 function makeAssignmentGroup(
   chapterId: string,
-  role: Role,
+  role: WorkerRole,
   names: string[],
   previousCount: number,
 ): AssignmentInfo[] {

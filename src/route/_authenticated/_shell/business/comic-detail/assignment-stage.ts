@@ -1,10 +1,10 @@
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
-import { hasRole, type Role } from "@/route/business/identity/role";
+import { hasRole, type WorkerRole } from "@/route/business/identity/role";
 
 export function assignmentRolesForStage(
   assignment: AssignmentInfo | undefined,
-  role: Role,
-): Role[] {
+  role: WorkerRole,
+): WorkerRole[] {
   if (!assignment) {
     return [];
   }
@@ -12,7 +12,7 @@ export function assignmentRolesForStage(
     return hasRole(assignment, role) ? [role] : [];
   }
 
-  return (["typesetter", "redrawer"] as Role[]).filter((candidate) =>
+  return (["typesetter", "redrawer"] as WorkerRole[]).filter((candidate) =>
     hasRole(assignment, candidate),
   );
 }

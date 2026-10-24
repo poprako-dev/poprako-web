@@ -1,10 +1,6 @@
 import { describe, expect, test } from "vitest";
-
-import {
-  assignmentRoles,
-  type AssignmentInfo,
-} from "@/route/_authenticated/business/assignment/assignment";
-import { roleMask } from "@/route/business/identity/role";
+import { assignmentRoles, type AssignmentInfo } from "./assignment";
+import { roleMask, WORKER_ROLES } from "@/route/business/identity/role";
 
 const reviewAssignment: AssignmentInfo = {
   id: "assignment-1",
@@ -16,35 +12,23 @@ const reviewAssignment: AssignmentInfo = {
 };
 
 describe("assignment role changes", () => {
-  test("leaving review preserves the chapter admin assignment", () => {
-    const assignment = { ...reviewAssignment, roles: 160 };
-    const remainingRoles = assignmentRoles(assignment).filter((role) => role !== "reviewer");
-
-    expect(remainingRoles).toEqual(["admin"]);
-    expect(roleMask(remainingRoles)).toBe(128);
+  test("leaving review preserves every other worker role", () => {
+    const assignment = { ...reviewAssignment, roles: 98 };
+    const remaining = assignmentRoles(assignment).filter((role) => role !== "reviewer");
+    expect(remaining).toEqual(["translator", "publisher"]);
+    expect(roleMask(remaining)).toBe(66);
   });
 
-  test("leaving review preserves admin and every other worker role", () => {
-    const assignment = {
-      ...reviewAssignment,
-      roles: 194,
-    };
-    const remainingRoles = assignmentRoles(assignment).filter((role) => role !== "reviewer");
-
-    expect(remainingRoles).toEqual(["translator", "publisher", "admin"]);
-    expect(roleMask(remainingRoles)).toBe(194);
+  test("leaving the last worker role permits deletion", () => {
+    const remaining = assignmentRoles(reviewAssignment).filter((role) => role !== "reviewer");
+    expect(remaining).toEqual([]);
   });
 
-  test("leaving the last worker role of an ordinary assignee permits deletion", () => {
-    const remainingRoles = assignmentRoles(reviewAssignment).filter((role) => role !== "reviewer");
-
-    expect(remainingRoles).toEqual([]);
+  test("assigning another worker role preserves existing worker roles", () => {
+    expect(roleMask([...assignmentRoles(reviewAssignment), "translator"])).toBe(34);
   });
 
-  test("assigning another worker role preserves existing admin", () => {
-    const assignment = { ...reviewAssignment, roles: 160 };
-    const roles = assignmentRoles(assignment);
-
-    expect(roleMask([...roles, "translator"])).toBe(162);
+  test("assignment masks expose only the seven worker roles", () => {
+    expect(assignmentRoles({ ...reviewAssignment, roles: 511 })).toEqual(WORKER_ROLES);
   });
 });

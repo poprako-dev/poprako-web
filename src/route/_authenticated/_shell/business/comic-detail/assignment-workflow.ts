@@ -10,13 +10,13 @@ import {
 } from "@/route/_authenticated/business/chapter/chapter";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 import type { WorkflowStatus } from "@/route/_authenticated/business/chapter/workflow";
 
 export type AssignmentRoleDef = {
   fullLabel: string;
   shortLabel: string;
-  addRole: Role;
+  addRole: WorkerRole;
   matches: (assignment: AssignmentInfo) => boolean;
   getStatus: (chapter: ChapterInfo) => WorkflowStatus;
   nextTransition: (status: WorkflowStatus) => WorkflowTransition | null;

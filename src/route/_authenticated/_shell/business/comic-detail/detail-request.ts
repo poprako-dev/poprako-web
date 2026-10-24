@@ -7,7 +7,7 @@ import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
 import type { MemberInfo } from "@/route/business/identity/member";
 import type { TeamInfo } from "@/route/business/identity/team";
 import type { WorksetInfo } from "@/route/_authenticated/business/workset/workset";
-import { type Role, roleMask } from "@/route/business/identity/role";
+import { type WorkerRole, roleMask } from "@/route/business/identity/role";
 import type { Result } from "@/shared/utility/result";
 
 export type DetailComicInfo = ComicInfo & {
@@ -21,7 +21,7 @@ export type ComicDetailData = {
 };
 
 export type AssignableMemberArgs = {
-  role: Role;
+  role: WorkerRole;
   keyword?: string | undefined;
   offset: number;
   limit: number;

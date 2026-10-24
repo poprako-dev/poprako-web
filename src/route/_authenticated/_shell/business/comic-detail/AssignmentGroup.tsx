@@ -7,7 +7,7 @@ import {
   type ChapterInfo,
 } from "@/route/_authenticated/business/chapter/chapter";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 import type { Result } from "@/shared/utility/result";
 import type { WorkflowStatus } from "@/route/_authenticated/business/chapter/workflow";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
@@ -22,14 +22,14 @@ type Props = {
   isAssignmentsLoading?: boolean | undefined;
   currentUserId: string;
   onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
-  onRemoveAssignment?: ((userId: string, role: Role) => void) | undefined;
-  onAddAssignment?: ((role: Role) => void) | undefined;
-  onJoinRole?: ((role: Role) => void) | undefined;
-  canJoinRole?: ((role: Role) => boolean) | undefined;
-  isRoleJoining?: ((role: Role) => boolean) | undefined;
-  onLeaveRole?: ((role: Role) => void) | undefined;
-  canLeaveRole?: ((role: Role) => boolean) | undefined;
-  isRoleLeaving?: ((role: Role) => boolean) | undefined;
+  onRemoveAssignment?: ((userId: string, role: WorkerRole) => void) | undefined;
+  onAddAssignment?: ((role: WorkerRole) => void) | undefined;
+  onJoinRole?: ((role: WorkerRole) => void) | undefined;
+  canJoinRole?: ((role: WorkerRole) => boolean) | undefined;
+  isRoleJoining?: ((role: WorkerRole) => boolean) | undefined;
+  onLeaveRole?: ((role: WorkerRole) => void) | undefined;
+  canLeaveRole?: ((role: WorkerRole) => boolean) | undefined;
+  isRoleLeaving?: ((role: WorkerRole) => boolean) | undefined;
   canOperateWorkflow?: boolean | undefined;
   canManageAssignments?: boolean | undefined;
 };
@@ -43,7 +43,7 @@ type TransitionState = {
 
 type RemoveState = {
   assignment: AssignmentInfo;
-  role: Role;
+  role: WorkerRole;
   roleLabel: string;
 };
 
@@ -68,7 +68,7 @@ type AssignmentRoleCardProps = Pick<
 > & {
   roleDef: AssignmentRoleDef;
   onOpenTransition: (state: TransitionState) => void;
-  onRequestRemoval: (assignment: AssignmentInfo, role: Role, roleLabel: string) => void;
+  onRequestRemoval: (assignment: AssignmentInfo, role: WorkerRole, roleLabel: string) => void;
 };
 
 function AssignmentRoleCard({

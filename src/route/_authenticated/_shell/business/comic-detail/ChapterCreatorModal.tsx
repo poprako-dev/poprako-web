@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { AppDialogClose } from "@/shared/component/AppDialog";
 import { IconInputRow } from "@/shared/component/IconInputRow";
 import type { MemberInfo } from "@/route/business/identity/member";
-import { type Role, roleMask } from "@/route/business/identity/role";
+import { type WorkerRole, roleMask } from "@/route/business/identity/role";
 import type { Result } from "@/shared/utility/result";
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
 import { PresetAssignmentRoleSwitchGroup } from "@/route/_authenticated/_shell/business/assignment/PresetAssignmentRoleSwitchGroup";
@@ -23,7 +23,7 @@ export function ChapterCreatorModal({
   onClose,
 }: Props): JSX.Element {
   const [subtitle, setSubtitle] = useState("");
-  const [presetRoles, setPresetRoles] = useState<Role[]>([]);
+  const [presetRoles, setPresetRoles] = useState<WorkerRole[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>): Promise<void> => {

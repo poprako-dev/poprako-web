@@ -46,7 +46,6 @@ describe("artwork upload permissions", () => {
     const typesetter = { ...assignment, roles: 8 };
     expect(artworkPermissions(chapter, undefined, false).archive).toBe(false);
     expect(artworkPermissions(chapter, { ...assignment, roles: 2 }, false).archive).toBe(false);
-    expect(artworkPermissions(chapter, { ...assignment, roles: 128 }, false).archive).toBe(false);
     expect(artworkPermissions(chapter, { ...typesetter, chapterId: "other" }, false).archive).toBe(
       false,
     );

@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import type { MemberInfo } from "@/route/business/identity/member";
-import { hasRole, type Role } from "@/route/business/identity/role";
+import { hasRole, type WorkerRole } from "@/route/business/identity/role";
 
-const ROLE_OPTIONS: { role: Role; label: string }[] = [
+const ROLE_OPTIONS: { role: WorkerRole; label: string }[] = [
   { role: "rawProvider", label: "图源" },
   { role: "translator", label: "翻译" },
   { role: "proofreader", label: "校对" },
@@ -10,13 +10,12 @@ const ROLE_OPTIONS: { role: Role; label: string }[] = [
   { role: "redrawer", label: "美工" },
   { role: "reviewer", label: "监修" },
   { role: "publisher", label: "发布" },
-  { role: "admin", label: "管理" },
 ];
 
 type Props = {
   activeMember: MemberInfo | null;
-  value: Role[];
-  onChange: (roles: Role[]) => void;
+  value: WorkerRole[];
+  onChange: (roles: WorkerRole[]) => void;
 };
 
 export function PresetAssignmentRoleSwitchGroup({
@@ -24,8 +23,8 @@ export function PresetAssignmentRoleSwitchGroup({
   value,
   onChange,
 }: Props): JSX.Element {
-  function handleToggle(role: Role): void {
-    if (role === "admin" || !activeMember || !hasRole(activeMember, role)) {
+  function handleToggle(role: WorkerRole): void {
+    if (!activeMember || !hasRole(activeMember, role)) {
       return;
     }
 
@@ -40,24 +39,16 @@ export function PresetAssignmentRoleSwitchGroup({
     <div className="mt-3" role="group" aria-label="创建者分工">
       <div className="grid grid-cols-4 gap-1.5">
         {ROLE_OPTIONS.map(({ role, label }) => {
-          const isMandatory = role === "admin";
           const isAvailable = activeMember !== null && hasRole(activeMember, role);
-          const isSelected = isMandatory || value.includes(role);
-          const isDisabled = isMandatory || !isAvailable;
+          const isSelected = value.includes(role);
 
           return (
             <button
               key={role}
               type="button"
-              disabled={isDisabled}
+              disabled={!isAvailable}
               aria-pressed={isSelected}
-              title={
-                isMandatory
-                  ? "创建者固定拥有管理权限"
-                  : isAvailable
-                    ? undefined
-                    : "当前成员不具备该职位"
-              }
+              title={isAvailable ? undefined : "当前成员不具备该职位"}
               onClick={() => {
                 handleToggle(role);
               }}
@@ -69,9 +60,7 @@ export function PresetAssignmentRoleSwitchGroup({
                   ? ["border-(--primary-border) bg-(--primary-subtle)", "text-ink-slate-500"]
                   : "border-line-slate-200 bg-surface-white text-text-muted-cool hover:border-line-slate-300",
                 !isAvailable &&
-                  !isMandatory &&
                   "cursor-not-allowed border-line-slate-100 bg-surface-slate-50 text-ink-slate-300",
-                isMandatory && "cursor-default",
               )}
             >
               <span>{label}</span>

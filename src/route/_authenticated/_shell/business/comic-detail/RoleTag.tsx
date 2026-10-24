@@ -5,14 +5,14 @@ import type { WorkflowTransition } from "@/route/_authenticated/business/chapter
 import type { WorkflowStatus } from "@/route/_authenticated/business/chapter/workflow";
 import type { AssignmentInfo } from "@/route/_authenticated/business/assignment/assignment";
 import type { Result } from "@/shared/utility/result";
-import type { Role } from "@/route/business/identity/role";
+import type { WorkerRole } from "@/route/business/identity/role";
 import { UserTag } from "@/route/_authenticated/_shell/business/comic-detail/UserTag";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
 import { TransitionDialog } from "@/route/_authenticated/_shell/business/comic-detail/TransitionDialog";
 
 type Props = {
   label: string;
-  role: Role;
+  role: WorkerRole;
   assignments: AssignmentInfo[];
   status: WorkflowStatus;
   /**
@@ -28,7 +28,7 @@ type Props = {
   */
   onClickable: boolean;
   onTransiteWorkflow: (t: WorkflowTransition) => Promise<Result<void>>;
-  onRemoveUser?: ((userId: string, role: Role) => void) | undefined;
+  onRemoveUser?: ((userId: string, role: WorkerRole) => void) | undefined;
   /**
   Called to open the MemberSelectorModal for this role
   */
@@ -49,7 +49,7 @@ type StatusConfig = {
 
 type RoleTagAssignmentsProps = {
   assignments: AssignmentInfo[];
-  role: Role;
+  role: WorkerRole;
   onRemoveUser?: Props["onRemoveUser"];
 };
 

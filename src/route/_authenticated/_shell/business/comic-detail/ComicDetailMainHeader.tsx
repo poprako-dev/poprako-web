@@ -57,9 +57,7 @@ export function ComicDetailMainHeader({
       onDeleteChapter={callbacks.onDeleteChapter}
       onDelete={(chapterId) => chapters.handleDeleteChapter(chapterId, callbacks.onDeleteChapter)}
       onLongPressTitle={assignments.isTeamAdmin ? onOpenComicModifier : undefined}
-      onLongPressChapter={
-        assignments.canManageChapterAssignments ? onOpenChapterModifier : undefined
-      }
+      onLongPressChapter={assignments.isTeamAdmin ? onOpenChapterModifier : undefined}
       onCopyTitle={() => {
         void copyTitle();
       }}
