@@ -9,6 +9,34 @@ export type AccessibilityViolation = {
 };
 
 export type ContrastEntry = { target: string; checks: string; count: number };
+export type ContrastObservation = {
+  storyId: string;
+  violations: AccessibilityViolation[];
+  incompleteRules: string[];
+};
+
+export function parseContrastObservation(serialized: string): ContrastObservation {
+  const value: unknown = JSON.parse(serialized);
+  validateContrastObservation(value);
+  return value;
+}
+
+function validateContrastObservation(value: unknown): asserts value is ContrastObservation {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("storyId" in value) ||
+    typeof value.storyId !== "string" ||
+    value.storyId.length === 0 ||
+    !("violations" in value) ||
+    !Array.isArray(value.violations) ||
+    !("incompleteRules" in value) ||
+    !Array.isArray(value.incompleteRules) ||
+    !value.incompleteRules.every((rule: unknown) => typeof rule === "string")
+  ) {
+    throw new Error("Incomplete accessibility observation");
+  }
+}
 
 const CONTRAST_DATA_FIELDS = [
   "fgColor",
@@ -146,4 +174,38 @@ export function compareContrastBaseline(
     }
   }
   return { known, unexpected };
+}
+
+// Only a completed audit can retire historical allowances. Missing/skipped
+// stories retain their allowance; newly observed findings never create one.
+export function pruneContrastBaseline(
+  baseline: Record<string, ContrastEntry[]>,
+  observations: ContrastObservation[],
+  exceptions: Record<string, ContrastEntry[]>,
+): Record<string, ContrastEntry[]> {
+  if (observations.length === 0) throw new Error("No completed accessibility audits captured");
+  const next = new Map(Object.entries(structuredClone(baseline)));
+  const seen = new Set<string>();
+  for (const observation of observations) {
+    validateContrastObservation(observation);
+    const { storyId, violations, incompleteRules } = observation;
+    if (seen.has(storyId)) throw new Error(`Duplicate accessibility audit: ${storyId}`);
+    seen.add(storyId);
+    const allowance = [...(baseline[storyId] ?? []), ...(exceptions[storyId] ?? [])];
+    const comparison = compareContrastBaseline(storyId, violations, { [storyId]: allowance });
+    if (comparison.unexpected.length > 0) throw new Error(comparison.unexpected.join("\n"));
+    if (incompleteRules.includes("color-contrast")) continue;
+    const remaining = new Map(
+      contrastEntries(violations).map((entry) => [entryKey(entry), entry.count]),
+    );
+    const retained = (baseline[storyId] ?? []).flatMap((entry) => {
+      const key = entryKey(entry);
+      const count = Math.min(entry.count, remaining.get(key) ?? 0);
+      remaining.set(key, (remaining.get(key) ?? 0) - count);
+      return count > 0 ? [{ ...entry, count }] : [];
+    });
+    if (retained.length > 0) next.set(storyId, retained);
+    else next.delete(storyId);
+  }
+  return Object.fromEntries(next);
 }
