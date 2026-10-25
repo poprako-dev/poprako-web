@@ -29,6 +29,7 @@ export type ComicInfo = {
   pinnedChapterAssignments?: AssignmentInfo[] | undefined;
 
   lastActiveAt: number;
+  archivedAt?: number | null | undefined;
 
   createdAt: number;
   updatedAt: number;

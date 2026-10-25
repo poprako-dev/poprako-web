@@ -1,7 +1,8 @@
 import { type JSX, useEffect, useState } from "react";
+import clsx from "clsx";
 import { Search } from "lucide-react";
-import { ComicListActions } from "./ComicListActions";
 import { IconInputRow } from "@/shared/component/IconInputRow";
+import { ComicListActions } from "./ComicListActions";
 import { HoverSelect } from "@/shared/component/hover-select/HoverSelect";
 import type { Option } from "@/shared/component/hover-select/hover-select-type";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
@@ -11,6 +12,7 @@ import type {
 } from "@/route/_authenticated/_shell/business/comic-list/comic-list";
 
 type Props = {
+  progressDisabled?: boolean;
   activeFuzzyTitle?: string | undefined;
   // 只有用户按下 enter 后才触发
   onChangeFuzzyTitle: (title: string) => void;
@@ -55,6 +57,7 @@ function makeBinaryOptions(prefix: string): Option[] {
 // 受控实际上为受控组件，但是负责显示和传递修改过滤条件的 UI，具体的过滤条件 state 由父组件维护
 // 该组件不负责筛选 workset，workset 筛选应该由 workset filter sidebar 组件负责
 export function FilterHeader({
+  progressDisabled = false,
   activeFuzzyTitle,
   onChangeFuzzyTitle,
   activeUploadStatus,
@@ -109,7 +112,15 @@ export function FilterHeader({
       </div>
 
       {/* 第二行：六个 workflow 状态筛选 */}
-      <div className="hidden lg:flex h-9 w-full flex-row items-center gap-2">
+      <fieldset
+        key={String(progressDisabled)}
+        disabled={progressDisabled}
+        aria-label="进度筛选"
+        className={clsx(
+          "grid min-w-0 w-full grid-cols-2 items-center gap-2 sm:grid-cols-3 lg:grid-cols-6",
+          progressDisabled && "pointer-events-none opacity-50",
+        )}
+      >
         <HoverSelect
           hintText="传·未筛选"
           options={makeBinaryOptions("传")}
@@ -170,7 +181,7 @@ export function FilterHeader({
           isActive={activePublishStatus !== "unset"}
           className="flex-1"
         />
-      </div>
+      </fieldset>
     </div>
   );
 }

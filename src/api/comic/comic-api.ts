@@ -38,6 +38,7 @@ export function listComics(
     withs?: readonly string[] | undefined;
     fuzzyTitle?: string | undefined;
     stages?: number | undefined;
+    status?: "active" | "archived" | undefined;
     offset: number;
     limit: number;
   },
@@ -50,6 +51,7 @@ export function listComics(
       with: query.withs,
       fuzzyTitle: query.fuzzyTitle,
       stages: query.stages,
+      status: query.status,
       offset: query.offset,
       limit: query.limit,
     },

@@ -1,10 +1,10 @@
+import { ComicListModeSelector } from "./ComicListModeSelector";
+import { ComicArchiveList } from "../archive/ComicArchiveList";
 import { type JSX, useState } from "react";
-import clsx from "clsx";
-import { Eye, PencilLine } from "lucide-react";
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
 import type { Result } from "@/shared/utility/result";
 import type { WorksetInfo } from "@/route/_authenticated/business/workset/workset";
-import type { ViewMode } from "@/route/_authenticated/_shell/business/comic-list/comic-card-type";
+import type { ComicListMode } from "./comic-list-mode";
 import type {
   BinaryFilter,
   TripleFilter,
@@ -17,7 +17,7 @@ import { ComicProgressList } from "@/route/_authenticated/_shell/comic-playgroun
 import { useComicListLoaders } from "@/route/_authenticated/_shell/comic-playground/business/comic-list/use-comic-list-loaders";
 
 type Props = {
-  initialMode?: ViewMode | undefined;
+  initialMode?: ComicListMode | undefined;
   refreshKey?: number | undefined;
   worksets: WorksetInfo[];
   activeWorksetId: string;
@@ -33,7 +33,7 @@ type Props = {
   onLoadComics: (
     offset: number,
     limit: number,
-    mode: ViewMode,
+    mode: ComicListMode,
     signal?: AbortSignal,
   ) => Promise<Result<ComicInfo[]>>;
   onComicClick: (comicId: string, chapterId?: string | null) => void;
@@ -84,13 +84,14 @@ export function ComicList({
   onChangePublishStatus,
 }: Props): JSX.Element {
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 768);
-  const [activeMode, setActiveMode] = useState<ViewMode>(initialMode);
+  const [activeMode, setActiveMode] = useState<ComicListMode>(initialMode);
 
   const handleToggleSidebar = (): void => {
     setIsSidebarOpen((prev) => !prev);
   };
 
-  const { loadComicCards, loadComicProgress } = useComicListLoaders(onLoadComics);
+  const { loadComicCards, loadComicProgress, loadArchivedComics } =
+    useComicListLoaders(onLoadComics);
 
   return (
     <ComicListLayout
@@ -100,6 +101,7 @@ export function ComicList({
       }}
       header={
         <FilterHeader
+          progressDisabled={activeMode === "archive"}
           activeFuzzyTitle={activeFuzzyTitle}
           onChangeFuzzyTitle={onChangeFuzzyTitle}
           activeUploadStatus={activeUploadStatus}
@@ -121,54 +123,7 @@ export function ComicList({
       }
       content={
         <div className="w-full h-full min-h-0 flex flex-col overflow-hidden">
-          {/* mode 切换栏 */}
-          <div className="flex items-center justify-between shrink-0 pb-3">
-            <div className="flex-1 mr-4" aria-hidden="true">
-              <div
-                className="w-full h-0.5 rounded-sm"
-                style={{
-                  background:
-                    "linear-gradient(90deg, rgba(148,163,184,1) 0%," + " rgba(148,163,184,0) 60%)",
-                }}
-              />
-            </div>
-            <div className="flex rounded-lg bg-surface-stone-100/80 p-0.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveMode("translator");
-                }}
-                title="翻译模式"
-                className={clsx(
-                  "rounded-md px-3 py-1.5",
-                  "flex items-center gap-2",
-                  "transition-all duration-200 focus:outline-none",
-                  activeMode === "translator"
-                    ? "bg-surface-gray-200 text-ink-gray-800 shadow-(--shadow-sm)"
-                    : "text-text-muted-cool hover:text-ink-slate-600",
-                )}
-              >
-                <PencilLine size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveMode("reviewer");
-                }}
-                title="监修模式"
-                className={clsx(
-                  "rounded-md px-3 py-1.5",
-                  "flex items-center gap-2",
-                  "transition-all duration-200 focus:outline-none",
-                  activeMode === "reviewer"
-                    ? "bg-surface-gray-200 text-ink-gray-800 shadow-(--shadow-sm)"
-                    : "text-text-muted-cool hover:text-ink-slate-600",
-                )}
-              >
-                <Eye size={16} />
-              </button>
-            </div>
-          </div>
+          <ComicListModeSelector mode={activeMode} onChange={setActiveMode} />
 
           {activeMode === "translator" && (
             <ComicTranslationList
@@ -178,6 +133,12 @@ export function ComicList({
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
                 onComicClick(comicId, chapterId);
               }}
+            />
+          )}
+          {activeMode === "archive" && (
+            <ComicArchiveList
+              key={`archive-${String(refreshKey)}`}
+              onLoadComics={loadArchivedComics}
             />
           )}
           {activeMode === "reviewer" && (
