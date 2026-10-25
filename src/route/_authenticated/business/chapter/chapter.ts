@@ -31,7 +31,7 @@ export type ChapterInfo = {
   subtitle: string;
   isPinned: boolean;
 
-  pageCount: number;
+  pageSourceCount: number;
   totalUnitCount: number;
   translatedUnitCount: number;
   proofreadUnitCount: number;

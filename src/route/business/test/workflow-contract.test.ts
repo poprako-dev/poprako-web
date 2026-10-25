@@ -61,7 +61,9 @@ async function verifySparseUnitSave(): Promise<void> {
     success: true,
     data: { createdUnitIds: [{ localId: "local_1", unitId: "permanent_1" }] },
   });
-  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/units/save?save_id=save_1");
+  expect(lastFetchCall(fetchMock).url).toBe(
+    "/api/v1/page-sources/page_1/units/save?save_id=save_1",
+  );
   expectSparseUnitWireBody(fetchMock);
 }
 
@@ -96,7 +98,7 @@ async function verifyUnitResponseFields(): Promise<void> {
       unit_infos: [
         {
           id: "unit_1",
-          page_id: "page_1",
+          page_source_id: "page_1",
           index: 0,
           is_bubble: true,
           is_flagged: false,
@@ -212,7 +214,7 @@ async function verifyChapterStageAndImportRoutes(fetchMock: FetchMock): Promise<
     oper: "advance",
   });
   fetchMock.mockResolvedValueOnce(
-    okJson({ imported_page_count: 1, imported_unit_count: 2 }).clone(),
+    okJson({ imported_page_source_count: 1, imported_unit_count: 2 }).clone(),
   );
   await importChapter(createTestApi(), {
     chapterId: "chapter_1",
@@ -282,7 +284,7 @@ const pinnedComicResponse = {
       comic_id: "comic_1",
       index: 0,
       subtitle: "Ch1",
-      page_count: 2,
+      page_source_count: 2,
       is_pinned: true,
       stages: 0,
       creator_id: "user_1",

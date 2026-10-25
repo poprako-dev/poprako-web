@@ -11,7 +11,7 @@ export function projectChapter(id = "chapter"): ChapterInfo {
     index: 0,
     subtitle: "",
     isPinned: false,
-    pageCount: 1,
+    pageSourceCount: 1,
     totalUnitCount: 1,
     translatedUnitCount: 0,
     proofreadUnitCount: 0,

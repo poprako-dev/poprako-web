@@ -75,7 +75,9 @@ export async function addPageImages(
   withRawIdent: boolean,
 ): Promise<number> {
   const pageInfo = new Map(context.pages.map((page) => [page.id, page]));
-  const rawIdentByPageId = new Map(data.rawIdents.map((item) => [item.pageId, item.rawIdent]));
+  const rawIdentByPageId = new Map(
+    data.rawIdents.map((item) => [item.pageSourceId, item.rawIdent]),
+  );
   const names = withRawIdent
     ? resolveArchiveImageNames(
         data.poprako.pages.map((page) => ({

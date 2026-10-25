@@ -89,7 +89,7 @@ export type ChapterExports = {
 };
 
 export type PageRawIdent = {
-  pageId: string;
+  pageSourceId: string;
   rawIdent: string;
 };
 
@@ -105,6 +105,6 @@ export type ImportChapterArgs = {
 };
 
 export type ImportChapterResult = {
-  importedPageCount: number;
+  importedPageSourceCount: number;
   importedUnitCount: number;
 };

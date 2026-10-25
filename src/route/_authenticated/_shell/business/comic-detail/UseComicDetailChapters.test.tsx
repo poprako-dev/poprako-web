@@ -163,7 +163,7 @@ test("refreshing loaded chapters also refreshes an out-of-page target without ch
   const { args, onLoadChapter, onLoadChapters } = scenario("chapter-100");
   onLoadChapter
     .mockResolvedValueOnce({ success: true, data: chapter(100) })
-    .mockResolvedValue({ success: true, data: { ...chapter(100), pageCount: 0 } });
+    .mockResolvedValue({ success: true, data: { ...chapter(100), pageSourceCount: 0 } });
   const { result } = renderHook(() => useComicDetailChapters(args));
   await waitFor(() => {
     expect(result.current.chapters).toHaveLength(21);
@@ -171,7 +171,7 @@ test("refreshing loaded chapters also refreshes an out-of-page target without ch
   await act(async () => {
     await result.current.reloadLoadedChapters();
   });
-  expect(result.current.selectedChapter?.pageCount).toBe(0);
+  expect(result.current.selectedChapter?.pageSourceCount).toBe(0);
   expect(onLoadChapter).toHaveBeenCalledTimes(2);
   expect(onLoadChapters).toHaveBeenLastCalledWith({ comicId: "comic", offset: 0, limit: 20 });
   act(() => {

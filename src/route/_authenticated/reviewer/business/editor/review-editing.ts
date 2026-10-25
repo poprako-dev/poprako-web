@@ -1,5 +1,6 @@
 import type { IssueInfo } from "@/route/_authenticated/business/issue/issue";
 import type { IssueVariantsResponse } from "@/api/issue/issue-contract";
+import type { CreatedIssueId } from "@/api/issue/issue-contract";
 import type { CategoryPresets } from "./category-presets";
 
 /** UI documents use stable identities; an eventual HTTP adapter owns wire IDs. */
@@ -9,6 +10,8 @@ export type ReviewDocument = {
   reviewKey: string;
   imageKey: string;
 };
+
+export type ReviewSaveResult = ReviewDocument & { createdIssueIds?: CreatedIssueId[] };
 
 export type ReviewSubmission = { baseline: ReviewDocument; issues: IssueInfo[] };
 export type ReviewBatch = { draft: ReviewSubmission; saveId: string };
@@ -26,7 +29,7 @@ export type ReviewerEditing = {
     ) => Promise<Record<string, ReviewDocument>>;
   };
   load: (pageId: string, signal: AbortSignal) => Promise<ReviewDocument>;
-  save: (pageId: string, draft: ReviewDraft, saveId: string) => Promise<ReviewDocument>;
+  save: (pageId: string, draft: ReviewDraft, saveId: string) => Promise<ReviewSaveResult>;
   readDraft: (pageId: string) => Promise<ReviewDraft | null>;
   writeDraft: (pageId: string, draft: ReviewDraft | null) => Promise<void>;
   complete: () => Promise<void>;

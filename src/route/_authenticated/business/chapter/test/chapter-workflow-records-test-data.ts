@@ -100,7 +100,7 @@ export const chapterWorkflowPayload = [
       kind: "translation_imported",
       data: {
         format: "label_plus",
-        imported_page_count: 32,
+        imported_page_source_count: 32,
         imported_unit_count: 120,
       },
     },
@@ -237,7 +237,7 @@ export const chapterWorkflowExpected = [
       kind: "translation_imported",
       data: {
         format: "label_plus",
-        importedPageCount: 32,
+        importedPageSourceCount: 32,
         importedUnitCount: 120,
       },
     },

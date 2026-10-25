@@ -60,7 +60,7 @@ export type ChapterWorkflowRecordEvent =
       kind: "translation_imported";
       data: {
         format: ChapterWorkflowRecordTranslationFormat;
-        importedPageCount: number;
+        importedPageSourceCount: number;
         importedUnitCount: number;
       };
     }

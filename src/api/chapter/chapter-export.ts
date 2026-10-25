@@ -30,7 +30,7 @@ export type ChapterExports = {
     chapterSubtitle: string;
     pages: ExportPage[];
   };
-  rawIdents: { pageId: string; rawIdent: string }[];
+  rawIdents: { pageSourceId: string; rawIdent: string }[];
 };
 type ChapterExportResponse = Omit<ChapterExports, "rawIdents"> & {
   rawIdents?: ChapterExports["rawIdents"] | null | undefined;

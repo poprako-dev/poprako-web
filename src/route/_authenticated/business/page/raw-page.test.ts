@@ -9,6 +9,7 @@ function rawPage(imageOptimizedUrl: string | null | undefined): SnakeCase<PageRe
     id: "page-1",
     chapter_id: "chapter-1",
     index: 0,
+    image_uploaded: true,
     image_url: "images.test/page.png",
     image_optimized_url: imageOptimizedUrl,
     image_thumbnail_url: "images.test/page-thumbnail.png",

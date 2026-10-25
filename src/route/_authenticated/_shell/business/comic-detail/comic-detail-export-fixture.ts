@@ -6,7 +6,7 @@ import type { ExportContext } from "./comic-detail-export-types";
 export function createExportData(): ChapterExports {
   return {
     labelPlus: "LP translation",
-    rawIdents: [{ pageId: "page-0", rawIdent: "原图.png" }],
+    rawIdents: [{ pageSourceId: "page-0", rawIdent: "原图.png" }],
     poprako: {
       comicId: "comic",
       comicTitle: "漫画",

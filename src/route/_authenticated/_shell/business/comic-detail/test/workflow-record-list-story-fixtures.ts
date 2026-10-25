@@ -102,7 +102,7 @@ export const ALL_EVENT_RECORDS: ChapterWorkflowRecord[] = [
       kind: "translation_imported",
       data: {
         format: "poprako",
-        importedPageCount: 32,
+        importedPageSourceCount: 32,
         importedUnitCount: 120,
       },
     },

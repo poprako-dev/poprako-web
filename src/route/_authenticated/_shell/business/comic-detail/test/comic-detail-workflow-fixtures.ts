@@ -156,7 +156,7 @@ function importWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
         kind: "translation_imported",
         data: {
           format: "poprako",
-          importedPageCount: 25,
+          importedPageSourceCount: 25,
           importedUnitCount: 186,
         },
       },

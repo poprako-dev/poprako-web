@@ -219,7 +219,11 @@ export function ComicDetailSidebar({
         />
 
         <div className="bg-surface-stone-100 rounded-sm border border-line-stone-200 px-2.5 py-0.5 mb-3 shrink-0">
-          <StatItem icon={BookOpen} label="总页数" value={selectedChapter?.pageCount ?? "-"} />
+          <StatItem
+            icon={BookOpen}
+            label="总页数"
+            value={selectedChapter?.pageSourceCount ?? "-"}
+          />
           {mode === "translator" && (
             <>
               <StatItem

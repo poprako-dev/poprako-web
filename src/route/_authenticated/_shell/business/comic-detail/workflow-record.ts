@@ -243,7 +243,7 @@ function presentExportEvent(event: ExportEvent): WorkflowRecordEventPresentation
           fixed("以 "),
           variable(FORMAT_LABELS[event.data.format]),
           fixed(" 格式导入了 "),
-          variable(String(event.data.importedPageCount)),
+          variable(String(event.data.importedPageSourceCount)),
           fixed(" 页，共 "),
           variable(String(event.data.importedUnitCount)),
           fixed(" 个翻校单元"),

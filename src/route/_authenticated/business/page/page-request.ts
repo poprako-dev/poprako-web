@@ -37,7 +37,7 @@ export function toPageInfo(page: PageResponse): PageInfo {
     imageUrl: ensureHttpsUrl(page.imageUrl),
     imageOptimizedUrl: ensureHttpsUrl(page.imageOptimizedUrl),
     imageThumbnailUrl: ensureHttpsUrl(page.imageThumbnailUrl),
-    isUploaded: Boolean(page.imageUrl),
+    isUploaded: page.imageUploaded,
     ...(page.imageHash === null || page.imageHash === undefined
       ? {}
       : { imageHash: page.imageHash }),
@@ -54,7 +54,13 @@ export async function listPageUnitFlaggedStats(
   client: ApiClient,
   chapterId: string,
 ): Promise<Result<PageUnitFlaggedStats[]>> {
-  return getPageFlaggedStats(client, chapterId);
+  const result = await getPageFlaggedStats(client, chapterId);
+  return result.success
+    ? {
+        success: true,
+        data: result.data.map(({ pageSourceId, ...stats }) => ({ ...stats, pageId: pageSourceId })),
+      }
+    : result;
 }
 
 export async function listPageUnitDiffStats(
@@ -65,7 +71,8 @@ export async function listPageUnitDiffStats(
   if (!result.success) return result;
   return {
     success: true,
-    data: result.data.map(({ edittedUnitCount, ...stats }) => ({
+    data: result.data.map(({ pageSourceId, edittedUnitCount, ...stats }) => ({
+      pageId: pageSourceId,
       ...stats,
       editedUnitCount: edittedUnitCount,
     })),
@@ -93,7 +100,7 @@ export async function allocChapterPages(
     client,
     args.chapterId,
     args.pages.map((page) => ({
-      pageId: page.pageId,
+      pageSourceId: page.pageId,
       rawIdent: page.rawIdent,
       imageHash: page.imageHash,
       newByteLen: page.newByteLen,
@@ -105,7 +112,7 @@ export async function allocChapterPages(
     success: true,
     data: {
       pages: res.data.pages.map((page) => ({
-        pageId: page.pageId,
+        pageId: page.pageSourceId,
         index: page.index,
         imageHash: page.imageHash,
         extension: page.ext,
@@ -139,7 +146,7 @@ export async function allocExistingPageUpload(
   return {
     success: true,
     data: {
-      pageId: res.data.pageId,
+      pageId: res.data.pageSourceId,
       index: res.data.index,
       imageHash: res.data.imageHash,
       extension: res.data.ext,

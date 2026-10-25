@@ -109,7 +109,7 @@ type detailChapterFixture = {
   creator_id: string;
   index: number;
   subtitle: string;
-  page_count: number;
+  page_source_count: number;
   total_unit_count: number;
   translated_unit_count: number;
   proofread_unit_count: number;
@@ -126,7 +126,7 @@ export function detailChapter(comicId = "comic-b"): detailChapterFixture {
     creator_id: "reader",
     index: 0,
     subtitle: "pinned",
-    page_count: 0,
+    page_source_count: 0,
     total_unit_count: 0,
     translated_unit_count: 0,
     proofread_unit_count: 0,

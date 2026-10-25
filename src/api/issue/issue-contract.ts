@@ -22,7 +22,12 @@ export type SavePageIssuesRequest = {
   reviewKey: string;
   revision: string;
   imageVersion: number | null;
-  issues: (IssueInput & { id: string })[];
+  issues: (IssueInput & ({ id: string; localId?: never } | { localId: string; id?: never }))[];
+};
+export type CreatedIssueId = { localId: string; issueId: string };
+export type SavePageIssuesResponse = {
+  page: PageIssuesResponse;
+  createdIssueIds: CreatedIssueId[];
 };
 export type IssueVariantsResponse = {
   reviewKey: string;

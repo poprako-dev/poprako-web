@@ -18,7 +18,7 @@ export type ImportChapterRequest = {
   mode: "keep" | "overwrite";
 };
 export type ImportChapterResponse = {
-  importedPageCount: number;
+  importedPageSourceCount: number;
   importedUnitCount: number;
 };
 

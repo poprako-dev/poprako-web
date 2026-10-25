@@ -4,6 +4,9 @@ import type { Result } from "@/shared/utility/result";
 export type PageResponse = {
   id: string;
   chapterId: string;
+  rawIdent?: string | null | undefined;
+  imageVersion?: number | null | undefined;
+  imageUploaded: boolean;
   imageUrl?: string | null | undefined;
   imageOptimizedUrl?: string | null | undefined;
   imageThumbnailUrl?: string | null | undefined;
@@ -18,26 +21,27 @@ export type PageResponse = {
 };
 
 export type PageUnitFlaggedStatsResponse = {
-  pageId: string;
+  pageSourceId: string;
   index: number;
   flaggedUnitCount: number;
 };
 export type PageUnitDiffStatsResponse = {
-  pageId: string;
+  pageSourceId: string;
   index: number;
   translatedUnitCount: number;
   edittedUnitCount: number;
   proofreaderAppendUnitCount: number;
 };
 export type PageImageRequest = {
-  pageId?: string | undefined;
+  pageSourceId?: string | undefined;
   rawIdent?: string | undefined;
   imageHash: string;
   newByteLen?: number | undefined;
   ext: string;
 };
 export type AllocatedPageResponse = {
-  pageId: string;
+  pageSourceId: string;
+  imageVersion: number;
   index: number;
   imageHash: string;
   ext: string;
@@ -55,57 +59,63 @@ export function listPages(
   limit?: number,
   signal?: AbortSignal,
 ): Promise<Result<PageResponse[]>> {
-  return client.get<PageResponse[]>(`/chapters/${chapterId}/pages`, {
+  return client.get<PageResponse[]>(`/chapters/${chapterId}/page-sources`, {
     query: { offset, limit },
     signal,
   });
 }
 export function getPage(client: ApiClient, id: string): Promise<Result<PageResponse>> {
-  return client.get<PageResponse>(`/pages/${id}`);
+  return client.get<PageResponse>(`/page-sources/${id}`);
 }
 export function listPageUnitFlaggedStats(
   client: ApiClient,
   chapterId: string,
 ): Promise<Result<PageUnitFlaggedStatsResponse[]>> {
   return client.get<PageUnitFlaggedStatsResponse[]>(
-    `/chapters/${chapterId}/pages/unit-flagged-stats`,
+    `/chapters/${chapterId}/page-sources/unit-flagged-stats`,
   );
 }
 export function listPageUnitDiffStats(
   client: ApiClient,
   chapterId: string,
 ): Promise<Result<PageUnitDiffStatsResponse[]>> {
-  return client.get<PageUnitDiffStatsResponse[]>(`/chapters/${chapterId}/pages/unit-diff-stats`);
+  return client.get<PageUnitDiffStatsResponse[]>(
+    `/chapters/${chapterId}/page-sources/unit-diff-stats`,
+  );
 }
 export function allocChapterPages(
   client: ApiClient,
   chapterId: string,
   pages: PageImageRequest[],
 ): Promise<Result<{ pages: AllocatedPageResponse[] }>> {
-  return client.post<{ pages: AllocatedPageResponse[] }>(`/chapters/${chapterId}/pages/alloc`, {
-    chapterId,
-    pages,
-  });
+  return client.post<{ pages: AllocatedPageResponse[] }>(
+    `/chapters/${chapterId}/page-sources/alloc`,
+    {
+      pages,
+    },
+  );
 }
 export function allocExistingPageUpload(
   client: ApiClient,
-  pageId: string,
-  args: Omit<PageImageRequest, "pageId"> & { newByteLen: number },
+  pageSourceId: string,
+  args: Omit<PageImageRequest, "pageSourceId"> & { newByteLen: number },
 ): Promise<Result<AllocatedPageResponse>> {
-  return client.post<AllocatedPageResponse>(`/pages/${pageId}/image/alloc`, args);
+  return client.post<AllocatedPageResponse>(`/page-sources/${pageSourceId}/image/alloc`, args);
 }
 export function deleteChapterPages(
   client: ApiClient,
   chapterId: string,
 ): Promise<Result<undefined>> {
-  return client.delete<undefined>(`/chapters/${chapterId}/pages`);
+  return client.delete<undefined>(`/chapters/${chapterId}/page-sources`);
 }
 export function markPageImageUploaded(
   client: ApiClient,
-  pageId: string,
+  pageSourceId: string,
   imageVersion: number,
 ): Promise<Result<undefined>> {
-  return client.post<undefined>(`/pages/${pageId}/image/mark-uploaded`, { imageVersion });
+  return client.post<undefined>(`/page-sources/${pageSourceId}/image/mark-uploaded`, {
+    imageVersion,
+  });
 }
 export function uploadPageImage(
   client: ApiClient,

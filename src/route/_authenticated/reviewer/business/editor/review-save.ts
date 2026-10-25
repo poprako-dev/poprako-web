@@ -1,6 +1,8 @@
 import { mergeIssues } from "./merge-issues";
 import { pageIsDirty, ReviewChangedError, message } from "./review-editing";
 import type { ReviewSession } from "./review-session";
+import { remapIssueIds } from "./review-save-receipt";
+import type { ReviewEditPage, ReviewSubmission, ReviewSaveResult } from "./review-editing";
 
 export async function saveReviewPage(session: ReviewSession, pageId: string): Promise<void> {
   session.publish(pageId, { ...session.page(pageId), saving: true, error: null });
@@ -40,8 +42,7 @@ async function saveAttempt(session: ReviewSession, pageId: string): Promise<bool
       session.batches.delete(pageId);
       return false;
     }
-    const issues = mergeIssues(batch.draft.issues, current.issues, remote.issues);
-    session.publish(pageId, { ...current, baseline: remote, issues, error: null });
+    session.publish(pageId, reconcileSave(batch.draft, current, remote));
     session.batches.delete(pageId);
     await session.retain(pageId);
     return !pageIsDirty(session.page(pageId));
@@ -51,4 +52,25 @@ async function saveAttempt(session: ReviewSession, pageId: string): Promise<bool
     session.receive(pageId, error.document);
     return false;
   }
+}
+
+function reconcileSave(
+  draft: ReviewSubmission,
+  current: ReviewEditPage,
+  remote: ReviewSaveResult,
+): ReviewEditPage {
+  const receipts = remote.createdIssueIds ?? [];
+  const submitted = remapIssueIds(draft.issues, receipts);
+  const local = remapIssueIds(current.issues, receipts);
+  const history = current.history.map((entry) => ({
+    before: remapIssueIds(entry.before, receipts),
+    after: remapIssueIds(entry.after, receipts),
+  }));
+  return {
+    ...current,
+    baseline: remote,
+    issues: mergeIssues(submitted, local, remote.issues),
+    history,
+    error: null,
+  };
 }

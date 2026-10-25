@@ -81,7 +81,7 @@ export function makeChapter(idx: number, extraFlags?: Partial<ChapterInfo>): Cha
     index: idx,
     subtitle: hasSubtitle ? required(SUBTITLE_POOL[idx % SUBTITLE_POOL.length]) : "",
     isPinned: false,
-    pageCount: 18 + (idx % 8),
+    pageSourceCount: 18 + (idx % 8),
     totalUnitCount: 140 + idx * 8,
     translatedUnitCount: Math.floor((140 + idx * 8) * (0.3 + (idx % 5) * 0.1)),
     proofreadUnitCount: Math.floor((140 + idx * 8) * (idx % 4) * 0.05),

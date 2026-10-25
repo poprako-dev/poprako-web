@@ -44,7 +44,7 @@ function normalizedUnitsResponse(): Response {
     unit_infos: [
       {
         id: "unit-1",
-        page_id: "page-1",
+        page_source_id: "page-1",
         x_coord: 0.1,
         y_coord: 0.2,
         is_bubble: true,
@@ -120,7 +120,7 @@ describe("translator unit API adapter", () => {
 
     expect(result).toEqual({ success: true, data: { createdUnitIds: [] } });
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
-      "/api/v1/pages/page-1/units/save?save_id=save-1",
+      "/api/v1/page-sources/page-1/units/save?save_id=save-1",
     );
     expect(requestBody(fetchMock)).toEqual([
       {
@@ -233,7 +233,7 @@ describe("translator unit API adapter", () => {
       okJson([
         {
           id: "unit-1",
-          page_id: "page-2",
+          page_source_id: "page-2",
           x_coord: 0.1,
           y_coord: 0.2,
           is_bubble: false,

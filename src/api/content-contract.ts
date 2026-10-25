@@ -28,7 +28,7 @@ export type ChapterResponse = {
   creator?: ApiUser | null | undefined;
   index: number;
   subtitle: string;
-  pageCount: number;
+  pageSourceCount: number;
   totalUnitCount: number;
   translatedUnitCount: number;
   proofreadUnitCount: number;
