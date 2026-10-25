@@ -38,6 +38,7 @@ type Props = {
   ) => Promise<Result<ComicInfo[]>>;
   onComicClick: (comicId: string, chapterId?: string | null) => void;
   onCreateComic?: (() => void) | undefined;
+  onExportArchives?: (() => void) | undefined;
   onChangeFuzzyTitle: (title: string) => void;
   activeFuzzyTitle?: string | undefined;
   activeUploadStatus: BinaryFilter;
@@ -64,6 +65,7 @@ export function ComicList({
   onLoadComics,
   onComicClick,
   onCreateComic,
+  onExportArchives,
   onUpdateWorkset,
   onDeleteWorkset,
   onChangeFuzzyTitle,
@@ -113,6 +115,7 @@ export function ComicList({
           onChangeReviewStatus={onChangeReviewStatus}
           onChangePublishStatus={onChangePublishStatus}
           onCreateComic={onCreateComic}
+          onExportArchives={onExportArchives}
           onToggleSidebar={handleToggleSidebar}
         />
       }

@@ -1,7 +1,7 @@
 import { type JSX, useEffect, useState } from "react";
-import { CirclePlus, Layers, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { ComicListActions } from "./ComicListActions";
 import { IconInputRow } from "@/shared/component/IconInputRow";
-import clsx from "clsx";
 import { HoverSelect } from "@/shared/component/hover-select/HoverSelect";
 import type { Option } from "@/shared/component/hover-select/hover-select-type";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
@@ -30,6 +30,7 @@ type Props = {
 
   // 通知父组件显示创建漫画的 modal
   onCreateComic?: (() => void) | undefined;
+  onExportArchives?: (() => void) | undefined;
   // 切换侧边栏展开/收起
   onToggleSidebar?: (() => void) | undefined;
 };
@@ -69,6 +70,7 @@ export function FilterHeader({
   onChangeReviewStatus,
   onChangePublishStatus,
   onCreateComic,
+  onExportArchives,
   onToggleSidebar,
 }: Props): JSX.Element {
   const [inputValue, setInputValue] = useState(activeFuzzyTitle ?? "");
@@ -99,39 +101,11 @@ export function FilterHeader({
           />
         </div>
 
-        {onCreateComic && (
-          <button
-            type="button"
-            onClick={onCreateComic}
-            title="创建漫画"
-            className={clsx(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
-              "border border-line-slate-200 bg-surface-white text-text-muted-cool",
-              "hover:border-line-slate-300 hover:shadow-sm hover:bg-surface-gray-100",
-              "focus-visible:outline-none",
-            )}
-          >
-            <CirclePlus className="h-5 w-5" strokeWidth={2} />
-          </button>
-        )}
-
-        {onToggleSidebar && (
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            title="切换工作区侧边栏"
-            className={clsx(
-              "flex h-8 w-8 shrink-0 items-center",
-              "justify-center rounded-lg transition-all",
-              "border border-line-slate-200 bg-surface-white",
-              "text-text-muted-cool",
-              "hover:border-line-slate-300",
-              "hover:shadow-sm hover:bg-surface-gray-100",
-            )}
-          >
-            <Layers className="h-4 w-4" strokeWidth={1.5} />
-          </button>
-        )}
+        <ComicListActions
+          onCreateComic={onCreateComic}
+          onExportArchives={onExportArchives}
+          onToggleSidebar={onToggleSidebar}
+        />
       </div>
 
       {/* 第二行：六个 workflow 状态筛选 */}

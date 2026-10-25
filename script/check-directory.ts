@@ -8,6 +8,7 @@ const OWNED_NAME = new Set([
   "api",
   "app-dialog",
   "application",
+  "archive",
   "artwork",
   "assignment",
   "assignment-invitation",
