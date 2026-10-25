@@ -2,7 +2,7 @@
   "name": "poprako-web",
   "private": true,
   "version": "1.0.0",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/poprako-dev/poprako-web.git"

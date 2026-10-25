@@ -6,8 +6,11 @@
 
 ## 项目许可证
 
-`LICENSE`、`package.json` 和 README 当前均为 MIT。本次不改变项目自有代码的
-许可证，也不把第三方字体或依赖重新许可为 MIT 或 AGPLv3。
+2026-10-26 按维护者明确指示，项目自有代码的许可证改为 GNU Affero General
+Public License v3.0 only，SPDX 标识为 `AGPL-3.0-only`。`LICENSE`、`package.json`、
+README 和静态附带声明使用同一标识；项目版权归 PopRaKo contributors。
+正文采用 [SPDX 官方许可证文本](https://github.com/spdx/license-list-data/blob/main/text/AGPL-3.0-only.txt)。
+第三方字体、依赖和内嵌原生代码继续按下列各自许可分发。
 
 ## 思源黑体
 
@@ -52,7 +55,7 @@ AGPL/GPL 单一许可的包；这不等于声称所有包内嵌代码都已独�
 每次构建生成 `RUNTIME-LICENSES.txt`，覆盖全部生产依赖及 Worker 使用的包，
 保留许可证、NOTICE 和 AUTHORS。没有全文或出现未经核查的许可标识时，构建失败。
 Vite 同时生成 `THIRD-PARTY-LICENSES.md`，保留实际打包模块的许可，覆盖 Storybook
-预览中出现的额外依赖。项目自己的 MIT 全文输出为 `LICENSE.txt`。
+预览中出现的额外依赖。项目自己的 AGPL-3.0 全文输出为 `LICENSE.txt`。
 静态发布归档包含整个 `dist/`，因此这些声明与字体随站点一起发布。
 
 构建内置许可收集不涵盖字体和作为二进制资产复制的 WASM，不能单独作为完整清单；

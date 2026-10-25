@@ -14,6 +14,7 @@ Fixed、Security 和 Removed 分类。
 
 ### Changed
 
+- 项目自有代码采用 GNU Affero General Public License v3.0 only（`AGPL-3.0-only`）。
 - 使用 React、TanStack Router、TypeScript 和 Vite，统一 Node.js 26 与 pnpm 工具链。
 - 功能和修复通过 pull request 合入受保护的 main，并经 production 环境部署。
 - 函数行数检查纳入本地完整检查与 CI；历史可访问性基线提供显式收缩入口。

@@ -107,7 +107,9 @@ Vite 构建使用的 `VITE_API_BASE_URL`，不需要也不应提交 `.env.produc
 
 ## License
 
-[MIT](LICENSE)
+Copyright (c) 2026 PopRaKo contributors.
+
+[GNU Affero General Public License v3.0 only（AGPL-3.0-only）](LICENSE)
 
 上述许可适用于项目自有代码；第三方字体和依赖保留各自许可。思源黑体按 OFL 1.1
 分发，JSZip 选择其 MIT 许可选项。
