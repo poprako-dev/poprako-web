@@ -38,7 +38,7 @@ Node.js 26 是受支持的运行时，pnpm 12.11.2 是唯一包管理工具。`A
 - 顶层函数和组件使用函数声明。
 - 所有自有函数、方法和回调最多 50 个物理行，覆盖测试、Storybook、fixture 和工具脚本。计数从签名至结尾，包含注释、空行和嵌套函数；嵌套函数也独立检查。
 - PascalCase 且包含 JSX 的 TSX/JSX 组件函数，自身所有 return 的物理行范围合计最多 150 行；扣除这些行后最多 50 行。箭头组件的隐式返回也计入渲染部分，嵌套回调的 return 不独立从组件逻辑中扣除。
-- 使用 `pnpm run lint:function-lines` 运行只读行数检测，超限返回非零退出码。当前作为独立存量审查任务，尚未接入必需 CI。按职责提取独立 hook、函数或组件；禁止压缩代码规避限制。
+- 使用 `pnpm run lint:function-lines` 运行只读行数检测，超限返回非零退出码；`pnpm run check` 与 CI 的 static suite 均包含此检查。按职责提取独立 hook、函数或组件；禁止压缩代码规避限制。
 - 组件和 story 的 `.tsx` 文件使用 PascalCase，`.ts` 模块使用 kebab-case。
 - 测试、story 和局部 fixture 就近放置；仅跨模块共享的测试资源放入 `src/test-resource/`。
 - 保留 Zustand 和 Storybook。界面仅支持浅色，禁止添加深色、跟随系统或主题选择 UI。

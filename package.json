@@ -108,7 +108,7 @@
     "storybook": "pnpm run prepare:dependencies:check && storybook dev -p 6006",
     "build-storybook": "pnpm run prepare:dependencies:check && storybook build --disable-telemetry",
     "test:storybook-start": "node script/test-storybook-start.ts",
-    "check": "pnpm run format:check && pnpm run typecheck && pnpm run lint && pnpm run project:check && pnpm run generate:check && pnpm run test",
+    "check": "pnpm run format:check && pnpm run typecheck && pnpm run lint && pnpm run lint:function-lines && pnpm run project:check && pnpm run generate:check && pnpm run test",
     "audit": "pnpm audit --audit-level high",
     "test:watch": "vitest --config vitest.unit.config.ts"
   }
