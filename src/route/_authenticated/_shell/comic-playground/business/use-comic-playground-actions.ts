@@ -1,3 +1,4 @@
+import type { ComicListMode } from "./comic-list/comic-list-mode";
 import { useCallback } from "react";
 import { createComic, listComics } from "@/route/_authenticated/business/comic/comic-request";
 import { updateWorkset } from "@/route/_authenticated/_shell/comic-playground/business/workset/workset-request";
@@ -11,7 +12,7 @@ import { useToastStore } from "@/shared/component/notification-toast/toast-store
 type LoadArgs = {
   offset: number;
   limit: number;
-  mode: "translator" | "reviewer";
+  mode: ComicListMode;
   client: ApiClient;
   worksetId: string | null;
   title: string;
@@ -23,7 +24,7 @@ interface ComicPlaygroundActionSet {
   handleLoadComics: (
     offset: number,
     limit: number,
-    mode: "translator" | "reviewer",
+    mode: ComicListMode,
     signal?: AbortSignal,
   ) => Promise<Result<ComicInfo[]>>;
   handleUpdateWorkset: (
@@ -42,12 +43,15 @@ async function loadComicPage(args: LoadArgs): Promise<Result<ComicInfo[]>> {
     args.client,
     {
       worksetId: args.worksetId,
+      status: args.mode === "archive" ? "archived" : "active",
       withs:
-        args.mode === "reviewer"
-          ? ["pinned_chapter", "pinned_chapter_assignment"]
-          : ["pinned_chapter"],
+        args.mode === "archive"
+          ? []
+          : args.mode === "reviewer"
+            ? ["pinned_chapter", "pinned_chapter_assignment"]
+            : ["pinned_chapter"],
       fuzzyTitle: args.title || undefined,
-      stages: args.stages,
+      stages: args.mode === "archive" ? undefined : args.stages,
       offset: args.offset,
       limit: args.limit,
     },
@@ -109,7 +113,7 @@ export function useComicPlaygroundActions(args: {
   } = args;
   const showToast = useToastStore((state) => state.showToast);
   const handleLoadComics = useCallback(
-    (offset: number, limit: number, mode: "translator" | "reviewer", signal?: AbortSignal) =>
+    (offset: number, limit: number, mode: ComicListMode, signal?: AbortSignal) =>
       loadComicPage({
         offset,
         limit,

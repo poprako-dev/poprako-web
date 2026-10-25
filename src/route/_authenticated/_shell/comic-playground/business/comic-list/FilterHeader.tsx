@@ -1,7 +1,8 @@
 import { type JSX, useEffect, useState } from "react";
-import { CirclePlus, Layers, Search } from "lucide-react";
-import { IconInputRow } from "@/shared/component/IconInputRow";
 import clsx from "clsx";
+import { Search } from "lucide-react";
+import { IconInputRow } from "@/shared/component/IconInputRow";
+import { ComicListActions } from "./ComicListActions";
 import { HoverSelect } from "@/shared/component/hover-select/HoverSelect";
 import type { Option } from "@/shared/component/hover-select/hover-select-type";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
@@ -11,6 +12,7 @@ import type {
 } from "@/route/_authenticated/_shell/business/comic-list/comic-list";
 
 type Props = {
+  progressDisabled?: boolean;
   activeFuzzyTitle?: string | undefined;
   // 只有用户按下 enter 后才触发
   onChangeFuzzyTitle: (title: string) => void;
@@ -30,6 +32,7 @@ type Props = {
 
   // 通知父组件显示创建漫画的 modal
   onCreateComic?: (() => void) | undefined;
+  onExportArchives?: (() => void) | undefined;
   // 切换侧边栏展开/收起
   onToggleSidebar?: (() => void) | undefined;
 };
@@ -54,6 +57,7 @@ function makeBinaryOptions(prefix: string): Option[] {
 // 受控实际上为受控组件，但是负责显示和传递修改过滤条件的 UI，具体的过滤条件 state 由父组件维护
 // 该组件不负责筛选 workset，workset 筛选应该由 workset filter sidebar 组件负责
 export function FilterHeader({
+  progressDisabled = false,
   activeFuzzyTitle,
   onChangeFuzzyTitle,
   activeUploadStatus,
@@ -69,6 +73,7 @@ export function FilterHeader({
   onChangeReviewStatus,
   onChangePublishStatus,
   onCreateComic,
+  onExportArchives,
   onToggleSidebar,
 }: Props): JSX.Element {
   const [inputValue, setInputValue] = useState(activeFuzzyTitle ?? "");
@@ -99,43 +104,23 @@ export function FilterHeader({
           />
         </div>
 
-        {onCreateComic && (
-          <button
-            type="button"
-            onClick={onCreateComic}
-            title="创建漫画"
-            className={clsx(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
-              "border border-line-slate-200 bg-surface-white text-text-muted-cool",
-              "hover:border-line-slate-300 hover:shadow-sm hover:bg-surface-gray-100",
-              "focus-visible:outline-none",
-            )}
-          >
-            <CirclePlus className="h-5 w-5" strokeWidth={2} />
-          </button>
-        )}
-
-        {onToggleSidebar && (
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            title="切换工作区侧边栏"
-            className={clsx(
-              "flex h-8 w-8 shrink-0 items-center",
-              "justify-center rounded-lg transition-all",
-              "border border-line-slate-200 bg-surface-white",
-              "text-text-muted-cool",
-              "hover:border-line-slate-300",
-              "hover:shadow-sm hover:bg-surface-gray-100",
-            )}
-          >
-            <Layers className="h-4 w-4" strokeWidth={1.5} />
-          </button>
-        )}
+        <ComicListActions
+          onCreateComic={onCreateComic}
+          onExportArchives={onExportArchives}
+          onToggleSidebar={onToggleSidebar}
+        />
       </div>
 
       {/* 第二行：六个 workflow 状态筛选 */}
-      <div className="hidden lg:flex h-9 w-full flex-row items-center gap-2">
+      <fieldset
+        key={String(progressDisabled)}
+        disabled={progressDisabled}
+        aria-label="进度筛选"
+        className={clsx(
+          "grid min-w-0 w-full grid-cols-2 items-center gap-2 sm:grid-cols-3 lg:grid-cols-6",
+          progressDisabled && "pointer-events-none opacity-50",
+        )}
+      >
         <HoverSelect
           hintText="传·未筛选"
           options={makeBinaryOptions("传")}
@@ -196,7 +181,7 @@ export function FilterHeader({
           isActive={activePublishStatus !== "unset"}
           className="flex-1"
         />
-      </div>
+      </fieldset>
     </div>
   );
 }

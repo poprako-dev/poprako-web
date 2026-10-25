@@ -1,5 +1,6 @@
 import type { ComicDetailMode } from "@/route/_authenticated/business/navigation/workbench-navigation";
 import type { JSX } from "react";
+import { useArchiveExportDialog } from "./archive/UseArchiveExportDialog";
 import { ComicList } from "@/route/_authenticated/_shell/comic-playground/business/comic-list/ComicList";
 import { ComicCreatorModal } from "@/route/_authenticated/_shell/comic-playground/business/ComicCreatorModal";
 import { WorksetCreatorModal } from "@/route/_authenticated/_shell/comic-playground/business/WorksetCreatorModal";
@@ -44,16 +45,6 @@ export function ComicPlayground({
     showWorksetCreatorModal,
     setShowWorksetCreatorModal,
   } = useComicPlaygroundPageModel();
-  const {
-    worksets: worksetItems,
-    activeWorksetId,
-    setActiveWorksetId,
-    activeWorkset,
-    loadWorksets,
-    handleCreateWorkset,
-    handleDeleteWorkset,
-  } = worksets;
-
   const detail = useComicDetailHost({
     returnTo: "/comic-playground",
     showToast,
@@ -62,12 +53,13 @@ export function ComicPlayground({
     onNavigateToWorkbench,
   });
 
+  const archiveExport = useArchiveExportDialog(client, teamId, isAdmin);
   const actions = useComicPlaygroundActions({
     client,
-    activeWorksetId,
+    activeWorksetId: worksets.activeWorksetId,
     activeTitle: filters.activeFuzzyTitle,
     activeStages: filters.activeStages,
-    loadWorksets,
+    loadWorksets: worksets.loadWorksets,
     retryComicDetail: detail.retryComicDetail,
     setRefreshKey: setComicListRefreshKey,
   });
@@ -76,23 +68,24 @@ export function ComicPlayground({
     <>
       <ComicList
         refreshKey={comicListRefreshKey}
-        worksets={worksetItems}
-        activeWorksetId={activeWorksetId}
-        onChangeWorkset={setActiveWorksetId}
+        worksets={worksets.worksets}
+        activeWorksetId={worksets.activeWorksetId}
+        onChangeWorkset={worksets.setActiveWorksetId}
         onCreateWorkset={() => {
           setShowWorksetCreatorModal(true);
         }}
         onUpdateWorkset={isAdmin ? actions.handleUpdateWorkset : undefined}
-        onDeleteWorkset={isAdmin ? handleDeleteWorkset : undefined}
+        onDeleteWorkset={isAdmin ? worksets.handleDeleteWorkset : undefined}
         onLoadComics={actions.handleLoadComics}
         onComicClick={detail.openComicDetail}
         onCreateComic={
-          isAdmin && activeWorkset
+          isAdmin && worksets.activeWorkset
             ? () => {
                 setComicCreatorTeamId(teamId);
               }
             : undefined
         }
+        onExportArchives={archiveExport.open}
         onChangeFuzzyTitle={filters.setActiveFuzzyTitle}
         activeFuzzyTitle={filters.activeFuzzyTitle}
         activeUploadStatus={filters.activeUploadStatus}
@@ -108,6 +101,7 @@ export function ComicPlayground({
         onChangeReviewStatus={filters.setActiveReviewStatus}
         onChangePublishStatus={filters.setActivePublishStatus}
       />
+      {archiveExport.dialog}
       <AsyncComicDetail
         isOpen={detail.isDetailOpen}
         error={detail.detailError}
@@ -122,9 +116,9 @@ export function ComicPlayground({
         onChanged={actions.handleDetailChanged}
         onClose={detail.clearComicDetail}
       />
-      {comicCreatorTeamId === teamId && isAdmin && activeWorkset && (
+      {comicCreatorTeamId === teamId && isAdmin && worksets.activeWorkset && (
         <ComicCreatorModal
-          currWorkset={activeWorkset}
+          currWorkset={worksets.activeWorkset}
           activeMember={activeMember}
           onCreateComic={actions.handleCreateComic}
           onClose={() => {
@@ -135,7 +129,7 @@ export function ComicPlayground({
       {showWorksetCreatorModal && teamId && (
         <WorksetCreatorModal
           teamId={teamId}
-          onCreateWorkset={handleCreateWorkset}
+          onCreateWorkset={worksets.handleCreateWorkset}
           onClose={() => {
             setShowWorksetCreatorModal(false);
           }}

@@ -14,6 +14,7 @@ type Props = {
   footer?: ReactNode;
   onClose: () => void;
   onOpenAutoFocus?: ComponentProps<typeof Dialog.Content>["onOpenAutoFocus"];
+  onCloseAutoFocus?: ComponentProps<typeof Dialog.Content>["onCloseAutoFocus"];
   size?: Size;
   tone?: Tone;
   locked?: boolean;
@@ -31,6 +32,7 @@ export function AppDialog({
   footer,
   onClose,
   onOpenAutoFocus,
+  onCloseAutoFocus,
   size = "default",
   tone = "brand",
   locked = false,
@@ -61,6 +63,7 @@ export function AppDialog({
         />
         <Dialog.Content
           onOpenAutoFocus={onOpenAutoFocus}
+          onCloseAutoFocus={onCloseAutoFocus}
           data-app-dialog
           onKeyDown={(event) => {
             event.stopPropagation();

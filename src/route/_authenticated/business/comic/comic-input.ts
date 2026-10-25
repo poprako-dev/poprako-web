@@ -12,6 +12,7 @@ export type ListComicArgs = {
   withs?: ComicWith[] | undefined;
   fuzzyTitle?: string | undefined;
   stages?: number | undefined;
+  status?: "active" | "archived" | undefined;
 
   offset: number;
   limit: number;
