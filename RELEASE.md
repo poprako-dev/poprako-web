@@ -11,3 +11,21 @@ Release 产物必须由 GitHub Actions 构建，不能从维护者机器上传�
 包含静态站点压缩包、构建使用的 pnpm lockfile、构建来源信息和 SHA-256 校验
 文件。部署脚本的原子切换、幂等和失败回滚行为由仓库测试覆盖；生产发布仍须经过
 `production` environment 的保护规则。
+
+Release workflow 在构建前通过 GitHub Deployments API 检查本仓库完整 commit SHA 的
+`production` deployment，要求其状态历史中存在同环境的 `success`。部署和状态列表
+均读取全部分页；其他 SHA、其他环境、无成功记录、API 访问失败或响应异常都会阻止
+发布。检查只读取部署记录，令牌仅增加 `deployments: read` 权限。
+
+Release 的 `Run required checks` 步骤在实际生成 `dist/` 时注入
+`VITE_API_BASE_URL=https://api.poprako.com/api/v1`，与生产部署构建一致；之后的
+打包步骤直接使用该产物。`production` environment 的构建 secret 名为
+`DEPLOY_API_BASE_URL`，映射到 Vite 构建变量 `VITE_API_BASE_URL`；Release 使用上述
+固定公开地址，无需复制生产 secret 到 `release` environment。
+
+GitHub 可能清理旧的部署状态历史；若已无法查询到成功证据，发布检查仍会拒绝，
+维护者应先重新执行该 commit 的受保护生产部署。仓库外仍需配置 `production` 与
+`release` environment 的审批保护，以及防止未授权创建版本标签的 ruleset。
+
+API 契约依据：[List deployments](https://docs.github.com/en/rest/deployments/deployments#list-deployments)
+和 [List deployment statuses](https://docs.github.com/en/rest/deployments/statuses#list-deployment-statuses)。

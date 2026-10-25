@@ -67,7 +67,7 @@ sh script/ci-check.sh
 Storybook 通过本地 CLI 启动，使用 pnpm 解析依赖。
 `pnpm run test:storybook-start` 可检查开发服务启动。
 
-生产构建由 GitHub Actions `production` environment 的 `API_BASE_URL` secret
+生产构建由 GitHub Actions `production` environment 的 `DEPLOY_API_BASE_URL` secret
 注入 API 基址；其值必须是 `https://api.poprako.com/api/v1`。这个值会映射为仅供
 Vite 构建使用的 `VITE_API_BASE_URL`，不需要也不应提交 `.env.production`。
 

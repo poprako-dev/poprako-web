@@ -21,7 +21,7 @@ Nginx 以独立容器运行，是唯一公开 80/443 的入口。它和后端容
 `/opt/poprako-web/nginx.conf`。
 
 两个域名解析到同一台生产服务器。主站继续反代 `/api/*`，以 443 暴露后端；部署 job
-从 `production` environment 的 `API_BASE_URL` secret 注入构建，其值必须为
+从 `production` environment 的 `DEPLOY_API_BASE_URL` secret 注入构建，其值必须为
 `https://api.poprako.com/api/v1`。后端 API 通过 CORS 只允许
 `https://poprako.com`。`api.poprako.com` 的 Cloudflare proxy 状态由 DNS 配置控制，
 与 CORS 的实现无关。
@@ -71,7 +71,7 @@ DEPLOY_ROOT
 DEPLOY_HEALTHCHECK_URL
 DEPLOY_SSH_PRIVATE_KEY
 DEPLOY_KNOWN_HOSTS
-API_BASE_URL
+DEPLOY_API_BASE_URL
 ```
 
 这些值只存在于 GitHub 配置中，不提交 `.env` 或示例凭据文件。当前生产契约要求：
@@ -80,7 +80,7 @@ API_BASE_URL
 DEPLOY_USER=deploy
 DEPLOY_ROOT=/var/www/poprako-web
 DEPLOY_HEALTHCHECK_URL=https://poprako.com/
-API_BASE_URL=https://api.poprako.com/api/v1
+DEPLOY_API_BASE_URL=https://api.poprako.com/api/v1
 ```
 
 `DEPLOY_KNOWN_HOSTS` 必须使用预先核验的主机公钥记录；workflow 不得通过
