@@ -68,7 +68,7 @@ function chapter(id: string): object {
     creator_id: "reader",
     index: 0,
     subtitle: id,
-    page_count: 1,
+    page_source_count: 1,
     total_unit_count: 0,
     translated_unit_count: 0,
     proofread_unit_count: 0,

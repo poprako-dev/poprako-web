@@ -67,7 +67,7 @@ async function importChapterData(request: ImportRequest): Promise<void> {
   await Promise.all([request.reloadCurrentPages(), request.reloadLoadedChapters()]);
   request.onWorkflowRecordsChanged();
   showToast(
-    `导入成功：${String(result.data.importedPageCount)} 页，` +
+    `导入成功：${String(result.data.importedPageSourceCount)} 页，` +
       `${String(result.data.importedUnitCount)} 单元`,
     "success",
   );

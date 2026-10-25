@@ -37,11 +37,17 @@ function fixture(): {
 
 test("saves stable identities and baseline context without advancing review", async () => {
   const { request, source, document } = fixture();
-  request.mockImplementation(() => Promise.resolve(Response.json({ code: 0, data: document })));
-  const baseline = await source.load("page", new AbortController().signal);
   const issues = [
     { id: "stable", pageArtworkId: "page", index: 0, variant: "字体", rect: null, note: "" },
   ];
+  request.mockResolvedValueOnce(Response.json({ code: 0, data: { ...document, issues } }));
+  request.mockResolvedValueOnce(
+    Response.json({
+      code: 0,
+      data: { page: { ...document, issues }, created_issue_ids: [] },
+    }),
+  );
+  const baseline = await source.load("page", new AbortController().signal);
   await source.save("page", { baseline, issues }, "batch");
   expect(request.mock.calls[1]?.[0]).toBe("/api/v1/page-artworks/page/issues/save?save_id=batch");
   expect(parseRequestBody(request.mock.calls[1]?.[1]?.body)).toEqual({

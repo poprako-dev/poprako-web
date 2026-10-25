@@ -3,7 +3,7 @@ import type { Result } from "@/shared/utility/result";
 
 export type UnitApiInfo = {
   id: string;
-  pageId: string;
+  pageSourceId: string;
   xCoord: number;
   yCoord: number;
   isBubble: boolean;
@@ -68,7 +68,7 @@ export function listPageUnits(
   pageId: string,
   options: { signal?: AbortSignal | undefined; timeoutMs?: number | undefined } = {},
 ): Promise<Result<ListPageUnitsResponse>> {
-  return client.get<ListPageUnitsResponse>(`/pages/${pageId}/units`, {
+  return client.get<ListPageUnitsResponse>(`/page-sources/${pageId}/units`, {
     timeoutMs: options.timeoutMs,
     signal: options.signal,
   });
@@ -81,7 +81,7 @@ export function savePageUnits(
   saveId: string,
   options: { signal?: AbortSignal | undefined; timeoutMs?: number | undefined } = {},
 ): Promise<Result<SavePageUnitsResponse>> {
-  return client.post<SavePageUnitsResponse>(`/pages/${pageId}/units/save`, edits, {
+  return client.post<SavePageUnitsResponse>(`/page-sources/${pageId}/units/save`, edits, {
     query: { saveId },
     timeoutMs: options.timeoutMs,
     signal: options.signal,

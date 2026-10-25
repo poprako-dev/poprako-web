@@ -31,7 +31,7 @@ function makePinnedChapter(props?: Partial<ChapterInfo>): ChapterInfo {
     index: 27,
     subtitle: "第27话",
     isPinned: true,
-    pageCount: 22,
+    pageSourceCount: 22,
     totalUnitCount: 140,
     translatedUnitCount: 100,
     proofreadUnitCount: 80,

@@ -81,9 +81,11 @@ async function verifyChapterAndPageListPaths(fetchMock: FetchMock): Promise<void
     "/api/v1/comics/comic_1/chapters?incl=creator&offset=3&limit=40",
   );
   await listPages(createTestApi(), { chapterId: "chapter_1", offset: 4, limit: 50 });
-  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/pages?offset=4&limit=50");
+  expect(lastFetchCall(fetchMock).url).toBe(
+    "/api/v1/chapters/chapter_1/page-sources?offset=4&limit=50",
+  );
   await listUnits(createTestApi(), "page_1");
-  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/units");
+  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/page-sources/page_1/units");
 }
 
 async function verifyRoleBearingEndpoints(): Promise<void> {
@@ -204,9 +206,8 @@ async function verifyChapterPageAllocation(fetchMock: FetchMock): Promise<void> 
       },
     ],
   });
-  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/pages/alloc");
+  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/page-sources/alloc");
   expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
-    chapter_id: "chapter_1",
     pages: [
       {
         raw_ident: "原稿 01.PNG",
@@ -221,7 +222,7 @@ async function verifyChapterPageAllocation(fetchMock: FetchMock): Promise<void> 
 async function verifyExistingPageUpload(fetchMock: FetchMock): Promise<void> {
   fetchMock.mockResolvedValueOnce(
     okJson({
-      page_id: "page_1",
+      page_source_id: "page_1",
       index: 0,
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       ext: "png",
@@ -239,7 +240,7 @@ async function verifyExistingPageUpload(fetchMock: FetchMock): Promise<void> {
     newByteLen: 3,
     extension: "png",
   });
-  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/image/alloc");
+  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/page-sources/page_1/image/alloc");
   expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
     raw_ident: "替换稿.png",
     image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -247,10 +248,10 @@ async function verifyExistingPageUpload(fetchMock: FetchMock): Promise<void> {
     ext: "png",
   });
   await updatePage(createTestApi(), "page_1", { isUploaded: true, imageVersion: 13 });
-  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/image/mark-uploaded");
+  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/page-sources/page_1/image/mark-uploaded");
   expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ image_version: 13 });
   await deleteChapterPages(createTestApi(), "chapter_1");
-  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/pages");
+  expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/page-sources");
 }
 
 describe("identity and endpoint contract", () => {
@@ -279,7 +280,7 @@ describe("identity and endpoint contract", () => {
           image_version: 13,
           headers: { "content-type": "image/png" },
         },
-        page_id: "page_1",
+        page_source_id: "page_1",
         pages: [],
       }),
     );

@@ -61,7 +61,7 @@ const WORKFLOW_EVENT_CASES: [ChapterWorkflowRecordEvent, string][] = [
       kind: "translation_imported",
       data: {
         format: "poprako",
-        importedPageCount: 32,
+        importedPageSourceCount: 32,
         importedUnitCount: 120,
       },
     },
@@ -144,7 +144,7 @@ function registerImportVariableFormatting(): void {
       kind: "translation_imported",
       data: {
         format: "poprako",
-        importedPageCount: 32,
+        importedPageSourceCount: 32,
         importedUnitCount: 120,
       },
     });

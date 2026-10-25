@@ -185,7 +185,12 @@ function pagesResponse(scenario: Scenario, chapterId: string): Response {
   const pages =
     scenario === "empty-page"
       ? []
-      : makePages(chapterId, 25).map((page) => ({ ...page, ext: "png", imageHash: null }));
+      : makePages(chapterId, 25).map((page) => ({
+          ...page,
+          imageUploaded: page.isUploaded,
+          ext: "png",
+          imageHash: null,
+        }));
   return ok(pages);
 }
 
@@ -223,7 +228,7 @@ function readResponse(
   const chapterId = path.split("/")[4] ?? "chapter-42";
   if (path.endsWith("/issues")) return issueResponse(scenario);
   if (path.endsWith("/page-artworks")) return artworkResponse(scenario, chapterId);
-  if (path.endsWith("/pages")) return pagesResponse(scenario, chapterId);
+  if (path.endsWith("/page-sources")) return pagesResponse(scenario, chapterId);
   if (path.endsWith("/workflow-records"))
     return workflowRecordsResponse(scenario, chapterId, offset, limit);
   if (path.includes("/users/"))

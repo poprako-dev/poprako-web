@@ -58,7 +58,7 @@ export function ComicTranslationCard({ comicInfo, chapter, onClick }: Props): Re
   const proofread = displayChapter?.proofreadUnitCount ?? 0;
   const translationPct = total > 0 ? Math.floor((translated / total) * 100) : 0;
   const proofreadPct = total > 0 ? Math.floor((proofread / total) * 100) : 0;
-  const pageCount = displayChapter?.pageCount ?? 0;
+  const pageCount = displayChapter?.pageSourceCount ?? 0;
 
   return (
     <div

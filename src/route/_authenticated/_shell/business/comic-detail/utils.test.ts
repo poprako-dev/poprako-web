@@ -10,7 +10,7 @@ function chapter(stages: number): ChapterInfo {
     index: 0,
     subtitle: "",
     isPinned: false,
-    pageCount: 0,
+    pageSourceCount: 0,
     totalUnitCount: 0,
     translatedUnitCount: 0,
     proofreadUnitCount: 0,

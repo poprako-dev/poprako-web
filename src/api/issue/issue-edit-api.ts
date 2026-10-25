@@ -3,6 +3,7 @@ import type { ApiClient } from "@/api/client";
 import type {
   PageIssuesResponse,
   SavePageIssuesRequest,
+  SavePageIssuesResponse,
   IssueVariantsResponse,
   RenameIssueVariantRequest,
   RenameIssueVariantResponse,
@@ -21,8 +22,8 @@ export function savePageIssues(
   pageId: string,
   input: SavePageIssuesRequest,
   saveId: string,
-): Promise<Result<PageIssuesResponse>> {
-  return client.post<PageIssuesResponse>(`/page-artworks/${pageId}/issues/save`, input, {
+): Promise<Result<SavePageIssuesResponse>> {
+  return client.post<SavePageIssuesResponse>(`/page-artworks/${pageId}/issues/save`, input, {
     query: { saveId },
   });
 }

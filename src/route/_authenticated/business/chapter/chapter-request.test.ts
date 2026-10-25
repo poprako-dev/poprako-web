@@ -47,7 +47,7 @@ async function expectStageRequestEnums(): Promise<string> {
 }
 
 async function expectImportRequestEnums(): Promise<string> {
-  const fetchMock = installFetch(okJson({ imported_page_count: 1, imported_unit_count: 2 }));
+  const fetchMock = installFetch(okJson({ imported_page_source_count: 1, imported_unit_count: 2 }));
   await importChapter(createTestApi("chapter-token"), {
     chapterId: "chapter_1",
     content: "{}",
@@ -124,7 +124,7 @@ describe("chapter API", () => {
         creator_id: "user_1",
         index: 2,
         subtitle: "雨夜",
-        page_count: 12,
+        page_source_count: 12,
         total_unit_count: 90,
         translated_unit_count: 60,
         proofread_unit_count: 30,
@@ -151,7 +151,7 @@ describe("chapter API", () => {
         index: 2,
         subtitle: "雨夜",
         isPinned: true,
-        pageCount: 12,
+        pageSourceCount: 12,
         totalUnitCount: 90,
         translatedUnitCount: 60,
         proofreadUnitCount: 30,
@@ -207,7 +207,7 @@ describe("chapter API", () => {
       Promise.resolve(
         Response.json({
           label_plus: "text",
-          raw_idents: [{ page_id: "page_1", raw_ident: "原稿 01.PNG" }],
+          raw_idents: [{ page_source_id: "page_1", raw_ident: "原稿 01.PNG" }],
           poprako: {
             comic_id: "comic_1",
             comic_title: "Comic",
@@ -229,7 +229,7 @@ describe("chapter API", () => {
         "?format=poprako%2Clabel_plus&with_raw_ident=true",
     );
     expect(result.success && result.data.rawIdents).toEqual([
-      { pageId: "page_1", rawIdent: "原稿 01.PNG" },
+      { pageSourceId: "page_1", rawIdent: "原稿 01.PNG" },
     ]);
   });
 });

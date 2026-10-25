@@ -23,7 +23,7 @@ export async function searchChapterUnits(
   if (!result.success) return result;
   return {
     success: true,
-    data: result.data.map((unit) => ({ pageId: unit.pageId, unit })),
+    data: result.data.map((unit) => ({ pageId: unit.pageSourceId, unit })),
   };
 }
 

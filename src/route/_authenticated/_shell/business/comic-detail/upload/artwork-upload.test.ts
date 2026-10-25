@@ -16,7 +16,7 @@ const chapter: ChapterInfo = {
   subtitle: "",
   isPinned: false,
   stages: 0,
-  pageCount: 1,
+  pageSourceCount: 1,
   totalUnitCount: 0,
   translatedUnitCount: 0,
   proofreadUnitCount: 0,

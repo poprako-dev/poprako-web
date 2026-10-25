@@ -11,6 +11,7 @@ import { toApiRequestError } from "@/route/business/request-error";
 import { ReviewChangedError, type ReviewDocument, type ReviewerEditing } from "./review-editing";
 import { createCategoryPresets } from "./category-presets";
 import { createReviewDraftStore } from "./review-draft-store";
+import { reviewSaveInput, reviewSaveResult } from "./review-save-receipt";
 
 export function reviewDocument(page: PageIssuesResponse): ReviewDocument {
   return {
@@ -37,23 +38,13 @@ export function createReviewHttpSource(
     presets: createCategoryPresets(accountId),
     categories: categorySource(client, chapterId),
     async save(pageId, draft, saveId) {
-      const result = await savePageIssues(
-        client,
-        pageId,
-        {
-          reviewKey: draft.baseline.reviewKey,
-          revision: draft.baseline.revision,
-          imageVersion: JSON.parse(draft.baseline.imageKey) as number | null,
-          issues: draft.issues.map(({ id, variant, rect, note }) => ({ id, variant, rect, note })),
-        },
-        saveId,
-      );
+      const result = await savePageIssues(client, pageId, reviewSaveInput(draft), saveId);
       if (!result.success) {
         if (result.httpStatus === 409)
           throw new ReviewChangedError(await load(pageId, new AbortController().signal));
         throw toApiRequestError(result);
       }
-      return reviewDocument(result.data);
+      return reviewSaveResult(draft, result.data);
     },
     async complete() {
       const result = await completeChapterStage(client, chapterId, {
