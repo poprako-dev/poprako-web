@@ -87,6 +87,9 @@ Vite 构建使用的 `VITE_API_BASE_URL`，不需要也不应提交 `.env.produc
 - [安全策略](SECURITY.md)
 - [支持渠道](SUPPORT.md)
 - [发布策略](RELEASE.md)
+- [1.0.0 仓库审计与清理进展](docs/release-1.0.0-repo-audit.md)
+- [维护与需求待办](docs/maintenance-follow-ups.md)
+- [依赖兼容补丁](docs/dependency-workarounds.md)
 - [项目与 Agent 规范](AGENTS.md)
 - [后端 OpenAPI 快照](docs/swagger.json)
 
