@@ -56,5 +56,5 @@ jobs:
         run: >-
           gh release create "$RELEASE_TAG"
           "$RELEASE_DIR"/*
-          --generate-notes
+          --notes-file "docs/release/${RELEASE_TAG#v}.md"
           --verify-tag
