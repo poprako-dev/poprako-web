@@ -1,121 +1,58 @@
-# poprako-web
+# PopRaKo Web
 
-PopRaKo 漫画翻译项目管理平台的 Web 客户端，使用 React、TypeScript、Vite 和
-Tailwind CSS 构建。项目目前处于活跃开发阶段。
+白杨子生态的 Web 客户端，让漫画翻译、校对、嵌字与监修在云上协作完成。
 
-客户端提供团队工作区、漫画与章节管理、任务分配、成员管理、系统邮件和漫画
-翻译器。生产构建是静态站点，通过 `https://api.poprako.com/api/v1` 访问
-[`poprako-server`](https://github.com/poprako-dev/poprako-server)。
+[在线使用](https://poprako.com) · [更新记录](CHANGELOG.md) · [反馈问题](SUPPORT.md) · [参与贡献](CONTRIBUTING.md)
 
-## 环境要求
+## 页面预览
 
-- Node.js ^26.12，至少 26.12.1，独立安装且不含 npm
-- pnpm 12.11.2，独立安装的唯一包管理器
+### 个人工作区
 
-Node.js 范围由 `.node-version` 和 `package.json` 统一为 `^26.12`；安装脚本从官方
-发布索引选择最新的 26 系列稳定版本，并拒绝低于 26.12.1 的已知不安全版本。
-Node.js 26 当前为 Current，目标为 LTS（官方计划于 2026-10-28 转入 LTS）。
-CI 与本地使用相同安装脚本与版本检查。
-可运行 `sh script/setup-js.sh /absolute/path/to/poprako-js` 安装隔离工具链，
-再按脚本输出将两个 bin 目录加入 PATH；无需 npm、npx 或 Corepack。
+![个人工作区：任务列表、公告与留言板](docs/images/readme/workspace.png)
 
-## 本地开发
+### 漫画广场
 
-```sh
-pnpm install --frozen-lockfile
-pnpm run prepare:dependencies
-pnpm run dev
-```
+![漫画广场：按进度筛选漫画并切换作品集](docs/images/readme/comic-playground.png)
 
-开发服务器把 `/api` 代理到 `http://localhost:8888`。如需连接其他 API，可复制
-环境变量模板并覆盖地址：
+### 翻校器
 
-```sh
-cp .env.example .env.development
-```
+整页预览（校对模式）：
 
-## 架构
+![翻校器：整页校对模式下的原稿与翻校单元](docs/images/readme/translator-proofread.png)
 
-页面使用 TanStack Router 文件路由，入口和全局 providers 位于 `src/application/`。
-`src/route/` 按路由组织页面与业务模块；`src/route/business/` 存放跨路由的业务逻辑，
-`src/shared/` 存放不依赖路由的通用组件、hooks 和工具。`src/route-tree.gen.ts` 是生成
-文件，应修改路由输入后运行 `pnpm run generate`，不要直接编辑它。
+翻校单元列表细观：
 
-模块依赖边界、测试和命名规则见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+![翻校器：聚焦单元的快捷符号与结构化注释](docs/images/readme/translator-unit-detail.png)
 
-## 常用命令
+### 监修器
 
-```sh
-pnpm run lint
-pnpm run typecheck
-pnpm run test:unit
-pnpm run test:integration
-pnpm run test:storybook
-pnpm run test:script
-pnpm run build
-pnpm run build-storybook
-pnpm run storybook
-pnpm run project:check
-pnpm run generate:check
-sh script/ci-check.sh
-```
+![监修器：成稿框选批注与修改说明](docs/images/readme/reviewer.png)
 
-`script/ci-check.sh` 是仓库和 CI 共用的权威检查入口；`justfile` 仅提供本地快捷
-命令，不是 CI/CD 接口。`pnpm run test:storybook` 会在 Chromium 中运行 Storybook
-交互与可访问性测试；`pnpm run generate:check` 只读检查生成路由文件是否最新。
+### 成员列表
 
-Storybook 通过本地 CLI 启动，使用 pnpm 解析依赖。
-`pnpm run test:storybook-start` 可检查开发服务启动。
+![成员列表：按角色筛选汉化组成员](docs/images/readme/members.png)
 
-生产构建由 GitHub Actions `production` environment 的 `DEPLOY_API_BASE_URL` secret
-注入 API 基址；其值必须是 `https://api.poprako.com/api/v1`。这个值会映射为仅供
-Vite 构建使用的 `VITE_API_BASE_URL`，不需要也不应提交 `.env.production`。
+### 实用工具
 
-## 分支与发布
+![实用工具：术语库查询](docs/images/readme/utilities.png)
 
-功能和修复通过 pull request 直接合入受保护的 `main`，禁止直接 push、强推和
-删除 `main`。`main` 的每次合入通过受保护的 GitHub Actions `production` 环境部署，
-以完整 commit SHA 标识不可变静态产物。版本标签和 GitHub Release 的规则见
-[`RELEASE.md`](RELEASE.md)。
+## 功能亮点
 
-生产部署拓扑、CI 契约和回滚方式见
-[`docs/frontend-deploy.md`](docs/frontend-deploy.md)。
-
-## 文档
-
-- [贡献指南](CONTRIBUTING.md)
-- [安全策略](SECURITY.md)
-- [支持渠道](SUPPORT.md)
-- [发布策略](RELEASE.md)
-- [1.0.0 仓库审计与清理进展](docs/release-1.0.0-repo-audit.md)
-- [维护与需求待办](docs/maintenance-follow-ups.md)
-- [依赖兼容补丁](docs/dependency-workarounds.md)
-- [项目与 Agent 规范](AGENTS.md)
-- [后端 OpenAPI 快照](docs/swagger.json)
+- **多组协作**：不同汉化组拥有独立空间，按成员分工管理权限与任务。
+- **连载管理**：按漫画、章节组织项目，记录各个汉化环节的进度、时间与耗时。
+- **在线翻校**：在浏览器中看图翻译、切换校对模式，配合术语库、快捷字符、特殊标记与结构化注释。
+- **嵌字交付**：PSD 压缩上云，集中上传和交付章节成稿。
+- **在线监修**：直接在成稿上框选批注，让修改意见对应到具体位置。
+- **漫画归档**：导出漫画 ZIP 归档，并在漫画广场浏览已归档作品。
 
 ## 致谢
 
-感谢电容、[Pkuism](https://github.com/pkuislm)、
-[星辰大海](https://github.com/SeaAndStars) 和秋叶声生，以及
-[萌翻](https://github.com/moeflow-com/moeflow) 与
-[LabelPlus](https://github.com/LabelPlus/LabelPlus) 等开源项目。
+感谢电容、[Pkuism](https://github.com/pkuislm)、[星辰大海](https://github.com/SeaAndStars)、秋叶声生，以及
+[萌翻](https://github.com/moeflow-com/moeflow)、[LabelPlus](https://github.com/LabelPlus/LabelPlus) 等开源项目。
+字体采用 Adobe [思源黑体](https://github.com/adobe-fonts/source-han-sans)。
 
-感谢 Adobe 及思源黑体项目贡献者提供的
-[思源黑体（Source Han Sans）](https://github.com/adobe-fonts/source-han-sans)。
-本项目使用其简体中文可变字体，字体按
-[SIL Open Font License 1.1](public/SourceHanSansSC-LICENSE.txt) 分发。
-
-## License
+## 许可证
 
 Copyright (c) 2026 PopRaKo contributors.
 
-[GNU Affero General Public License v3.0 only（AGPL-3.0-only）](LICENSE)
-
-上述许可适用于项目自有代码；第三方字体和依赖保留各自许可。思源黑体按 OFL 1.1
-分发，JSZip 选择其 MIT 许可选项。
-
-应用和 Storybook 构建会附带项目 `LICENSE.txt`、打包依赖的
-`THIRD-PARTY-LICENSES.md`、包含 Worker 依赖的 `RUNTIME-LICENSES.txt`，以及
-[字体许可](public/SourceHanSansSC-LICENSE.txt)和
-[附带声明](public/THIRD-PARTY-NOTICES.txt)。来源核对与限制见
-[第三方许可核查](docs/third-party-licenses.md)。
+[AGPL-3.0-only](LICENSE)。字体及第三方依赖许可见[第三方许可说明](docs/third-party-licenses.md)。

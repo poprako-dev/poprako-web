@@ -99,6 +99,7 @@
     "test:script": "vitest run --config vitest.script.config.ts",
     "test:inventory": "node script/check-test-inventory.ts",
     "component:audit": "node script/component-inventory.ts",
+    "readme:screenshots": "node script/capture-readme-screenshots.ts",
     "test:frontend": "pnpm run test:unit && pnpm run test:integration && pnpm run test:storybook",
     "test:translator-undo-browser": "vitest run --config vitest.script.config.ts script/translator-undo-browser.test.ts",
     "test": "pnpm run test:frontend && pnpm run test:script",
