@@ -78,12 +78,13 @@ function AnnouncementHeader({
     <div className={clsx("flex items-center justify-between", "mb-2 px-0.5")}>
       <div className="flex items-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full bg-surface-slate-300 shrink-0" />
-        <span className="text-sm font-semibold text-text-muted-cool tracking-tight">当前公告</span>
+        <h2 className="text-sm font-semibold text-text-muted-cool tracking-tight">当前公告</h2>
       </div>
       <div className="flex-1 mx-2 h-0.5 bg-surface-slate-200" />
       {isAdmin && (
         <button
           type="button"
+          aria-label="创建公告"
           onClick={() => {
             onCreate(true);
           }}

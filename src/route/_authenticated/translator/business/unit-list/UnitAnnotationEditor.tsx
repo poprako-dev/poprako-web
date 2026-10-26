@@ -35,7 +35,7 @@ export function UnitAnnotationEditor({
           <label key={field} className="flex items-start gap-2">
             <span
               id={`unit-note-${id}-${field}-label`}
-              className="shrink-0 text-xs font-semibold italic leading-5 text-text-muted-neutral/80"
+              className="shrink-0 text-xs font-semibold italic leading-5 text-ink-gray-700"
             >
               {label}
             </span>

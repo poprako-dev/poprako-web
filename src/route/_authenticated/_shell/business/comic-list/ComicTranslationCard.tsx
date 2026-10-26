@@ -41,7 +41,7 @@ function DataTag({ icon, value }: { icon: React.ReactNode; value: number }): Rea
     <div
       className={clsx(
         "flex flex-1 items-center justify-center gap-1 py-0.5",
-        "text-[11px] font-semibold text-ink-stone-500",
+        "text-[11px] font-semibold text-ink-stone-600",
       )}
     >
       <span className="text-text-muted-warm flex items-center justify-center">{icon}</span>
