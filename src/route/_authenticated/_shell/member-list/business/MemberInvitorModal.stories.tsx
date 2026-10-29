@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { within } from "storybook/test";
 import { MemberInvitorModal } from "@/route/_authenticated/_shell/member-list/business/MemberInvitorModal";
 import type {
   CreateInvitationArgs,
@@ -91,12 +92,23 @@ function fakeCode(): string {
   return `POP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
+// Invitation cards arrive after a simulated request; wait for them so the
+// accessibility audit runs against the loaded list instead of the loading state.
+async function waitForInvitationCards({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement;
+}): Promise<void> {
+  await within(canvasElement).findAllByTitle("复制邀请码");
+}
+
 // ── Stories ───────────────────────────────────────────────────────────────────
 
 /**
  * 默认场景：右侧已有若干待处理邀请，提交后生成邀请码并刷新列表。
  */
 export const Default: Story = {
+  play: waitForInvitationCards,
   render: () => {
     // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
@@ -225,6 +237,7 @@ export const LoadError: Story = {
  */
 export const SubmitError: Story = {
   name: "邀请提交失败",
+  play: waitForInvitationCards,
   render: () => {
     // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
@@ -267,6 +280,7 @@ export const SubmitError: Story = {
  */
 export const AllRoles: Story = {
   name: "所有角色全开",
+  play: waitForInvitationCards,
   render: () => {
     // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
@@ -319,6 +333,7 @@ export const AllRoles: Story = {
  */
 export const LongList: Story = {
   name: "待处理邀请列表较长",
+  play: waitForInvitationCards,
   render: () => {
     // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
