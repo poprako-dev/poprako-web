@@ -1,4 +1,4 @@
-import { type JSX, useEffect, useState } from "react";
+import { type JSX, useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
 import { Search, Loader2, Plus } from "lucide-react";
 import { AppDialog } from "@/shared/component/AppDialog";
@@ -190,6 +190,9 @@ export function MemberSelectorModal({
   const members = result?.success ? result.data : [];
   const loadError = result && !result.success ? result.error : null;
   const isFetching = !result;
+  const handleLoaded = useCallback((loadedQueryKey: string, nextResult: Result<MemberInfo[]>) => {
+    setLoaded({ queryKey: loadedQueryKey, result: nextResult });
+  }, []);
 
   useMemberSearch({
     chapterId,
@@ -198,9 +201,7 @@ export function MemberSelectorModal({
     queryKey,
     onLoadMembers,
     setIsLoading,
-    setLoaded: (loadedQueryKey, nextResult) => {
-      setLoaded({ queryKey: loadedQueryKey, result: nextResult });
-    },
+    setLoaded: handleLoaded,
     showToast,
   });
 
