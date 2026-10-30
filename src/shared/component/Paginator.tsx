@@ -68,7 +68,6 @@ export function Paginator(props: Props): ReactElement {
             "rounded-sm shadow-2xl",
             "overflow-hidden",
           )}
-          style={{ opacity: 0.85 }}
         >
           <button
             type="button"

@@ -1,8 +1,5 @@
 import { BookOpen, LayoutDashboard, Mail, Settings, Users, Wrench } from "lucide-react";
-import type {
-  NavConfig,
-  TeamConfig,
-} from "@/route/_authenticated/_shell/business/navigation/app-sidebar-type";
+import type { NavConfig } from "@/route/_authenticated/_shell/business/navigation/app-sidebar-type";
 
 export const mainNavConfigs: NavConfig[] = [
   {
@@ -44,28 +41,3 @@ export const footerNavConfig: NavConfig = {
   icon: Settings,
   path: "/settings",
 };
-
-// 本轮使用静态配置，后续升级为 store + API 加载
-export const teamConfigs: TeamConfig[] = [
-  {
-    id: "xk",
-    name: "星空汉化组",
-    short: "星",
-    desc: "专注二次元翻译",
-    avatarUrl: "",
-  },
-  {
-    id: "mh",
-    name: "迷幻汉化组",
-    short: "迷",
-    desc: "硬核动作游戏汉化",
-    avatarUrl: "",
-  },
-  {
-    id: "sy",
-    name: "深渊汉化组",
-    short: "深",
-    desc: "独立游戏爱好者",
-    avatarUrl: "",
-  },
-];

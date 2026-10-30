@@ -37,6 +37,7 @@ wait_checks() {
 
 check_source() {
     run_pnpm run format:check
+    run_pnpm run lint:function-lines
     run_pnpm run project:check
     run_pnpm run generate:check
     run_pnpm run test:unit

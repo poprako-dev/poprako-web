@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  deployments: read
 
 jobs:
   release:
@@ -27,7 +28,14 @@ jobs:
       - name: Set up independent Node.js and pnpm
         run: sh script/setup-js.sh "$RUNNER_TEMP/poprako-js"
 
+      - name: Verify successful production deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node script/verify-release-deployment.ts "$GITHUB_SHA"
+
       - name: Run required checks
+        env:
+          VITE_API_BASE_URL: https://api.poprako.com/api/v1
         run: sh script/ci-check.sh
 
       - name: Audit dependencies
@@ -48,5 +56,5 @@ jobs:
         run: >-
           gh release create "$RELEASE_TAG"
           "$RELEASE_DIR"/*
-          --generate-notes
+          --notes-file "docs/release/${RELEASE_TAG#v}.md"
           --verify-tag

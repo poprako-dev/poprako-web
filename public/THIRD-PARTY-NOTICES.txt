@@ -1,7 +1,9 @@
 Third-party notices for PopRaKo Web
 
-PopRaKo's MIT license applies to its own code. It does not replace the
-licenses of the following third-party components.
+Copyright (c) 2026 PopRaKo contributors.
+PopRaKo's own code is licensed under the GNU Affero General Public License
+version 3 only (SPDX: AGPL-3.0-only); see LICENSE.txt.
+Third-party components retain their own licenses, as listed below.
 
 Source Han Sans SC Variable 2.005
 Copyright 2014-2025 Adobe, with Reserved Font Name 'Source'.

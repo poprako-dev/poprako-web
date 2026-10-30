@@ -5,7 +5,10 @@ import {
   type AccessibilityViolation,
   compareContrastBaseline,
   contrastEntries,
+  pruneContrastBaseline,
+  parseContrastObservation,
   type ContrastEntry,
+  type ContrastObservation,
 } from "./contrast-baseline.ts";
 
 function violation(
@@ -162,6 +165,103 @@ test("removed baseline issues do not fail", () => {
     story: [{ target: '[".label"]', checks: "[]", count: 1 }],
   });
   assert.deepEqual(result, { known: 0, unexpected: [] });
+});
+
+test("pruning requires observations and preserves skipped or unobserved stories", () => {
+  const entries = contrastEntries([violation([".label"])]);
+  const baseline = { fixed: entries, skipped: entries };
+  assert.throws(() => pruneContrastBaseline(baseline, [], {}), /No completed/);
+  assert.deepEqual(
+    pruneContrastBaseline(
+      baseline,
+      [{ storyId: "fixed", violations: [], incompleteRules: [] }],
+      {},
+    ),
+    {
+      skipped: entries,
+    },
+  );
+  assert.deepEqual(baseline, { fixed: entries, skipped: entries });
+});
+
+test("pruning shrinks exact counts without adding design exceptions to history", () => {
+  const observed = violation([".label"]);
+  const entries = contrastEntries([observed, observed]);
+  const exception = violation([".approved"]);
+  const result = pruneContrastBaseline(
+    { story: entries },
+    [{ storyId: "story", violations: [observed, exception], incompleteRules: [] }],
+    { story: contrastEntries([exception]) },
+  );
+  assert.deepEqual(result, { story: contrastEntries([observed]) });
+});
+
+test("inconclusive color-contrast audits cannot retire historical allowances", () => {
+  const baseline = { story: contrastEntries([violation([".label"])]) };
+  assert.deepEqual(
+    pruneContrastBaseline(
+      baseline,
+      [
+        {
+          storyId: "story",
+          violations: [],
+          incompleteRules: ["color-contrast"],
+        },
+      ],
+      {},
+    ),
+    baseline,
+  );
+});
+
+test("pruning rejects new findings, changed fingerprints, overflow and duplicate audits", () => {
+  const observed = violation([".label"]);
+  const baseline = { story: contrastEntries([observed]) };
+  for (const violations of [
+    [violation([".new"])],
+    [violation([".label"], { fgColor: "#666666" })],
+    [observed, observed],
+    [violation([".label"], { id: "aria-label" })],
+  ]) {
+    assert.throws(() =>
+      pruneContrastBaseline(baseline, [{ storyId: "story", violations, incompleteRules: [] }], {}),
+    );
+  }
+  assert.throws(
+    () =>
+      pruneContrastBaseline(
+        baseline,
+        [
+          { storyId: "story", violations: [], incompleteRules: [] },
+          { storyId: "story", violations: [observed], incompleteRules: [] },
+        ],
+        {},
+      ),
+    /Duplicate/,
+  );
+});
+
+test("capture parsing requires explicit audit completeness before pruning", () => {
+  for (const value of [
+    null,
+    {},
+    { storyId: "story", violations: [] },
+    { storyId: "", violations: [], incompleteRules: [] },
+    { storyId: "story", violations: [], incompleteRules: null },
+    {
+      storyId: "story",
+      violations: [],
+      incompleteRules: [null],
+    },
+  ]) {
+    assert.throws(() => parseContrastObservation(JSON.stringify(value)), /Incomplete/);
+    assert.throws(
+      () => pruneContrastBaseline({}, [value as ContrastObservation], {}),
+      /Incomplete/,
+    );
+  }
+  const complete = { storyId: "story", violations: [], incompleteRules: [] };
+  assert.deepEqual(parseContrastObservation(JSON.stringify(complete)), complete);
 });
 
 function annotationViolation(

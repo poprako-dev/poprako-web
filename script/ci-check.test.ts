@@ -12,6 +12,7 @@ const staticChecks = [
   "run format:check",
   "run typecheck",
   "run lint",
+  "run lint:function-lines",
   "run project:check",
   "run generate:check",
   "run test:unit",
@@ -150,6 +151,13 @@ test("CI fails when translator undo browser checks fail", async () => {
   const result = await runSuite("browser", "run test:translator-undo-browser");
   assert.equal(result.success, false);
   assert.ok(!result.calls.includes("run test:storybook"));
+});
+
+test("CI rejects function line violations before running source tests", async () => {
+  const result = await runSuite("static", "run lint:function-lines");
+  assert.equal(result.success, false);
+  assert.ok(result.calls.includes("run lint:function-lines"));
+  assert.ok(!result.calls.includes("run test:unit"));
 });
 
 test("unknown CI suites fail before dependency installation", async () => {

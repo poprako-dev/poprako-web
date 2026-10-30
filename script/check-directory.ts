@@ -67,6 +67,7 @@ const OWNED_NAME = new Set([
   "preference",
   "progress",
   "registration",
+  "release",
   "remote",
   "request",
   "resource",
@@ -111,6 +112,8 @@ const PAGE_DIRECTORY = new Set([
   "src/route/_authenticated/_shell/settings",
   "src/route/_authenticated/_shell/utilities",
 ]);
+// README screenshots live beside the docs they describe instead of the app bundle.
+const README_SCREENSHOT_DIRECTORY = new Set(["docs/images", "docs/images/readme"]);
 const GENERATED_FIXTURE = new Set(["test-resource/generated", "src/test-resource/generated"]);
 const SOURCE_ROOT = new Set(["application", "api", "route", "shared", "test-resource"]);
 
@@ -124,6 +127,7 @@ export function inspectDirectory(path: string): Finding[] {
   }
   if (path.startsWith("src/route/") && ROUTE_SEGMENT.has(name)) return [];
   if (PAGE_DIRECTORY.has(path)) return [];
+  if (README_SCREENSHOT_DIRECTORY.has(path)) return [];
   const word =
     path.startsWith("src/route/") && /^\([a-z-]+\)$/u.test(name) ? name.slice(1, -1) : name;
   if (!OWNED_NAME.has(word)) {

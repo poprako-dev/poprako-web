@@ -49,7 +49,6 @@ await zip.pipeTo(zipWritable);
 
 ```sh
 pnpm run test:unit src/shared/utility/compress/core.test.ts
-node script/test-compress-interop.mjs
 pnpm run test:compress-browser
 pnpm run lint:function-lines
 pnpm run check
@@ -57,7 +56,6 @@ pnpm run check
 
 单元测试检查 ZST 魔数、256 MiB 窗口和帧校验标识，并覆盖往返、中文/空文件、分片输入、
 截断/损坏、非法路径、链接、重名、资源限制、输出背压和取消。
-互操作脚本使用系统 `zstd`、TAR 和 Python，验证双向解码、长中文路径和 ZIP64。
 浏览器测试使用生产 Vite bundle、真实 Worker 和 OPFS，验证 SHA-256、取消、主线程响应、
 输出失败和 Worker 回收。生成数据留在被 Git 忽略的 `test-resource/generated/`。
 

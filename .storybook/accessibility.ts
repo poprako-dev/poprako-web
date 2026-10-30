@@ -66,6 +66,19 @@ function verifyAccessibilityReport(context: StoryContext): void {
   ) {
     throw new Error(`Accessibility audit produced no result for ${context.id}`);
   }
+  if (import.meta.env["VITE_CAPTURE_CONTRAST"] === "1") {
+    if (!("incomplete" in result) || !Array.isArray(result.incomplete)) {
+      throw new Error(`Accessibility audit has no incomplete results for ${context.id}`);
+    }
+    console.warn(
+      "CONTRAST_OBSERVATION " +
+        JSON.stringify({
+          storyId: context.id,
+          violations: result.violations,
+          incompleteRules: result.incomplete.map((rule: { id: string }) => rule.id),
+        }),
+    );
+  }
   const comparison = compareContrastBaseline(
     context.id,
     result.violations as AccessibilityViolation[],

@@ -48,3 +48,10 @@ test("concrete page names keep their URLs without permitting plural utility dire
     assert.ok(inspectDirectory(`src/route/_authenticated/_shell/business/${page}`).length > 0);
   }
 });
+
+test("README screenshots use their registered docs asset path", () => {
+  for (const path of ["docs/images", "docs/images/readme"]) {
+    assert.deepEqual(inspectDirectory(path), [], path);
+  }
+  assert.ok(inspectDirectory("docs/readme").length > 0);
+});
