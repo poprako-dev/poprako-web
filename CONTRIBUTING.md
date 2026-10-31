@@ -44,10 +44,8 @@ ESLint 检查全部 TypeScript/TSX 文件。完整检查还会分别检查应用
 TypeScript 程序，并运行结构依赖、生成路由、单元、集成、Storybook 和脚本检查。
 本地运行 `pnpm run lint` 可单独运行 ESLint；完整检查与 CI 使用同一规则。
 
-历史对比度基线使用 `pnpm run a11y:prune-baseline` 显式收缩。该任务运行完整
-Storybook 浏览器测试，只保留已观察问题对应的历史额度；未执行或检测结果无法确定的
-story 保留原记录，发现新问题或测试失败时不写回。用户批准的设计例外单独维护，
-不随历史基线收缩修改。
+对比度基线与 Storybook 自动对比度检测已停用，不再作为必需检查或 CI 的一部分。
+`pnpm run test:storybook` 仍运行原有交互测试，但不会因对比度检测失败。
 
 Node.js 26 是受支持的运行时，pnpm 12.11.2 是唯一包管理工具。`AGENTS.md` 与
 `.agents/skills/` 中仍在使用的项目规则对所有变更生效。
