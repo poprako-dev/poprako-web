@@ -20,7 +20,7 @@
 | 常规检查       | 函数行数检查接入 `pnpm run check` 和 CI static suite；显式 `pnpm run a11y:prune-baseline` 只收缩已完整观察的历史记录                      |
 | 发布契约       | 统一 `DEPLOY_API_BASE_URL` 文档；Release 构建使用生产 API 地址；自动核验完整 SHA 的成功生产部署历史，查询失败时阻止发布                   |
 
-剩余 557 条历史额度中，551 条属于 45 个存在对比度不确定结果的旧 story，按保守规则保留；另外 6 条仍匹配完整审计发现。额度数不等于当前实际问题数，不能直接清零。已删除的旧 ReadOnlyPageStatistics story 经源码导出与实际运行清单核对后清除。
+剩余 557 条历史额度中，551 条属于 45 个存在对比度不确定结果的旧 story，按保守规则保留；另外 6 条仍匹配完整审计发现。额度数不等于当前实际问题数，不能直接清零。已删除的旧 ReadOnlyPageStatistics story 经源码导出与实际运行清单核对后清除。2026-10-30 按维护者要求停用对比度检测（含 CI 接入），并删除基线与收缩脚本；上表中的 `a11y:prune-baseline` 和历史额度不再适用。
 
 远端 environment 审批、标签保护和生产 secret 的实际配置仍属于发布前核验；本轮只修改仓库契约，不代表已部署或已发布。
 
@@ -103,13 +103,9 @@
 
 [prepare-dependencies.ts](../script/prepare-dependencies.ts) 会直接修补 Storybook 和 Radix 的声明文件，并绑定版本、文件名和哈希。当前类型检查依赖它，不能直接删除。应记录对应上游问题、保留原因和移除条件。
 
-#### 历史可访问性豁免基线
+#### 历史可访问性豁免基线（已停用）
 
-[contrast-baseline.json](../.storybook/contrast-baseline.json) 保留了 129 个 story、981 条历史对比度豁免记录，约 360 KB。这是历史允许额度，不代表本次仍存在 981 个问题。
-
-[比较逻辑](../script/contrast-baseline.ts) 会拒绝新增问题，但不会清理已经失效的记录；[pnpm-workspace.yaml](../pnpm-workspace.yaml) 也仍以“迁移期间”为由固定检测器版本。应重新核对并收缩基线。
-
-另一个 [contrast-exceptions.json](../.storybook/contrast-exceptions.json) 明确记录了用户批准的设计例外，应分别对待。
+2026-10-30 按维护者要求停用对比度检测（含 CI 接入），并删除历史基线、设计例外和收缩脚本。审计时的实现见固定 commit 中的 [contrast-baseline.json](https://github.com/poprako-dev/poprako-web/blob/732e3918df17b1d8a5ac7b01753999ab6e1f5528/.storybook/contrast-baseline.json)、[比较逻辑](https://github.com/poprako-dev/poprako-web/blob/732e3918df17b1d8a5ac7b01753999ab6e1f5528/script/contrast-baseline.ts) 和 [contrast-exceptions.json](https://github.com/poprako-dev/poprako-web/blob/732e3918df17b1d8a5ac7b01753999ab6e1f5528/.storybook/contrast-exceptions.json)。
 
 #### 历史文本作者兜底
 
@@ -171,4 +167,4 @@
 2. 删除九个失效文件、未使用团队示例数据，并处理一次性实验入口和旧脚手架配置。
 3. 将零散待办转为明确 issue，归档需要保留的实验依据。
 4. 核验并精简依赖，补齐仍有效临时补丁的退出条件。
-5. 收缩历史可访问性基线，将函数行数检查纳入常规检查，再执行完整 CI 和发布前验证。
+5. 将函数行数检查纳入常规检查，再执行完整 CI 和发布前验证。

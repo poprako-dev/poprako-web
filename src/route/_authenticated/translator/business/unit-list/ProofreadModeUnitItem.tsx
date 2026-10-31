@@ -123,7 +123,7 @@ export function ProofreadModeUnitItem({
               className={clsx(
                 "cursor-default text-base font-normal leading-relaxed placeholder:text-text-muted-neutral/20",
                 hasProofreadText
-                  ? "text-ink-gray-600"
+                  ? "text-ink-gray-400"
                   : isFocused
                     ? "text-ink-gray-900"
                     : "text-ink-gray-700",

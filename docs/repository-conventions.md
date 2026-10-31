@@ -39,7 +39,7 @@ SUPPORT 和 CODE_OF_CONDUCT 服务于公开协作。RELEASE、AGENTS、CLAUDE �
 | `public/`     | 需要原样分发的静态资源、字体和第三方许可                            |
 | `script/`     | 可重复执行的检查、维护、生成及发布脚本；沿用前端现有单数名称        |
 | `linters/`    | 项目自有规范检测实现，规则与贡献指南保持一致                        |
-| `.storybook/` | Storybook 配置与可访问性校验记录，正式配置不依赖本机实验素材        |
+| `.storybook/` | Storybook 配置与预览参数，正式配置不依赖本机实验素材                |
 | `.github/`    | workflow、Issue 和 PR 模板；默认受理规则与根目录治理文档一致        |
 | `.agents/`    | 仓库专用 skill；根目录及子目录 `AGENTS.md` 保存适用范围内的执行约束 |
 | `deploy/`     | 可公开的部署配置；凭据和私有基础设施信息保留在受控环境              |

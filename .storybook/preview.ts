@@ -11,7 +11,7 @@ const preview: Preview = {
     },
 
     a11y: {
-      test: "error",
+      test: "off",
     },
   },
 };

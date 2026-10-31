@@ -1,6 +1,6 @@
 allowBuilds:
   msw: true
   esbuild: true
-# Keep accessibility audits reproducible against the reviewed contrast baseline.
+# Keep the Storybook accessibility panel on a reviewed axe-core version.
 overrides:
   axe-core: 4.13.0
