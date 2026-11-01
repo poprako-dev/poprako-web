@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [static, browser, build]
+        suite: [static, browser, build, contract]
 
     steps:
       - name: Check out repository

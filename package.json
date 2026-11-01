@@ -95,6 +95,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:storybook": "vitest run --config vitest.storybook.config.ts --project storybook",
     "project:check": "node script/check.ts && node script/check-test-inventory.ts",
+    "check:api-contract": "node script/check-api-contract.mjs",
     "test:script": "vitest run --config vitest.script.config.ts",
     "test:inventory": "node script/check-test-inventory.ts",
     "component:audit": "node script/component-inventory.ts",

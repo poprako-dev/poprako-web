@@ -18,7 +18,9 @@ const staticChecks = [
   "run test:unit",
   "run test:integration",
   "run test:script --exclude script/translator-undo-browser.test.ts",
+  "run check:api-contract",
 ];
+const contractChecks = ["run check:api-contract -- --remote"];
 const browserChecks = [
   "exec playwright install --with-deps chromium",
   "run test:translator-undo-browser",
@@ -107,6 +109,7 @@ for (const [suite, checks] of [
   ["static", staticChecks],
   ["browser", browserChecks],
   ["build", buildChecks],
+  ["contract", contractChecks],
 ] as const) {
   test(`CI ${suite} suite runs its correctness checks`, async () => {
     const result = await runSuite(suite);
