@@ -1,8 +1,9 @@
 import type { ApiClient } from "@/api/client";
 import type { Result } from "@/shared/utility/result";
+import type { UploadHeaders } from "@/api/upload-header";
 export type ArtworkAllocation = {
   artworkVersion: number;
-  slot: { putUrl: string; headers: Record<string, string> } | null;
+  slot: { putUrl: string; headers: UploadHeaders } | null;
 };
 export function allocArtwork(
   client: ApiClient,

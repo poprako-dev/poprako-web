@@ -39,7 +39,7 @@ function slot(pageId: string, imageVersion = 1): AllocatedPage {
     slot: {
       putUrl: `https://upload.example/${pageId}/${String(imageVersion)}`,
       imageVersion,
-      headers: {},
+      headers: [],
     },
   };
 }
@@ -264,7 +264,7 @@ async function pageUploadScenario4(): Promise<void> {
   expect(apiMocks.uploadToPresignedUrl).toHaveBeenCalledWith({
     url: "https://upload.example/page-pending/2",
     file: expect.any(File) as unknown,
-    headers: {},
+    headers: [],
     onProgress: expect.any(Function) as unknown,
     signal: expect.any(AbortSignal) as unknown,
   });

@@ -16,7 +16,7 @@ cd "$project_root"
 
 suite=${1:-all}
 case "$suite" in
-    all | static | browser | build) ;;
+    all | static | browser | build | contract) ;;
     *)
         echo "Unknown frontend check suite: $suite" >&2
         exit 1
@@ -43,6 +43,7 @@ check_source() {
     run_pnpm run test:unit
     run_pnpm run test:integration
     run_pnpm run test:script --exclude script/translator-undo-browser.test.ts
+    run_pnpm run check:api-contract
 }
 
 check_static() {
@@ -64,6 +65,10 @@ check_browser() {
     run_pnpm run test:bounded-browser
 }
 
+check_contract() {
+    run_pnpm run check:api-contract -- --remote
+}
+
 check_build() {
     # The static suite owns type checking; CI requires every suite to pass.
     run_pnpm exec vite build
@@ -75,6 +80,7 @@ case "$suite" in
     static) check_static ;;
     browser) check_browser ;;
     build) check_build ;;
+    contract) check_contract ;;
     all)
         check_static &
         static_pid=$!

@@ -1,5 +1,6 @@
 import { requestBlob, requestJson, requestText } from "@/api/http-transport";
 import { putPresigned } from "@/api/presigned-upload";
+import type { UploadHeaders } from "@/api/upload-header";
 import { toSnakeCase } from "@/shared/utility/case-convert";
 import type { Result } from "@/shared/utility/result";
 
@@ -22,9 +23,10 @@ export type ExternalRequestOptions = {
   timeoutMs?: number | undefined;
 };
 
-export type PresignedUploadOptions = ExternalRequestOptions & {
+export type PresignedUploadOptions = Omit<ExternalRequestOptions, "headers"> & {
   url: string;
   file: File;
+  headers?: HeadersInit | UploadHeaders | undefined;
   onProgress?: ((percent: number) => void) | undefined;
 };
 

@@ -42,7 +42,7 @@ function slot(pageId: string, imageVersion = 1): AllocatedPage {
     slot: {
       putUrl: `https://upload.example/${pageId}/${String(imageVersion)}`,
       imageVersion,
-      headers: {},
+      headers: [],
     },
   };
 }

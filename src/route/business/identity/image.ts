@@ -1,7 +1,8 @@
+import type { UploadHeaders } from "@/api/upload-header";
 export type ImageUploadSlot = {
   putUrl: string;
   imageVersion: number;
-  headers: Record<string, string>;
+  headers: UploadHeaders;
 };
 
 export type AllocImageArgs = {

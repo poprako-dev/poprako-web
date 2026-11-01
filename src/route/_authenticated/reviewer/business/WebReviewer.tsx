@@ -35,7 +35,7 @@ function mapReviewerPages(pages: PageArtwork[], chapterId: string): ReviewerProj
       id: page.id,
       index: page.index,
       imageUrl: page.imageUrl ?? null,
-      imageOptimizedUrl: page.imageOptimizedUrl ?? null,
+      imageOptimizedUrl: null,
       imageVersion: page.imageVersion ?? null,
     }));
 }

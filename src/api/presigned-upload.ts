@@ -1,9 +1,11 @@
+import type { UploadHeaders } from "@/api/upload-header";
+import { toHeadersInit } from "@/api/upload-header";
 import type { Result } from "@/shared/utility/result";
 
 type UploadOptions = {
   url: string;
   file: File;
-  headers?: HeadersInit | undefined;
+  headers?: HeadersInit | UploadHeaders | undefined;
   onProgress?: ((percent: number) => void) | undefined;
   signal?: AbortSignal | undefined;
   timeoutMs: number;
@@ -52,7 +54,7 @@ function configureUpload(
 ): void {
   request.open("PUT", options.url, true);
   request.timeout = options.timeoutMs;
-  for (const [name, value] of new Headers(options.headers)) {
+  for (const [name, value] of toHeadersInit(options.headers)) {
     if (name.toLowerCase() !== "content-length") request.setRequestHeader(name, value);
   }
   if (options.signal?.aborted) {

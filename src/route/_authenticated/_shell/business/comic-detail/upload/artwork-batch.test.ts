@@ -45,7 +45,7 @@ vi.mock("@/api/page-artwork/page-artwork-api", () => ({
         imageVersion: 1,
         imageHash: page.imageHash,
         ext: "webp",
-        slot: { putUrl: "https://upload.test/" + String(index), headers: {}, imageVersion: 1 },
+        slot: { putUrl: "https://upload.test/" + String(index), headers: [], imageVersion: 1 },
       })),
     }),
   confirmArtworkImage: requests.confirm,
@@ -76,7 +76,7 @@ function createOrderedArchiveBatch(): {
 } {
   requests.archiveAllocate.mockResolvedValue({
     success: true,
-    data: { artworkVersion: 1, slot: { putUrl: "https://upload.test/archive", headers: {} } },
+    data: { artworkVersion: 1, slot: { putUrl: "https://upload.test/archive", headers: [] } },
   });
   requests.archiveConfirm.mockResolvedValue({ success: true, data: undefined });
   const packing = deferred();

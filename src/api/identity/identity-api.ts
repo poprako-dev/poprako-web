@@ -1,6 +1,7 @@
 import type { ApiClient } from "@/api/client";
 import type { ApiAuthResult, ApiMember, ApiTeam, ApiUser } from "@/api/identity-contract";
 import type { Result } from "@/shared/utility/result";
+import type { UploadHeaders } from "@/api/upload-header";
 
 export type ListApiMembersOptions = {
   ownerId?: string | undefined;
@@ -15,7 +16,7 @@ export type ListApiMembersOptions = {
 export type ApiImageUploadSlot = {
   putUrl: string;
   imageVersion: number;
-  headers: Record<string, string>;
+  headers: UploadHeaders;
 };
 
 export function loginApi(

@@ -8,6 +8,7 @@ import { useToastStore } from "@/shared/component/notification-toast/toast-store
 import { useRefreshLoginState } from "@/route/business/session/use-refresh-session";
 import type { UserInfo } from "@/route/business/identity/user";
 import type { Result } from "@/shared/utility/result";
+import type { UploadHeaders } from "@/api/upload-header";
 
 const ACCEPTED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif", "bmp", "avif"]);
 type Operation = ReturnType<ReturnType<typeof useSessionOperation>>;
@@ -68,7 +69,7 @@ async function uploadFileToSlot(
   client: Client,
   file: File,
   operation: Operation,
-  slot: { putUrl: string; headers: Record<string, string>; imageVersion: number },
+  slot: { putUrl: string; headers: UploadHeaders; imageVersion: number },
   onProgress: (progress: number | null) => void,
 ): Promise<Result<void>> {
   const uploadResult = await client.putPresigned({
@@ -105,7 +106,7 @@ async function uploadAvatar(deps: UploadDependencies): Promise<void> {
 
 async function confirmAvatarUpload(
   deps: UploadDependencies,
-  slot: { putUrl: string; headers: Record<string, string>; imageVersion: number },
+  slot: { putUrl: string; headers: UploadHeaders; imageVersion: number },
 ): Promise<void> {
   const { client, userId, file, operation, showToast } = deps;
   const uploaded = await uploadFileToSlot(client, file, operation, slot, deps.onProgress);

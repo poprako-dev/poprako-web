@@ -1,5 +1,6 @@
 import type { ApiClient } from "@/api/client";
 import type { Result } from "@/shared/utility/result";
+import type { UploadHeaders } from "@/api/upload-header";
 
 export type PageResponse = {
   id: string;
@@ -48,7 +49,7 @@ export type AllocatedPageResponse = {
   slot: {
     putUrl: string;
     imageVersion: number;
-    headers: Record<string, string>;
+    headers: UploadHeaders;
   } | null;
 };
 
@@ -91,6 +92,7 @@ export function allocChapterPages(
   return client.post<{ pages: AllocatedPageResponse[] }>(
     `/chapters/${chapterId}/page-sources/alloc`,
     {
+      chapterId,
       pages,
     },
   );
@@ -122,7 +124,7 @@ export function uploadPageImage(
   options: {
     url: string;
     file: File;
-    headers: Record<string, string>;
+    headers: UploadHeaders;
     onProgress?: ((percent: number) => void) | undefined;
     signal?: AbortSignal | undefined;
   },

@@ -1,5 +1,6 @@
 import type { ApiClient } from "@/api/client";
 import type { Result } from "@/shared/utility/result";
+import type { UploadHeaders } from "@/api/upload-header";
 
 export type PageArtwork = {
   id: string;
@@ -7,7 +8,6 @@ export type PageArtwork = {
   index: number;
   rawIdent?: string | null | undefined;
   imageUrl?: string | null | undefined;
-  imageOptimizedUrl?: string | null | undefined;
   imageThumbnailUrl?: string | null | undefined;
   imageHash?: string | null | undefined;
   ext?: string | null | undefined;
@@ -29,7 +29,7 @@ export type ArtworkImageAllocation = {
   imageVersion: number;
   imageHash: string;
   ext: string;
-  slot: { putUrl: string; headers: Record<string, string>; imageVersion: number } | null;
+  slot: { putUrl: string; headers: UploadHeaders; imageVersion: number } | null;
 };
 export function listPageArtworks(
   client: ApiClient,

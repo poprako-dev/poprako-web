@@ -30,7 +30,7 @@ export function ArtworkCard({
   const [error, setError] = useState<string | null>(null);
   const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
-  const url = page.imageThumbnailUrl ?? page.imageOptimizedUrl ?? page.imageUrl;
+  const url = page.imageThumbnailUrl ?? page.imageUrl;
   const task = state.tasks[0];
   const message = error ?? state.error ?? task?.error;
   const active = state.running;
