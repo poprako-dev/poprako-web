@@ -208,6 +208,7 @@ async function verifyChapterPageAllocation(fetchMock: FetchMock): Promise<void> 
   });
   expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/page-sources/alloc");
   expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+    chapter_id: "chapter_1",
     pages: [
       {
         raw_ident: "原稿 01.PNG",

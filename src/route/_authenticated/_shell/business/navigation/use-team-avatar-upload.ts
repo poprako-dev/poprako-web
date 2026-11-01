@@ -8,6 +8,7 @@ import { hashPageFile } from "@/shared/utility/hash/image-hash";
 import { hasRole } from "@/route/business/identity/role";
 import { useTeamSelection } from "@/route/business/session/use-active-team";
 import type { TeamConfig } from "@/route/_authenticated/_shell/business/navigation/app-sidebar-type";
+import type { UploadHeaders } from "@/api/upload-header";
 
 type UploadOperation = ReturnType<ReturnType<typeof useSessionOperation>>;
 type UploadDependencies = {
@@ -109,7 +110,7 @@ async function uploadAvatar(deps: UploadDependencies): Promise<void> {
 
 async function uploadAndConfirm(
   deps: UploadDependencies,
-  slot: { putUrl: string; headers: Record<string, string>; imageVersion: number },
+  slot: { putUrl: string; headers: UploadHeaders; imageVersion: number },
 ): Promise<void> {
   const { client, teamId, file, operation, showToast } = deps;
   const uploaded = await client.putPresigned({

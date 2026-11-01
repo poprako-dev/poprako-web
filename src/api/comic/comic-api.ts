@@ -3,6 +3,7 @@ import type { ApiClient } from "@/api/client";
 import type { ChapterResponse } from "@/api/content-contract";
 import type { AssignmentResponse } from "@/api/content-contract";
 import type { Result } from "@/shared/utility/result";
+import type { UploadHeaders } from "@/api/upload-header";
 
 export type CreateComicRequest = {
   worksetId: string;
@@ -21,7 +22,7 @@ export type CoverUploadResponse = {
   slot: {
     putUrl: string;
     imageVersion: number;
-    headers: Record<string, string>;
+    headers: UploadHeaders;
   } | null;
 };
 export type ComicListResponse = {
@@ -86,8 +87,8 @@ export function deleteComic(client: ApiClient, id: string): Promise<Result<undef
 export function archiveComic(
   client: ApiClient,
   id: string,
-): Promise<Result<{ archivedComicId: string }>> {
-  return client.post<{ archivedComicId: string }>(`/comics/${id}/archive`, {});
+): Promise<Result<{ archivedId: string }>> {
+  return client.post<{ archivedId: string }>(`/comics/${id}/archive`, {});
 }
 export function allocComicCoverUpload(
   client: ApiClient,
