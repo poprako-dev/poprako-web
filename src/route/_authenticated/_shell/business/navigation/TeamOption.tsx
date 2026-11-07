@@ -227,7 +227,7 @@ export function TeamOption({
           type="button"
           onClick={handleToggleList}
           className={clsx(
-            "absolute left-14 right-2 h-full outline-none",
+            "absolute left-14 right-2 h-full outline-none overflow-hidden",
             "flex flex-col justify-center",
             "opacity-0 group-hover:opacity-100",
             "transition-opacity duration-100 delay-0",

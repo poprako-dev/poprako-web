@@ -61,7 +61,7 @@ export function NavItem({
 
       <span
         className={clsx(
-          "absolute left-14 z-10",
+          "absolute left-14 z-10 pointer-events-none",
           "text-sm font-medium tracking-wide whitespace-nowrap",
           "opacity-0 -translate-x-1",
           "transition-all duration-100 delay-0",
