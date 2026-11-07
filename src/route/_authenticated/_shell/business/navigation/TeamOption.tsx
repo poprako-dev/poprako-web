@@ -81,6 +81,7 @@ function TeamAvatar({
       title={canUpload ? "上传头像" : undefined}
       className={clsx(
         "relative z-10 w-11 h-11 rounded-md overflow-hidden shrink-0",
+        "border-2 border-brand-leaf",
         "flex items-center justify-center",
         "transition-all duration-300",
         canUpload && "group/avatar",
