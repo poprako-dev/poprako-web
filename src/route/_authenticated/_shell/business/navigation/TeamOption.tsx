@@ -81,6 +81,7 @@ function TeamAvatar({
       title={canUpload ? "上传头像" : undefined}
       className={clsx(
         "relative z-10 w-11 h-11 rounded-md overflow-hidden shrink-0",
+        "border-2 border-brand-leaf",
         "flex items-center justify-center",
         "transition-all duration-300",
         canUpload && "group/avatar",
@@ -226,7 +227,7 @@ export function TeamOption({
           type="button"
           onClick={handleToggleList}
           className={clsx(
-            "absolute left-14 right-2 h-full outline-none",
+            "absolute left-14 right-2 h-full outline-none overflow-hidden",
             "flex flex-col justify-center",
             "opacity-0 group-hover:opacity-100",
             "transition-opacity duration-100 delay-0",

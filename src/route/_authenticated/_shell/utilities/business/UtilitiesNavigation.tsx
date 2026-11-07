@@ -2,9 +2,12 @@ import { useRef, useState, type ReactElement, type RefObject } from "react";
 import {
   BookOpenText,
   ChevronDown,
+  ExternalLink,
+  Eye,
   FileArchive,
   FolderOpen,
   LoaderCircle,
+  PencilLine,
   Upload,
 } from "lucide-react";
 import clsx from "clsx";
@@ -15,6 +18,18 @@ const rowClass =
   "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors";
 const inactiveClass = "text-muted-foreground hover:bg-muted/50 hover:text-foreground";
 const activeClass = "bg-surface-green-50 font-semibold text-text-green";
+const localApps = [
+  {
+    label: "翻校器",
+    href: "https://github.com/poprako-dev/poprako-native/releases",
+    icon: PencilLine,
+  },
+  {
+    label: "监修器",
+    href: "https://github.com/gunfub/MangaProof/releases",
+    icon: Eye,
+  },
+] as const;
 
 type Props = {
   mode: UtilityMode;
@@ -132,6 +147,27 @@ export function UtilitiesNavigation({
             <ImportTeamTermbase key={teamId} toolRef={toolRef} />
           </li>
         )}
+      </ul>
+      <div className="mb-1 mt-4 flex items-center gap-2 py-1 text-sm text-muted-foreground">
+        <ChevronDown size={13} aria-hidden="true" />
+        <FolderOpen size={16} aria-hidden="true" />
+        <h2 className="font-medium">本地版应用</h2>
+      </div>
+      <ul className="ml-1.5 space-y-1 border-l border-border/70 pl-3">
+        {localApps.map(({ label, href, icon: Icon }) => (
+          <li key={href}>
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={clsx(rowClass, inactiveClass)}
+            >
+              <Icon size={15} className="shrink-0" aria-hidden="true" />
+              {label}
+              <ExternalLink size={13} className="ml-auto shrink-0 opacity-60" aria-hidden="true" />
+            </a>
+          </li>
+        ))}
       </ul>
     </nav>
   );

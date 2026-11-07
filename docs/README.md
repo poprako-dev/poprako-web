@@ -9,6 +9,7 @@
 - [贡献指南及依赖边界](../CONTRIBUTING.md)
 - [Agent 规则](../AGENTS.md)
 - [后端 OpenAPI 契约快照](swagger.json)
+- [Comic 管理核心接口解析与覆盖情况](admin-comic-api-coverage.md)
 - [压缩工具边界与验证](../src/shared/utility/compress/readme.md)
 
 ## 发布与部署

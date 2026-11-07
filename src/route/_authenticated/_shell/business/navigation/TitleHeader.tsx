@@ -10,7 +10,7 @@ export function TitleHeader(): ReactElement {
 
       <span
         className={clsx(
-          "absolute left-14 whitespace-nowrap",
+          "absolute left-14 whitespace-nowrap pointer-events-none",
           "text-lg font-black tracking-tighter",
           "[text-shadow:0_0_0.45px_currentColor]",
           "text-navigation-ink",

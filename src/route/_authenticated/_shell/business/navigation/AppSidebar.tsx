@@ -20,6 +20,7 @@ import { TitleHeader } from "@/route/_authenticated/_shell/business/navigation/T
 import { TeamOption } from "@/route/_authenticated/_shell/business/navigation/TeamOption";
 import { NavItem } from "@/route/_authenticated/_shell/business/navigation/NavItem";
 import { SettingsFooter } from "@/route/_authenticated/_shell/business/navigation/SettingsFooter";
+import { useDelayedHover } from "@/route/_authenticated/_shell/business/navigation/use-delayed-hover";
 import type { Result } from "@/shared/utility/result";
 
 import { useApiClient } from "@/route/business/api-context";
@@ -69,14 +70,16 @@ function selectSidebarTeam(team: TeamConfig, setSelectingTeam: (selected: boolea
 
 function leaveSidebar(
   isAvatarUploading: boolean,
-  setHovered: (hovered: boolean) => void,
+  hideHover: () => void,
   setSelectingTeam: (selecting: boolean) => void,
 ): void {
-  setHovered(false);
+  hideHover();
   if (!isAvatarUploading) {
     setSelectingTeam(false);
   }
 }
+
+const SIDEBAR_HOVER_DELAY_MS = 100;
 
 type Props = {
   onNavIntent?: ((id: NavId) => void) | undefined;
@@ -95,9 +98,9 @@ export function AppSidebar({ onNavIntent }: Props): ReactElement {
     return member !== undefined && hasRole(member, "admin");
   }, [loginState.memberInfos, selectedTeamId]);
 
-  const [isHovered, setIsHovered] = useState(false);
   const [isSelectingTeam, setIsSelectingTeam] = useState(false);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(SIDEBAR_HOVER_DELAY_MS);
 
   const isExpanded = isHovered || isSelectingTeam;
 
@@ -131,11 +134,9 @@ export function AppSidebar({ onNavIntent }: Props): ReactElement {
   return (
     <AppSidebarLayout
       isExpanded={isExpanded}
-      onMouseEnter={() => {
-        setIsHovered(true);
-      }}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={() => {
-        leaveSidebar(isAvatarUploading, setIsHovered, setIsSelectingTeam);
+        leaveSidebar(isAvatarUploading, handleMouseLeave, setIsSelectingTeam);
       }}
       header={<TitleHeader />}
       teamOption={

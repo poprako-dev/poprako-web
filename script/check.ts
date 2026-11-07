@@ -2,6 +2,7 @@ import { checkDependencies } from "./check-dependency.ts";
 import { checkStyle } from "./check-style.ts";
 import { checkDirectories } from "./check-directory.ts";
 import { checkAppearance } from "./check-appearance.ts";
+import { checkOverlay } from "./check-overlay.ts";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,6 +12,7 @@ const findings = [
   ...checkStyle(root),
   ...checkDependencies(root),
   ...checkAppearance(root),
+  ...checkOverlay(root),
 ];
 if (findings.length > 0) {
   for (const finding of findings) {

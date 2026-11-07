@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fireEvent, fn, userEvent, within } from "storybook/test";
+import { expect, fireEvent, fn, userEvent, waitFor, within } from "storybook/test";
 import { ShortcutPanel } from "@/route/_authenticated/translator/business/shortcut/ShortcutPanel";
 
 const meta: Meta<typeof ShortcutPanel> = {
@@ -66,5 +66,22 @@ export const IgnoreComposition: Story = {
       { action: "save", label: "保存", keys: ["Control", "k"] },
       args.configurableShortcuts[1],
     ]);
+  },
+};
+
+export const ContentAboveBackdrop: Story = {
+  play: async ({ canvasElement }) => {
+    const panel = within(canvasElement.ownerDocument.body);
+    const dialog = await panel.findByRole("dialog", { name: "快捷键设置" });
+    // The enter animation scales the panel; hit-testing only reflects the final layout after it.
+    await waitFor(async () => {
+      await expect(getComputedStyle(dialog).transform).toBe("none");
+    });
+    const rect = dialog.getBoundingClientRect();
+    const hit = canvasElement.ownerDocument.elementFromPoint(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2,
+    );
+    await expect(hit?.closest('[role="dialog"]')).toBe(dialog);
   },
 };
