@@ -286,7 +286,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
         aria-modal="true"
         aria-label="特殊符号面板"
         className={clsx(
-          "w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-xl bg-surface-white",
+          "relative w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-xl bg-surface-white",
           "border border-(--brand-leaf-border) shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
