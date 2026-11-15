@@ -8,6 +8,8 @@ import type { EditorSession } from "./use-editor-session";
 type Props = {
   session: Pick<
     EditorSession,
+    | "canProofread"
+    | "canTranslate"
     | "project"
     | "pageIndex"
     | "isShortcutPanelOpen"
@@ -37,6 +39,8 @@ type Props = {
 };
 export function EditorDialog({ session }: Props): JSX.Element {
   const {
+    canProofread,
+    canTranslate,
     project,
     pageIndex,
     isShortcutPanelOpen,
@@ -92,7 +96,9 @@ export function EditorDialog({ session }: Props): JSX.Element {
       {isUnitSearchTransformOpen && project.pages[pageIndex] && (
         <UnitSearchTransformDialog
           pages={project.pages}
-          part={unitSearchPart}
+          initialPart={unitSearchPart}
+          canTranslate={canTranslate}
+          canProofread={canProofread}
           coordinator={searchCoordinator}
           onClose={() => {
             setIsUnitSearchTransformOpen(false);

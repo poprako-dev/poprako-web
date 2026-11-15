@@ -9,7 +9,6 @@ import type { Result, ResultFailure } from "@/shared/utility/result";
 
 type Options = {
   dataSource: UnitSearchTransformDataSource;
-  part: UnitTextPart;
   currentPageId: string | undefined;
   flush: () => Promise<void>;
   runExclusive: (operation: () => Promise<void>) => Promise<void>;
@@ -26,8 +25,9 @@ type TransformResult =
   | { status: "ready"; matches: UnitSearchMatch[] };
 
 export function createEditorSearchCoordinator(options: Options): {
-  search: (phrase: string) => Promise<Result<SearchSnapshot>>;
+  search: (part: UnitTextPart, phrase: string) => Promise<Result<SearchSnapshot>>;
   transform: (
+    part: UnitTextPart,
     phrase: string,
     target: string,
     matches: UnitSearchMatch[],
@@ -35,13 +35,18 @@ export function createEditorSearchCoordinator(options: Options): {
   navigate: (pageId: string, unitId?: string) => Promise<void>;
 } {
   return {
-    search: (phrase) => searchUnits(options, phrase),
-    transform: (phrase, target, matches) => transformUnits(options, phrase, target, matches),
+    search: (part, phrase) => searchUnits(options, part, phrase),
+    transform: (part, phrase, target, matches) =>
+      transformUnits(options, part, phrase, target, matches),
     navigate: options.navigate,
   };
 }
 
-async function searchUnits(options: Options, phrase: string): Promise<Result<SearchSnapshot>> {
+async function searchUnits(
+  options: Options,
+  part: UnitTextPart,
+  phrase: string,
+): Promise<Result<SearchSnapshot>> {
   try {
     await options.flush();
   } catch (error) {
@@ -49,7 +54,7 @@ async function searchUnits(options: Options, phrase: string): Promise<Result<Sea
     return { success: false, error: "当前页保存失败，未执行搜索" };
   }
   const normalizedPhrase = normalizeSearchPhrase(phrase);
-  const result = await options.dataSource.search({ part: options.part, phrase: normalizedPhrase });
+  const result = await options.dataSource.search({ part, phrase: normalizedPhrase });
   return result.success
     ? { success: true, data: { matches: result.data, phrase: normalizedPhrase } }
     : result;
@@ -57,25 +62,27 @@ async function searchUnits(options: Options, phrase: string): Promise<Result<Sea
 
 async function transformUnits(
   options: Options,
+  part: UnitTextPart,
   phrase: string,
   target: string,
   matches: UnitSearchMatch[],
 ): Promise<TransformResult> {
   let outcome: TransformResult = { status: "refresh-failed" };
   await options.runExclusive(async () => {
-    outcome = await transformWithinExclusive(options, phrase, target, matches);
+    outcome = await transformWithinExclusive(options, part, phrase, target, matches);
   });
   return outcome;
 }
 
 async function transformWithinExclusive(
   options: Options,
+  part: UnitTextPart,
   phrase: string,
   target: string,
   matches: UnitSearchMatch[],
 ): Promise<TransformResult> {
   const result = await options.dataSource.transform({
-    part: options.part,
+    part,
     origin: phrase,
     target,
     unitIds: matches.map((match) => unitId(match.unit)),
@@ -85,16 +92,17 @@ async function transformWithinExclusive(
     return { status: "failed", failure: result };
   }
   if (matches.some((match) => match.pageId === options.currentPageId)) options.clearHistory?.();
-  return refreshAfterTransform(options, phrase, matches);
+  return refreshAfterTransform(options, part, phrase, matches);
 }
 
 async function refreshAfterTransform(
   options: Options,
+  part: UnitTextPart,
   phrase: string,
   matches: UnitSearchMatch[],
 ): Promise<TransformResult> {
   const refreshed = await Promise.allSettled([
-    options.dataSource.search({ part: options.part, phrase }),
+    options.dataSource.search({ part, phrase }),
     matches.some((match) => match.pageId === options.currentPageId)
       ? options.refreshCurrentPage()
       : Promise.resolve(),

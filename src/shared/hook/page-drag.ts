@@ -4,6 +4,8 @@ import type { PageEditing } from "./use-page-interaction";
 
 const PAN_THRESHOLD = 8;
 const MARKER_DRAG_THRESHOLD = 3;
+// 指针移出点击容差后就不再是点击；此时平移可能尚未开始，也不能回落成创建标记。
+const CLICK_SLOP = 4;
 
 export type MarkerPreview = { id: string; x: number; y: number };
 
@@ -18,7 +20,12 @@ export type DragRequest =
       startMarkerY: number;
     };
 
-type DragState = DragRequest & { startOffsetX: number; startOffsetY: number; exceeded: boolean };
+type DragState = DragRequest & {
+  startOffsetX: number;
+  startOffsetY: number;
+  exceeded: boolean;
+  panning: boolean;
+};
 
 interface WindowHandlers {
   mouseMove: (event: MouseEvent) => void;
@@ -57,17 +64,19 @@ function moveDrag(context: DragContext, clientX: number, clientY: number): void 
 
   const dx = clientX - drag.startX;
   const dy = clientY - drag.startY;
+  const distance = Math.hypot(dx, dy);
 
   if (!drag.exceeded) {
-    if (Math.hypot(dx, dy) > (drag.type === "pan" ? PAN_THRESHOLD : MARKER_DRAG_THRESHOLD)) {
-      drag.exceeded = true;
-      if (drag.type === "pan") context.setIsPanning(true);
-    } else {
-      return;
-    }
+    if (distance <= (drag.type === "pan" ? CLICK_SLOP : MARKER_DRAG_THRESHOLD)) return;
+    drag.exceeded = true;
   }
 
   if (drag.type === "pan") {
+    if (!drag.panning) {
+      if (distance <= PAN_THRESHOLD) return;
+      drag.panning = true;
+      context.setIsPanning(true);
+    }
     context.setTransform((prev) => ({
       ...prev,
       offsetX: drag.startOffsetX + dx,
@@ -155,6 +164,7 @@ export function startPageDrag(request: DragRequest, context: DragContext): void 
     startOffsetX: context.transform.offsetX,
     startOffsetY: context.transform.offsetY,
     exceeded: false,
+    panning: false,
   };
   bindDragListeners(context);
 }
