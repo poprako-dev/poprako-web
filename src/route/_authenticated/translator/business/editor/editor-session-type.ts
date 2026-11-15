@@ -69,6 +69,8 @@ export type EditorSession = Pick<
   Pick<ReturnType<typeof useEditorKeyboard>, "handleSwitchView"> &
   Pick<
     EditorProps,
+    | "canProofread"
+    | "canTranslate"
     | "onListPageUnitDiffStats"
     | "onListPageUnitFlaggedStats"
     | "onResolveUser"

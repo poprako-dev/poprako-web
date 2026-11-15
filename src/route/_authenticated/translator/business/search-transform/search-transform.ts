@@ -25,6 +25,13 @@ export function normalizeSearchPhrase(phrase: string): string {
   return phrase.replaceAll(/^\p{White_Space}+|\p{White_Space}+$/gu, "");
 }
 
+export function canTransformPart(
+  part: UnitTextPart,
+  perm: { canTranslate: boolean; canProofread: boolean },
+): boolean {
+  return part === "translatedText" ? perm.canTranslate : perm.canProofread;
+}
+
 export function unitSearchText(match: UnitSearchMatch, part: UnitTextPart): string {
   if (part === "translatedText") {
     return unitTranslatedText(match.unit) ?? "";

@@ -9,8 +9,10 @@ import type {
   UnitTextPart,
 } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import {
+  canTransformPart,
   defaultSelectedUnitIds,
   groupUnitSearchMatches,
+  normalizeSearchPhrase,
 } from "@/route/_authenticated/translator/business/search-transform/search-transform";
 import type { EditorSearchCoordinator } from "../editor/editor-search-coordinator";
 
@@ -22,13 +24,22 @@ export type SearchState =
 
 type Props = {
   pages: Page[];
-  part: UnitTextPart;
+  initialPart: UnitTextPart;
+  canTranslate: boolean;
+  canProofread: boolean;
   coordinator: EditorSearchCoordinator;
   onClose: () => void;
 };
 
-export function useUnitSearchTransformDialog({ pages, coordinator, onClose }: Props): DialogState {
-  const state = useDialogState(pages);
+export function useUnitSearchTransformDialog({
+  pages,
+  initialPart,
+  canTranslate,
+  canProofread,
+  coordinator,
+  onClose,
+}: Props): DialogState {
+  const state = useDialogState(pages, initialPart, { canTranslate, canProofread });
   const requestId = useSearchRequestId();
   const showToast = useToastStore((state) => state.showToast);
   const commitSearchResult = createResultCommitter(state.setSearchState, state.setSelectedIds);
@@ -38,15 +49,56 @@ export function useUnitSearchTransformDialog({ pages, coordinator, onClose }: Pr
     state.setSelectedIds,
     state.setTargetValue,
   );
-  const search = createSearchAction(
-    state.searchValue,
+  const runSearch = createSearchRunner(
     coordinator,
     requestId,
     state.setSearchState,
     state.setSelectedIds,
     commitSearchResult,
   );
+  return buildDialogState({
+    state,
+    coordinator,
+    requestId,
+    commitSearchResult,
+    resetSearchSnapshot,
+    runSearch,
+    showToast,
+    onClose,
+  });
+}
+
+type DialogDependencies = {
+  state: DialogStateFields;
+  coordinator: EditorSearchCoordinator;
+  requestId: SearchRequestId;
+  commitSearchResult: (matches: UnitSearchMatch[], phrase: string) => void;
+  resetSearchSnapshot: () => void;
+  runSearch: (part: UnitTextPart, phrase: string) => Promise<boolean>;
+  showToast: (message: string, tone: "success" | "error") => void;
+  onClose: () => void;
+};
+
+function buildDialogState(deps: DialogDependencies): DialogState {
+  const {
+    state,
+    coordinator,
+    requestId,
+    commitSearchResult,
+    resetSearchSnapshot,
+    runSearch,
+    showToast,
+    onClose,
+  } = deps;
+  const search: () => Promise<boolean> = () => runSearch(state.part, state.searchValue);
+  const changePart = createPartChanger(
+    state.setPart,
+    resetSearchSnapshot,
+    runSearch,
+    state.searchValue,
+  );
   const handleTransform = createTransformAction(
+    state.part,
     state.canTransform,
     state.searchState,
     state.selectedIds,
@@ -65,14 +117,7 @@ export function useUnitSearchTransformDialog({ pages, coordinator, onClose }: Pr
     requestId.invalidate,
     onClose,
   );
-
-  return {
-    ...state,
-    resetSearchSnapshot,
-    search,
-    handleTransform,
-    handleNavigate,
-  };
+  return { ...state, resetSearchSnapshot, search, changePart, handleTransform, handleNavigate };
 }
 
 function useSearchRequestId(): SearchRequestId {
@@ -91,13 +136,16 @@ interface SearchRequestId {
 type DialogState = ReturnType<typeof useDialogState> & {
   resetSearchSnapshot: () => void;
   search: () => Promise<boolean>;
+  changePart: (part: UnitTextPart) => void;
   handleTransform: () => Promise<void>;
   handleNavigate: (pageId: string, targetUnitId?: string) => Promise<void>;
 };
 
 type StateSetter<T> = Dispatch<SetStateAction<T>>;
 
-function useDialogState(pages: Page[]): {
+type DialogStateFields = {
+  part: UnitTextPart;
+  setPart: StateSetter<UnitTextPart>;
   searchValue: string;
   setSearchValue: StateSetter<string>;
   targetValue: string;
@@ -111,7 +159,14 @@ function useDialogState(pages: Page[]): {
   isTransforming: boolean;
   setIsTransforming: StateSetter<boolean>;
   canTransform: boolean;
-} {
+};
+
+function useDialogState(
+  pages: Page[],
+  initialPart: UnitTextPart,
+  perm: { canTranslate: boolean; canProofread: boolean },
+): DialogStateFields {
+  const [part, setPart] = useState<UnitTextPart>(initialPart);
   const [searchValue, setSearchValue] = useState("");
   const [targetValue, setTargetValue] = useState("");
   const [searchState, setSearchState] = useState<SearchState>({ status: "idle" });
@@ -123,8 +178,14 @@ function useDialogState(pages: Page[]): {
   );
   const groups = useMemo(() => groupUnitSearchMatches(matches, pages), [matches, pages]);
   const canTransform =
-    matches.length > 0 && targetValue.length > 0 && selectedIds.size > 0 && !isTransforming;
+    canTransformPart(part, perm) &&
+    matches.length > 0 &&
+    targetValue.length > 0 &&
+    selectedIds.size > 0 &&
+    !isTransforming;
   return {
+    part,
+    setPart,
     searchValue,
     setSearchValue,
     targetValue,
@@ -165,20 +226,19 @@ function createSnapshotResetter(
   };
 }
 
-function createSearchAction(
-  searchValue: string,
+function createSearchRunner(
   coordinator: EditorSearchCoordinator,
   requestId: SearchRequestId,
   setSearchState: StateSetter<SearchState>,
   setSelectedIds: StateSetter<Set<string>>,
   commitSearchResult: (matches: UnitSearchMatch[], phrase: string) => void,
-): () => Promise<boolean> {
-  return async () => {
+): (part: UnitTextPart, phrase: string) => Promise<boolean> {
+  return async (part, phrase) => {
     const currentRequestId = requestId.next();
     setSearchState({ status: "loading" });
     setSelectedIds(new Set());
     try {
-      const result = await coordinator.search(searchValue);
+      const result = await coordinator.search(part, phrase);
       if (!requestId.isCurrent(currentRequestId)) return false;
       if (!result.success) {
         setSearchState({ status: "error", message: result.error });
@@ -195,7 +255,22 @@ function createSearchAction(
   };
 }
 
+function createPartChanger(
+  setPart: StateSetter<UnitTextPart>,
+  resetSearchSnapshot: () => void,
+  runSearch: (part: UnitTextPart, phrase: string) => Promise<boolean>,
+  searchValue: string,
+): (nextPart: UnitTextPart) => void {
+  return (nextPart) => {
+    setPart(nextPart);
+    resetSearchSnapshot();
+    if (normalizeSearchPhrase(searchValue) === "") return;
+    void runSearch(nextPart, searchValue);
+  };
+}
+
 function createTransformAction(
+  part: UnitTextPart,
   canTransform: boolean,
   searchState: SearchState,
   selectedIds: Set<string>,
@@ -215,7 +290,7 @@ function createTransformAction(
     );
     setIsTransforming(true);
     try {
-      await applyTransform(searchState, selectedMatches, targetValue, coordinator, {
+      await applyTransform(part, searchState, selectedMatches, targetValue, coordinator, {
         commitSearchResult,
         invalidateSearch: () => {
           invalidate();
@@ -256,13 +331,19 @@ type TransformActions = {
 };
 
 async function applyTransform(
+  part: UnitTextPart,
   searchState: Extract<SearchState, { status: "ready" }>,
   selectedMatches: UnitSearchMatch[],
   targetValue: string,
   coordinator: EditorSearchCoordinator,
   actions: TransformActions,
 ): Promise<void> {
-  const result = await coordinator.transform(searchState.phrase, targetValue, selectedMatches);
+  const result = await coordinator.transform(
+    part,
+    searchState.phrase,
+    targetValue,
+    selectedMatches,
+  );
   if (result.status === "failed") {
     showLocalApiFailure(result.failure, actions.showToast);
     return;

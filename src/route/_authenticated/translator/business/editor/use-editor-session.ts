@@ -62,7 +62,6 @@ function useEditorCollaborators(props: EditorProps, state: EditorState): Session
     state,
     persistence,
     actions,
-    unitSearchPart,
   );
   return {
     persistence,
@@ -193,11 +192,9 @@ function createEditorSearchCoordinatorForSession(
   state: EditorState,
   persistence: Persistence,
   actions: Actions,
-  part: UnitTextPart,
 ): SearchCoordinator {
   return createEditorSearchCoordinator({
     dataSource: props.unitSearchTransform,
-    part,
     currentPageId: props.project.pages[state.pageIndex]?.id,
     flush: () => persistence.flushIfDirty(false),
     runExclusive: persistence.runExclusive,

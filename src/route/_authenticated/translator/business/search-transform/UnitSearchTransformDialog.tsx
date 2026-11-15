@@ -1,3 +1,4 @@
+import { useId } from "react";
 import type { JSX } from "react/jsx-runtime";
 import { useUnitSearchTransformDialog } from "./use-unit-search-transform-dialog";
 import clsx from "clsx";
@@ -5,24 +6,31 @@ import { AppDialog, AppDialogAction } from "@/shared/component/AppDialog";
 import type { Page } from "@/route/_authenticated/business/page/page";
 import type { UnitTextPart } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import { MAX_SELECTED_UNIT_COUNT } from "@/route/_authenticated/translator/business/search-transform/search-transform";
+import { PartSwitch } from "@/route/_authenticated/translator/business/search-transform/PartSwitch";
 import { SearchResultList } from "@/route/_authenticated/translator/business/search-transform/SearchResultList";
 
 import type { EditorSearchCoordinator } from "../editor/editor-search-coordinator";
 
 type Props = {
   pages: Page[];
-  part: UnitTextPart;
+  initialPart: UnitTextPart;
+  canTranslate: boolean;
+  canProofread: boolean;
   coordinator: EditorSearchCoordinator;
   onClose: () => void;
 };
 
 export function UnitSearchTransformDialog({
   pages,
-  part,
+  initialPart,
+  canTranslate,
+  canProofread,
   coordinator,
   onClose,
 }: Props): JSX.Element {
+  const phraseInputId = useId();
   const {
+    part,
     searchValue,
     setSearchValue,
     targetValue,
@@ -36,9 +44,17 @@ export function UnitSearchTransformDialog({
     canTransform,
     resetSearchSnapshot,
     search,
+    changePart,
     handleTransform,
     handleNavigate,
-  } = useUnitSearchTransformDialog({ pages, part, coordinator, onClose });
+  } = useUnitSearchTransformDialog({
+    pages,
+    initialPart,
+    canTranslate,
+    canProofread,
+    coordinator,
+    onClose,
+  });
   const isTransformEnabled = matches.length > 0;
 
   return (
@@ -65,9 +81,15 @@ export function UnitSearchTransformDialog({
         </div>
       }
     >
-      <label className="block">
-        <span className="mb-1 block text-xs font-medium text-ink-slate-500">查找短语</span>
+      <div>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <label htmlFor={phraseInputId} className="text-xs font-medium text-ink-slate-500">
+            查找短语
+          </label>
+          <PartSwitch part={part} disabled={isTransforming} onChange={changePart} />
+        </div>
         <input
+          id={phraseInputId}
           value={searchValue}
           disabled={isTransforming}
           onChange={(event) => {
@@ -81,7 +103,7 @@ export function UnitSearchTransformDialog({
             "transition-colors",
           )}
         />
-      </label>
+      </div>
       <label className="block">
         <span className="mb-1 block text-xs font-medium text-ink-slate-500">替换短语</span>
         <input

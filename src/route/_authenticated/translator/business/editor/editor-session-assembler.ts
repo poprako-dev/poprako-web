@@ -239,6 +239,8 @@ function sessionData(
   unitSearchPart: UnitTextPart,
 ): Pick<
   EditorSession,
+  | "canProofread"
+  | "canTranslate"
   | "completionStage"
   | "drafts"
   | "handleExit"
@@ -255,6 +257,8 @@ function sessionData(
   | "unitSearchPart"
 > {
   return {
+    canProofread: props.canProofread,
+    canTranslate: props.canTranslate,
     completionStage,
     drafts: props.drafts,
     handleExit: persistence.handleExit,

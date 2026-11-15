@@ -44,7 +44,6 @@ function makeCoordinator(
 ): ReturnType<typeof createEditorSearchCoordinator> {
   return createEditorSearchCoordinator({
     dataSource,
-    part: "translatedText",
     currentPageId: "page-1",
     flush: fn(() => Promise.resolve()),
     runExclusive: async (operation) => {
@@ -61,7 +60,9 @@ const meta: Meta<typeof UnitSearchTransformDialog> = {
   parameters: { layout: "fullscreen" },
   args: {
     pages,
-    part: "translatedText",
+    initialPart: "translatedText",
+    canTranslate: true,
+    canProofread: true,
     onClose: fn(),
   },
 };
@@ -186,7 +187,6 @@ export const SaveFailureBlocksSearch: Story = {
         transform: fn(() => Promise.resolve({ success: true as const, data: undefined })),
         reloadPage: fn(() => Promise.resolve({ success: true as const, data: [] })),
       },
-      part: "translatedText",
       currentPageId: "page-1",
       flush: () => Promise.reject(new Error("保存中断")),
       runExclusive: async (operation) => {
@@ -215,6 +215,79 @@ export const SaveFailureBlocksSearch: Story = {
   },
 };
 
+const changedPartSearch = fn(() =>
+  Promise.resolve({ success: true as const, data: groupedMatches }),
+);
+export const ProofreadModeRerunsSearch: Story = {
+  args: {
+    coordinator: makeCoordinator({
+      search: changedPartSearch,
+      transform: fn(() => Promise.resolve({ success: true as const, data: undefined })),
+      reloadPage: fn(() => Promise.resolve({ success: true as const, data: [] })),
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    changedPartSearch.mockClear();
+    const page = within(canvasElement.ownerDocument.body);
+    const dialog = within(page.getByRole("dialog", { name: "搜索与替换" }));
+    await userEvent.type(dialog.getByRole("textbox", { name: "查找短语" }), "旧词");
+    await userEvent.click(dialog.getByRole("button", { name: "搜索" }));
+    await waitFor(async () => {
+      await expect(await dialog.findByText("8 个匹配翻校单元")).toBeVisible();
+    });
+    await userEvent.click(dialog.getByRole("button", { name: "校对文本" }));
+    await expect(dialog.getByRole("button", { name: "校对文本" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await waitFor(async () => {
+      await expect(changedPartSearch).toHaveBeenLastCalledWith({
+        part: "proofreadText",
+        phrase: "旧词",
+      });
+      await expect(await dialog.findByText("8 个匹配翻校单元")).toBeVisible();
+    });
+    await userEvent.type(dialog.getByRole("textbox", { name: "替换短语" }), "新词");
+    await waitFor(async () => {
+      await expect(dialog.getByRole("button", { name: "替换" })).toBeEnabled();
+    });
+  },
+};
+
+export const PartSwitchFollowsRolePermission: Story = {
+  args: {
+    canProofread: false,
+    coordinator: makeCoordinator({
+      search: fn(() => Promise.resolve({ success: true as const, data: groupedMatches })),
+      transform: fn(() => Promise.resolve({ success: true as const, data: undefined })),
+      reloadPage: fn(() => Promise.resolve({ success: true as const, data: [] })),
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const page = within(canvasElement.ownerDocument.body);
+    const dialog = within(page.getByRole("dialog", { name: "搜索与替换" }));
+    await userEvent.type(dialog.getByRole("textbox", { name: "查找短语" }), "旧词");
+    await userEvent.click(dialog.getByRole("button", { name: "搜索" }));
+    await waitFor(async () => {
+      await expect(await dialog.findByText("8 个匹配翻校单元")).toBeVisible();
+    });
+    await userEvent.click(dialog.getByRole("button", { name: "校对文本" }));
+    await waitFor(async () => {
+      await expect(await dialog.findByText("8 个匹配翻校单元")).toBeVisible();
+    });
+    await userEvent.type(dialog.getByRole("textbox", { name: "替换短语" }), "新词");
+    await expect(dialog.getByRole("button", { name: "替换" })).toBeDisabled();
+    await userEvent.click(dialog.getByRole("button", { name: "翻译文本" }));
+    await waitFor(async () => {
+      await expect(await dialog.findByText("8 个匹配翻校单元")).toBeVisible();
+    });
+    await userEvent.type(dialog.getByRole("textbox", { name: "替换短语" }), "新词");
+    await waitFor(async () => {
+      await expect(dialog.getByRole("button", { name: "替换" })).toBeEnabled();
+    });
+  },
+};
+
 const completedTransform = fn(() => Promise.resolve({ success: true as const, data: undefined }));
 export const CompletedWithRefreshFailure: Story = {
   args: {
@@ -224,7 +297,6 @@ export const CompletedWithRefreshFailure: Story = {
         transform: completedTransform,
         reloadPage: fn(() => Promise.resolve({ success: true as const, data: [] })),
       },
-      part: "translatedText",
       currentPageId: "page-1",
       flush: fn(() => Promise.resolve()),
       runExclusive: async (operation) => {

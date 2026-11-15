@@ -3,6 +3,7 @@ import type { Page } from "@/route/_authenticated/business/page/page";
 import type { UnitInfo } from "@/route/_authenticated/translator/business/unit/unit";
 import type { UnitSearchMatch } from "@/route/_authenticated/translator/business/contract/unit-search-transform";
 import {
+  canTransformPart,
   defaultSelectedUnitIds,
   groupUnitSearchMatches,
   MAX_SELECTED_UNIT_COUNT,
@@ -41,6 +42,23 @@ function makeMatch(id: string, pageId: string, translatedText = "needle"): UnitS
   };
   return { pageId, unit };
 }
+
+describe("unit search part permission", () => {
+  test("requires the role matching the selected text field to transform", () => {
+    expect(canTransformPart("translatedText", { canTranslate: true, canProofread: false })).toBe(
+      true,
+    );
+    expect(canTransformPart("translatedText", { canTranslate: false, canProofread: true })).toBe(
+      false,
+    );
+    expect(canTransformPart("proofreadText", { canTranslate: true, canProofread: false })).toBe(
+      false,
+    );
+    expect(canTransformPart("proofreadText", { canTranslate: false, canProofread: true })).toBe(
+      true,
+    );
+  });
+});
 
 describe("unit search transform helpers", () => {
   test("normalizes surrounding Unicode whitespace like the backend", () => {

@@ -53,7 +53,6 @@ function setup(): Context {
   const transform = vi.fn(() => Promise.resolve({ success: true as const, data: undefined }));
   const coordinator = createEditorSearchCoordinator({
     dataSource: { search, transform, reloadPage: vi.fn() },
-    part: "translatedText",
     currentPageId: "page-1",
     flush: () => persistence.result.current.flushIfDirty(false),
     runExclusive: (operation) => persistence.result.current.runExclusive(operation),
@@ -72,7 +71,7 @@ it.each(["page-1", "page-2"])("替换 %s 只清空受影响页面的回退历史
     context.persistence.result.current.commitUnits([{ ...unit, isFlagged: true }]);
   });
   await act(async () => {
-    await context.coordinator.transform("旧词", "新词", [{ pageId, unit }]);
+    await context.coordinator.transform("translatedText", "旧词", "新词", [{ pageId, unit }]);
   });
   expect(context.persistence.result.current.canUndo).toBe(pageId !== "page-1");
 });
@@ -86,7 +85,7 @@ describe("编辑搜索协调", () => {
       context.persistence.result.current.commitUnits([{ ...unit, isFlagged: true }]);
     });
     await act(async () => {
-      expect(await context.coordinator.search(" 旧词 ")).toEqual({
+      expect(await context.coordinator.search("translatedText", " 旧词 ")).toEqual({
         success: false,
         error: "当前页保存失败，未执行搜索",
       });
@@ -94,7 +93,7 @@ describe("编辑搜索协调", () => {
     expect(context.search).not.toHaveBeenCalled();
     expect(context.persistence.result.current.saveState.dirty).toBe(true);
     await act(async () => {
-      expect(await context.coordinator.search(" 旧词 ")).toEqual({
+      expect(await context.coordinator.search("translatedText", " 旧词 ")).toEqual({
         success: true,
         data: { matches: [{ pageId: "page-1", unit }], phrase: "旧词" },
       });
@@ -118,7 +117,9 @@ describe("编辑搜索协调", () => {
     );
     let operation: Promise<unknown> | undefined;
     await act(async () => {
-      operation = context.coordinator.transform("旧词", "新词", [{ pageId: "page-1", unit }]);
+      operation = context.coordinator.transform("translatedText", "旧词", "新词", [
+        { pageId: "page-1", unit },
+      ]);
       await Promise.resolve();
     });
     expect(context.transform).toHaveBeenCalledOnce();
@@ -140,16 +141,39 @@ describe("编辑搜索协调", () => {
     context.reload.mockRejectedValueOnce(new Error("刷新中断"));
     await act(async () => {
       expect(
-        await context.coordinator.transform("旧词", "新词", [{ pageId: "page-1", unit }]),
+        await context.coordinator.transform("translatedText", "旧词", "新词", [
+          { pageId: "page-1", unit },
+        ]),
       ).toEqual({ status: "refresh-failed" });
     });
     expect(context.transform).toHaveBeenCalledOnce();
     expect(context.persistence.result.current.saveState.refreshError).toBe(true);
     await act(async () => {
-      expect((await context.coordinator.search("旧词")).success).toBe(true);
+      expect((await context.coordinator.search("translatedText", "旧词")).success).toBe(true);
     });
     expect(context.transform).toHaveBeenCalledOnce();
     expect(context.persistence.result.current.saveState.refreshError).toBe(false);
+  });
+});
+
+describe("编辑搜索协调", () => {
+  it("按调用方选择的文本字段搜索和替换", async () => {
+    const context = setup();
+    await act(async () => {
+      await context.coordinator.search("proofreadText", "旧词");
+    });
+    expect(context.search).toHaveBeenLastCalledWith({ part: "proofreadText", phrase: "旧词" });
+    await act(async () => {
+      await context.coordinator.transform("proofreadText", "旧词", "新词", [
+        { pageId: "page-1", unit },
+      ]);
+    });
+    expect(context.transform).toHaveBeenCalledWith({
+      part: "proofreadText",
+      origin: "旧词",
+      target: "新词",
+      unitIds: ["unit-1"],
+    });
   });
 });
 
@@ -159,7 +183,9 @@ describe("编辑搜索协调", () => {
     context.search.mockRejectedValueOnce(new Error("搜索中断"));
     await act(async () => {
       expect(
-        await context.coordinator.transform("旧词", "新词", [{ pageId: "page-2", unit }]),
+        await context.coordinator.transform("translatedText", "旧词", "新词", [
+          { pageId: "page-2", unit },
+        ]),
       ).toEqual({ status: "refresh-failed" });
     });
     expect(context.reload).not.toHaveBeenCalled();
