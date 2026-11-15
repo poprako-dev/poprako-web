@@ -50,14 +50,35 @@ afterEach(() => {
 });
 
 describe("page drag clicks", () => {
-  it("creates an alternate marker when a canvas drag stays below the pan threshold", () => {
+  it("creates an alternate marker when a canvas drag stays within the click slop", () => {
     const context = createDragHarness();
     startPageDrag({ type: "pan", startX: 20, startY: 30 }, context);
+    pointer("mousemove", 22, 32);
+    pointer("mouseup", 22, 32);
+    expect(context.tryAddMarker).toHaveBeenCalledWith(22, 32, true);
+    expect(context.setTransform).not.toHaveBeenCalled();
+    expect(context.setIsPanning).not.toHaveBeenCalledWith(true);
+    expect(context.windowHandlersRef.current).toBeNull();
+  });
+
+  it("neither pans nor creates a marker past the click slop before panning starts", () => {
+    const context = createDragHarness();
+    startPageDrag({ type: "pan", startX: 20, startY: 30 }, context);
+    pointer("mousemove", 25, 34);
+    pointer("mouseup", 25, 34);
+    expect(context.tryAddMarker).not.toHaveBeenCalled();
+    expect(context.setTransform).not.toHaveBeenCalled();
+    expect(context.setIsPanning).not.toHaveBeenCalledWith(true);
+  });
+
+  it("keeps panning once it starts even if the pointer returns near the start", () => {
+    const context = createDragHarness();
+    startPageDrag({ type: "pan", startX: 20, startY: 30 }, context);
+    pointer("mousemove", 40, 50);
     pointer("mousemove", 24, 34);
     pointer("mouseup", 24, 34);
-    expect(context.tryAddMarker).toHaveBeenCalledWith(24, 34, true);
-    expect(context.setTransform).not.toHaveBeenCalled();
-    expect(context.windowHandlersRef.current).toBeNull();
+    expect(context.setTransform).toHaveBeenLastCalledWith(expect.any(Function));
+    expect(context.tryAddMarker).not.toHaveBeenCalled();
   });
 
   it("focuses a marker when movement stays below the marker threshold", () => {
