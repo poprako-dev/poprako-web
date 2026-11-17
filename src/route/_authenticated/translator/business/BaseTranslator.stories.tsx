@@ -103,6 +103,17 @@ export const TranslatorOnly: Story = {
   },
 };
 
+export const AnnotationsFromSession: Story = {
+  args: {
+    ...createStoryArgs({ canTranslate: true, canProofread: false }),
+    annotations: undefined,
+  },
+  play: async ({ canvasElement }) => {
+    await waitForCanvasImage(canvasElement);
+    await verifyTranslatorAnnotations(canvasElement);
+  },
+};
+
 export const SearchAndTransform: Story = {
   args: createStoryArgs({
     canTranslate: true,

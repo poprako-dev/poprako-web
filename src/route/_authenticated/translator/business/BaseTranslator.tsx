@@ -8,9 +8,11 @@ import { TranslatorModeLoadState } from "./editor/TranslatorModeLoadState";
 import { WorkbenchLayout } from "@/shared/component/WorkbenchLayout";
 import { EditorCanvas } from "./editor/EditorCanvas";
 import { EditorSidebar } from "./editor/EditorSidebar";
+import { useEditorAnnotations } from "./editor/use-editor-annotations";
 
 export function BaseTranslator(props: EditorProps): JSX.Element {
   const session = useEditorSession(props);
+  const annotations = useEditorAnnotations(props, session);
   const resource = translatorModeModule(session.view);
   const snapshot = useModuleResource(resource);
   if (snapshot.status !== "ready") {
@@ -35,7 +37,7 @@ export function BaseTranslator(props: EditorProps): JSX.Element {
         sidebar={
           <EditorSidebar
             session={session}
-            annotations={props.annotations}
+            annotations={annotations}
             ItemComponent={unitItemComponent(session.view)}
             onPreloadMode={() => {
               if (session.nextView)
