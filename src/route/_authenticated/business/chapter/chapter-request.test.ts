@@ -53,23 +53,27 @@ async function expectImportRequestEnums(): Promise<string> {
     content: "{}",
     format: "json",
     mode: "keep",
+    target: "both",
   });
   await importChapter(createTestApi("chapter-token"), {
     chapterId: "chapter_1",
     content: "text",
     format: "lp",
     mode: "overwrite",
+    target: "proofread",
   });
 
   expect(bodyOf(fetchCallAt(fetchMock, 0))).toEqual({
     content: "{}",
     format: "poprako",
     mode: "keep",
+    target: "both",
   });
   expect(bodyOf(fetchCallAt(fetchMock, 1))).toEqual({
     content: "text",
     format: "label_plus",
     mode: "overwrite",
+    target: "proofread",
   });
   return JSON.stringify(fetchMock.mock.calls);
 }

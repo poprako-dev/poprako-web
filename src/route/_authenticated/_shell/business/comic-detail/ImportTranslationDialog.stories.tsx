@@ -7,6 +7,9 @@ const meta = {
   component: ImportTranslationDialog,
   args: {
     fileName: "第 01 话.txt",
+    format: "lp",
+    canTranslate: true,
+    canProofread: true,
     loading: false,
     onConfirm: fn(),
     onCancel: fn(),
@@ -22,7 +25,7 @@ export const Keep: Story = {
     await expect(screen.getByRole("radio", { name: /保留已有内容/ })).toBeChecked();
     await expect(args.onConfirm).not.toHaveBeenCalled();
     await userEvent.click(screen.getByRole("button", { name: "确认导入" }));
-    await expect(args.onConfirm).toHaveBeenCalledWith("keep");
+    await expect(args.onConfirm).toHaveBeenCalledWith("keep", "translation");
   },
 };
 
@@ -32,7 +35,7 @@ export const Overwrite: Story = {
     await userEvent.click(screen.getByRole("radio", { name: /覆盖已有内容/ }));
     await expect(args.onConfirm).not.toHaveBeenCalled();
     await userEvent.click(screen.getByRole("button", { name: "确认导入" }));
-    await expect(args.onConfirm).toHaveBeenCalledWith("overwrite");
+    await expect(args.onConfirm).toHaveBeenCalledWith("overwrite", "translation");
   },
 };
 
@@ -51,7 +54,57 @@ export const Importing: Story = {
   play: async ({ canvasElement, args }) => {
     const screen = within(canvasElement.ownerDocument.body);
     await expect(screen.getByRole("radio", { name: /覆盖已有内容/ })).toBeDisabled();
+    await expect(screen.getByRole("button", { name: "翻译" })).toBeDisabled();
+    await expect(screen.getByRole("button", { name: "校对" })).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "关闭" }));
     await expect(args.onCancel).not.toHaveBeenCalled();
+  },
+};
+
+export const TranslatorOnly: Story = {
+  args: { canProofread: false, format: "json", fileName: "第 01 话.json" },
+  play: async ({ canvasElement, args }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    await expect(screen.getByRole("dialog", { name: "导入翻译" })).toBeInTheDocument();
+    await expect(screen.queryByRole("group", { name: "导入目标" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "确认导入" }));
+    await expect(args.onConfirm).toHaveBeenCalledWith("keep", "translation");
+  },
+};
+
+export const ProofreaderOnly: Story = {
+  args: { canTranslate: false, format: "json", fileName: "第 01 话.json" },
+  play: async ({ canvasElement, args }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    await expect(screen.getByRole("dialog", { name: "导入校对" })).toBeInTheDocument();
+    await expect(screen.queryByRole("group", { name: "导入目标" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "确认导入" }));
+    await expect(args.onConfirm).toHaveBeenCalledWith("keep", "proofread");
+  },
+};
+
+export const BothRolesLabelPlus: Story = {
+  play: async ({ canvasElement, args }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    await expect(screen.getByRole("group", { name: "导入目标" })).toBeInTheDocument();
+    await expect(screen.queryByRole("button", { name: "翻译+校对" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "校对" }));
+    await userEvent.click(screen.getByRole("button", { name: "确认导入" }));
+    await expect(args.onConfirm).toHaveBeenCalledWith("keep", "proofread");
+  },
+};
+
+export const BothRolesJson: Story = {
+  args: { format: "json", fileName: "第 01 话.json" },
+  play: async ({ canvasElement, args }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    await expect(screen.getByRole("group", { name: "导入目标" })).toBeInTheDocument();
+    await expect(screen.getByRole("button", { name: "翻译" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "翻译+校对" }));
+    await userEvent.click(screen.getByRole("button", { name: "确认导入" }));
+    await expect(args.onConfirm).toHaveBeenCalledWith("keep", "both");
   },
 };

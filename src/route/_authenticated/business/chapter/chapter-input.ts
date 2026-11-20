@@ -97,11 +97,14 @@ export type ImportChapterFormat = "json" | "lp";
 
 export type ImportChapterMode = "keep" | "overwrite";
 
+export type ImportChapterTarget = "translation" | "proofread" | "both";
+
 export type ImportChapterArgs = {
   chapterId: string;
   content: string;
   format: ImportChapterFormat;
   mode: ImportChapterMode;
+  target: ImportChapterTarget;
 };
 
 export type ImportChapterResult = {

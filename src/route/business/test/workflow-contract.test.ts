@@ -221,12 +221,14 @@ async function verifyChapterStageAndImportRoutes(fetchMock: FetchMock): Promise<
     content: "x",
     format: "lp",
     mode: "keep",
+    target: "translation",
   });
   expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/translations/import");
   expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
     content: "x",
     format: "label_plus",
     mode: "keep",
+    target: "translation",
   });
 }
 

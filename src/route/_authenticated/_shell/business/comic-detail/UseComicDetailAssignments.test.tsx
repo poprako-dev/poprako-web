@@ -59,12 +59,16 @@ test("joining immediately refreshes assignments and permissions without reopenin
     expect(result.current.isAssignmentsLoading).toBe(false);
   });
   expect(result.current.canJoinRole("translator")).toBe(true);
+  expect(result.current.canTranslate).toBe(false);
+  expect(result.current.canProofread).toBe(false);
   expect(result.current.canTranslateOrProofread).toBe(false);
   await act(async () => {
     await result.current.handleJoinRole("translator");
   });
   expect(result.current.currentAssignment?.id).toBe("assignment");
   expect(result.current.canJoinRole("translator")).toBe(false);
+  expect(result.current.canTranslate).toBe(true);
+  expect(result.current.canProofread).toBe(false);
   expect(result.current.canTranslateOrProofread).toBe(true);
   expect(showToast).toHaveBeenCalledExactlyOnceWith("加入分工成功", "success");
   expect(onWorkflowRecordsChanged).toHaveBeenCalledOnce();

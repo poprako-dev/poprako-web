@@ -16,6 +16,7 @@ export type ImportChapterRequest = {
   content: string;
   format: "poprako" | "label_plus";
   mode: "keep" | "overwrite";
+  target: "translation" | "proofread" | "both";
 };
 export type ImportChapterResponse = {
   importedPageSourceCount: number;
