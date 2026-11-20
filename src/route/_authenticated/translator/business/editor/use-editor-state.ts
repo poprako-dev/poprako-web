@@ -19,6 +19,7 @@ import { useShortcuts } from "@/shared/hook/use-shortcuts";
 import { useRelocationPreference } from "@/shared/hook/use-relocation-preference";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { useSpecialChars } from "@/route/_authenticated/translator/business/preference/use-special-chars";
+import { useProofreadPreviewPreference } from "@/route/_authenticated/translator/business/preference/use-proofread-preview-preference";
 import type { ProofreadPreviewVisibility } from "@/route/_authenticated/translator/business/contract/preview";
 import type {
   CopyFromTranslationRequest,
@@ -186,8 +187,8 @@ function useTranslatorModeState(options: EditorOptions): EditorModeState {
   const viewState = storedViewState;
   useExternalModeTransition(viewState, mode, availableModes, setStoredViewState);
   const { view } = viewState;
-  const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
-    useState<ProofreadPreviewVisibility>("visible");
+  const { proofreadPreviewVisibility, setProofreadPreviewVisibility } =
+    useProofreadPreviewPreference();
   const canEditView =
     view !== "readOnly" && (view === "translate" ? options.canTranslate : options.canProofread);
   const isReadOnly = !canEditView;
