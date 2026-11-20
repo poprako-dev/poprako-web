@@ -30,9 +30,11 @@ type Props = {
   isDragDimmed: boolean;
   readOnly: boolean;
   specialCharInsertRequest: UnitListProps["specialCharInsertRequest"];
+  copyFromTranslationRequest: UnitListProps["copyFromTranslationRequest"];
   specialCharsBar: UnitListProps["specialCharsBar"];
   onSpecialCharUse: UnitListProps["onSpecialCharUse"];
   onSpecialCharInserted: UnitListProps["onSpecialCharInserted"];
+  onCopyFromTranslationHandled: UnitListProps["onCopyFromTranslationHandled"];
 };
 
 function UnitListItemView(props: Props): JSX.Element {
@@ -66,9 +68,11 @@ function UnitListItemView(props: Props): JSX.Element {
       showDropIndicator={props.isDragging}
       enableReadOnly={props.readOnly}
       specialCharInsertRequest={props.specialCharInsertRequest}
+      copyFromTranslationRequest={props.copyFromTranslationRequest}
       specialCharsBar={props.specialCharsBar}
       onSpecialCharUse={props.onSpecialCharUse}
       onSpecialCharInserted={props.onSpecialCharInserted}
+      onCopyFromTranslationHandled={props.onCopyFromTranslationHandled}
     />
   );
 }

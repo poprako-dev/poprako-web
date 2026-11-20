@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { UnitList } from "./test/UnitListPreview";
+import type { CopyFromTranslationRequest } from "./UnitList";
 import {
   createUnit,
   unitId,
@@ -166,6 +167,8 @@ export const EditAndCopy: Story = {
     const width = input.getBoundingClientRect().width;
     await userEvent.click(within(row).getByTitle("从初翻复制"));
     await expect(input).toHaveValue(SAMPLE_TEXT);
+    await expect(input).toHaveFocus();
+    await expect(input.selectionStart).toBe(SAMPLE_TEXT.length);
     await expect(input.getBoundingClientRect().width).toBe(width);
     await expectFitted(input);
     await userEvent.click(within(row).getByTitle("确认校对"));
@@ -235,5 +238,57 @@ export const ReadOnly: Story = {
     await expect(within(canvasElement).queryByTitle("确认校对")).not.toBeInTheDocument();
     await expect(within(canvasElement).queryByTitle("从初翻复制")).not.toBeInTheDocument();
     await verifyResize(canvasElement, 1);
+  },
+};
+
+function CopyRequestFixture(): JSX.Element {
+  const [units, setUnits] = useState<UnitInfo[]>(() => [
+    { ...createUnit(0, 0, true), id: "layout-0", index: 0, translatedText: SAMPLE_TEXT },
+  ]);
+  const [request, setRequest] = useState<CopyFromTranslationRequest | undefined>(undefined);
+
+  function modify(id: string, updates: UnitEdit): void {
+    setUnits((previous) =>
+      previous.map((unit) => (unitId(unit) === id ? applyUnitUpdates(unit, updates) : unit)),
+    );
+  }
+
+  return (
+    <div style={{ width: 360, height: 600 }}>
+      <button
+        type="button"
+        onClick={() => {
+          setRequest({ id: Date.now(), targetUnitId: "layout-0" });
+        }}
+      >
+        模拟快捷键
+      </button>
+      <UnitList
+        units={units}
+        focusedUnitId="layout-0"
+        mode="proofread"
+        onFocusUnit={() => undefined}
+        editing={{ modifyUnit: modify }}
+        onResolveUser={() => Promise.resolve({ success: false, error: "无用户资料" })}
+        copyFromTranslationRequest={request}
+        onCopyFromTranslationHandled={() => {
+          setRequest(undefined);
+        }}
+      />
+    </div>
+  );
+}
+
+export const CopyShortcutRequest: Story = {
+  render: () => <CopyRequestFixture />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = getTextarea(getRow(canvasElement, 0), 1);
+    await userEvent.click(canvas.getByRole("button", { name: "模拟快捷键" }));
+    await waitFor(async () => {
+      await expect(input).toHaveValue(SAMPLE_TEXT);
+      await expect(input).toHaveFocus();
+      await expect(input.selectionStart).toBe(SAMPLE_TEXT.length);
+    });
   },
 };

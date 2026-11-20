@@ -7,6 +7,7 @@ export type ShortcutAction =
   | "toggleMode"
   | "toggleRelocation"
   | "toggleProofreadPreview"
+  | "copyFromTranslation"
   | "nextMarker"
   | "prevMarker"
   | "pageUp"

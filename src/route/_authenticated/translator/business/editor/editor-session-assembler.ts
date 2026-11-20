@@ -23,6 +23,7 @@ type SessionAppearanceState = Pick<
   | "canSwitchView"
   | "canvasRef"
   | "configurableShortcuts"
+  | "copyFromTranslationRequest"
   | "deleteConfirmUnitId"
   | "fixedShortcuts"
   | "focusedUnitId"
@@ -83,6 +84,7 @@ function sessionAppearance(
   | "canSwitchView"
   | "canvasRef"
   | "configurableShortcuts"
+  | "copyFromTranslationRequest"
   | "deleteConfirmUnitId"
   | "fixedShortcuts"
   | "focusedUnitId"
@@ -128,6 +130,7 @@ function sessionAppearanceState(state: EditorState): SessionAppearanceState {
     canSwitchView: state.canSwitchView,
     canvasRef: state.canvasRef,
     configurableShortcuts: state.configurableShortcuts,
+    copyFromTranslationRequest: state.copyFromTranslationRequest,
     deleteConfirmUnitId: state.deleteConfirmUnitId,
     fixedShortcuts: state.fixedShortcuts,
     focusedUnitId: state.focusedUnitId,
@@ -193,6 +196,7 @@ function sessionActions(
   | "canInsertSpecialChar"
   | "doDeleteUnit"
   | "handleAddUnit"
+  | "handleCopyFromTranslationHandled"
   | "handleCompleteStage"
   | "handleDeleteUnit"
   | "handleFocusUnit"
@@ -213,6 +217,7 @@ function sessionActions(
     canInsertSpecialChar,
     doDeleteUnit: actions.doDeleteUnit,
     handleAddUnit: actions.handleAddUnit,
+    handleCopyFromTranslationHandled: actions.handleCopyFromTranslationHandled,
     handleCompleteStage: commands.handleCompleteStage,
     handleDeleteUnit: actions.handleDeleteUnit,
     handleFocusUnit: actions.handleFocusUnit,

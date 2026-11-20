@@ -1,53 +1,38 @@
 import type { JSX } from "react/jsx-runtime";
-import { type PointerEvent as ReactPointerEvent, type ReactNode, useRef } from "react";
+import { useRef } from "react";
 import clsx from "clsx";
 import { Check, Copy, X } from "lucide-react";
 import { UnitProgressIndicator } from "./UnitProgressIndicator";
 import {
   isUnitFlagged,
   unitId,
-  type UnitInfo,
   unitIsProofread,
   unitProofreadText,
   unitTranslatedText,
 } from "@/route/_authenticated/translator/business/unit/unit";
-import type { UnitEdit } from "@/route/_authenticated/translator/business/unit/unit-edit";
-import type { UserInfo } from "@/route/business/identity/user";
 import { BaseUnitItem } from "@/route/_authenticated/translator/business/unit-list/BaseUnitItem";
 import { UnitFlagButton } from "@/route/_authenticated/translator/business/unit-list/UnitFlagButton";
 import { AutoResizeTextarea } from "@/route/_authenticated/translator/business/unit-list/AutoResizeTextarea";
 import { SpecialCharsBar } from "@/route/_authenticated/translator/business/unit-list/SpecialCharsBar";
-import type { SpecialCharInsertRequest } from "@/route/_authenticated/translator/business/unit-list/UnitList";
-import type { SpecialCharsBarController } from "@/route/_authenticated/translator/business/preference/use-detachable-special-chars-bar";
-import {
-  useFocusTextArea,
-  useUnitTextInsertion,
-} from "@/route/_authenticated/translator/business/unit-list/use-unit-text-insertion";
+import type { UnitItemProps } from "@/route/_authenticated/translator/business/unit-list/unit-item-props";
+import { useFocusTextArea } from "@/route/_authenticated/translator/business/unit-list/use-unit-text-insertion";
+import { useProofreadTextEditing } from "@/route/_authenticated/translator/business/unit-list/use-proofread-text-editing";
+import type { UnitContributor } from "@/route/_authenticated/translator/business/unit-list/UnitContributorTooltip";
 
-type Props = {
-  annotationEditor?: ReactNode;
-  hasLocalDraft?: boolean | undefined;
-  unit: UnitInfo;
-  isFocused: boolean;
-  onSelect?: ((unitId: string) => void) | undefined;
-  onIndexActivate?: ((unitId: string) => void) | undefined;
-  canToggleBubble?: boolean | undefined;
-  onModifyUnit?: ((unitId: string, updates: UnitEdit) => void) | undefined;
-  onIndexPointerDown?:
-    | ((event: ReactPointerEvent<HTMLButtonElement>, unitId: string) => void)
-    | undefined;
-  isDragging?: boolean | undefined;
-  isDragDimmed?: boolean | undefined;
-  showDropIndicator?: boolean | undefined;
-  dataUnitId?: string | undefined;
-  enableReadOnly?: boolean | undefined;
-  translator?: UserInfo | undefined;
-  proofreader?: UserInfo | undefined;
-  specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
-  specialCharsBar?: SpecialCharsBarController | undefined;
-  onSpecialCharUse?: ((char: string) => void) | undefined;
-  onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
-};
+type Props = UnitItemProps;
+
+function buildContributors(
+  translator: UnitItemProps["translator"],
+  proofreader: UnitItemProps["proofreader"],
+  isShowProofreadField: boolean,
+): UnitContributor[] {
+  return [
+    ...(translator ? [{ role: "translator" as const, user: translator }] : []),
+    ...(isShowProofreadField && proofreader
+      ? [{ role: "proofreader" as const, user: proofreader }]
+      : []),
+  ];
+}
 
 export function ProofreadModeUnitItem({
   annotationEditor,
@@ -67,33 +52,30 @@ export function ProofreadModeUnitItem({
   translator,
   proofreader,
   specialCharInsertRequest,
+  copyFromTranslationRequest,
   specialCharsBar,
   onSpecialCharUse,
   onSpecialCharInserted,
+  onCopyFromTranslationHandled,
 }: Props): JSX.Element {
   const proofRef = useRef<HTMLTextAreaElement>(null);
   const hasProofreadText = Boolean(unitProofreadText(unit));
   const hasTranslatedText = Boolean(unitTranslatedText(unit));
   const isShowProofreadField = enableReadOnly ? hasProofreadText : isFocused || hasProofreadText;
-  const contributors = [
-    ...(translator ? [{ role: "translator" as const, user: translator }] : []),
-    ...(isShowProofreadField && proofreader
-      ? [{ role: "proofreader" as const, user: proofreader }]
-      : []),
-  ];
+  const contributors = buildContributors(translator, proofreader, isShowProofreadField);
 
   useFocusTextArea(proofRef, isFocused);
 
-  const insertChar = useUnitTextInsertion({
+  const { insertChar, copyFromTranslation } = useProofreadTextEditing({
     textareaRef: proofRef,
-    unitId: unitId(unit),
-    text: unitProofreadText(unit),
-    textField: "proofreadText",
+    unit,
     isFocused,
     enableReadOnly,
     onModifyUnit,
     specialCharInsertRequest,
     onSpecialCharInserted,
+    copyRequest: copyFromTranslationRequest,
+    onCopyHandled: onCopyFromTranslationHandled,
   });
 
   return (
@@ -168,15 +150,7 @@ export function ProofreadModeUnitItem({
                   <button
                     type="button"
                     title="从初翻复制"
-                    onClick={() => {
-                      const text = unitTranslatedText(unit);
-                      if (text) {
-                        onModifyUnit?.(unitId(unit), {
-                          // 校对文本与校对状态完全独立：复制文本不得切换 isProofread。
-                          proofreadText: text,
-                        });
-                      }
-                    }}
+                    onClick={copyFromTranslation}
                     className={clsx(
                       "shrink-0 p-1 rounded",
                       "text-text-muted-neutral hover:text-text-green",

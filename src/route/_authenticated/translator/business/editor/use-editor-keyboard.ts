@@ -40,7 +40,10 @@ type Options = Pick<
   > &
   Pick<
     EditorUnitActions,
-    "handleQuickSpecialChar" | "handleQuickSpecialCharAt" | "handleFocusUnit"
+    | "handleQuickSpecialChar"
+    | "handleQuickSpecialCharAt"
+    | "handleFocusUnit"
+    | "handleCopyFromTranslation"
   > &
   Pick<EditorProps, "project"> & { handleSave: () => Promise<void> };
 export function useEditorKeyboard(options: Options): { handleSwitchView: () => void } {
@@ -111,7 +114,9 @@ type ShortcutOptions = Pick<
   | "handleNavigate"
   | "handleQuickSpecialChar"
   | "handleQuickSpecialCharAt"
+  | "handleCopyFromTranslation"
   | "handleSave"
+  | "view"
 > & { handleSwitchView: () => void };
 
 function createEditorShortcutActions(options: ShortcutOptions): ShortcutMap {
@@ -120,6 +125,10 @@ function createEditorShortcutActions(options: ShortcutOptions): ShortcutMap {
     toggleRelocation: options.toggleRelocation,
     toggleProofreadPreview: () => {
       toggleProofreadPreview(options.setProofreadPreviewVisibility);
+    },
+    copyFromTranslation: () => {
+      if (options.view !== "proofread") return;
+      options.handleCopyFromTranslation();
     },
     nextMarker: () => {
       focusRelativeMarker(options, 1);

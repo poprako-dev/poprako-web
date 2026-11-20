@@ -64,9 +64,11 @@ export function EditorSidebar({
             !session.canEditView || session.isLoadingPage || session.isCompletingStage
           }
           specialCharInsertRequest={session.specialCharInsertRequest}
+          copyFromTranslationRequest={session.copyFromTranslationRequest}
           specialCharsBar={session.specialCharsBar}
           onSpecialCharUse={session.handleSpecialCharUse}
           onSpecialCharInserted={session.handleSpecialCharInserted}
+          onCopyFromTranslationHandled={session.handleCopyFromTranslationHandled}
         />
       </div>
     </>

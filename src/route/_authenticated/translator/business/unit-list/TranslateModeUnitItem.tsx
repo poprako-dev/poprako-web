@@ -1,49 +1,22 @@
 import type { JSX } from "react/jsx-runtime";
-import { type PointerEvent as ReactPointerEvent, type ReactNode, useRef } from "react";
+import { useRef } from "react";
 import { UnitProgressIndicator } from "./UnitProgressIndicator";
 import {
   isUnitFlagged,
   unitId,
-  type UnitInfo,
   unitTranslatedText,
 } from "@/route/_authenticated/translator/business/unit/unit";
-import type { UnitEdit } from "@/route/_authenticated/translator/business/unit/unit-edit";
-import type { UserInfo } from "@/route/business/identity/user";
 import { BaseUnitItem } from "@/route/_authenticated/translator/business/unit-list/BaseUnitItem";
 import { UnitFlagButton } from "@/route/_authenticated/translator/business/unit-list/UnitFlagButton";
 import { AutoResizeTextarea } from "@/route/_authenticated/translator/business/unit-list/AutoResizeTextarea";
 import { SpecialCharsBar } from "@/route/_authenticated/translator/business/unit-list/SpecialCharsBar";
-import type { SpecialCharInsertRequest } from "@/route/_authenticated/translator/business/unit-list/UnitList";
-import type { SpecialCharsBarController } from "@/route/_authenticated/translator/business/preference/use-detachable-special-chars-bar";
+import type { UnitItemProps } from "@/route/_authenticated/translator/business/unit-list/unit-item-props";
 import {
   useFocusTextArea,
   useUnitTextInsertion,
 } from "@/route/_authenticated/translator/business/unit-list/use-unit-text-insertion";
 
-type Props = {
-  annotationEditor?: ReactNode;
-  hasLocalDraft?: boolean | undefined;
-  unit: UnitInfo;
-  isFocused: boolean;
-  onSelect?: ((unitId: string) => void) | undefined;
-  onIndexActivate?: ((unitId: string) => void) | undefined;
-  canToggleBubble?: boolean | undefined;
-  onModifyUnit?: ((unitId: string, updates: UnitEdit) => void) | undefined;
-  onIndexPointerDown?:
-    | ((event: ReactPointerEvent<HTMLButtonElement>, unitId: string) => void)
-    | undefined;
-  isDragging?: boolean | undefined;
-  isDragDimmed?: boolean | undefined;
-  showDropIndicator?: boolean | undefined;
-  dataUnitId?: string | undefined;
-  enableReadOnly?: boolean | undefined;
-  translator?: UserInfo | undefined;
-  proofreader?: UserInfo | undefined;
-  specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
-  specialCharsBar?: SpecialCharsBarController | undefined;
-  onSpecialCharUse?: ((char: string) => void) | undefined;
-  onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
-};
+type Props = UnitItemProps;
 
 export function TranslateModeUnitItem({
   annotationEditor,

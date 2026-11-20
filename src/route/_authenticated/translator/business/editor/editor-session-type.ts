@@ -13,6 +13,7 @@ export type EditorSession = Pick<
   | "canSwitchView"
   | "canvasRef"
   | "configurableShortcuts"
+  | "copyFromTranslationRequest"
   | "deleteConfirmUnitId"
   | "fixedShortcuts"
   | "focusedUnitId"
@@ -50,6 +51,7 @@ export type EditorSession = Pick<
     ReturnType<typeof useEditorUnitActions>,
     | "doDeleteUnit"
     | "handleAddUnit"
+    | "handleCopyFromTranslationHandled"
     | "handleDeleteUnit"
     | "handleFocusUnit"
     | "handleModifyUnit"
