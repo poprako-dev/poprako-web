@@ -285,7 +285,9 @@ export const WorkspaceCardAndReturn: Story = {
     await waitFor(() => expect(canvas.getByLabelText("团队")).toHaveTextContent("team-b"));
     await expect(canvas.getByLabelText("目标章节")).toHaveTextContent("target-chapter");
     await userEvent.click(canvas.getByRole("button", { name: "翻译成员" }));
-    await expect(await screen.findByText("team-b-translator")).toBeVisible();
+    await waitFor(async () => {
+      await expect(screen.getByText("team-b-translator")).toBeVisible();
+    });
     await userEvent.click(screen.getByRole("button", { name: "关闭" }));
     await userEvent.click(canvas.getByRole("button", { name: "进入翻译器" }));
     await userEvent.click(await canvas.findByRole("button", { name: "返回详情" }));
@@ -294,13 +296,17 @@ export const WorkspaceCardAndReturn: Story = {
       1,
     );
     await userEvent.click(canvas.getByRole("button", { name: "校对成员" }));
-    await expect(await screen.findByText("team-b-proofreader")).toBeVisible();
+    await waitFor(async () => {
+      await expect(screen.getByText("team-b-proofreader")).toBeVisible();
+    });
     await userEvent.type(screen.getByRole("textbox"), "fail");
     await expect(await screen.findByRole("alert")).toHaveTextContent("成员查询失败");
     await expect(screen.queryByText("没有可添加的成员")).not.toBeInTheDocument();
     await userEvent.clear(screen.getByRole("textbox"));
     await userEvent.type(screen.getByRole("textbox"), "empty");
-    await expect(await screen.findByText("没有可添加的成员")).toBeVisible();
+    await waitFor(async () => {
+      await expect(screen.getByText("没有可添加的成员")).toBeVisible();
+    });
   },
 };
 
@@ -315,7 +321,9 @@ export const PlaygroundUrl: Story = {
     await expect(canvas.getByLabelText("目标章节")).toHaveTextContent("target-chapter");
     await userEvent.click(canvas.getByRole("button", { name: "翻译成员" }));
     const screen = within(canvasElement.ownerDocument.body);
-    await expect(await screen.findByText("team-b-translator")).toBeVisible();
+    await waitFor(async () => {
+      await expect(screen.getByText("team-b-translator")).toBeVisible();
+    });
   },
 };
 
