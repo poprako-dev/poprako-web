@@ -52,7 +52,7 @@ export function useEditorUnitActions(options: Options): {
   handleProofreadAllUnits: (isProofread: boolean) => void;
   handleMoveUnit: (targetUnitId: string, xCoord: number, yCoord: number) => void;
   handleReorderUnit: (targetUnitId: string, targetIndex: number) => void;
-  handleAddUnit: (xCoord: number, yCoord: number, isBubble: boolean) => void;
+  handleAddUnit: (xCoord: number, yCoord: number, isBubble: boolean, keepFocus: boolean) => void;
   handleFocusUnit: (targetUnitId: string) => void;
   handlePageImageLoad: () => void;
   handleSearchResultNavigate: (pageId: string, targetUnitId?: string) => Promise<void>;
@@ -160,8 +160,8 @@ function createUnitEditActions(
     handleReorderUnit: (targetUnitId: string, targetIndex: number) => {
       options.commitUnits(moveUnitToIndex(options.unitBufRef.current, targetUnitId, targetIndex));
     },
-    handleAddUnit: (xCoord: number, yCoord: number, isBubble: boolean) => {
-      addEditorUnit(options, xCoord, yCoord, isBubble);
+    handleAddUnit: (xCoord: number, yCoord: number, isBubble: boolean, keepFocus: boolean) => {
+      addEditorUnit(options, xCoord, yCoord, isBubble, keepFocus);
     },
   };
 }
@@ -281,6 +281,7 @@ function addEditorUnit(
   xCoord: number,
   yCoord: number,
   isBubble: boolean,
+  keepFocus: boolean,
 ): void {
   if (options.isLoadingPage || options.isCompletingStage) return;
   if (options.unitBufRef.current.length >= 100) {
@@ -289,6 +290,7 @@ function addEditorUnit(
   }
   const unit = createUnit(xCoord, yCoord, isBubble);
   options.commitUnits([...options.unitBufRef.current, unit]);
+  if (keepFocus) return;
   const newUnitId = unitId(unit);
   options.relocationSuppressedUnitIdRef.current = newUnitId;
   options.setFocusedUnitId(newUnitId);
