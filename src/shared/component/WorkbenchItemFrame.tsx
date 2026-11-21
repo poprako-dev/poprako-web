@@ -1,5 +1,5 @@
 import type { ComponentPropsWithRef, JSX, ReactNode } from "react";
-import clsx from "clsx";
+import { cn } from "@/shared/utility/utils";
 type Props = ComponentPropsWithRef<"div"> & {
   isFocused: boolean;
   leading: ReactNode;
@@ -16,7 +16,7 @@ export function WorkbenchItemFrame({
   return (
     <div
       {...props}
-      className={clsx(
+      className={cn(
         "relative flex cursor-text items-stretch border-y border-line-stone-200",
         "first:border-t-0 last:border-b-0 transition-all duration-75",
         isFocused ? "z-10 bg-surface-stone-300/50" : "bg-transparent hover:bg-surface-stone-100/70",
