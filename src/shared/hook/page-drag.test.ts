@@ -52,18 +52,25 @@ afterEach(() => {
 describe("page drag clicks", () => {
   it("creates an alternate marker when a canvas drag stays within the click slop", () => {
     const context = createDragHarness();
-    startPageDrag({ type: "pan", startX: 20, startY: 30 }, context);
+    startPageDrag({ type: "pan", startX: 20, startY: 30, shiftKey: false }, context);
     pointer("mousemove", 22, 32);
     pointer("mouseup", 22, 32);
-    expect(context.tryAddMarker).toHaveBeenCalledWith(22, 32, true);
+    expect(context.tryAddMarker).toHaveBeenCalledWith(22, 32, true, false);
     expect(context.setTransform).not.toHaveBeenCalled();
     expect(context.setIsPanning).not.toHaveBeenCalledWith(true);
     expect(context.windowHandlersRef.current).toBeNull();
   });
 
+  it("forwards the shift modifier of a canvas click to marker creation", () => {
+    const context = createDragHarness();
+    startPageDrag({ type: "pan", startX: 20, startY: 30, shiftKey: true }, context);
+    pointer("mouseup", 22, 32);
+    expect(context.tryAddMarker).toHaveBeenCalledWith(22, 32, true, true);
+  });
+
   it("neither pans nor creates a marker past the click slop before panning starts", () => {
     const context = createDragHarness();
-    startPageDrag({ type: "pan", startX: 20, startY: 30 }, context);
+    startPageDrag({ type: "pan", startX: 20, startY: 30, shiftKey: false }, context);
     pointer("mousemove", 25, 34);
     pointer("mouseup", 25, 34);
     expect(context.tryAddMarker).not.toHaveBeenCalled();
@@ -73,7 +80,7 @@ describe("page drag clicks", () => {
 
   it("keeps panning once it starts even if the pointer returns near the start", () => {
     const context = createDragHarness();
-    startPageDrag({ type: "pan", startX: 20, startY: 30 }, context);
+    startPageDrag({ type: "pan", startX: 20, startY: 30, shiftKey: false }, context);
     pointer("mousemove", 40, 50);
     pointer("mousemove", 24, 34);
     pointer("mouseup", 24, 34);
@@ -99,7 +106,7 @@ describe("page drag movement", () => {
     context.setTransform = vi.fn((update: Parameters<DragContext["setTransform"]>[0]) => {
       transform = typeof update === "function" ? update(transform) : update;
     });
-    startPageDrag({ type: "pan", startX: 20, startY: 30 }, context);
+    startPageDrag({ type: "pan", startX: 20, startY: 30, shiftKey: false }, context);
     pointer("mousemove", 40, 50);
     expect(transform).toEqual({ scale: 2, offsetX: 30, offsetY: 40 });
     expect(context.setIsPanning).toHaveBeenCalledWith(true);

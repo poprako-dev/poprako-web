@@ -10,7 +10,7 @@ const CLICK_SLOP = 4;
 export type MarkerPreview = { id: string; x: number; y: number };
 
 export type DragRequest =
-  | { type: "pan"; startX: number; startY: number }
+  | { type: "pan"; startX: number; startY: number; shiftKey: boolean }
   | {
       type: "marker";
       startX: number;
@@ -45,7 +45,7 @@ export type DragContext = {
   transform: Transform;
   onFocusMarker: PageEditing["onFocusMarker"];
   onMoveMarker: PageEditing["onMoveMarker"];
-  tryAddMarker: (x: number, y: number, alternate: boolean) => void;
+  tryAddMarker: (x: number, y: number, alternate: boolean, shiftKey: boolean) => void;
 };
 
 export function clearDragListeners(ref: DragContext["windowHandlersRef"]): void {
@@ -109,7 +109,7 @@ function endDrag(context: DragContext, clientX: number, clientY: number): void {
 
   if (!drag.exceeded) {
     if (drag.type === "pan") {
-      context.tryAddMarker(clientX, clientY, true);
+      context.tryAddMarker(clientX, clientY, true, drag.shiftKey);
     } else {
       if (drag.markerId) context.onFocusMarker(drag.markerId);
     }

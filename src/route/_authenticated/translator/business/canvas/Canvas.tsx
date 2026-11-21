@@ -17,7 +17,7 @@ type Props = {
   focusedUnitId: string | undefined;
   onFocusUnit: (unitId: string) => void;
   onMoveUnit: (unitId: string, xCoord: number, yCoord: number) => void;
-  onAddUnit: (xCoord: number, yCoord: number, isBubble: boolean) => void;
+  onAddUnit: (xCoord: number, yCoord: number, isBubble: boolean, keepFocus: boolean) => void;
   onDeleteUnit: (unitId: string) => void;
   onToggleBubble: (unitId: string) => void;
   onImageLoad: () => void;

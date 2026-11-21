@@ -28,7 +28,7 @@ function useCanvasTouch({ imgRef, containerRef, startDrag }: PointerArgs): void 
       }
 
       e.preventDefault();
-      startDrag({ type: "pan", startX: touch.clientX, startY: touch.clientY });
+      startDrag({ type: "pan", startX: touch.clientX, startY: touch.clientY, shiftKey: false });
     },
     [imgRef, startDrag],
   );
@@ -66,7 +66,7 @@ export function useCanvasPointer(args: PointerArgs): PageInteraction["handleCanv
       }
 
       e.preventDefault();
-      startDrag({ type: "pan", startX: e.clientX, startY: e.clientY });
+      startDrag({ type: "pan", startX: e.clientX, startY: e.clientY, shiftKey: e.shiftKey });
     },
     [imgRef, startDrag],
   );
@@ -129,9 +129,9 @@ export function useMarkerCreation(
   imgRef: PageInteraction["imgRef"],
   isMarkerCreationEnabled: boolean,
   onAddMarker: PageEditing["onAddMarker"],
-): (x: number, y: number, alternate: boolean) => void {
+): (x: number, y: number, alternate: boolean, shiftKey: boolean) => void {
   const tryAddMarker = useCallback(
-    (clientX: number, clientY: number, alternate: boolean) => {
+    (clientX: number, clientY: number, alternate: boolean, shiftKey: boolean) => {
       if (!isMarkerCreationEnabled) return;
 
       const img = imgRef.current;
@@ -142,7 +142,7 @@ export function useMarkerCreation(
       const y = (clientY - rect.top) / rect.height;
 
       if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
-        onAddMarker(x, y, alternate);
+        onAddMarker(x, y, alternate, shiftKey);
       }
     },
     [imgRef, isMarkerCreationEnabled, onAddMarker],
@@ -171,7 +171,7 @@ export function usePageContextMenu(
         return;
       }
 
-      tryAddMarker(e.clientX, e.clientY, false);
+      tryAddMarker(e.clientX, e.clientY, false, false);
     },
     [enableReadOnly, onDeleteMarker, tryAddMarker],
   );

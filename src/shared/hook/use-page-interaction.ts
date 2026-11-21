@@ -9,7 +9,7 @@ export type PageEditing = {
   enableReadOnly: boolean;
   onFocusMarker: (markerId: string) => void;
   onMoveMarker: (markerId: string, xCoord: number, yCoord: number) => void;
-  onAddMarker: (xCoord: number, yCoord: number, alternate: boolean) => void;
+  onAddMarker: (xCoord: number, yCoord: number, alternate: boolean, shiftKey: boolean) => void;
   onDeleteMarker: (markerId: string) => void;
 };
 
