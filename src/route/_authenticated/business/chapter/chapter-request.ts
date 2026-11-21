@@ -128,6 +128,7 @@ export function importChapter(
     content: args.content,
     format: args.format === "json" ? "poprako" : "label_plus",
     mode: args.mode,
+    target: args.target,
   });
 }
 export async function joinChapter(

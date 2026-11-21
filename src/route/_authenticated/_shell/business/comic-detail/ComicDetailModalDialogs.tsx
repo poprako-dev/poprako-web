@@ -3,7 +3,10 @@ import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapte
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
 import type { MemberInfo } from "@/route/business/identity/member";
 import type { WorkerRole } from "@/route/business/identity/role";
-import type { ImportChapterMode } from "@/route/_authenticated/business/chapter/chapter-input";
+import type {
+  ImportChapterMode,
+  ImportChapterTarget,
+} from "@/route/_authenticated/business/chapter/chapter-input";
 import type { Result } from "@/shared/utility/result";
 import type { ExportProgressState } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
 import type { PendingChapterImport } from "@/route/_authenticated/_shell/business/comic-detail/use-comic-detail-import";
@@ -30,7 +33,9 @@ type Props = {
   cancelExport: () => void;
   pendingImport: PendingChapterImport | null;
   isImportingData: boolean;
-  confirmImport: (mode: ImportChapterMode) => Promise<void>;
+  canTranslate: boolean;
+  canProofread: boolean;
+  confirmImport: (mode: ImportChapterMode, target: ImportChapterTarget) => Promise<void>;
   cancelImport: () => void;
   memberSelectorRole: WorkerRole | null;
   selectedChapterId: string | null;
@@ -76,6 +81,8 @@ export function ComicDetailModalDialogs({
   cancelExport,
   pendingImport,
   isImportingData,
+  canTranslate,
+  canProofread,
   confirmImport,
   cancelImport,
   memberSelectorRole,
@@ -114,9 +121,12 @@ export function ComicDetailModalDialogs({
       {pendingImport && (
         <ImportTranslationDialog
           fileName={pendingImport.file.name}
+          format={pendingImport.format}
+          canTranslate={canTranslate}
+          canProofread={canProofread}
           loading={isImportingData}
-          onConfirm={(mode) => {
-            void confirmImport(mode);
+          onConfirm={(mode, target) => {
+            void confirmImport(mode, target);
           }}
           onCancel={cancelImport}
         />

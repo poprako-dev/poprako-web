@@ -99,6 +99,8 @@ export function ComicDetailModal(props: Props): ReactElement {
         cancelExport={exportState.cancelExport}
         pendingImport={exportState.pendingImport}
         isImportingData={exportState.isImportingData}
+        canTranslate={assignments.canTranslate}
+        canProofread={assignments.canProofread}
         confirmImport={exportState.confirmImport}
         cancelImport={exportState.cancelImport}
         memberSelectorRole={assignments.memberSelectorRole}

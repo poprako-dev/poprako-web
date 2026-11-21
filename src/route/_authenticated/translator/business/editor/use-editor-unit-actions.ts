@@ -24,11 +24,13 @@ type Options = Pick<
   | "isLoadingPage"
   | "isRelocationEnabled"
   | "setSpecialCharInsertRequest"
+  | "setCopyFromTranslationRequest"
   | "setDeleteConfirmUnitId"
   | "isCompletingStage"
   | "canvasRef"
   | "lastSpecialCharRef"
   | "specialCharRequestIdRef"
+  | "copyRequestIdRef"
   | "relocationSuppressedUnitIdRef"
   | "pendingCenteredUnitIdRef"
   | "showToast"
@@ -43,6 +45,8 @@ export function useEditorUnitActions(options: Options): {
   handleQuickSpecialCharAt: (index: number) => void;
   handleSpecialCharUse: (char: string) => void;
   handleSpecialCharInserted: (requestId: number, char: string) => void;
+  handleCopyFromTranslation: () => void;
+  handleCopyFromTranslationHandled: (requestId: number) => void;
   handleToggleBubble: (targetUnitId: string) => void;
   handleModifyUnit: (targetUnitId: string, updates: UnitEdit) => void;
   handleProofreadAllUnits: (isProofread: boolean) => void;
@@ -59,12 +63,14 @@ export function useEditorUnitActions(options: Options): {
   const editActions = createUnitEditActions(options);
   const focusActions = createFocusActions(options);
   const deleteActions = createDeleteActions(options);
+  const copyActions = useCopyFromTranslationActions(options);
   useEditorUnitRelocation(options);
   return {
     ...charActions,
     ...editActions,
     ...focusActions,
     ...deleteActions,
+    ...copyActions,
     handleModifyUnit: useCommittedCallback(editActions.handleModifyUnit),
     handleReorderUnit: useCommittedCallback(editActions.handleReorderUnit),
     handleFocusUnit: useCommittedCallback(focusActions.handleFocusUnit),
@@ -329,4 +335,24 @@ function useEditorUnitRelocation(
     options.unitBufRef,
   ]);
 }
+
+function useCopyFromTranslationActions(
+  options: Options,
+): Pick<
+  ReturnType<typeof useEditorUnitActions>,
+  "handleCopyFromTranslation" | "handleCopyFromTranslationHandled"
+> {
+  const { canEditView, focusedUnitId, copyRequestIdRef, setCopyFromTranslationRequest } = options;
+  const handleCopyFromTranslation = useCommittedCallback((): void => {
+    if (!canEditView || !focusedUnitId) return;
+    const requestId = copyRequestIdRef.current + 1;
+    copyRequestIdRef.current = requestId;
+    setCopyFromTranslationRequest({ id: requestId, targetUnitId: focusedUnitId });
+  });
+  const handleCopyFromTranslationHandled = useCommittedCallback((requestId: number): void => {
+    setCopyFromTranslationRequest((request) => (request?.id === requestId ? undefined : request));
+  });
+  return { handleCopyFromTranslation, handleCopyFromTranslationHandled };
+}
+
 export type EditorUnitActions = ReturnType<typeof useEditorUnitActions>;

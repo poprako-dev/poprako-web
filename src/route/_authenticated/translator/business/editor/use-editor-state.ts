@@ -19,8 +19,12 @@ import { useShortcuts } from "@/shared/hook/use-shortcuts";
 import { useRelocationPreference } from "@/shared/hook/use-relocation-preference";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { useSpecialChars } from "@/route/_authenticated/translator/business/preference/use-special-chars";
+import { useProofreadPreviewPreference } from "@/route/_authenticated/translator/business/preference/use-proofread-preview-preference";
 import type { ProofreadPreviewVisibility } from "@/route/_authenticated/translator/business/contract/preview";
-import type { SpecialCharInsertRequest } from "@/route/_authenticated/translator/business/unit-list/UnitList";
+import type {
+  CopyFromTranslationRequest,
+  SpecialCharInsertRequest,
+} from "@/route/_authenticated/translator/business/unit-list/UnitList";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import {
   resolveInitialPageIndex,
@@ -86,6 +90,8 @@ type EditorPanelState = {
   setIsUnitSearchTransformOpen: StateSetter<boolean>;
   specialCharInsertRequest: SpecialCharInsertRequest | undefined;
   setSpecialCharInsertRequest: StateSetter<SpecialCharInsertRequest | undefined>;
+  copyFromTranslationRequest: CopyFromTranslationRequest | undefined;
+  setCopyFromTranslationRequest: StateSetter<CopyFromTranslationRequest | undefined>;
   deleteConfirmUnitId: string | undefined;
   setDeleteConfirmUnitId: StateSetter<string | undefined>;
   isCompletingStage: boolean;
@@ -101,6 +107,7 @@ type EditorReferenceState = {
   canvasRef: RefObject<CanvasHandle | null>;
   lastSpecialCharRef: RefObject<string | null>;
   specialCharRequestIdRef: RefObject<number>;
+  copyRequestIdRef: RefObject<number>;
   relocationSuppressedUnitIdRef: RefObject<string | null>;
   pendingCenteredUnitIdRef: RefObject<string | null>;
 };
@@ -180,8 +187,8 @@ function useTranslatorModeState(options: EditorOptions): EditorModeState {
   const viewState = storedViewState;
   useExternalModeTransition(viewState, mode, availableModes, setStoredViewState);
   const { view } = viewState;
-  const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
-    useState<ProofreadPreviewVisibility>("visible");
+  const { proofreadPreviewVisibility, setProofreadPreviewVisibility } =
+    useProofreadPreviewPreference();
   const canEditView =
     view !== "readOnly" && (view === "translate" ? options.canTranslate : options.canProofread);
   const isReadOnly = !canEditView;
@@ -215,6 +222,9 @@ function useEditorPanelState(): EditorPanelState {
   const [specialCharInsertRequest, setSpecialCharInsertRequest] = useState<
     SpecialCharInsertRequest | undefined
   >(undefined);
+  const [copyFromTranslationRequest, setCopyFromTranslationRequest] = useState<
+    CopyFromTranslationRequest | undefined
+  >(undefined);
   const [deleteConfirmUnitId, setDeleteConfirmUnitId] = useState<string | undefined>(undefined);
   const [isCompletingStage, setIsCompletingStage] = useState(false);
   const [hasCompletedStage, setHasCompletedStage] = useState(false);
@@ -231,6 +241,8 @@ function useEditorPanelState(): EditorPanelState {
     setIsUnitSearchTransformOpen,
     specialCharInsertRequest,
     setSpecialCharInsertRequest,
+    copyFromTranslationRequest,
+    setCopyFromTranslationRequest,
     deleteConfirmUnitId,
     setDeleteConfirmUnitId,
     isCompletingStage,
@@ -248,12 +260,14 @@ function useEditorReferenceState(): EditorReferenceState {
   const canvasRef = useRef<CanvasHandle>(null);
   const lastSpecialCharRef = useRef<string | null>(null);
   const specialCharRequestIdRef = useRef(0);
+  const copyRequestIdRef = useRef(0);
   const relocationSuppressedUnitIdRef = useRef<string | null>(null);
   const pendingCenteredUnitIdRef = useRef<string | null>(null);
   return {
     canvasRef,
     lastSpecialCharRef,
     specialCharRequestIdRef,
+    copyRequestIdRef,
     relocationSuppressedUnitIdRef,
     pendingCenteredUnitIdRef,
   };
@@ -269,7 +283,11 @@ function useEditorPreferenceState(
   const { allChars, favoriteChars } = useSpecialChars();
   useEditorImagePreloader(options, page);
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } = useShortcuts();
-  const activeShortcuts = filterActiveShortcuts(configurableShortcuts, modes.isReadOnly);
+  const activeShortcuts = filterActiveShortcuts(
+    configurableShortcuts,
+    modes.isReadOnly,
+    modes.view,
+  );
   return {
     isRelocationEnabled,
     toggleRelocation,
@@ -298,6 +316,7 @@ function useEditorImagePreloader(
 function filterActiveShortcuts(
   shortcuts: ConfigurableShortcut[],
   isReadOnly: boolean,
+  view: TranslatorMode,
 ): ConfigurableShortcut[] {
   const available = isReadOnly
     ? shortcuts.filter((shortcut) =>
@@ -310,7 +329,11 @@ function filterActiveShortcuts(
           "toggleProofreadPreview",
         ].includes(shortcut.action),
       )
-    : shortcuts;
+    : shortcuts.filter(
+        (shortcut) =>
+          shortcut.action !== "toggleMode" &&
+          (shortcut.action !== "copyFromTranslation" || view === "proofread"),
+      );
   return available.filter((shortcut) => shortcut.action !== "toggleMode");
 }
 export type EditorState = EditorStateValue;

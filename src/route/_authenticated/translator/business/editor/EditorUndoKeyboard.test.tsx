@@ -40,6 +40,7 @@ function keyboardOptions(): Options {
     handleQuickSpecialChar: vi.fn(),
     handleQuickSpecialCharAt: vi.fn(),
     handleFocusUnit: vi.fn(),
+    handleCopyFromTranslation: vi.fn(),
     handleSave: vi.fn(),
   };
 }

@@ -38,6 +38,8 @@ type AssignmentState = {
   joiningRoles: Partial<Record<WorkerRole, boolean>>;
   leavingRoles: Partial<Record<WorkerRole, boolean>>;
   currentAssignment: AssignmentInfo | undefined;
+  canTranslate: boolean;
+  canProofread: boolean;
   canTranslateOrProofread: boolean;
   canReadOnly: boolean;
   canUploadRawPages: boolean;
@@ -56,6 +58,8 @@ type AssignmentState = {
 type AssignmentPermissions = Pick<
   AssignmentState,
   | "currentAssignment"
+  | "canTranslate"
+  | "canProofread"
   | "canTranslateOrProofread"
   | "canReadOnly"
   | "canUploadRawPages"
@@ -103,12 +107,13 @@ function resolveAssignmentPermissions(
   pinnedAssignments: AssignmentInfo[],
 ): AssignmentPermissions {
   const currentAssignment = assignments.find((item) => item.userId === currentUserId);
-  const canTranslateOrProofread = Boolean(
-    currentAssignment &&
-      (hasRole(currentAssignment, "translator") || hasRole(currentAssignment, "proofreader")),
-  );
+  const canTranslate = Boolean(currentAssignment && hasRole(currentAssignment, "translator"));
+  const canProofread = Boolean(currentAssignment && hasRole(currentAssignment, "proofreader"));
+  const canTranslateOrProofread = canTranslate || canProofread;
   return {
     currentAssignment,
+    canTranslate,
+    canProofread,
     canTranslateOrProofread,
     canReadOnly: activeMember !== null && !canTranslateOrProofread,
     canUploadRawPages: Boolean(currentAssignment && hasRole(currentAssignment, "rawProvider")),

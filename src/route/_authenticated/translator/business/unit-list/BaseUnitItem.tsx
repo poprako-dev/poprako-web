@@ -76,6 +76,10 @@ export function BaseUnitItem({
       ref={containerRef}
       data-unit-id={dataUnitId}
       className={clsx(
+        // 单元边界：文本区 1px，编号栏下方 3px，两段共用同一中轴。
+        "border-t-0 border-line-slate-400/70",
+        "after:pointer-events-none after:absolute after:left-0 after:w-11 after:h-[3px]",
+        "after:-bottom-[2px] after:z-20 after:bg-line-slate-400/70 after:content-[''] last:after:hidden",
         isDragDimmed && "bg-surface-stone-100/60 opacity-40 grayscale",
         isDragging && [
           "z-20 bg-surface-stone-50 opacity-100",

@@ -29,6 +29,11 @@ export type SpecialCharInsertRequest = {
   targetUnitId: string;
 };
 
+export type CopyFromTranslationRequest = {
+  id: number;
+  targetUnitId: string;
+};
+
 export type UnitListProps = {
   annotations?: UnitAnnotationSource | undefined;
   isAnnotationEditingEnabled?: boolean | undefined;
@@ -45,9 +50,11 @@ export type UnitListProps = {
   onResolveUser: UnitUserResolver;
   enableReadOnly?: boolean | undefined;
   specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
+  copyFromTranslationRequest?: CopyFromTranslationRequest | undefined;
   specialCharsBar?: SpecialCharsBarController | undefined;
   onSpecialCharUse?: ((char: string) => void) | undefined;
   onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
+  onCopyFromTranslationHandled?: ((requestId: number) => void) | undefined;
 };
 
 function activateUnitIndex(
@@ -126,9 +133,11 @@ export function UnitList({
   onResolveUser,
   enableReadOnly = false,
   specialCharInsertRequest,
+  copyFromTranslationRequest,
   specialCharsBar,
   onSpecialCharUse,
   onSpecialCharInserted,
+  onCopyFromTranslationHandled,
 }: UnitListProps & { ItemComponent: UnitItemComponent }): JSX.Element {
   const pendingIds = useMemo(() => new Set(pendingUnitIds), [pendingUnitIds]);
   const onModifyUnit = editing?.modifyUnit;
@@ -183,9 +192,15 @@ export function UnitList({
                   ? specialCharInsertRequest
                   : undefined
               }
+              copyFromTranslationRequest={
+                copyFromTranslationRequest?.targetUnitId === unitId(unit)
+                  ? copyFromTranslationRequest
+                  : undefined
+              }
               specialCharsBar={specialCharsBar}
               onSpecialCharUse={onSpecialCharUse}
               onSpecialCharInserted={onSpecialCharInserted}
+              onCopyFromTranslationHandled={onCopyFromTranslationHandled}
             />
           ))}
         </div>

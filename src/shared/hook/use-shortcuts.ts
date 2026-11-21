@@ -53,6 +53,11 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
     keys: ["Control", "x"],
   },
   {
+    action: "copyFromTranslation",
+    label: "从初翻复制",
+    keys: ["Control", "e"],
+  },
+  {
     action: "nextMarker",
     label: "下一个标记",
     keys: ["Tab"],

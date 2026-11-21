@@ -2,7 +2,11 @@ import { useCallback, useRef, useState } from "react";
 import { showLocalApiFailure, showLocalCaughtError } from "@/route/business/request-error";
 import type { ToastType } from "@/shared/component/notification-toast/notification-toast-type";
 import type { DetailContract } from "@/route/_authenticated/_shell/business/comic-detail/comic-detail-type";
-import type { ImportChapterMode } from "@/route/_authenticated/business/chapter/chapter-input";
+import type {
+  ImportChapterFormat,
+  ImportChapterMode,
+  ImportChapterTarget,
+} from "@/route/_authenticated/business/chapter/chapter-input";
 
 type Args = {
   selectedChapterId: string | null;
@@ -13,13 +17,17 @@ type Args = {
   showToast: (message: string, type: ToastType) => void;
 };
 
-export type PendingChapterImport = { file: File; chapterId: string };
+export type PendingChapterImport = {
+  file: File;
+  chapterId: string;
+  format: ImportChapterFormat;
+};
 
 export type ComicDetailImportState = {
   isImportingData: boolean;
   pendingImport: PendingChapterImport | null;
   handleImportFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  confirmImport: (mode: ImportChapterMode) => Promise<void>;
+  confirmImport: (mode: ImportChapterMode, target: ImportChapterTarget) => Promise<void>;
   cancelImport: () => void;
 };
 
@@ -38,6 +46,7 @@ function reportImportFailure(error: unknown, showToast: Args["showToast"]): void
 type ImportRequest = {
   pendingImport: PendingChapterImport;
   mode: ImportChapterMode;
+  target: ImportChapterTarget;
   onImportChapter: Args["onImportChapter"];
   reloadCurrentPages: Args["reloadCurrentPages"];
   reloadLoadedChapters: Args["reloadLoadedChapters"];
@@ -47,16 +56,14 @@ type ImportRequest = {
 };
 
 async function importChapterData(request: ImportRequest): Promise<void> {
-  const { pendingImport, mode, onImportChapter, showToast, setPendingImport } = request;
-  const format = detectImportFormat(pendingImport.file);
-  if (!format) return;
-
+  const { pendingImport, mode, target, onImportChapter, showToast, setPendingImport } = request;
   const content = await pendingImport.file.text();
   const result = await onImportChapter({
     chapterId: pendingImport.chapterId,
     content,
-    format,
+    format: pendingImport.format,
     mode,
+    target,
   });
   if (!result.success) {
     showLocalApiFailure(result, showToast);
@@ -86,25 +93,26 @@ function useImportFileChange(
       if (!selectedFile || !selectedChapterId || importInFlightRef.current) {
         return;
       }
-      if (!detectImportFormat(selectedFile)) {
+      const format = detectImportFormat(selectedFile);
+      if (!format) {
         showToast("仅支持 .json 或 .txt 文件", "error");
         return;
       }
-      setPendingImport({ file: selectedFile, chapterId: selectedChapterId });
+      setPendingImport({ file: selectedFile, chapterId: selectedChapterId, format });
     },
     [selectedChapterId, importInFlightRef, setPendingImport, showToast],
   );
 }
 
 function useImportConfirmation(
-  request: Omit<ImportRequest, "pendingImport" | "mode" | "setPendingImport">,
+  request: Omit<ImportRequest, "pendingImport" | "mode" | "target" | "setPendingImport">,
   pendingImport: PendingChapterImport | null,
   setPendingImport: (value: PendingChapterImport | null) => void,
   importInFlightRef: { current: boolean },
 ): Pick<ComicDetailImportState, "isImportingData" | "confirmImport" | "cancelImport"> {
   const [isImportingData, setIsImportingData] = useState(false);
   const confirmImport = useCallback(
-    async (mode: ImportChapterMode): Promise<void> => {
+    async (mode: ImportChapterMode, target: ImportChapterTarget): Promise<void> => {
       if (!pendingImport || importInFlightRef.current) return;
       importInFlightRef.current = true;
       setIsImportingData(true);
@@ -112,6 +120,7 @@ function useImportConfirmation(
         await importChapterData({
           pendingImport,
           mode,
+          target,
           ...request,
           setPendingImport,
         });
