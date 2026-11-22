@@ -5,6 +5,7 @@ import { Popover } from "radix-ui";
 import { ChartNoAxesGantt, CircleArrowRight, Loader2 } from "lucide-react";
 import clsx from "clsx";
 import { showLocalCaughtError } from "@/route/business/request-error";
+import { floatingActionCellClass } from "@/shared/component/floating-action-cell";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import type { PageUnitDiffStats } from "@/route/_authenticated/business/page/page";
 import { findNextEditedPageIndex } from "@/route/_authenticated/translator/business/edited-page-navigation";
@@ -16,11 +17,19 @@ type Props = {
   currentPageId: string;
   isDisabled: boolean;
   showNextEditedPage?: boolean;
+  appearance?: "standalone" | "joined";
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onListPageUnitDiffStats: () => Promise<PageUnitDiffStats[]>;
   onNavigate: (index: number) => Promise<void>;
 };
+
+const standaloneCellClass = clsx(
+  "flex size-8 items-center justify-center rounded-md border",
+  "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
+  "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
+  "disabled:opacity-60",
+);
 
 type NextPageNavigation = {
   isDisabled: boolean;
@@ -122,6 +131,7 @@ export function ReadOnlyPageActions({
   currentPageId,
   isDisabled,
   showNextEditedPage = true,
+  appearance = "standalone",
   isOpen,
   onOpenChange,
   onListPageUnitDiffStats,
@@ -136,9 +146,18 @@ export function ReadOnlyPageActions({
     onListPageUnitDiffStats,
     onNavigate,
   });
+  const isJoined = appearance === "joined";
+  const cellClass = isJoined ? floatingActionCellClass : standaloneCellClass;
+  const openClass = isJoined
+    ? "bg-surface-stone-400/40 text-ink-gray-900"
+    : "bg-surface-white text-ink-gray-900";
 
   return (
-    <div className="flex items-center gap-2">
+    <div
+      className={
+        isJoined ? "flex items-stretch divide-x divide-line-gray-100" : "flex items-center gap-2"
+      }
+    >
       <Popover.Root open={isOpen} onOpenChange={onOpenChange}>
         <Popover.Trigger asChild>
           <button
@@ -146,13 +165,7 @@ export function ReadOnlyPageActions({
             title="页面翻校单元统计"
             aria-label="页面翻校单元统计"
             disabled={isDisabled || isLoadingNext}
-            className={clsx(
-              "flex size-8 items-center justify-center rounded-md border",
-              "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
-              "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
-              "disabled:opacity-60",
-              isOpen && "bg-surface-white text-ink-gray-900",
-            )}
+            className={clsx(cellClass, isOpen && openClass)}
           >
             <ChartNoAxesGantt size={20} strokeWidth={2.25} />
           </button>
@@ -192,12 +205,7 @@ export function ReadOnlyPageActions({
           onClick={() => {
             void handleNextEditedPage();
           }}
-          className={clsx(
-            "flex size-8 items-center justify-center rounded-md border",
-            "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
-            "transition-colors hover:bg-surface-white hover:text-ink-gray-900",
-            "disabled:opacity-60",
-          )}
+          className={cellClass}
         >
           {isLoadingNext ? (
             <Loader2 size={18} className="animate-spin" />

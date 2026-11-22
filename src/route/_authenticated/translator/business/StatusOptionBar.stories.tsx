@@ -69,9 +69,6 @@ function InteractiveWrapper({
           await Promise.resolve();
           setIsHighResolution((current) => !current);
         }}
-        onSaveClick={() => Promise.resolve()}
-        saving={false}
-        saveStatus="已保存"
       />
     </div>
   );

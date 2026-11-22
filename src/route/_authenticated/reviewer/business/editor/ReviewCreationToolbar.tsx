@@ -1,11 +1,10 @@
 import type { JSX } from "react";
 import { MessageSquarePlus, ScanLine } from "lucide-react";
 import clsx from "clsx";
+import { floatingActionCellClass } from "@/shared/component/floating-action-cell";
 import type { ReviewEditor } from "./use-review-editor";
 
 type Props = { editor: ReviewEditor };
-const toolClass =
-  "flex h-8 w-10 items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-40";
 
 export function ReviewCreationToolbar({ editor }: Props): JSX.Element {
   const drawLabel = editor.drawing ? "取消框选 · Esc" : "框选标注 · R";
@@ -13,7 +12,7 @@ export function ReviewCreationToolbar({ editor }: Props): JSX.Element {
     <div
       role="group"
       aria-label="创建标注"
-      className="flex shrink-0 divide-x divide-line-gray-200 overflow-hidden rounded-md border border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm"
+      className="flex shrink-0 items-stretch divide-x divide-line-gray-100"
     >
       <button
         type="button"
@@ -27,10 +26,8 @@ export function ReviewCreationToolbar({ editor }: Props): JSX.Element {
           else editor.setDrawing({ id: null });
         }}
         className={clsx(
-          toolClass,
-          editor.drawing
-            ? "bg-surface-green-50 text-ink-green-800 hover:bg-surface-green-100"
-            : "hover:bg-surface-white hover:text-ink-gray-900",
+          floatingActionCellClass,
+          editor.drawing && "bg-surface-green-50 text-ink-green-800 hover:bg-surface-green-100",
         )}
       >
         <ScanLine size={18} />
@@ -44,7 +41,7 @@ export function ReviewCreationToolbar({ editor }: Props): JSX.Element {
           editor.gesture.cancel();
           editor.add(null);
         }}
-        className={`${toolClass} hover:bg-surface-white hover:text-ink-gray-900`}
+        className={floatingActionCellClass}
       >
         <MessageSquarePlus size={18} />
       </button>
