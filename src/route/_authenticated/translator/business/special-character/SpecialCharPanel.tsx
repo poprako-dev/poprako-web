@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Plus, X } from "lucide-react";
 import clsx from "clsx";
 import { useSpecialChars } from "@/route/_authenticated/translator/business/preference/use-special-chars";
+import { overlayPanelClass, overlayScrollBodyClass } from "@/shared/component/overlay-panel";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
 import type { CharItem } from "@/route/_authenticated/translator/business/preference/use-special-chars";
 
@@ -270,7 +271,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
   return createPortal(
     <div
       className={clsx(
-        "fixed inset-0 z-50",
+        "fixed inset-0 z-50 p-4",
         "flex items-center justify-center",
         "bg-surface-white/60 backdrop-blur-sm",
       )}
@@ -286,14 +287,20 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
         aria-modal="true"
         aria-label="特殊符号面板"
         className={clsx(
-          "relative w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-xl bg-surface-white",
+          "relative",
+          overlayPanelClass,
+          "w-full max-w-md overflow-hidden rounded-xl bg-surface-white",
           "border border-(--brand-leaf-border) shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
       >
-        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
+        <div
+          aria-hidden="true"
+          className="h-1 w-full shrink-0 opacity-20"
+          style={{ background: "var(--brand-leaf)" }}
+        />
         {/* Header */}
-        <div className={clsx("flex justify-between items-center", "px-5 pb-2 pt-4")}>
+        <div className={clsx("flex shrink-0 justify-between items-center", "px-5 pb-2 pt-4")}>
           <span className="text-base font-bold text-ink-slate-800">特殊符号面板</span>
           <button
             type="button"
@@ -309,7 +316,7 @@ export function SpecialCharPanel({ onClose }: Props): React.ReactElement {
         </div>
 
         {/* Body */}
-        <div className="px-5 pb-5 pt-3">
+        <div className={clsx(overlayScrollBodyClass, "px-5 pb-5 pt-3")}>
           {/* Mode Tabs */}
           <div className="flex justify-center mb-5">
             <div className="inline-flex items-center gap-0.5 rounded-lg bg-surface-slate-50 p-1">

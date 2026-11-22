@@ -18,7 +18,7 @@ export function ComicDetailModalLayout({ header, sidebar, content }: Props): JSX
       <div
         data-comic-detail-boundary
         className={clsx(
-          "relative w-full max-w-240 h-[85vh]",
+          "relative w-full max-w-240 h-[min(85dvh,calc(100dvh-2rem))]",
           "bg-surface-stone-50 rounded-sm border border-line-stone-200",
           "shadow-xl",
           "flex flex-col overflow-hidden transition-all duration-300",

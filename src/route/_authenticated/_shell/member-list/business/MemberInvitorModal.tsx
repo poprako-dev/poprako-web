@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import clsx from "clsx";
 import { X } from "lucide-react";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
+import { overlayPanelClass } from "@/shared/component/overlay-panel";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { InvitationForm } from "@/route/_authenticated/_shell/member-list/business/InvitationForm";
 import { InvitationList } from "@/route/_authenticated/_shell/member-list/business/InvitationList";
@@ -58,7 +59,8 @@ export function MemberInvitorModal({
     >
       <div
         className={clsx(
-          "relative flex w-full max-w-3xl flex-col overflow-hidden",
+          overlayPanelClass,
+          "w-full max-w-3xl overflow-y-auto md:flex-row md:overflow-hidden",
           "bg-surface-white border border-line-slate-200 rounded-xl",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",

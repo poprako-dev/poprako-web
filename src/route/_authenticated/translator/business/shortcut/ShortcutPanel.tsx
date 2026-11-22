@@ -10,6 +10,7 @@ import {
   hasConflict,
 } from "@/shared/utility/shortcut";
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
+import { overlayPanelClass, overlayScrollBodyClass } from "@/shared/component/overlay-panel";
 import { isKeyboardComposing } from "@/shared/utility/keyboard";
 
 type Props = {
@@ -140,7 +141,7 @@ export function ShortcutPanel({
   return createPortal(
     <div
       className={clsx(
-        "fixed inset-0 z-50",
+        "fixed inset-0 z-50 p-4",
         "flex items-center justify-center",
         "bg-surface-white/60 backdrop-blur-sm",
       )}
@@ -153,7 +154,9 @@ export function ShortcutPanel({
       />
       <div
         className={clsx(
-          "relative w-[calc(100%-2rem)] max-w-3xl overflow-hidden rounded-xl bg-surface-white",
+          "relative",
+          overlayPanelClass,
+          "w-full max-w-3xl overflow-hidden rounded-xl bg-surface-white",
           "border border-(--brand-leaf-border) shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
@@ -161,8 +164,12 @@ export function ShortcutPanel({
         aria-modal="true"
         aria-label="快捷键设置"
       >
-        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
-        <div className={clsx("flex justify-between items-center", "px-5 pb-2 pt-4")}>
+        <div
+          aria-hidden="true"
+          className="h-1 w-full shrink-0 opacity-20"
+          style={{ background: "var(--brand-leaf)" }}
+        />
+        <div className={clsx("flex shrink-0 justify-between items-center", "px-5 pb-2 pt-4")}>
           <span className="text-base font-bold text-ink-slate-800">快捷键设置</span>
           <button
             type="button"
@@ -177,7 +184,7 @@ export function ShortcutPanel({
           </button>
         </div>
 
-        <div className="px-6 pb-6 pt-3">
+        <div className={clsx(overlayScrollBodyClass, "px-6 pb-6 pt-3")}>
           <div
             className={clsx(
               "grid grid-cols-1 gap-x-12 gap-y-3 sm:grid-cols-2",

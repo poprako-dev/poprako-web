@@ -2,6 +2,7 @@ import { type JSX, useState } from "react";
 import { AlignLeft, Layers, Loader2 } from "lucide-react";
 import clsx from "clsx";
 import { AppDialogClose } from "@/shared/component/AppDialog";
+import { overlayPanelClass, overlayScrollBodyClass } from "@/shared/component/overlay-panel";
 import { IconInputRow } from "@/shared/component/IconInputRow";
 import type { MemberInfo } from "@/route/business/identity/member";
 import { type WorkerRole, roleMask } from "@/route/business/identity/role";
@@ -47,7 +48,8 @@ export function ChapterCreatorModal({
     >
       <div
         className={clsx(
-          "w-full max-w-70 rounded-xl overflow-hidden",
+          overlayPanelClass,
+          "w-full max-w-70 overflow-hidden rounded-xl",
           "bg-surface-white",
           "border border-(--brand-leaf-border)",
           "shadow-(--shadow-sm)",
@@ -55,9 +57,13 @@ export function ChapterCreatorModal({
         )}
       >
         {/* 顶部品牌色条 */}
-        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
+        <div
+          aria-hidden="true"
+          className="h-1 w-full shrink-0 opacity-20"
+          style={{ background: "var(--brand-leaf)" }}
+        />
 
-        <div className="relative pt-4 pb-2 text-center">
+        <div className="relative shrink-0 pt-4 pb-2 text-center">
           <AppDialogClose onClose={onClose} />
           <h3 className="text-base font-bold text-ink-slate-800">新建章节</h3>
           <div className="mt-2 flex items-center justify-center gap-1.5 px-4">
@@ -79,7 +85,7 @@ export function ChapterCreatorModal({
           onSubmit={(event) => {
             void handleSubmit(event);
           }}
-          className="px-5 pb-5 pt-3"
+          className={clsx(overlayScrollBodyClass, "px-5 pb-5 pt-3")}
         >
           <IconInputRow
             icon={<AlignLeft size={14} />}
