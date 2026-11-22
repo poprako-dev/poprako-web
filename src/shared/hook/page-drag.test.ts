@@ -68,14 +68,36 @@ describe("page drag clicks", () => {
     expect(context.tryAddMarker).toHaveBeenCalledWith(22, 32, true, true);
   });
 
-  it("neither pans nor creates a marker past the click slop before panning starts", () => {
+  it("focuses a marker when movement stays below the marker threshold", () => {
+    const context = createDragHarness();
+    startMarker(context);
+    pointer("mousemove", 21, 31);
+    pointer("mouseup", 21, 31);
+    expect(context.onFocusMarker).toHaveBeenCalledWith("marker-1");
+    expect(context.onMoveMarker).not.toHaveBeenCalled();
+    expect(context.setDragMarker).not.toHaveBeenCalled();
+  });
+});
+
+describe("page drag thresholds", () => {
+  it("neither pans nor creates a marker in the gap past the click slop", () => {
     const context = createDragHarness();
     startPageDrag({ type: "pan", startX: 20, startY: 30, shiftKey: false }, context);
-    pointer("mousemove", 25, 34);
-    pointer("mouseup", 25, 34);
+    pointer("mousemove", 24, 30);
+    pointer("mouseup", 24, 30);
     expect(context.tryAddMarker).not.toHaveBeenCalled();
     expect(context.setTransform).not.toHaveBeenCalled();
     expect(context.setIsPanning).not.toHaveBeenCalledWith(true);
+  });
+
+  it("starts panning just past the click slop instead of creating a marker", () => {
+    const context = createDragHarness();
+    startPageDrag({ type: "pan", startX: 20, startY: 30, shiftKey: false }, context);
+    pointer("mousemove", 25, 30);
+    pointer("mouseup", 25, 30);
+    expect(context.setTransform).toHaveBeenCalled();
+    expect(context.setIsPanning).toHaveBeenCalledWith(true);
+    expect(context.tryAddMarker).not.toHaveBeenCalled();
   });
 
   it("keeps panning once it starts even if the pointer returns near the start", () => {
@@ -86,16 +108,6 @@ describe("page drag clicks", () => {
     pointer("mouseup", 24, 34);
     expect(context.setTransform).toHaveBeenLastCalledWith(expect.any(Function));
     expect(context.tryAddMarker).not.toHaveBeenCalled();
-  });
-
-  it("focuses a marker when movement stays below the marker threshold", () => {
-    const context = createDragHarness();
-    startMarker(context);
-    pointer("mousemove", 21, 31);
-    pointer("mouseup", 21, 31);
-    expect(context.onFocusMarker).toHaveBeenCalledWith("marker-1");
-    expect(context.onMoveMarker).not.toHaveBeenCalled();
-    expect(context.setDragMarker).not.toHaveBeenCalled();
   });
 });
 

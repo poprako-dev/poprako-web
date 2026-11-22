@@ -2,10 +2,10 @@ import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { Transform } from "./use-canvas-viewport";
 import type { PageEditing } from "./use-page-interaction";
 
-const PAN_THRESHOLD = 8;
+const PAN_THRESHOLD = 4;
 const MARKER_DRAG_THRESHOLD = 3;
-// 指针移出点击容差后就不再是点击；此时平移可能尚未开始，也不能回落成创建标记。
-const CLICK_SLOP = 4;
+// 指针移出点击容差后就不再是点击；平移紧随其后接管，避免小幅拖拽被死区吞掉。
+const CLICK_SLOP = 3;
 
 export type MarkerPreview = { id: string; x: number; y: number };
 
