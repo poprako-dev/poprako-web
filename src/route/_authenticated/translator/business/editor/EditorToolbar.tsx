@@ -26,6 +26,7 @@ export function EditorToolbar({
         canSwitchView={session.canSwitchView && session.nextView !== undefined}
         isRelocationEnabled={session.isRelocationEnabled}
         isUnitCreationEnabled={session.isUnitCreationEnabled}
+        isAutoFocusOnCreate={session.isAutoFocusOnCreate}
         proofreadPreviewVisibility={session.proofreadPreviewVisibility}
         isHighResolution={session.isHighResolution}
         isLoadingPage={session.isLoadingPage}
@@ -35,6 +36,7 @@ export function EditorToolbar({
         onUnitCreationClick={() => {
           session.setIsUnitCreationEnabled((value) => !value);
         }}
+        onToggleAutoFocusClick={session.toggleAutoFocusOnCreate}
         onToggleProofreadPreviewClick={() => {
           session.setProofreadPreviewVisibility((value) =>
             value === "visible" ? "dimmed" : "visible",

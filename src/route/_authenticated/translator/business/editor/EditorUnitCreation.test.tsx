@@ -30,6 +30,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  localStorage.clear();
 });
 
 function createArgs(): ReturnType<typeof createStoryArgs> {
@@ -102,6 +103,21 @@ test("creating a unit focuses the new unit otherwise", async () => {
   expect(result.current.focusedUnitId).toBe(result.current.unitBuf[1]?.id);
 });
 
+test("creating a unit keeps the current focus when auto focus is disabled", async () => {
+  const { result } = await setupSession();
+  act(() => {
+    result.current.handleFocusUnit("page-1-u1");
+  });
+  act(() => {
+    result.current.toggleAutoFocusOnCreate();
+  });
+  act(() => {
+    result.current.handleAddUnit(0.5, 0.6, true, false);
+  });
+  expect(result.current.unitBuf).toHaveLength(2);
+  expect(result.current.focusedUnitId).toBe("page-1-u1");
+});
+
 test("a shifted canvas click creates a unit without moving focus", async () => {
   const view = await setupCanvas();
   const focused = view.getByPlaceholderText(TRANSLATION_PLACEHOLDER);
@@ -124,4 +140,15 @@ test("a plain canvas click focuses the created unit", async () => {
   await waitFor(() => {
     expect(document.activeElement).toBe(inputs[1]);
   });
+});
+
+test("a plain canvas click leaves focus alone when auto focus is disabled", async () => {
+  const view = await setupCanvas();
+  fireEvent.click(view.getByRole("button", { name: "创建标记后自动聚焦" }));
+  clickCanvas(view, false);
+  await waitFor(() => {
+    expect(view.getAllByPlaceholderText(TRANSLATION_PLACEHOLDER)).toHaveLength(2);
+  });
+  const inputs = view.getAllByPlaceholderText(TRANSLATION_PLACEHOLDER);
+  expect(document.activeElement).not.toBe(inputs[1]);
 });

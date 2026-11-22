@@ -21,6 +21,7 @@ type Options = Pick<
   | "canEditView"
   | "focusedUnitId"
   | "setFocusedUnitId"
+  | "isAutoFocusOnCreate"
   | "isLoadingPage"
   | "isRelocationEnabled"
   | "setSpecialCharInsertRequest"
@@ -274,6 +275,7 @@ function addEditorUnit(
     | "commitUnits"
     | "isLoadingPage"
     | "isCompletingStage"
+    | "isAutoFocusOnCreate"
     | "showToast"
     | "relocationSuppressedUnitIdRef"
     | "setFocusedUnitId"
@@ -290,7 +292,7 @@ function addEditorUnit(
   }
   const unit = createUnit(xCoord, yCoord, isBubble);
   options.commitUnits([...options.unitBufRef.current, unit]);
-  if (keepFocus) return;
+  if (keepFocus || !options.isAutoFocusOnCreate) return;
   const newUnitId = unitId(unit);
   options.relocationSuppressedUnitIdRef.current = newUnitId;
   options.setFocusedUnitId(newUnitId);

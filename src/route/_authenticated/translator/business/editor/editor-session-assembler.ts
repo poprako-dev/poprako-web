@@ -29,6 +29,7 @@ type SessionAppearanceState = Pick<
   | "focusedUnitId"
   | "hasCompletedStage"
   | "imageUrl"
+  | "isAutoFocusOnCreate"
   | "isCompleteConfirmOpen"
   | "isCompletingStage"
   | "isHighResolution"
@@ -90,6 +91,7 @@ function sessionAppearance(
   | "focusedUnitId"
   | "hasCompletedStage"
   | "imageUrl"
+  | "isAutoFocusOnCreate"
   | "isCompleteConfirmOpen"
   | "isCompletingStage"
   | "isHighResolution"
@@ -113,6 +115,7 @@ function sessionAppearance(
   | "setIsUnitSearchTransformOpen"
   | "setProofreadPreviewVisibility"
   | "specialCharInsertRequest"
+  | "toggleAutoFocusOnCreate"
   | "toggleRelocation"
   | "unitBuf"
   | "updateConfigurableShortcuts"
@@ -136,6 +139,7 @@ function sessionAppearanceState(state: EditorState): SessionAppearanceState {
     focusedUnitId: state.focusedUnitId,
     hasCompletedStage: state.hasCompletedStage,
     imageUrl: state.imageUrl,
+    isAutoFocusOnCreate: state.isAutoFocusOnCreate,
     isCompleteConfirmOpen: state.isCompleteConfirmOpen,
     isCompletingStage: state.isCompletingStage,
     isHighResolution: state.isHighResolution,
@@ -168,6 +172,7 @@ function sessionAppearanceControls(
   | "setIsUnitSearchTransformOpen"
   | "setProofreadPreviewVisibility"
   | "specialCharInsertRequest"
+  | "toggleAutoFocusOnCreate"
   | "toggleRelocation"
   | "updateConfigurableShortcuts"
 > {
@@ -181,6 +186,7 @@ function sessionAppearanceControls(
     setIsUnitSearchTransformOpen: state.setIsUnitSearchTransformOpen,
     setProofreadPreviewVisibility: state.setProofreadPreviewVisibility,
     specialCharInsertRequest: state.specialCharInsertRequest,
+    toggleAutoFocusOnCreate: state.toggleAutoFocusOnCreate,
     toggleRelocation: state.toggleRelocation,
     updateConfigurableShortcuts: state.updateConfigurableShortcuts,
   };

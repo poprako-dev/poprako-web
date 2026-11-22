@@ -4,6 +4,7 @@ import {
   CircleSlash,
   Eye,
   FileType,
+  Focus,
   Image,
   Lock,
   MapPin,
@@ -22,6 +23,7 @@ type Props = {
   canSwitchView: boolean;
   isRelocationEnabled: boolean;
   isUnitCreationEnabled: boolean;
+  isAutoFocusOnCreate: boolean;
   proofreadPreviewVisibility: ProofreadPreviewVisibility;
   isHighResolution: boolean;
   isLoadingPage: boolean;
@@ -29,6 +31,7 @@ type Props = {
   onPreloadMode?: (() => void) | undefined;
   onRelocationClick: () => void;
   onUnitCreationClick: () => void;
+  onToggleAutoFocusClick: () => void;
   onToggleProofreadPreviewClick: () => void;
   onToggleImageQualityClick: () => Promise<void>;
 };
@@ -54,6 +57,7 @@ export function StatusOptionBar({
   canSwitchView,
   isRelocationEnabled,
   isUnitCreationEnabled,
+  isAutoFocusOnCreate,
   proofreadPreviewVisibility,
   isHighResolution,
   isLoadingPage,
@@ -61,6 +65,7 @@ export function StatusOptionBar({
   onPreloadMode,
   onRelocationClick,
   onUnitCreationClick,
+  onToggleAutoFocusClick,
   onToggleProofreadPreviewClick,
   onToggleImageQualityClick,
 }: Props): JSX.Element {
@@ -111,6 +116,23 @@ export function StatusOptionBar({
           )}
         >
           <CircleSlash size={18} />
+        </button>
+      )}
+      {currMode !== "readOnly" && (
+        <button
+          type="button"
+          title={isAutoFocusOnCreate ? "关闭自动聚焦" : "开启自动聚焦"}
+          aria-label="创建标记后自动聚焦"
+          aria-pressed={isAutoFocusOnCreate}
+          onClick={onToggleAutoFocusClick}
+          className={clsx(
+            btnBase,
+            isAutoFocusOnCreate
+              ? "bg-surface-green-50 hover:bg-surface-green-100"
+              : "bg-surface-white hover:bg-surface-stone-100",
+          )}
+        >
+          <Focus size={18} />
         </button>
       )}
       <button
