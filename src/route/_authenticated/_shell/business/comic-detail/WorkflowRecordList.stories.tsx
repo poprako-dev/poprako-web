@@ -7,6 +7,7 @@ import type { WorkflowRecordState } from "@/route/_authenticated/_shell/business
 import {
   ALL_EVENT_RECORDS,
   CHAPTER_ID,
+  CREATION_WITH_PRESET_RECORDS,
   EDGE_RECORDS,
   FIRST_PAGE,
   getUserLabel,
@@ -60,6 +61,18 @@ export const AllEvents: Story = {
     await expect(canvasElement.querySelectorAll("[data-workflow-variable]").length).toBeGreaterThan(
       10,
     );
+  },
+};
+
+export const CreationWithPreset: Story = {
+  name: "创建时自带分工",
+  args: {
+    state: makeState({ records: CREATION_WITH_PRESET_RECORDS }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByText("翻译")).toBeInTheDocument();
+    await expect(canvas.getByText(/创建了章节/)).toBeInTheDocument();
   },
 };
 
