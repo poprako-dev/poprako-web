@@ -27,8 +27,8 @@ type TextPartsProps = {
 };
 
 function TextParts({ parts }: TextPartsProps): JSX.Element[] {
-  return parts.map((part) => (
-    <Fragment key={`${part.text}-${part.variable ? "variable" : "text"}`}>
+  return parts.map((part, index) => (
+    <Fragment key={`${String(index)}-${part.variable ? "variable" : "text"}`}>
       {part.variable ? (
         <span
           data-workflow-variable="true"

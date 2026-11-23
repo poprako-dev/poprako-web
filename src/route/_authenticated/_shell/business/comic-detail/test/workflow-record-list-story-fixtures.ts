@@ -159,7 +159,38 @@ export const ALL_EVENT_RECORDS: ChapterWorkflowRecord[] = [
   ),
 ];
 
+export const CREATION_WITH_PRESET_RECORDS: ChapterWorkflowRecord[] = [
+  makeRecord(
+    "creation_record_assignment",
+    {
+      kind: "assignment_created",
+      data: {
+        subjectUserId: "actor_admin",
+        roles: roleMask(["translator"]),
+      },
+    },
+    { actorUserId: "actor_admin", createdAt: NOW - 135 * 60_000 },
+  ),
+  makeRecord(
+    "creation_record_chapter",
+    { kind: "chapter_created" },
+    { actorUserId: "actor_admin", createdAt: NOW - 135 * 60_000 },
+  ),
+];
+
 export const EDGE_RECORDS: ChapterWorkflowRecord[] = [
+  makeRecord(
+    "edge_roles_swap",
+    {
+      kind: "assignment_roles_updated",
+      data: {
+        subjectUserId: "subject_aki",
+        previousRoles: roleMask(["translator"]),
+        nextRoles: roleMask(["proofreader", "typesetter"]),
+      },
+    },
+    { createdAt: NOW - 10 * 60_000 },
+  ),
   makeRecord(
     "edge_long_subtitle",
     {
