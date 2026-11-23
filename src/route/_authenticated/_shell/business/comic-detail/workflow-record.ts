@@ -63,9 +63,25 @@ function variable(text: string): WorkflowRecordTextPart {
   return { text, variable: true };
 }
 
+function roleNames(roles: WorkerRole[]): string {
+  return roles.map((role) => ROLE_LABELS[role]).join("、");
+}
+
 function roleLabels(mask: number): string {
-  const labels = unmaskWorkerRoles(mask).map((role) => ROLE_LABELS[role]);
-  return labels.length > 0 ? labels.join("、") : "未分配角色";
+  const names = roleNames(unmaskWorkerRoles(mask));
+  return names || "未分配角色";
+}
+
+function roleDelta(
+  previousRoles: number,
+  nextRoles: number,
+): { added: WorkerRole[]; removed: WorkerRole[] } {
+  const previous = unmaskWorkerRoles(previousRoles);
+  const next = unmaskWorkerRoles(nextRoles);
+  return {
+    added: next.filter((role) => !previous.includes(role)),
+    removed: previous.filter((role) => !next.includes(role)),
+  };
 }
 
 function subtitleLabel(value: string): string {
@@ -186,6 +202,44 @@ type AssignmentEvent = Extract<
   { kind: "assignment_created" | "assignment_roles_updated" | "assignment_deleted" }
 >;
 
+function roleChangeParts(
+  subject: string,
+  added: WorkerRole[],
+  removed: WorkerRole[],
+): WorkflowRecordTextPart[] {
+  const parts: WorkflowRecordTextPart[] = [];
+
+  if (added.length > 0) {
+    parts.push(
+      fixed("为 "),
+      variable(subject),
+      fixed(" 添加了"),
+      variable(roleNames(added)),
+      fixed("分工"),
+    );
+  }
+
+  if (removed.length > 0) {
+    if (added.length > 0) {
+      parts.push(fixed("，移除了"));
+    } else {
+      parts.push(...removedPrefix(subject));
+    }
+
+    parts.push(variable(roleNames(removed)), fixed("分工"));
+  }
+
+  if (parts.length === 0) {
+    parts.push(fixed("调整了 "), variable(subject), fixed(" 的分工"));
+  }
+
+  return parts;
+}
+
+function removedPrefix(subject: string): WorkflowRecordTextPart[] {
+  return [fixed("移除了 "), variable(subject), fixed(" 的")];
+}
+
 function presentAssignmentEvent(
   event: AssignmentEvent,
   userLabel: UserLabel,
@@ -202,26 +256,18 @@ function presentAssignmentEvent(
           fixed("分工"),
         ],
       };
-    case "assignment_roles_updated":
+    case "assignment_roles_updated": {
+      const { added, removed } = roleDelta(event.data.previousRoles, event.data.nextRoles);
       return {
         title: [fixed("章节分工调整")],
-        detail: [
-          fixed("将 "),
-          variable(userLabel(event.data.subjectUserId)),
-          fixed(" 的分工由“"),
-          variable(roleLabels(event.data.previousRoles)),
-          fixed("”调整为“"),
-          variable(roleLabels(event.data.nextRoles)),
-          fixed("”"),
-        ],
+        detail: roleChangeParts(userLabel(event.data.subjectUserId), added, removed),
       };
+    }
     case "assignment_deleted":
       return {
         title: [fixed("章节分工移除")],
         detail: [
-          fixed("移除了 "),
-          variable(userLabel(event.data.subjectUserId)),
-          fixed(" 的"),
+          ...removedPrefix(userLabel(event.data.subjectUserId)),
           variable(roleLabels(event.data.previousRoles)),
           fixed("分工"),
         ],

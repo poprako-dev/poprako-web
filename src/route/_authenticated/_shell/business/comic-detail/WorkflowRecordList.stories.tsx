@@ -7,6 +7,7 @@ import type { WorkflowRecordState } from "@/route/_authenticated/_shell/business
 import {
   ALL_EVENT_RECORDS,
   CHAPTER_ID,
+  CREATION_WITH_PRESET_RECORDS,
   EDGE_RECORDS,
   FIRST_PAGE,
   getUserLabel,
@@ -63,6 +64,18 @@ export const AllEvents: Story = {
   },
 };
 
+export const CreationWithPreset: Story = {
+  name: "创建时自带分工",
+  args: {
+    state: makeState({ records: CREATION_WITH_PRESET_RECORDS }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByText("翻译")).toBeInTheDocument();
+    await expect(canvas.getByText(/创建了章节/)).toBeInTheDocument();
+  },
+};
+
 export const FormattingEdges: Story = {
   name: "格式边界与长内容",
   args: {
@@ -77,6 +90,8 @@ export const FormattingEdges: Story = {
     await expect(canvas.getByText("嵌字")).toBeInTheDocument();
     await expect(canvas.getByText("已开始")).toBeInTheDocument();
     await expect(canvas.getByText("手动推进")).toBeInTheDocument();
+    await expect(canvas.getByText("校对、嵌字")).toBeInTheDocument();
+    await expect(canvas.getByText(/移除了分工/)).toBeInTheDocument();
   },
 };
 
