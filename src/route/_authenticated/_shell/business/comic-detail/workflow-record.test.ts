@@ -47,7 +47,29 @@ const WORKFLOW_EVENT_CASES: [ChapterWorkflowRecordEvent, string][] = [
         nextRoles: 6,
       },
     },
-    "章节分工调整：将 Aki 的分工由“翻译”调整为“翻译、校对”",
+    "章节分工调整：为 Aki 添加了校对分工",
+  ],
+  [
+    {
+      kind: "assignment_roles_updated",
+      data: {
+        subjectUserId: "subject_1",
+        previousRoles: 6,
+        nextRoles: 4,
+      },
+    },
+    "章节分工调整：移除了 Aki 的翻译分工",
+  ],
+  [
+    {
+      kind: "assignment_roles_updated",
+      data: {
+        subjectUserId: "subject_1",
+        previousRoles: 2,
+        nextRoles: 8,
+      },
+    },
+    "章节分工调整：为 Aki 添加了嵌字分工，移除了翻译分工",
   ],
   [
     {

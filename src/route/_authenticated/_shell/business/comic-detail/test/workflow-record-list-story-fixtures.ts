@@ -161,6 +161,18 @@ export const ALL_EVENT_RECORDS: ChapterWorkflowRecord[] = [
 
 export const EDGE_RECORDS: ChapterWorkflowRecord[] = [
   makeRecord(
+    "edge_roles_swap",
+    {
+      kind: "assignment_roles_updated",
+      data: {
+        subjectUserId: "subject_aki",
+        previousRoles: roleMask(["translator"]),
+        nextRoles: roleMask(["proofreader", "typesetter"]),
+      },
+    },
+    { createdAt: NOW - 10 * 60_000 },
+  ),
+  makeRecord(
     "edge_long_subtitle",
     {
       kind: "chapter_subtitle_updated",

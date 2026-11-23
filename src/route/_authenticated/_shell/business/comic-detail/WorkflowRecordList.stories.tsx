@@ -77,6 +77,8 @@ export const FormattingEdges: Story = {
     await expect(canvas.getByText("嵌字")).toBeInTheDocument();
     await expect(canvas.getByText("已开始")).toBeInTheDocument();
     await expect(canvas.getByText("手动推进")).toBeInTheDocument();
+    await expect(canvas.getByText("校对、嵌字")).toBeInTheDocument();
+    await expect(canvas.getByText(/移除了分工/)).toBeInTheDocument();
   },
 };
 
