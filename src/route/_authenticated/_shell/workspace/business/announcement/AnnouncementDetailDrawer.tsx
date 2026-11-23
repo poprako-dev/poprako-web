@@ -1,6 +1,7 @@
 import type { ReactNode, JSX } from "react";
 import clsx from "clsx";
 import { ConfirmDialog } from "@/shared/component/ConfirmDialog";
+import { overlayScrollBodyClass } from "@/shared/component/overlay-panel";
 import { AnnouncementDetailHeader } from "./AnnouncementDetailHeader";
 
 type Props = {
@@ -37,7 +38,7 @@ export function AnnouncementDetailDrawer({
         )}
       >
         <AnnouncementDetailHeader onClose={onClose} />
-        {children}
+        <div className={clsx(overlayScrollBodyClass, "flex flex-col")}>{children}</div>
       </div>
       {isDeleteConfirmOpen && (
         <ConfirmDialog

@@ -9,14 +9,6 @@ type Props = {
   onToggleAnnotationEditing: (() => void) | undefined;
 };
 
-function saveStatusLabel(session: EditorSession): string {
-  const { saveState, saving } = session;
-  if (saveState.storageError) return "草稿存储错误";
-  if (saveState.error) return saveState.refreshError ? "等待远端核对" : "保存失败，修改已保留";
-  if (saving) return "保存中";
-  return saveState.dirty ? "待保存" : "已保存";
-}
-
 export function EditorToolbar({
   session,
   onPreloadMode,
@@ -34,6 +26,7 @@ export function EditorToolbar({
         canSwitchView={session.canSwitchView && session.nextView !== undefined}
         isRelocationEnabled={session.isRelocationEnabled}
         isUnitCreationEnabled={session.isUnitCreationEnabled}
+        isAutoFocusOnCreate={session.isAutoFocusOnCreate}
         proofreadPreviewVisibility={session.proofreadPreviewVisibility}
         isHighResolution={session.isHighResolution}
         isLoadingPage={session.isLoadingPage}
@@ -43,15 +36,13 @@ export function EditorToolbar({
         onUnitCreationClick={() => {
           session.setIsUnitCreationEnabled((value) => !value);
         }}
+        onToggleAutoFocusClick={session.toggleAutoFocusOnCreate}
         onToggleProofreadPreviewClick={() => {
           session.setProofreadPreviewVisibility((value) =>
             value === "visible" ? "dimmed" : "visible",
           );
         }}
         onToggleImageQualityClick={session.handleToggleImageQuality}
-        onSaveClick={session.handleSave}
-        saving={session.saving}
-        saveStatus={saveStatusLabel(session)}
       />
     </div>
   );

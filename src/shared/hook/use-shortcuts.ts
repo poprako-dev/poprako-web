@@ -14,7 +14,7 @@ const fixedShortcuts: FixedShortcut[] = [
     keys: ["左键图片空白处"],
   },
   {
-    label: "创建框内单元但不聚焦",
+    label: "创建框内单元（不聚焦）",
     keys: ["Shift", "左键图片空白处"],
   },
   {

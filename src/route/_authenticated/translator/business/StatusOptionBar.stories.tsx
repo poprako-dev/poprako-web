@@ -26,6 +26,7 @@ function InteractiveWrapper({
   const [isAnnotationEditingEnabled, setIsAnnotationEditingEnabled] = useState(false);
   const [view, setView] = useState<TranslatorMode>(initialMode);
   const [relocation, setRelocation] = useState(false);
+  const [isAutoFocusOnCreate, setIsAutoFocusOnCreate] = useState(true);
   const [isHighResolution, setIsHighResolution] = useState(false);
   const [previewVisibility, setPreviewVisibility] = useState<"visible" | "dimmed">("visible");
 
@@ -52,6 +53,7 @@ function InteractiveWrapper({
         canSwitchView={availableModes.length > 1}
         isRelocationEnabled={relocation}
         isUnitCreationEnabled={true}
+        isAutoFocusOnCreate={isAutoFocusOnCreate}
         proofreadPreviewVisibility={previewVisibility}
         isHighResolution={isHighResolution}
         isLoadingPage={false}
@@ -62,6 +64,9 @@ function InteractiveWrapper({
         onUnitCreationClick={() => {
           return;
         }}
+        onToggleAutoFocusClick={() => {
+          setIsAutoFocusOnCreate((v) => !v);
+        }}
         onToggleProofreadPreviewClick={() => {
           setPreviewVisibility((v) => (v === "visible" ? "dimmed" : "visible"));
         }}
@@ -69,9 +74,6 @@ function InteractiveWrapper({
           await Promise.resolve();
           setIsHighResolution((current) => !current);
         }}
-        onSaveClick={() => Promise.resolve()}
-        saving={false}
-        saveStatus="已保存"
       />
     </div>
   );

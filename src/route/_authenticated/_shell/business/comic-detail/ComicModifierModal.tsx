@@ -2,6 +2,7 @@ import { type JSX, useState } from "react";
 import { Type, User, AlignLeft, Loader2 } from "lucide-react";
 import clsx from "clsx";
 import { AppDialogClose } from "@/shared/component/AppDialog";
+import { overlayPanelClass, overlayScrollBodyClass } from "@/shared/component/overlay-panel";
 import { IconInputRow } from "@/shared/component/IconInputRow";
 import type { ComicInfo } from "@/route/_authenticated/business/comic/comic";
 import type { Result } from "@/shared/utility/result";
@@ -55,16 +56,21 @@ export function ComicModifierModal({ comicInfo, onUpdate, onClose }: Props): JSX
     >
       <div
         className={clsx(
-          "w-full max-w-70 rounded-xl overflow-hidden",
+          overlayPanelClass,
+          "w-full max-w-70 overflow-hidden rounded-xl",
           "bg-surface-white",
           "border border-(--brand-leaf-border)",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
       >
-        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
+        <div
+          aria-hidden="true"
+          className="h-1 w-full shrink-0 opacity-20"
+          style={{ background: "var(--brand-leaf)" }}
+        />
 
-        <div className="relative pt-4 pb-2 text-center">
+        <div className="relative shrink-0 pt-4 pb-2 text-center">
           <AppDialogClose onClose={onClose} />
           <h3 className="text-lg font-bold text-ink-slate-800">修改作品信息</h3>
         </div>
@@ -73,7 +79,7 @@ export function ComicModifierModal({ comicInfo, onUpdate, onClose }: Props): JSX
           onSubmit={(event) => {
             void handleSubmit(event);
           }}
-          className="px-5 pb-5 pt-3"
+          className={clsx(overlayScrollBodyClass, "px-5 pb-5 pt-3")}
         >
           <div className="space-y-2.5">
             <IconInputRow

@@ -4,12 +4,11 @@ import {
   CircleSlash,
   Eye,
   FileType,
+  Focus,
   Image,
-  Loader2,
   Lock,
   MapPin,
   MessageSquareMore,
-  Save,
 } from "lucide-react";
 import clsx from "clsx";
 import type { TranslatorMode } from "@/route/_authenticated/translator/business/unit/translator-mode";
@@ -24,18 +23,17 @@ type Props = {
   canSwitchView: boolean;
   isRelocationEnabled: boolean;
   isUnitCreationEnabled: boolean;
+  isAutoFocusOnCreate: boolean;
   proofreadPreviewVisibility: ProofreadPreviewVisibility;
   isHighResolution: boolean;
   isLoadingPage: boolean;
-  saving: boolean;
-  saveStatus: string;
   onSwitchView: () => void;
   onPreloadMode?: (() => void) | undefined;
   onRelocationClick: () => void;
   onUnitCreationClick: () => void;
+  onToggleAutoFocusClick: () => void;
   onToggleProofreadPreviewClick: () => void;
   onToggleImageQualityClick: () => Promise<void>;
-  onSaveClick: () => Promise<void>;
 };
 
 const modeIcon: Record<TranslatorMode, React.ReactNode> = {
@@ -59,18 +57,17 @@ export function StatusOptionBar({
   canSwitchView,
   isRelocationEnabled,
   isUnitCreationEnabled,
+  isAutoFocusOnCreate,
   proofreadPreviewVisibility,
   isHighResolution,
   isLoadingPage,
-  saving,
-  saveStatus,
   onSwitchView,
   onPreloadMode,
   onRelocationClick,
   onUnitCreationClick,
+  onToggleAutoFocusClick,
   onToggleProofreadPreviewClick,
   onToggleImageQualityClick,
-  onSaveClick,
 }: Props): JSX.Element {
   const btnBase = clsx(
     "flex-1 flex items-center justify-center py-2 transition-colors",
@@ -106,36 +103,37 @@ export function StatusOptionBar({
         <MapPin size={18} />
       </button>
       {currMode !== "readOnly" && (
-        <>
-          <button
-            type="button"
-            title={isUnitCreationEnabled ? "禁用标记创建" : "启用标记创建"}
-            onClick={onUnitCreationClick}
-            className={clsx(
-              btnBase,
-              "hidden [@media(any-pointer:coarse)]:flex",
-              isUnitCreationEnabled
-                ? "bg-surface-white hover:bg-surface-stone-100"
-                : "bg-surface-green-50 hover:bg-surface-green-100",
-            )}
-          >
-            <CircleSlash size={18} />
-          </button>
-          <button
-            type="button"
-            title={`保存 · ${saveStatus}`}
-            aria-label={`保存 · ${saveStatus}`}
-            disabled={isLoadingPage}
-            onClick={() => void onSaveClick()}
-            className={clsx(
-              btnBase,
-              "bg-surface-white",
-              isLoadingPage ? "opacity-40 cursor-not-allowed" : "hover:bg-surface-stone-100",
-            )}
-          >
-            {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-          </button>
-        </>
+        <button
+          type="button"
+          title={isUnitCreationEnabled ? "禁用标记创建" : "启用标记创建"}
+          onClick={onUnitCreationClick}
+          className={clsx(
+            btnBase,
+            "hidden [@media(any-pointer:coarse)]:flex",
+            isUnitCreationEnabled
+              ? "bg-surface-white hover:bg-surface-stone-100"
+              : "bg-surface-green-50 hover:bg-surface-green-100",
+          )}
+        >
+          <CircleSlash size={18} />
+        </button>
+      )}
+      {currMode !== "readOnly" && (
+        <button
+          type="button"
+          title={isAutoFocusOnCreate ? "关闭自动聚焦" : "开启自动聚焦"}
+          aria-label="创建标记后自动聚焦"
+          aria-pressed={isAutoFocusOnCreate}
+          onClick={onToggleAutoFocusClick}
+          className={clsx(
+            btnBase,
+            isAutoFocusOnCreate
+              ? "bg-surface-green-50 hover:bg-surface-green-100"
+              : "bg-surface-white hover:bg-surface-stone-100",
+          )}
+        >
+          <Focus size={18} />
+        </button>
       )}
       <button
         type="button"

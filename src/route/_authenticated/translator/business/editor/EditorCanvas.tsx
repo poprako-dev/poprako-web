@@ -1,12 +1,12 @@
 import type { JSX } from "react/jsx-runtime";
 import type { ReactNode } from "react";
 import clsx from "clsx";
-import { CaseSensitive, Check, Command, Loader2, ReplaceAll, SquareArrowRight } from "lucide-react";
+import { CaseSensitive, Command, ReplaceAll, SquareArrowRight } from "lucide-react";
 import { TranslatorPaginator } from "@/route/_authenticated/translator/business/page-statistic/TranslatorPaginator";
 import { ToolboxDropdown } from "@/shared/component/toolbox-dropdown/ToolboxDropdown";
 import { Canvas } from "@/route/_authenticated/translator/business/canvas/Canvas";
-import { ReadOnlyPageActions } from "@/route/_authenticated/translator/business/page-statistic/ReadOnlyPageActions";
 import type { ToolboxOption } from "@/shared/component/toolbox-dropdown/toolbox-option";
+import { CanvasActionBar } from "./CanvasActionBar";
 import type { EditorSession } from "./use-editor-session";
 
 type Props = {
@@ -47,6 +47,7 @@ type Props = {
     | "handleFocusUnit"
     | "handlePageImageLoad"
     | "handleDeleteUnit"
+    | "handleSave"
     | "completionStage"
   >;
 };
@@ -81,7 +82,6 @@ function toolboxOptions(session: Props["session"]): ToolboxOption[] {
 export function EditorCanvas({ session, terminologyBar }: Props): JSX.Element {
   const {
     project,
-    onListPageUnitDiffStats,
     onListPageUnitFlaggedStats,
     pageIndex,
     unitBuf,
@@ -94,12 +94,7 @@ export function EditorCanvas({ session, terminologyBar }: Props): JSX.Element {
     isLoadingPage,
     isUnitCreationEnabled,
     isCompletingStage,
-    hasCompletedStage,
-    setIsCompleteConfirmOpen,
-    isPageStatsOpen,
-    setIsPageStatsOpen,
     canvasRef,
-    saving,
     handleNavigate,
     handleExit,
     handleToggleBubble,
@@ -108,7 +103,6 @@ export function EditorCanvas({ session, terminologyBar }: Props): JSX.Element {
     handleFocusUnit,
     handlePageImageLoad,
     handleDeleteUnit,
-    completionStage,
   } = session;
   const options = toolboxOptions(session);
 
@@ -152,44 +146,7 @@ export function EditorCanvas({ session, terminologyBar }: Props): JSX.Element {
           <SquareArrowRight size={20} />
         </button>
       </div>
-      <div className="absolute bottom-2 right-2 flex items-center gap-2">
-        {!isReadOnly && completionStage && (
-          <button
-            type="button"
-            title={completionStage === "proofread" ? "完成校对" : "完成翻译"}
-            aria-label={completionStage === "proofread" ? "完成校对" : "完成翻译"}
-            disabled={isLoadingPage || isCompletingStage || hasCompletedStage}
-            onClick={() => {
-              setIsCompleteConfirmOpen(true);
-            }}
-            className={clsx(
-              "flex size-8 items-center justify-center rounded-md border",
-              "border-line-gray-200 bg-surface-white/85 text-ink-gray-700 shadow-sm",
-              "transition-colors hover:border-line-green-200 hover:bg-surface-green-50",
-              "hover:text-text-green disabled:cursor-not-allowed disabled:opacity-60",
-            )}
-          >
-            {isCompletingStage ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Check size={20} strokeWidth={2.5} />
-            )}
-          </button>
-        )}
-        {project.pages[pageIndex] && (
-          <ReadOnlyPageActions
-            key={project.id}
-            pages={project.pages}
-            currentPageId={project.pages[pageIndex].id}
-            isDisabled={isLoadingPage || saving}
-            showNextEditedPage={isReadOnly}
-            isOpen={isPageStatsOpen}
-            onOpenChange={setIsPageStatsOpen}
-            onListPageUnitDiffStats={onListPageUnitDiffStats}
-            onNavigate={handleNavigate}
-          />
-        )}
-      </div>
+      <CanvasActionBar session={session} />
       <div className="absolute top-2 right-2">
         <TranslatorPaginator
           drafts={session.drafts}

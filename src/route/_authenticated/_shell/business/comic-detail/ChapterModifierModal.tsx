@@ -2,6 +2,7 @@ import { type JSX, useState } from "react";
 import { AlignLeft, Loader2 } from "lucide-react";
 import clsx from "clsx";
 import { AppDialogClose } from "@/shared/component/AppDialog";
+import { overlayPanelClass, overlayScrollBodyClass } from "@/shared/component/overlay-panel";
 import { IconInputRow } from "@/shared/component/IconInputRow";
 import type { ChapterInfo } from "@/route/_authenticated/business/chapter/chapter";
 import type { Result } from "@/shared/utility/result";
@@ -42,16 +43,21 @@ export function ChapterModifierModal({ chapter, onUpdate, onClose }: Props): JSX
     >
       <div
         className={clsx(
-          "w-full max-w-70 rounded-xl overflow-hidden",
+          overlayPanelClass,
+          "w-full max-w-70 overflow-hidden rounded-xl",
           "bg-surface-white",
           "border border-(--brand-leaf-border)",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
       >
-        <div className="h-1 w-full opacity-20" style={{ background: "var(--brand-leaf)" }} />
+        <div
+          aria-hidden="true"
+          className="h-1 w-full shrink-0 opacity-20"
+          style={{ background: "var(--brand-leaf)" }}
+        />
 
-        <div className="relative pt-4 pb-2 text-center">
+        <div className="relative shrink-0 pt-4 pb-2 text-center">
           <AppDialogClose onClose={onClose} />
           <h3 className="text-base font-bold text-ink-slate-800">修改章节信息</h3>
           <p className="mt-1 text-[11px] text-text-muted-cool">
@@ -63,7 +69,7 @@ export function ChapterModifierModal({ chapter, onUpdate, onClose }: Props): JSX
           onSubmit={(event) => {
             void handleSubmit(event);
           }}
-          className="px-5 pb-5 pt-3"
+          className={clsx(overlayScrollBodyClass, "px-5 pb-5 pt-3")}
         >
           <IconInputRow
             icon={<AlignLeft size={14} />}

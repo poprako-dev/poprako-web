@@ -1,5 +1,7 @@
 import type { JSX } from "react";
 import { Check, Loader2, SquareArrowRight } from "lucide-react";
+import { FloatingActionGroup } from "@/shared/component/FloatingActionGroup";
+import { floatingActionCellClass } from "@/shared/component/floating-action-cell";
 import { PageCanvas } from "@/shared/component/PageCanvas";
 import { Paginator } from "@/shared/component/Paginator";
 import { ReviewPreviewStatus } from "../issue/ReviewPreviewStatus";
@@ -83,7 +85,7 @@ export function ReviewEditorCanvas({ editor }: Props): JSX.Element {
           }}
         />
       </div>
-      <div className="absolute bottom-2 right-2 flex items-center gap-2">
+      <FloatingActionGroup label="监修操作" className="absolute bottom-2 right-2">
         <ReviewCreationToolbar editor={editor} />
         <button
           type="button"
@@ -93,11 +95,11 @@ export function ReviewEditorCanvas({ editor }: Props): JSX.Element {
           onClick={() => {
             setConfirmComplete(true);
           }}
-          className={buttonClass}
+          className={floatingActionCellClass}
         >
           {completing ? <Loader2 size={20} className="animate-spin" /> : <Check size={20} />}
         </button>
-      </div>
+      </FloatingActionGroup>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { hasRole } from "@/route/business/identity/role";
 import type { Result } from "@/shared/utility/result";
 import { MemberRoleGrid } from "@/route/_authenticated/_shell/member-list/business/MemberRoleGrid";
 import { AppDialogClose } from "@/shared/component/AppDialog";
+import { overlayPanelClass, overlayScrollBodyClass } from "@/shared/component/overlay-panel";
 
 // ── Role config ──────────────────────────────────────────────────────────────
 
@@ -69,7 +70,8 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
     >
       <div
         className={clsx(
-          "relative w-full max-w-sm overflow-hidden",
+          overlayPanelClass,
+          "w-full max-w-sm overflow-hidden",
           "bg-surface-white border border-line-slate-200 rounded-xl",
           "shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
@@ -85,7 +87,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
         {/* ── Header ────────────────────────────────────────────────────── */}
         <div
           className={clsx(
-            "flex items-center justify-between",
+            "flex shrink-0 items-center justify-between",
             "bg-surface-slate-50/60 border-b border-line-slate-200/60",
             "px-6 py-2 pr-14",
           )}
@@ -107,7 +109,13 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
         </div>
 
         {/* ── Body ──────────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-5 px-6 py-5">
+        <div
+          className={clsx(
+            overlayScrollBodyClass,
+            "flex flex-col items-start gap-4 px-6 py-5",
+            "sm:flex-row sm:items-center sm:gap-5",
+          )}
+        >
           {/* Avatar */}
           <div className="relative shrink-0">
             <div
@@ -151,7 +159,7 @@ export function MemberDetailModal({ member, onClose, onUpdateRole }: Props): JSX
         </div>
 
         {/* ── Footer ────────────────────────────────────────────────────── */}
-        <div className="px-5 py-2">
+        <div className="shrink-0 px-5 py-2">
           <button
             type="button"
             disabled={!isDirty || isSubmitting}

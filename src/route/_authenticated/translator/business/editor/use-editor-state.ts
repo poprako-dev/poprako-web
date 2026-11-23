@@ -20,6 +20,7 @@ import { useRelocationPreference } from "@/shared/hook/use-relocation-preference
 import { useToastStore } from "@/shared/component/notification-toast/toast-store";
 import { useSpecialChars } from "@/route/_authenticated/translator/business/preference/use-special-chars";
 import { useProofreadPreviewPreference } from "@/route/_authenticated/translator/business/preference/use-proofread-preview-preference";
+import { useAutoFocusPreference } from "@/route/_authenticated/translator/business/preference/use-auto-focus-preference";
 import type { ProofreadPreviewVisibility } from "@/route/_authenticated/translator/business/contract/preview";
 import type {
   CopyFromTranslationRequest,
@@ -114,6 +115,8 @@ type EditorReferenceState = {
 type EditorPreferenceState = {
   isRelocationEnabled: boolean;
   toggleRelocation: () => void;
+  isAutoFocusOnCreate: boolean;
+  toggleAutoFocusOnCreate: () => void;
   showToast: (message: string, type: ToastType) => void;
   allChars: ReturnType<typeof useSpecialChars>["allChars"];
   favoriteChars: ReturnType<typeof useSpecialChars>["favoriteChars"];
@@ -279,6 +282,7 @@ function useEditorPreferenceState(
   page: EditorPageState,
 ): EditorPreferenceState {
   const { isRelocationEnabled, toggleRelocation } = useRelocationPreference();
+  const { isAutoFocusOnCreate, toggleAutoFocusOnCreate } = useAutoFocusPreference();
   const showToast = useToastStore((s) => s.showToast);
   const { allChars, favoriteChars } = useSpecialChars();
   useEditorImagePreloader(options, page);
@@ -291,6 +295,8 @@ function useEditorPreferenceState(
   return {
     isRelocationEnabled,
     toggleRelocation,
+    isAutoFocusOnCreate,
+    toggleAutoFocusOnCreate,
     showToast,
     allChars,
     favoriteChars,

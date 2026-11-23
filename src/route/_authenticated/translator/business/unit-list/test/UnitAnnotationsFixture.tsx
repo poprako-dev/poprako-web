@@ -52,17 +52,16 @@ export function UnitAnnotationsFixture({ mode, width, readOnly }: Props): JSX.El
         canSwitchView={false}
         isRelocationEnabled={false}
         isUnitCreationEnabled={true}
+        isAutoFocusOnCreate={true}
         proofreadPreviewVisibility="visible"
         isHighResolution={false}
         isLoadingPage={false}
-        saving={false}
-        saveStatus="已保存"
         onSwitchView={() => undefined}
         onRelocationClick={() => undefined}
         onUnitCreationClick={() => undefined}
+        onToggleAutoFocusClick={() => undefined}
         onToggleProofreadPreviewClick={() => undefined}
         onToggleImageQualityClick={() => Promise.resolve()}
-        onSaveClick={() => Promise.resolve()}
         isAnnotationEditingEnabled={isAnnotationEditingEnabled}
         onToggleAnnotationEditing={() => {
           setIsAnnotationEditingEnabled((value) => !value);
